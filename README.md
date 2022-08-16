@@ -12,9 +12,9 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius, along 
 - case - components to make the 3D printed enclosure
 - docs - system documentation, including schematics and board layouts
 - pcb - files for making or modifying the PCB
- - eagle - Eagle files for creating or modifying the PCB and schematic
- - gerber - PCB creation files for sending to service bureaus
+  - eagle - Eagle files for creating or modifying the PCB and schematic
+  - gerber - PCB creation files for sending to service bureaus
 - src - files for programming or modifying ROM and GAL logic chips
- - rom - MX ROM code and BIN files
- - gal-ram-rom-udb - CUPL code and JED image files for GAL programming
- - gal-ay - CUPL code and JED image files for GAL programming
+  - rom - MX ROM code and BIN files
+  - gal-ram-rom-udb - CUPL code and JED image files for GAL programming
+  - gal-ay - CUPL code and JED image files for GAL programming
