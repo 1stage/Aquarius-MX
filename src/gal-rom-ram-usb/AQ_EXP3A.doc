@@ -1,0 +1,209 @@
+
+*******************************************************************************
+                                    Aqu_mem
+*******************************************************************************
+
+CUPL(WM)        5.0a Serial# 60008009
+Device          g16v8ma  Library DLIB-h-40-8
+Created         Mon Oct 03 14:39:24 2016
+Name            Aqu_mem 
+Partno          0 
+Revision        02 
+Date            03/10/2016 
+Designer        Bruce Abbott 
+Company         
+Assembly        
+Location        
+
+===============================================================================
+                            Expanded Product Terms
+===============================================================================
+
+CH376 =>
+    A6 & !A7 & !IORQ & !WR
+  # A6 & !A7 & !IORQ & !RD
+
+LATCH =>
+    !A6 & !A7 & !IORQ & LATR & !WR
+  # LATCH & LATR
+
+PRST =>
+    !RESET
+
+RA14 =>
+    A14 & !A15
+  # A14 & !LATCH
+
+RAME =>
+    A14 & A15 & LATCH & !MREQ & !RD
+  # A14 & !A15 & !MREQ & !RD
+  # A14 & !A15 & !MREQ & !WR
+  # !A14 & A15 & !LATCH & !MREQ & !WR
+  # !A14 & A15 & !LATCH & !MREQ & !RD
+
+ROME =>
+    A14 & A15 & !LATCH & !MREQ & !RD
+
+CH376.oe  =>
+    1 
+
+LATCH.oe  =>
+    1 
+
+LATR.oe  =>
+    0 
+
+PRST.oe  =>
+    1 
+
+RA14.oe  =>
+    1 
+
+RAME.oe  =>
+    1 
+
+ROME.oe  =>
+    1 
+
+
+===============================================================================
+                                 Symbol Table
+===============================================================================
+
+Pin Variable                                    Pterms   Max     Min    
+Pol   Name              Ext     Pin     Type     Used   Pterms  Level   
+--- --------            ---     ---     ----    ------  ------  -----   
+
+    A5                          16       V        -       -       -     
+    A6                          1        V        -       -       -     
+    A7                          2        V        -       -       -     
+    A14                         3        V        -       -       -     
+    A15                         4        V        -       -       -     
+ !  CH376                       12       V        2       7       1     
+    IORQ                        8        V        -       -       -     
+    LATCH                       18       V        2       7       1     
+    LATR                        15       V        -       -       -     
+    MREQ                        5        V        -       -       -     
+    PRST                        13       V        1       7       1     
+    RA14                        19       V        2       7       1     
+ !  RAME                        17       V        5       7       1     
+    RD                          6        V        -       -       -     
+    RESET                       9        V        -       -       -     
+ !  ROME                        14       V        1       7       1     
+    WR                          7        V        -       -       -     
+    CH376               oe      12       D        1       1       0     
+    LATCH               oe      18       D        1       1       0     
+    LATR                oe      15       D        1       1       0     
+    PRST                oe      13       D        1       1       0     
+    RA14                oe      19       D        1       1       0     
+    RAME                oe      17       D        1       1       0     
+    ROME                oe      14       D        1       1       0     
+
+
+LEGEND    D : default variable         F : field      G : group
+          I : intermediate variable    N : node       M : extended node
+          U : undefined                V : variable   X : extended variable
+          T : function
+
+
+===============================================================================
+                                   Fuse Plot
+===============================================================================
+
+Syn   02192 - Ac0   02193 - 
+
+Pin #19  02048  Pol -  02120  Ac1 - 
+ 00000 -------------------------------- 
+ 00032 ----x----x---------------------- 
+ 00064 ----x--x------------------------ 
+ 00096 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00128 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00160 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00192 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00224 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #18  02049  Pol -  02121  Ac1 - 
+ 00256 -------------------------------- 
+ 00288 -x-x--------------x--x---x------ 
+ 00320 ------x-----------x------------- 
+ 00352 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00384 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00416 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00448 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00480 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #17  02050  Pol x  02122  Ac1 - 
+ 00512 -------------------------------- 
+ 00544 ----x-x-x----x---x-------------- 
+ 00576 ----x----x---x---x-------------- 
+ 00608 ----x----x---x-------x---------- 
+ 00640 -----x-xx----x-------x---------- 
+ 00672 -----x-xx----x---x-------------- 
+ 00704 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00736 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #16  02051  Pol x  02123  Ac1 - 
+ 00768 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00800 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00832 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00864 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00896 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00928 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00960 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 00992 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #15  02052  Pol x  02124  Ac1 - 
+ 01024 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01056 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01088 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01120 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01152 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01184 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01216 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01248 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #14  02053  Pol x  02125  Ac1 - 
+ 01280 -------------------------------- 
+ 01312 ----x--xx----x---x-------------- 
+ 01344 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01376 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01408 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01440 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01472 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01504 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #13  02054  Pol -  02126  Ac1 - 
+ 01536 -------------------------------- 
+ 01568 -----------------------------x-- 
+ 01600 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01632 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01664 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01696 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01728 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01760 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+Pin #12  02055  Pol x  02127  Ac1 - 
+ 01792 -------------------------------- 
+ 01824 -xx------------------x---x------ 
+ 01856 -xx--------------x-------x------ 
+ 01888 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01920 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01952 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 01984 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 02016 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+
+
+LEGEND    X : fuse not blown 
+          - : fuse blown 
+
+===============================================================================
+                                 Chip Diagram
+===============================================================================
+
+                               ______________
+                              |   Aqu_mem    |
+                       A6 x---|1           20|---x Vcc                      
+                       A7 x---|2           19|---x RA14                     
+                      A14 x---|3           18|---x LATCH                    
+                      A15 x---|4           17|---x !RAME                    
+                     MREQ x---|5           16|---x A5                       
+                       RD x---|6           15|---x LATR                     
+                       WR x---|7           14|---x !ROME                    
+                     IORQ x---|8           13|---x PRST                     
+                    RESET x---|9           12|---x !CH376                   
+                      GND x---|10          11|---x                          
+                              |______________|
+

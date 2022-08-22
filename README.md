@@ -18,4 +18,4 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius, along 
 - **src** - files for programming or modifying ROM and GAL logic chips
   - **rom** - MX ROM code and BIN files
   - **gal-ay** - CUPL code and JED image files for AY Sound Chip GAL programming
-  - **gal-ram-rom-udb** - CUPL code and JED image files for RAM/ROM/USB GAL programming
+  - **gal-ram-rom-usb** - CUPL code and JED image files for RAM/ROM/USB GAL programming
