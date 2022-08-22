@@ -4,7 +4,7 @@ This folder contains the STL files needed to 3D print an enclosure for the Aquar
 ## FDM Printing
 The typical method people will use to print the Aquarius MX case is FDM (Fused Deposition Modeling), the most common and cost-effective means to create a 3D printed enclosure. For the Aquarius MX case, here are the recommended specifications for FDM printing.
 
-- **Material** - It is recommended that both components of the Aquarius MX case be printed in PLA rather than ABS, due to the large, flat surface features of the case. ABS is more prone to warping in the corners, and this can create an offset of the plane which keeps the PCB flat and even with the expansion port of the Aquarius computer. A heated build surface is strongly encouraged, particularly with the top of the case, as an embossed Aquarius MX logo is featured, and usually sticks better to a heated surface.
+- **Material** - It is recommended that both components of the Aquarius MX case be printed in PLA (PolyLactic Acid) plastic rather than ABS (Acrylonitrile Butadiene Styrene) plastic, due to the large, flat surface features of the case. ABS is more prone to warping in the corners, and this can create an offset of the plane which keeps the PCB flat and even with the expansion port of the Aquarius computer. A heated build surface is strongly encouraged, particularly with the top of the case, as an embossed Aquarius MX logo is featured, and usually sticks better to a heated surface.
 - **Nozzle Diameter** - A typical 0.4mm nozzle works fine
 - **Layer Height** - A layer height of between 0.2mm and 0.4mm offers a good range of speed/surface quality.
 - **Build Area** - The 3D printer must support a build size of 212.1mm x 120.9mm x 65.3mm to print the largest of the two parts (the top).
