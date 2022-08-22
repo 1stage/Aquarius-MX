@@ -356,7 +356,7 @@ Top Side Faces Down</text>
 <text x="123.825" y="69.215" size="1.778" layer="21" rot="R90" align="center">ROM</text>
 <text x="126.365" y="94.615" size="1.778" layer="21" rot="R90" align="center">PSG</text>
 <text x="147.828" y="92.583" size="1.778" layer="21" rot="R180" align="center">AY LOGIC</text>
-<text x="147.828" y="59.563" size="1.778" layer="21" rot="R180" align="center">USB/RAM/ROM LOGIC</text>
+<text x="147.828" y="59.563" size="1.778" layer="21" rot="R180" align="center">RAM/ROM/USB LOGIC</text>
 <text x="144.018" y="76.073" size="1.778" layer="21" rot="R180" align="center">CLOCK DIV.</text>
 <text x="183.388" y="92.583" size="1.778" layer="21" rot="R180" align="center">ADDR BUFFER</text>
 <text x="183.388" y="59.563" size="1.778" layer="21" rot="R180" align="center">ADDR BUFFER</text>
