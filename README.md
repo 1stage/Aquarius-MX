@@ -2,6 +2,9 @@
 ## Abstract
 The Aquarius MX system expander brings USB compatibility to the Aquarius, along with a 32K RAM expansion, featuring all the functionality of Bruce Abbott's Micro Expander in an easy-to-build solution that fits the footprint of the Mini Expander.
 
+## [Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
+Click the heading above for the current BOM with estimated costs.
+
 ## Build Process
 1. Acquire the components
 1. Assemble the PCB
