@@ -3,6 +3,19 @@
 ## Overview
 The Aquarius MX system expander brings USB compatibility to the Aquarius Computer along with a 32K RAM expansion, and features all the functionality of Bruce Abbott's Micro Expander in an easy-to-build solution that fits the footprint of the Mini Expander.
 
+## Features
+- **USB Drive Port** - Reads and writes to USB drive, for quick access to games and programs
+- **32k RAM** - Removes the need for a separate RAM expansion cartridge
+- **Cartridge ROM Loading** - Quick loading/running of legacy Aquarius ROM cartridges through USB
+- **AY-3-8910 Sound Chip** - Three voice PSG (Programmable Sound Generator) with Control Pad IO
+- **PT3 Music Player** - Built-in retro music player
+- **Aquarius Control Pad Inputs** - Standard DB9 connectors for attaching Aquarius Control Pads (internal header also available)
+- **USB BASIC** - Enhanced commands for USB and IO devices to improve your BASIC programs
+- **Classic Design** - Matches original Aquarius design aesthetic, in a device the same size as the Mini Expander: 220mm x 160mm x 86mm / 8" x 5" x 2"
+- **Easy to Build** - Using standard through-hole components, this is an easy-to-make project for those who like to tinker in electronics
+- **Open Source** - All components of this project are open source: make or modify them to your heart's content
+- **Expandable** - System expansion port availble for future add-ons
+
 ## [Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
 Click the heading above for the current BOM with estimated costs.
 
@@ -20,3 +33,5 @@ Click the heading above for the current BOM with estimated costs.
 - **pcb** - files for making or modifying the PCB
 - **software** - files for creating or updating the software used to run or control the Aquarius MX
 - **src** - files for programming or modifying ROM and GAL logic chips
+
+![Aquarius MX on Desk](img/aq_mx_on_desk.jpg)
