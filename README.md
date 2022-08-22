@@ -11,7 +11,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **PT3 Music Player** - Built-in retro music player
 - **Aquarius Control Pad Inputs** - Standard DB9 connectors for attaching Aquarius Control Pads (internal header also available)
 - **USB BASIC** - Enhanced commands for USB and IO devices to improve your BASIC programs
-- **Classic Design** - Matches original Aquarius design aesthetic, in a device the same size as the Mini Expander: 220mm x 160mm x 86mm / 8" x 5" x 2"
+- **Classic Design** - Matches original Aquarius design aesthetic, in a device the same size as the Mini Expander: 210mm x 120mm x 55mm / 8.5" x 4.75" x 2.125"
 - **Easy to Build** - Using standard through-hole components, this is an easy-to-make project for those who like to tinker in electronics
 - **Open Source** - All components of this project are open source: make or modify them to your heart's content
 - **Expandable** - System expansion port availble for future add-ons
