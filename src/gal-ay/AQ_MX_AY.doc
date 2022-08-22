@@ -1,0 +1,58 @@
+
+*******************************************************************************
+                                   AQ_MX_AY
+*******************************************************************************
+
+CUPL(WM)        5.0a Serial# 60008009
+Device          g16v8s  Library DLIB-h-40-9
+Created         Wed Aug 10 13:49:18 2022
+Name            AQ_MX_AY 
+Partno          0 
+Revision        02 
+Date            10 AUG 2022 
+Designer        Sean P. Harrington 
+Company         
+Assembly        
+Location        
+
+===============================================================================
+                            Expanded Product Terms
+===============================================================================
+
+BC11 =>
+    A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !RD
+  # A00 & A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ
+
+BDIR =>
+    A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
+
+
+
+===============================================================================
+                                 Symbol Table
+===============================================================================
+
+Pin Variable                                    Pterms   Max     Min    
+Pol   Name              Ext     Pin     Type     Used   Pterms  Level   
+--- --------            ---     ---     ----    ------  ------  -----   
+
+    A00                         1        V        -       -       -     
+    A01                         2        V        -       -       -     
+    A02                         3        V        -       -       -     
+    A03                         4        V        -       -       -     
+    A04                         5        V        -       -       -     
+    A05                         6        V        -       -       -     
+    A06                         7        V        -       -       -     
+    A07                         8        V        -       -       -     
+    BC11                        15       V        2       8       4     
+    BDIR                        14       V        1       8       4     
+    IORQ                        9        V        -       -       -     
+    RD                          13       V        -       -       -     
+    WR                          12       V        -       -       -     
+
+
+LEGEND    D : default variable         F : field      G : group
+          I : intermediate variable    N : node       M : extended node
+          U : undefined                V : variable   X : extended variable
+          T : function
+

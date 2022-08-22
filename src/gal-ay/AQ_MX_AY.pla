@@ -1,0 +1,26 @@
+# Berkeley PLA format generated using
+#
+# CUPL(WM)        5.0a Serial# 60008009
+# Device          g16v8s  Library DLIB-h-40-9
+# Created         Wed Aug 10 13:49:18 2022
+# Name            AQ_ME_AY 
+# Partno          0 
+# Revision        02 
+# Date            10 AUG 2022 
+# Designer        Sean P. Harrington 
+# Company         
+# Assembly        
+# Location        
+#
+# Inputs  A00 A01 A02 A03 
+#         A04 A05 A06 A07 
+#         BC11 BDIR IORQ RD 
+#         WR 
+# Outputs BC11 BDIR 
+.i 13
+.o 2
+.p 3
+-1101111--00- 1~
+11101111--0-- 1~
+-1101111--0-0 ~1
+.end

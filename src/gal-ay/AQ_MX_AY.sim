@@ -1,0 +1,28 @@
+%SIGNAL
+PIN   1 =  A00 
+PIN   2 =  A01 
+PIN   3 =  A02 
+PIN   4 =  A03 
+PIN   5 =  A04 
+PIN   6 =  A05 
+PIN   7 =  A06 
+PIN   8 =  A07 
+PIN  15 =  BC11 
+PIN  14 =  BDIR 
+PIN   9 =  IORQ 
+PIN  13 =  RD 
+PIN  12 =  WR 
+%END
+
+%FIELD
+%END
+
+%EQUATION
+BC11 =>
+    A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !RD
+  # A00 & A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ
+
+BDIR =>
+    A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
+
+%END

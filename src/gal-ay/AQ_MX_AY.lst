@@ -1,0 +1,44 @@
+LISTING FOR LOGIC DESCRIPTION FILE: AQ_MX_AY.pld                     Page 1
+
+CUPL(WM): Universal Compiler for Programmable Logic
+Version 5.0a Serial# 60008009
+Copyright (c) 1983, 1998 Logical Devices, Inc.
+Created Wed Aug 10 13:49:18 2022
+
+  1:Name     AQ_MX_AY ;
+  2:PartNo   0 ;
+  3:Date     10 AUG 2022 ;
+  4:Revision 02 ;
+  5:Designer Sean P. Harrington ;
+  6:Company  ;
+  7:Assembly ;
+  8:Location ;
+  9:Device   g16v8 ;
+ 10:
+ 11:/* ***************** INPUT PINS *******************************/
+ 12:PIN  1   = A00     ; /* Z80 A00                               */          
+ 13:PIN  2   = A01     ; /* Z80 A01                               */              
+ 14:PIN  3   = A02     ; /* Z80 A02                               */              
+ 15:PIN  4   = A03     ; /* Z80 A03                               */
+ 16:PIN  5   = A04     ; /* Z80 A04                               */
+ 17:PIN  6   = A05     ; /* Z80 A05                               */
+ 18:PIN  7   = A06     ; /* Z80 A06                               */
+ 19:PIN  8   = A07     ; /* Z80 A07                               */
+ 20:PIN  9   = IORQ    ; /* Z80 /IORQ                             */ 
+ 21:PIN  12  = WR      ; /* Z80 /WR                               */ 
+ 22:PIN  13  = RD      ; /* Z80 /RD                               */ 
+ 23:
+ 24:/* ***************** OUTPUT PINS ******************************/
+ 25:PIN  14  = BDIR    ; /* PSG Data direction: HI Write, LO Read */ 
+ 26:PIN  15  = BC11    ; /* PSG 1 BC1                             */
+ 27: 
+ 28:BDIR   = (!WR)&(!A03&(A01&A02))&(A04&A05&A06&A07&!IORQ);
+ 29:BC11   = (!RD#A00)&(A04&A05&A06&A07&!IORQ)&(!A03&(A01&A02));
+ 30:
+ 31:
+ 32:
+
+
+
+Jedec Fuse Checksum       (1371)
+Jedec Transmit Checksum   (8349)
