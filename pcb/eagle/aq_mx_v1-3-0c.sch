@@ -24418,11 +24418,11 @@ Source: &lt;a href="https://datasheet.datasheetarchive.com/originals/distributor
 <sheets>
 <sheet>
 <plain>
-<wire x1="147.32" y1="-81.28" x2="203.2" y2="-81.28" width="0.1524" layer="97"/>
-<wire x1="203.2" y1="-81.28" x2="203.2" y2="-114.3" width="0.1524" layer="97"/>
-<wire x1="203.2" y1="-114.3" x2="147.32" y2="-114.3" width="0.1524" layer="97"/>
-<wire x1="147.32" y1="-114.3" x2="147.32" y2="-81.28" width="0.1524" layer="97"/>
-<text x="175.26" y="-86.36" size="2.54" layer="97" align="center">Orphans</text>
+<wire x1="147.32" y1="-76.2" x2="203.2" y2="-76.2" width="0.1524" layer="97"/>
+<wire x1="203.2" y1="-76.2" x2="203.2" y2="-109.22" width="0.1524" layer="97"/>
+<wire x1="203.2" y1="-109.22" x2="147.32" y2="-109.22" width="0.1524" layer="97"/>
+<wire x1="147.32" y1="-109.22" x2="147.32" y2="-76.2" width="0.1524" layer="97"/>
+<text x="175.26" y="-81.28" size="2.54" layer="97" align="center">Orphans</text>
 <frame x1="-215.9" y1="-119.38" x2="215.9" y2="106.68" columns="5" rows="3" layer="97"/>
 <text x="-185.42" y="-25.4" size="2.54" layer="97" align="center">Board Edge Connector</text>
 <text x="-5.08" y="91.44" size="2.54" layer="97" align="center">Control Pad Connectors</text>
@@ -24506,9 +24506,9 @@ External Facing</text>
 <attribute name="NAME" x="25.4" y="-4.445" size="1.778" layer="95"/>
 <attribute name="VALUE" x="25.4" y="-22.86" size="1.778" layer="96"/>
 </instance>
-<instance part="U5" gate="B" x="175.26" y="-101.6" smashed="yes">
-<attribute name="NAME" x="167.64" y="-93.345" size="1.778" layer="95"/>
-<attribute name="VALUE" x="167.64" y="-111.76" size="1.778" layer="96"/>
+<instance part="U5" gate="B" x="175.26" y="-96.52" smashed="yes">
+<attribute name="NAME" x="167.64" y="-88.265" size="1.778" layer="95"/>
+<attribute name="VALUE" x="167.64" y="-106.68" size="1.778" layer="96"/>
 </instance>
 <instance part="U7" gate="A" x="-129.54" y="15.24" smashed="yes">
 <attribute name="NAME" x="-137.16" y="23.495" size="1.778" layer="95"/>
