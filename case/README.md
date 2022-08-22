@@ -17,7 +17,7 @@ The typical method people will use to print the Aquarius MX case is FDM (Fused D
 Due to the volume and dimensions of the Aquarius MX case, SLA (StereoLithogrAphy) resin printing is not practical for most consumers.
 
 ## SLS/MFJ Printing
-If you have access to a high-end SLS (Specific Laser Sintering) or MJF (MultiJet Fusion) printer, these produce EXCEPTIONAL results, but at a significant cost. Build cost for most service bureaus will charge approximately US$100 for the TOP and US$80 for the BOTTOM parts.
+If you have access to a high-end SLS (Specific Laser Sintering) or MJF (MultiJet Fusion) printer, these produce EXCEPTIONAL results, but at a significant cost. Most service bureaus will charge approximately US$100 for the TOP and US$80 for the BOTTOM parts.
 
 ## Finishing
 - The case can be printed in a light beige color (see BOM for filament recommendation), or can be primed, filled and painted to suit your needs. Note that there are fine details in the embossed logo that can be lost if a filler primer is used, and some of the parts of the case that join with the Aquarius are tight, and can cause some paints to rub off if not sealed and/or lubricated properly.
