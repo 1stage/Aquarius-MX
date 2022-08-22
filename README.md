@@ -7,10 +7,10 @@ Click the heading above for the current BOM with estimated costs.
 
 ## Build Process
 1. Acquire the components
-1. Assemble the PCB
-1. Program the ROM and Logic Chips
-1. Enclose components in the case
-1. Format and configure USB drive
+2. Program the ROM and Logic Chips
+3. Assemble the PCB
+4. Enclose components in the case
+5. Format and configure USB drive
 
 ## GitHub Folder Structure
 - **case** - components to make the 3D printed enclosure
