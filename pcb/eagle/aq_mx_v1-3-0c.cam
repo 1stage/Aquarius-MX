@@ -165,7 +165,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": false,
+                    "board_outline": true,
                     "config": {
                         "file_function": "Paste",
                         "layer_type": "bottom"
@@ -174,7 +174,7 @@
                     "layers": [
                         32
                     ],
-                    "milling": false,
+                    "milling": true,
                     "name": "Solderpaste Bottom",
                     "polarity": "positive",
                     "type": "gerber_layer"
@@ -212,7 +212,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": false,
+                    "board_outline": true,
                     "config": {
                         "file_function": "Legend",
                         "index": 1,
@@ -223,7 +223,7 @@
                         22,
                         26
                     ],
-                    "milling": false,
+                    "milling": true,
                     "name": "Silkscreen Bottom",
                     "polarity": "positive",
                     "type": "gerber_layer"
