@@ -12,10 +12,10 @@ This folder contains the components for creating the Aquarius MX PCB (Printed Ci
 ## Recommended PCB Manufacturing Settings
 - **Base Material:** FR-4
  - **Layers:** 2
- - **Dimension:** 112.5 mm x 208.6mm
+ - **Dimension:** 112.5mm x 208.6mm
  - **Different Design:** 1
  - **Delivery Fomat:** Single PCB
- - **PCB Thickness:** 1.6
+ - **PCB Thickness:** 1.6mm
  - **Layer stackup:** PCB
  - **Color:** Blue (recommended)
  - **Silkscreen:** White (default with Blue color)
