@@ -25,7 +25,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": true,
+                    "board_outline": false,
                     "config": {
                         "file_function": "Copper",
                         "layer": 1,
@@ -38,7 +38,6 @@
                         17,
                         18
                     ],
-                    "milling": true,
                     "name": "Top Copper",
                     "polarity": "positive",
                     "type": "gerber_layer"
@@ -51,7 +50,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": true,
+                    "board_outline": false,
                     "config": {
                         "file_function": "Copper",
                         "layer": 2,
@@ -64,7 +63,6 @@
                         17,
                         18
                     ],
-                    "milling": true,
                     "name": "Bottom Copper",
                     "polarity": "positive",
                     "type": "gerber_layer"
@@ -97,7 +95,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": true,
+                    "board_outline": false,
                     "config": {
                         "file_function": "Soldermask",
                         "index": 1,
@@ -107,7 +105,6 @@
                     "layers": [
                         29
                     ],
-                    "milling": true,
                     "name": "Soldermask Top",
                     "polarity": "positive",
                     "type": "gerber_layer"
@@ -120,7 +117,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": true,
+                    "board_outline": false,
                     "config": {
                         "file_function": "Soldermask",
                         "index": 1,
@@ -130,7 +127,6 @@
                     "layers": [
                         30
                     ],
-                    "milling": true,
                     "name": "Soldermask Bottom",
                     "polarity": "positive",
                     "type": "gerber_layer"
@@ -143,7 +139,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": true,
+                    "board_outline": false,
                     "config": {
                         "file_function": "Paste",
                         "layer_type": "top"
@@ -152,7 +148,7 @@
                     "layers": [
                         31
                     ],
-                    "milling": true,
+                    "milling": false,
                     "name": "Solderpaste Top",
                     "polarity": "positive",
                     "type": "gerber_layer"
@@ -187,7 +183,7 @@
                         "rotate": false,
                         "upside_down": false
                     },
-                    "board_outline": true,
+                    "board_outline": false,
                     "config": {
                         "file_function": "Legend",
                         "index": 1,
@@ -199,7 +195,7 @@
                         25,
                         27
                     ],
-                    "milling": true,
+                    "milling": false,
                     "name": "Silkscreen Top",
                     "polarity": "positive",
                     "type": "gerber_layer"
