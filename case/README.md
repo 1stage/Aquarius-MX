@@ -14,7 +14,7 @@ The typical method people will use to print the Aquarius MX case is FDM (Fused D
 - **Build Area** - The 3D printer must support a build size of 212.1mm x 120.9mm x 65.3mm to print the largest of the two parts (the top).
 - **Support Material** - Standard square supports are recommended. Tree supports do not offer the best results. We don't require a brim or raft, but if you use these, remember to account for this in your build volume dimensions. 
 
-### SLA Part Printing Orientation
+### PLA Part Printing Orientation
 - **Bottom** - This part should be printed with the BOTTOM facing down on the build surface, and support material is generated under the "neck" and inside the alignment notches on the neck. Using the above recommended settings, the BOTTOM piece will typically take 10 to 14 hours to complete, and will consume about 90g of PLA filament.
 - **Top** - This part should be printed with the TOP facing down on the build surface, and support material is generated beneath the top "ramp" and inside the cartridge alignment guides. Note that this part features an embossed Aquarius MX logo, which prints best if a heated build surface is used. Some printers benefit from additional build surface adhesive, such as glue stick or hairspray, but go with what you're used to doing. Using the above recommended settings, the BOTTOM piece will typically take 13 to 19 hours to complete, and will consume about 114g of PLA filament
 
