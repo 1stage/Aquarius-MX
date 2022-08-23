@@ -24476,7 +24476,7 @@ Inward Facing</text>
 <text x="-15.24" y="-35.56" size="2.54" layer="97" align="center">USB/RAM/ROM Logic</text>
 <text x="-71.12" y="-20.32" size="2.54" layer="97" align="center">RAM</text>
 <text x="-124.46" y="-17.78" size="2.54" layer="97" align="center">ROM</text>
-<text x="35.56" y="0" size="2.54" layer="97" align="center">CLK MULT.</text>
+<text x="35.56" y="0" size="2.54" layer="97" align="center">CLK DIV.</text>
 <text x="-13.97" y="-2.032" size="2.54" layer="97" align="center">RESET</text>
 <text x="186.69" y="-17.526" size="1.778" layer="97" align="bottom-center">CH376S USB
 Interface Header
