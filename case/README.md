@@ -19,12 +19,12 @@ The typical method people will use to print the Aquarius MX case is FDM (Fused D
 - **Top** - This part should be printed with the TOP facing down on the build surface, and support material is generated beneath the top "ramp" and inside the cartridge alignment guides. Note that this part features an embossed Aquarius MX logo, which prints best if a heated build surface is used. Some printers benefit from additional build surface adhesive, such as glue stick or hairspray, but go with what you're used to doing. Using the above recommended settings, the BOTTOM piece will typically take 13 to 19 hours to complete, and will consume about 114g of PLA filament
 
 ## SLA Resin Printing
-Due to the volume and dimensions of the Aquarius MX case, SLA (StereoLithogrAphy) resin printing is not practical for most consumers.
+Some manufacturers such as JLCPCB offer SLA (StereoLithogrAphy) resin printing for about US$20 for the two parts of the case, but shipping will usually add another US$30-40. Due to the volume and dimensions of the Aquarius MX case, SLA resin printing is not practical for most consumer-grade resin printers.
 
 ## SLS/MFJ Printing
-If you have access to a high-end SLS (Specific Laser Sintering) or MJF (MultiJet Fusion) printer, these produce EXCEPTIONAL results, but at a significant cost. Most service bureaus will charge approximately US$100 for the TOP and US$80 for the BOTTOM parts.
+If you have access to a high-end SLS (Specific Laser Sintering) or MJF (MultiJet Fusion) printer, these produce EXCEPTIONAL results, but at a significant cost. Most service bureaus will charge approximately US$200 for the two parts of the case, plus shipping.
 
 ## Finishing
-- The case can be printed in a light beige color (see BOM for filament recommendation), or can be primed, filled and painted to suit your needs. Note that there are fine details in the embossed logo that can be lost if a filler primer is used, and some of the parts of the case that join with the Aquarius are tight, and can cause some paints to rub off if not sealed and/or lubricated properly.
+- The case can be printed in a light beige color to approximate the Aquarius plastic (see BOM for details), or in black. The parts can alternately be printed in any color, then primed, filled and painted to suit your needs. Note that there are fine details in the embossed logo that can be lost if a filler primer is used, and some of the parts of the case that join with the Aquarius are tight, and can cause some paints to rub off if not sealed and/or lubricated properly.
 - The case need four 1/2" #3 pan head screws to attach the top and bottom halves. A metal "thread cutting" screw designed for plastic is recommended. See BOM for details.
 - The finished case will also need four rubber feet for the bottom to bring the case up to the proper height for alignment with the Aquarius cartridge port. See BOM for details.
