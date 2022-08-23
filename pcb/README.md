@@ -19,7 +19,7 @@ This folder contains the components for creating the Aquarius MX PCB (Printed Ci
  - **Layer stackup:** PCB
  - **Color:** Blue (recommended)
  - **Silkscreen:** White (default with Blue color)
- - **Surface Finish:** HASL(with lead)
+ - **Surface Finish:** HASL (with lead)
  - **Outer Copper Weight:** 1
  - **Gold Fingers:** No
  - **Flying Probe Test:** Fully Test
