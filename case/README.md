@@ -11,7 +11,7 @@ The typical method people will use to print the Aquarius MX case is FDM (Fused D
 - **Material** - It is recommended that both components of the Aquarius MX case be printed in PLA (PolyLactic Acid) plastic rather than ABS (Acrylonitrile Butadiene Styrene) plastic, due to the large, flat surface features of the case. ABS is more prone to warping in the corners, and this can create an offset of the plane which keeps the PCB flat and even with the expansion port of the Aquarius computer. A heated build surface is strongly encouraged, particularly with the top of the case, as an embossed Aquarius MX logo is featured, and usually sticks better to a heated surface.
 - **Nozzle Diameter** - A typical 0.4mm nozzle works fine
 - **Layer Height** - A layer height of between 0.2mm and 0.4mm offers a good range of speed/surface quality.
-- **Build Area** - The 3D printer must support a build size of 212.1mm x 120.9mm x 65.3mm to print the largest of the two parts (the top).
+- **Build Area** - The 3D printer must support a build size of 212.1mm x 120.9mm x 65.3mm / 8.5" x 4.75" x 2.125" to print the largest of the two parts (the top).
 - **Support Material** - Standard square supports are recommended. Tree supports do not offer the best results. We don't require a brim or raft, but if you use these, remember to account for this in your build volume dimensions. 
 
 ### PLA Part Printing Orientation
@@ -26,5 +26,5 @@ If you have access to a high-end SLS (Selective Laser Sintering) or MJF (MultiJe
 
 ## Finishing
 - The case can be printed in a light beige color to approximate the Aquarius plastic (see BOM for details), or in black. The parts can alternately be printed in any color, then primed, filled and painted to suit your needs. Note that there are fine details in the embossed logo that can be lost if a filler primer is used, and some of the parts of the case that join with the Aquarius are tight, and can cause some paints to rub off if not sealed and/or lubricated properly.
-- The case uses four 1/2" #3 pan head screws to attach the top and bottom halves. A metal "thread cutting" screw designed for plastic is recommended. See BOM for details.
+- The case uses four 1/2" #4 pan head screws to attach the top and bottom halves. A metal "thread cutting" screw designed for plastic is recommended. See BOM for details.
 - The finished case will also need four rubber feet for the bottom to bring the case up to the proper height for alignment with the Aquarius cartridge port. See BOM for details.
