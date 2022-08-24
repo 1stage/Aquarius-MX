@@ -26,5 +26,5 @@ If you have access to a high-end SLS (Selective Laser Sintering) or MJF (MultiJe
 
 ## Finishing
 - The case can be printed in a light beige color to approximate the Aquarius plastic (see BOM for details), or in black. The parts can alternately be printed in any color, then primed, filled and painted to suit your needs. Note that there are fine details in the embossed logo that can be lost if a filler primer is used, and some of the parts of the case that join with the Aquarius are tight, and can cause some paints to rub off if not sealed and/or lubricated properly.
-- The case uses four 1/2" #3 pan head screws to attach the top and bottom halves. A metal "thread cutting" screw designed for plastic is recommended. See BOM for details.
+- The case uses four 1/2" #4 pan head screws to attach the top and bottom halves. A metal "thread cutting" screw designed for plastic is recommended. See BOM for details.
 - The finished case will also need four rubber feet for the bottom to bring the case up to the proper height for alignment with the Aquarius cartridge port. See BOM for details.
