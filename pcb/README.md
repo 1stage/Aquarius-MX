@@ -12,7 +12,7 @@ For those who want to build their own Aquarius MX, there are a number of options
 - **MX to Go** - Adds the 3D printed case and attached DB9 ports to allow Control Pad input at a reduced cost. USB card is more securely mounted to the MX PCB with Nylon stand-offs, both for stability and to keep it at the proper height within the case. Rubber feet are added to the case for proper alignment. DB9 ports are added by using the male end of two, less expensive "ATARI joystick" extension cables, either soldered directly to the DB9 pads on the PCB, or added to a 2x10 pin header, then trailed out the back of the MX case. With the additional components, it is estimated this version of the Aquarius MX can be built for less than US$100.
   - **PROS** - Adds Control Pad input, inexpensively; components are no longer at risk of damage now that they're inside a case
   - **CONS** - Lacks a professional, finished appearance; cables rattle around a bit
-- **Complete Aquarius MX** - Adds the official DB9 ports used on the Mini Expander for a finished, professional appearance. It is estimated this version of the Aquarius MX can be built for less than US$120.
+- **Complete Aquarius MX** - Adds the official DB9 ports used on the Mini Expander for a finished, professional appearance. It is estimated this version of the Aquarius MX can be built for less than US$125.
   - **PROS** - Professional appearance; perfect for resale
   - **CONS** - More expensive than the other options
 
