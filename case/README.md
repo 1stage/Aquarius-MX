@@ -1,9 +1,10 @@
 # Aquarius MX 3D Printed Case
-This folder contains the STL files needed to 3D print an enclosure for the Aquarius MX.
+This folder contains the STL (STereoLithogray) files needed to 3D print an enclosure for the Aquarius MX.
 
 ## Files
-- **AQ_MX_CASE_BOTTOM.STL** - This is the bottom or base of the Aquarius MX case.
-- **AQ_MX_CASE_TOP.STL** - This is the top or cover of the Aquarius MX case.
+- **aq_mx_case_bottom.stl** - This is the bottom or base of the Aquarius MX case.
+- **aq_mx_case_top.stl** - This is the top or cover of the Aquarius MX case.
+- **aq_mx_pcb_feet.stl** - This is a set of feet that can be used instead of a case to hold the PCB at the proper height.
 
 ## FDM Printing
 The typical method people will use to print the Aquarius MX case is FDM (Fused Deposition Modeling), the most common and cost-effective means to create a 3D printed enclosure. For the Aquarius MX case, here are the recommended specifications for FDM printing.
@@ -28,3 +29,6 @@ If you have access to a high-end SLS (Selective Laser Sintering) or MJF (MultiJe
 - The case can be printed in a light beige color to approximate the Aquarius plastic (see BOM for details), or in black. The parts can alternately be printed in any color, then primed, filled and painted to suit your needs. Note that there are fine details in the embossed logo that can be lost if a filler primer is used, and some of the parts of the case that join with the Aquarius are tight, and can cause some paints to rub off if not sealed and/or lubricated properly.
 - The case uses four 1/2" #4 pan head screws to attach the top and bottom halves. A metal "thread cutting" screw designed for plastic is recommended. See BOM for details.
 - The finished case will also need four rubber feet for the bottom to bring the case up to the proper height for alignment with the Aquarius cartridge port. See BOM for details.
+
+## PCB Feet
+The PCB feet file can be used instead of printing a full case for the Aquarius MX. These feet print in less than 1 hour on most FDM printers, and can be screwed to the bottom of the PCB through the mounting holes using the same screws that would hold the full case together. This maintains the PCB at a plane that is inline with the Expansion Port on the Aquarius Computer. This is important because if the PCB is at an angle (too high or too low), the contact between the computer and the expander PCB can be lost, and will cause the Aquarius MX (or the computer) to malfunction or become damaged.
