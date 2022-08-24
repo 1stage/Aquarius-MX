@@ -1,5 +1,5 @@
 # Aquarius MX Documentation
-This folder contains the components for creating the Aquarius MX PCB (Printed Circuit Board).
+This folder contains Aquarius MX documentation and logo files.
 
 ## Folder Contents
  - **logo** - This foder contains the EPS (Encapsulated Post Script) logo files in vector format for use in documentation and other branding for the Aquarius MX.
