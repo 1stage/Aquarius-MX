@@ -17,7 +17,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port availble for future add-ons
 
 ## Status Updates
-- **24 AUG 2022** - Most files have been uploaded and are actively being updated directly to the Repo. *At this time, we DON'T recommend ordering PCBs, 3D rinted cases, or components from the BOM until the prototype testing is complete (ETA 9/1/2022).*
+- **24 AUG 2022** - Most files have been uploaded and are actively being updated directly to the Repo. *At this time, we DON'T recommend ordering PCBs, 3D printed cases, or components from the BOM until the prototype testing is complete (ETA 9/1/2022).*
 - **23 AUG 2022** - Vendors identified in USA and UK to supply components.
 - **21 AUG 2022** - First prototype completed and tested locally. Others will be built and sent to designated testers through the end of AUGUST 2022.
 - **16 AUG 2022** - GitHub repository site created.
