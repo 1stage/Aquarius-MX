@@ -16,11 +16,13 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Open Source** - All components of this project are open source: make or modify them to your heart's content
 - **Expandable** - System expansion port availble for future add-ons
 
-## [Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
-Click the heading above for the current BOM with estimated costs.
+## Status Updates
+- **24 AUG 2022** - Most files have been uploaded and are actively being updated directly to the Repo. *At this time, we DON'T recommend ordering PCBs, 3D Printed cases, or components from the BOM until the prototype testing is complete (ETA 9/1/2022).*
+- **23 AUG 2022** - GitHub Repository site created.
+- **21 AUG 2022** - First prototype completed and tested locally. Others will be built and sent to designated testers through the end of AUGUST 2022.
 
 ## Build Process
-1. Acquire the components
+1. Acquire the components - [Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
 2. Program the ROM and Logic Chips
 3. Assemble the PCB
 4. Enclose components in the case
