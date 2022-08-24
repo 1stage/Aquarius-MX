@@ -8,4 +8,4 @@ This folder contains the source code files for modifying the Aquarius MX softwar
 
 ## General Notes
 - **JED File Development:** JED files are generated from PSD source code that defines the logic, and which are compiled with CUPL (usually WinCUPL).
-- **BIN File Development:** ROM/BIN (BINary) files are created using ASM (ASseMbly language), which is compiled using a Z80 assembler (TASM, PASM, etc.).
+- **BIN File Development:** ROM/BIN (BINary) files are created using ASM (ASseMbly language), which is compiled using a Z80 assembler (usually zmac).
