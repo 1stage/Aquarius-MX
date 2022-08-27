@@ -1,0 +1,37 @@
+AquaLite Z80 Cross Assembler version 1.0
+
+0001              ;===============================================================================
+
+VERSION - 0000
+REVISION - 0000
+AQUBUG - 0001
+INIT_PCG - 0001
+VARTAB - 0000
+IFDEF - 0000
+RAMEND - 0000
+ELSE - 0000
+ENDIF - 0000
+STRUCTURE - 0000
+STRUCT - 0000
+BYTE - 0000
+WORD - 0000
+ENDSTRUCT - 0000
+SYSVARS - 0000
+RETYPBUF - 0000
+PATHNAME - 0000
+FILENAME - 0000
+FILETYPE - 0000
+BINSTART - 0000
+BINLEN - 0000
+DOSFLAGS - 0000
+SYSFLAGS - 0000
+SF_NTSC - 0000
+SF_RETYP - 0000
+SF_DEBUG - 0000
+
+Error in Line 1 PC Address Above RAMTOP
+
+Assembled in 00:00:00.47
+
+
+Wednesday 17 August 2022 14:26:43

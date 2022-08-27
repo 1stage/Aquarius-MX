@@ -23,6 +23,7 @@ BC11 =>
   # A00 & A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ
 
 BDIR =>
-    A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
+    !A01 & !A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
+  # A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
 
 %END

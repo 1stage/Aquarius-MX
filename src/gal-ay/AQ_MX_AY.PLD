@@ -25,6 +25,6 @@ PIN  13  = RD      ; /* Z80 /RD                               */
 PIN  14  = BDIR    ; /* PSG Data direction: HI Write, LO Read */ 
 PIN  15  = BC11    ; /* PSG 1 BC1                             */
  
-BDIR   = (!WR)&(!A03&(A01&A02))&(A04&A05&A06&A07&!IORQ);
+/* BDIR   = (!WR)&(!A03&(A01&A02))&(A04&A05&A06&A07&!IORQ); */
+BDIR   = (!WR)&((A01&A02)#(!A01&!A02))&(A04&A05&A06&A07&!IORQ&!A03);
 BC11   = (!RD#A00)&(A04&A05&A06&A07&!IORQ)&(!A03&(A01&A02));
-

@@ -5,7 +5,7 @@
 
 CUPL(WM)        5.0a Serial# 60008009
 Device          g16v8s  Library DLIB-h-40-9
-Created         Wed Aug 10 13:49:18 2022
+Created         Sat Aug 27 14:33:28 2022
 Name            AQ_MX_AY 
 Partno          0 
 Revision        02 
@@ -24,10 +24,10 @@ BC11 =>
   # A00 & A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ
 
 BDIR =>
-    A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
+    !A01 & !A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
+  # A01 & A02 & !A03 & A04 & A05 & A06 & A07 & !IORQ & !WR
 
-
-
+
 ===============================================================================
                                  Symbol Table
 ===============================================================================
@@ -45,7 +45,7 @@ Pol   Name              Ext     Pin     Type     Used   Pterms  Level
     A06                         7        V        -       -       -     
     A07                         8        V        -       -       -     
     BC11                        15       V        2       8       4     
-    BDIR                        14       V        1       8       4     
+    BDIR                        14       V        2       8       4     
     IORQ                        9        V        -       -       -     
     RD                          13       V        -       -       -     
     WR                          12       V        -       -       -     

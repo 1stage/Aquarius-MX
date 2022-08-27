@@ -1,8 +1,8 @@
 # Aquarius MX Software
-This folder contains the software for programming and using the Aquarius MX.
+This folder contains the **CURRENT RELEASE** version of the software for programming and using the Aquarius MX.
 
 ## Folder Contents
- - **bin** - This foder contains the compiled BINARY images 
+ - **bin** - This folder contains the compiled BINARY images 
    - **AQ_MX_ROM.BIN** - For programming the EPROM (MX system ROM)
    - **AQ_MX_RRU.JED** - For programming the GAL which controls the ROM/RAM/USB devices
    - **AQ_MX_AY.JED** - For programming the GAL which controls the AY sound chip IO

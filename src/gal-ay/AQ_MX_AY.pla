@@ -2,8 +2,8 @@
 #
 # CUPL(WM)        5.0a Serial# 60008009
 # Device          g16v8s  Library DLIB-h-40-9
-# Created         Wed Aug 10 13:49:18 2022
-# Name            AQ_ME_AY 
+# Created         Sat Aug 27 14:33:28 2022
+# Name            AQ_MX_AY 
 # Partno          0 
 # Revision        02 
 # Date            10 AUG 2022 
@@ -19,8 +19,9 @@
 # Outputs BC11 BDIR 
 .i 13
 .o 2
-.p 3
+.p 4
 -1101111--00- 1~
 11101111--0-- 1~
+-0001111--0-0 ~1
 -1101111--0-0 ~1
 .end
