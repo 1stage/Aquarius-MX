@@ -2,6 +2,7 @@
 This folder contains the STL (STereoLithogray) files needed to 3D print an enclosure for the Aquarius MX.
 
 ## Files
+- **aq_mx_base_template.stl** - This is a template for consistently applying the rubber feet and bottom label in the correct position on the bottom of the case.
 - **aq_mx_case_bottom.stl** - This is the bottom or base of the Aquarius MX case.
 - **aq_mx_case_top.stl** - This is the top or cover of the Aquarius MX case.
 - **aq_mx_pcb_feet.stl** - This is a set of feet that can be used instead of a case to hold the PCB at the proper height.
