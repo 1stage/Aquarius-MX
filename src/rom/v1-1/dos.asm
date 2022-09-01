@@ -1244,7 +1244,7 @@ dos__getfilename:
 ;
 dos__getfiletype:
     push  hl
-    ld    hl,FIleName
+    ld    hl,FileName
     ld    b,-1             ; B = position of '.' in filename
 _gft_find_dot
     inc   b
