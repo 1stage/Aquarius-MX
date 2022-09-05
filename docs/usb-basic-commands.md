@@ -1,6 +1,6 @@
 Full documentation online at https://github.com/1stage/Aquarius-MX
 
-# New USB BASIC Commands:$
+#New USB BASIC Commands:#
 
 **CLS**    - Clear screen
  - Syntax: CLS <no arguments>
