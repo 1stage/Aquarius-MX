@@ -1,6 +1,6 @@
 Full documentation online at https://github.com/1stage/Aquarius-MX
 
-#New USB BASIC Commands:#
+# New USB BASIC Commands: #
 
 **CLS**    - Clear screen
  - Syntax: CLS <no arguments>
@@ -8,11 +8,18 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 **LOCATE** - Position on screen
  - Syntax: LOCATE col, row
 
-**OUT**    - output data to I/O port
+**IN**    - Read data from I/O port
+ - Syntax: IN (port)
+
+**OUT**    - Write data to I/O port
  - Syntax: OUT port, data
 
 **PSG**    - Program PSG register, value
  - Syntax: PSG register, value [, ... ]
+
+**JOY**    - Read joystick input
+ - Syntax: JOY (stick)
+ - stick = 0 read both sticks, stick = 1 read stick 1 only, stick = 2 read stick 2 only
 
 **CALL**   - call machine code subroutine
  - Syntax: CALL address
@@ -49,3 +56,5 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 **DEL**    - delete file
  - Syntax: Syntax: DEL "filename"
 	
+**HEX$**   - Convert signed integer (see CALL above) to hexadecimal string
+ - Syntax: Syntax: HEX$ (value)
