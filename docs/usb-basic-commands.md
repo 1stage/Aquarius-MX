@@ -2,10 +2,10 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 
 # New USB BASIC Commands: #
 
-**CLS**    - Clear screen
+**CLS**    - Clear screen (same as CLS command from Ext BASIC)
  - Syntax: CLS <no arguments>
 
-**LOCATE** - Position on screen
+**LOCATE** - Position cusore on screen
  - Syntax: LOCATE col, row
 
 **IN**    - Read data from I/O port
@@ -40,6 +40,10 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
  - Syntax: SAVE "filename"             save BASIC program
  - Syntax: SAVE "filename",addr,len    save binary data (signed ints)
 
+**RUN** - execute BASIC program (extends the original BASIC command)
+ - Syntax: RUN
+ - Syntax: RUN "filename.bas"
+	
 **DIR**    - display USB disk directory with wildcard
  - Syntax: DIR "wildcard"   selective directory listing
  - Syntax: DIR              listing all files
