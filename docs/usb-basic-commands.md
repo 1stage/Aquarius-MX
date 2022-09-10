@@ -5,7 +5,7 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 **CLS**    - Clear screen (same as CLS command from Ext BASIC)
  - Syntax: CLS <no arguments>
 
-**LOCATE** - Position cusore on screen
+**LOCATE** - Position cursor on screen
  - Syntax: LOCATE col, row
 
 **IN**    - Read data from I/O port
