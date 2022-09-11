@@ -11,10 +11,15 @@ This folder contains Aquarius MX documentation and logo files.
  - **aq_mx_v1-3-0c_SCHEMATIC.PDF** - This file documents the electronic schematic for the Aquarius MX.
  
  *Note: There are PNG versions (with transparency) of each of the logos listed above in raster format in the "img" folder at the root of the Aquarius MX GitHub repository.*
+## How to Videos
+- **Aquarius MX Build Videos** (YouTube)
+   - **[Aquarius Computer - Overview of the Aquarius MX Expander](https://youtu.be/i6mWsHNqth0)**
+   - **[Aquarius Computer - Building the Aquarius MX PCB](https://youtu.be/_-p9Ycmr9VQ)**
+   - Aquarius Computer - Programming the Aquarius MX ROM and GALs - COMING SOON!
+   - Aquarius Computer - Installing the Aqurius MX into the Case and Testing - COMING SOON!
 
 ## To-Be Completed
 - **Aquarius MX Quick-Start Guide:** How to get up and running quickly with your new Aquarius MX.
-- **How to Build an Aquarius MX:** A complete guide on how to source parts and build your own Aquarius MX. This will probably be released on YouTube before a printed guide is complete.
 - **USB BASIC Commands:** A supplement to the original Aquarius Users Guide (Guide to Home Computing) that shows how to use the newly added USB BASIC commands.
 
 ## Logo Usage Recommendations
