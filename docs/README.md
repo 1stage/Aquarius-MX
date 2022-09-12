@@ -9,6 +9,7 @@ This folder contains Aquarius MX documentation and logo files.
    - **aq_mx_logo_white.eps** - This logo file is the WHITE on dark version of the Aquarius MX logo. Use this file for instances where the logo needs to be used against a dark background. *DO NOT CHANGE THE COLOR OF THE LOGO TO ANYTHING OTHER THAN WHITE.*
  - **aq_mx_v1-3-0c_BOARD.PDF** - This file documents the PCB layout for the Aquarius MX.
  - **aq_mx_v1-3-0c_SCHEMATIC.PDF** - This file documents the electronic schematic for the Aquarius MX.
+ - **usb-basic-commands.md** - A brief overview that discusses the USB BASIC commands.
  
  *Note: There are PNG versions (with transparency) of each of the logos listed above in raster format in the "img" folder at the root of the Aquarius MX GitHub repository.*
 ## How to Videos
@@ -20,7 +21,6 @@ This folder contains Aquarius MX documentation and logo files.
 
 ## To-Be Completed
 - **Aquarius MX Quick-Start Guide:** How to get up and running quickly with your new Aquarius MX.
-- **USB BASIC Commands:** A supplement to the original Aquarius Users Guide (Guide to Home Computing) that shows how to use the newly added USB BASIC commands.
 
 ## Logo Usage Recommendations
 - **Keep it in Proportion** - Maintain the proper proportions of the Aquarius MX logo. Don't squash or stretch the logo to fill empty space. In most design/layout applications, this means dragging to resize the logo from the CORNER points, not the sides.
