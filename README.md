@@ -17,7 +17,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port availble for future add-ons
 
 ## Status Updates
-- **10 SEP 2022** - First two YouTube videos are posted; see links in docs folder.
+- **15 SEP 2022** - Four YouTube videos on the Aquarius MX are posted; see links in docs folder.
 - **09 SEP 2022** - Testing complete. All components are cleared for production and sale.
 - **29 AUG 2022** - Signature Version (prebuilt) serial number 0001-SPH available for purchase on eBay (SOLD, 9/5/2022).
 - **28 AUG 2022** - Prototypes shipped to testers. ROM incremented to v1.1 (replaced KILL command with DEL).
