@@ -14,7 +14,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Classic Design** - Matches original Aquarius design aesthetic, in a device the same size as the Mini Expander: 210mm x 120mm x 55mm / 8.5" x 4.75" x 2.125"
 - **Easy to Build** - Using standard through-hole components, this is an easy-to-make project for those who like to tinker in electronics
 - **Open Source** - All components of this project are open source: make or modify them to your heart's content
-- **Expandable** - System expansion port availble for future add-ons
+- **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
 - **15 SEP 2022** - Four YouTube videos on the Aquarius MX are posted; see links in docs folder.
