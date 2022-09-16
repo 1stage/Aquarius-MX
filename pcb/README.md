@@ -1,6 +1,8 @@
 # Aquarius MX PCB
 This folder contains the components and procedures for creating the Aquarius MX PCB (Printed Circuit Board).
 
+[PCB is available for order direclty from **PCBWay by clicking here!**](https://www.pcbway.com/project/shareproject/Aquarius_Computer_Aquarius_MX_USB_Expander_c4a2f027.html) Don't forget to like and vote for our project!
+
 ## Overview of PCB Assembly Options
 For those who want to build their own Aquarius MX, there are a number of options and features that can alter the cost and complexity of the process. Solutions range from a bare PCB with only the components necessary to run and use USB BASIC and the core Aquarius MX software, all the way to a fully assembled and finished Aquarius MX. The following items offer details of the range of options.
 - **Bare Bones** - The simplest version of the Aquarius MX features the PCB, the ROM (socket recommended), RAM, USB module (headers recommended), GAL-RRU logic chip (socket recommended), address buffers, ROM address headers, balance capacitors, audio amp, and reset circuit. It does not include a 3D printed enclosure, so the PCB feet MUST be used to keep the PCB aligned with the Aquarius computer Expansion Port. The AY-3-8910 sound chip and the GAL-AY logic chip are ommitted, so there will be no enhanced sound or Control Pad input, and since there is not Control Pad input, the DB9 Control Pad ports are omitted, along with the PSG control header. It is estimated this version of the Aquarius MX can be built for less than US$50.
