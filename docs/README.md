@@ -12,7 +12,7 @@ This folder contains Aquarius MX documentation and logo files.
  - **usb-basic-commands.md** - A brief overview that discusses the USB BASIC commands.
  
  *Note: There are PNG versions (with transparency) of each of the logos listed above in raster format in the "img" folder at the root of the Aquarius MX GitHub repository.*
-## How to Videos
+## How-to Videos
 - **Aquarius MX Build Videos** (YouTube)
    - **[Aquarius Computer - Overview of the Aquarius MX Expander](https://youtu.be/i6mWsHNqth0)**
    - **[Aquarius Computer - Building the Aquarius MX PCB](https://youtu.be/_-p9Ycmr9VQ)**
