@@ -1,5 +1,5 @@
 # Aquarius MX Software
-This folder contains the **CURRENT RELEASE** version of the software for programming and using the Aquarius MX.
+This folder contains the **CURRENT RELEASE** version 1.2 of the software for programming and using the Aquarius MX.
 
 ## Folder Contents
  - **bin** - This folder contains the compiled BINARY images 
