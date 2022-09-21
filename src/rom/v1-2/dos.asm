@@ -35,13 +35,14 @@
 ; 2017-06-12 v1.0  bumped to release version
 ; 2022-08-27 v1.1  Changed KILL command to DEL
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
+;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 
 ; file types
 FT_NONE  equ $01  ; no file extension (type determined from file header)
 FT_TXT   equ $20  ; .TXT ASCII text file (no header)
 FT_OTHER equ $80  ; .??? unknown file type (raw binary, no header)
-FT_BIN   equ $BF  ; .BIN binary (starts with $BF,$DA,load_addr if executable)
+FT_BIN   equ $BF  ; .BIN binary (starts with $C9,$C3,load_addr if executable)
 FT_SCR   equ $fd  ; .SCR binary for Screen RAM storage area $3000-$3FF CHR RAM, $3400-$37FF COL RAM
 FT_BAS   equ $fe  ; .BAS tokenized BASIC (has CAQ header same as .CAQ)
 FT_CAQ   equ $ff  ; .CAQ BASIC program or numeric array

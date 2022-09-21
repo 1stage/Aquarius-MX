@@ -54,6 +54,7 @@
 ; 2017-06-12 v1.0  bumped to release version
 ; 2022-08-27 v1.1  Changed KILL command to DEL
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
+;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 
 VERSION  = 1
