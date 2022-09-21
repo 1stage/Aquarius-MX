@@ -2,7 +2,7 @@
 ;                  Aquarius USB DOS Commands
 ;====================================================================
 ;
-;changes:
+; Changes:
 ; 2015-11-11 v0.00 Extracted from babasicV0.2f
 ; 2016-01-02 v0.01 Save file implemented.
 ;                  File type analysis.
@@ -34,7 +34,8 @@
 ; 2017-06-01 v0.20 CD to a file (invalid) now removes the filename from the path
 ; 2017-06-12 v1.0  bumped to release version
 ; 2022-08-27 v1.1  Changed KILL command to DEL
-; 2022-09-01 v1.2  IN DEVELOPMENT
+; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
+;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 
 ; file types
 FT_NONE  equ $01  ; no file extension (type determined from file header)
@@ -608,7 +609,10 @@ _sts_open:
     ld      de,6
     call    usb__write_bytes
     jr      nz,_sts_write_error
-    jr      _sts_binary         ; write array
+        ld      hl,(BINSTART)
+        ld      de,(BINLEN)
+        jr      _sts_write_data 
+    ;jr      _sts_binary         ; write array
 ; saving BASIC program
 _sts_bas:
     ld      hl,FileName

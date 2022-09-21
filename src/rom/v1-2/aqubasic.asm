@@ -8,6 +8,7 @@
 ;
 ; Additional code by:
 ;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
+;        Mack Wharton                              Mack@Aquarius.je, aquarius.je
 ;
 ; For use with the micro-expander (CH376 USB interface, 32K RAM, AY-3-8910 PSG),
 ; and the Aquarius MX expander (micro expander in mini expander footprint)
@@ -52,7 +53,8 @@
 ; 2017-06-11 v0.27 return to root dir after debug, pt3play etc. in boot menu
 ; 2017-06-12 v1.0  bumped to release version
 ; 2022-08-27 v1.1  Changed KILL command to DEL
-; 2022-09-01 v1.2  IN DEVELOPMENT
+; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
+;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 
 VERSION  = 1
 REVISION = 2
