@@ -17,7 +17,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
-- **21 SEP 2022** - Released v1.2 of ROM to fix LOAD into array bug, and added "smart" load of SCR files into Screen RAM
+- **21 SEP 2022** - Released v1.2 of ROM to fix LOAD into array bug, and added "smart" load of SCR files into Screen RAM; [AquaLite 1.32 released](http://aquarius.je/aqualite) with the v1.2 MX ROM included, fixes SAVE issues, and can now be used to develop MX-dependent games & software.
 - **15 SEP 2022** - Four YouTube videos on the Aquarius MX are posted; see links in docs folder.
 - **09 SEP 2022** - Testing complete. All components are cleared for production and sale.
 - **29 AUG 2022** - Signature Version (prebuilt) serial number 0001-SPH available for purchase on eBay (SOLD, 9/5/2022).
@@ -28,11 +28,11 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **16 AUG 2022** - GitHub repository site created.
 
 ## Build Process
-1. Acquire the components - [Click for Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
-2. Program the ROM and Logic Chips - [Watch the YouTube video](https://youtu.be/DqxqzWqVAIM)
-3. Assemble the PCB - [Watch the YouTube video](https://youtu.be/_-p9Ycmr9VQ)
-4. Enclose components in the case - [Watch the YouTube video](https://youtu.be/FKW6YiFKHf0)
-5. Format and configure USB drive
+1. **Acquire the components** - [Click for Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
+2. **Program the ROM and Logic Chips** - [Watch the YouTube video](https://youtu.be/DqxqzWqVAIM)
+3. **Assemble the PCB** - [Watch the YouTube video](https://youtu.be/_-p9Ycmr9VQ)
+4. **Enclose components in the case** - [Watch the YouTube video](https://youtu.be/FKW6YiFKHf0)
+5. **Format and configure USB drive**
 
 ## GitHub Folder Structure
 - **case** - components to make the 3D printed enclosure
