@@ -28,10 +28,10 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **16 AUG 2022** - GitHub repository site created.
 
 ## Build Process
-1. Acquire the components - [Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
-2. Program the ROM and Logic Chips
-3. Assemble the PCB
-4. Enclose components in the case
+1. Acquire the components - [CLick for Bill of Materials](https://docs.google.com/spreadsheets/d/1y7v0VCkjMdx25ugit28F5JhuhwDJofCVQUG5Ozl9IgA)
+2. Program the ROM and Logic Chips - [Watch the YouTube video](https://youtu.be/DqxqzWqVAIM)
+3. Assemble the PCB - [Watch the YouTube video](https://youtu.be/_-p9Ycmr9VQ)
+4. Enclose components in the case - [Watch the YouTube video](https://youtu.be/FKW6YiFKHf0)
 5. Format and configure USB drive
 
 ## GitHub Folder Structure
