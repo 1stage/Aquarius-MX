@@ -18,7 +18,7 @@ This folder contains Aquarius MX documentation and logo files.
    - **[Aquarius Computer - Building the Aquarius MX PCB](https://youtu.be/_-p9Ycmr9VQ)**
    - **[Aquarius Computer - Programming the Aquarius MX ROM and GALs](https://youtu.be/DqxqzWqVAIM)**
    - **[Aquarius Computer - Assembling and Testing the Aqurius MX](https://youtu.be/FKW6YiFKHf0)**
-   - Aquarius Computer - Using USB BASIC - COMING SOON!
+   - **[Aquarius Computer - Using USB BASIC](https://youtu.be/Butym641a-0)**
 
 ## To-Be Completed
 - **Aquarius MX Quick-Start Guide:** How to get up and running quickly with your new Aquarius MX.
