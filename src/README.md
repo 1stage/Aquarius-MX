@@ -4,6 +4,7 @@ This folder contains the source code files for modifying the Aquarius MX softwar
 ## Folder Contents
  - **gal-ay** - This folder contains the files used to create the JED file used in programming the GAL logic chip that controls the AY sound chip.
  - **gal-rom-ram-usb** - This folder contains the files used to create the JED file used in programming the GAL logic chip that controls the ROM, RAM, and USB interface.
+ - **usb-basic** - This folder contains BASIC source code files and tools for programming in USB BASIC with the Aquarius MAX (or AquaLite). These files are featured in the YouTube videos on how to use USB BASIC.
  - **rom** - This folder contains the source code files that generate the BIN file used in programming the Aquarius MX ROM, which holds the USB BASIC commands, the PT3 player, the DEBUGGER, and other tools.
 
 ## General Notes
