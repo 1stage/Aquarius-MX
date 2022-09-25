@@ -41,6 +41,6 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **img** - image files used on this site
 - **pcb** - files for making or modifying the PCB
 - **software** - files for creating or updating the software used to run or control the Aquarius MX
-- **src** - files for programming or modifying ROM and GAL logic chips
+- **src** - files for programming in USB BASIC, or modifying ROM and GAL logic chips
 
 ![Aquarius MX on Desk](img/aq_mx_on_desk.jpg)
