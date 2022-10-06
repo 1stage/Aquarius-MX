@@ -1,0 +1,7 @@
+100 REM Splash Screen Loader
+120 CLS
+130 LOAD"splash.scr"
+140 REM Wait for key press
+150 IF INKEY$="" GOTO 140
+160 RUN"game01.bas"
+170 END

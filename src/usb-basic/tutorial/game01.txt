@@ -1,0 +1,7 @@
+100 REM Game Screen Loader
+120 CLS
+130 LOAD"test01.scr"
+140 REM Wait for key press
+150 IF INKEY$="" GOTO 140
+160 CLS
+170 END
