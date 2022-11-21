@@ -2,6 +2,10 @@
 This folder contains Aquarius MX documentation and logo files.
 
 ## Folder Contents
+ - **MX_Bottom_Label.pdf** - This file is a PDF form (with embedded fonts) that allows makers of the Aquarius MX to create a professional-looking label for the bottom of the case. It can be printed using a laser, inkjet, or dyesub printer, or can be used for laser-engraved labels.
+   - **Model Number field** - This value should match the PCB version, so the default MX0103-C is probably best. If you make any updates to the MX PCB, or add any modifications, consider changing this to something more in line with your modification.
+   - **Serial Number field** - This value is the serial number for your unit. It is common to start with a unique sequence of numbers like 2001, 2002, 2003, followed by a three letter combination of the person making the unit.
+   - **Build Date field** - This should be the date you created this unit, in DD MON YYYY format, so January 10, 2023 would be 10 JAN 2023.
  - **logo** - This foder contains the EPS (Encapsulated Post Script) logo files in vector format for use in documentation and other branding for the Aquarius MX.
    - **aq_mx_logo_blue.eps** - This logo file is the MONOCHROME version of the Aquarius MX logo. Use this file for single-color use of the logo. *DO NOT CHANGE THE COLOR OF THE LOGO TO ANYTHING OTHER THAN THE DEFAULT BLUE.*
    - **aq_mx_logo_bw.eps** - This logo file is the BLACK and WHITE version of the Aquarius MX logo. Use this file for instances where the logo will be printed on standard black on white, or on a light-colored background where only BLACK ink is available.
