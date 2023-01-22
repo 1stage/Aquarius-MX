@@ -26,9 +26,25 @@ For those who want to build their own Aquarius MX, there are a number of options
    - **aq_mx_v1-4-0b.epf** - Eagle Project file
    - **aq_mx_v1-4-0b.sch** - Eagle Schematic file, describing the electronic architecture of the Aquarius MX
  - **gerber** - This folder contains a ZIP archive file used to upload to PCB manufacturers such as OSH Park, JLCPCB, PCBWay, and others.
+ 
+## CH376S USB Interface Modules
+There are two types of CH376S USB interface modules available. Here is how to identify the type of CH376S module you have:
+ - **Type A Module** (referred to as an "LC Tech module" by Bruce Abbott during development of Micro Expander). Here's how to identify a **Type A** module:
+    - Two sets of 1x3 jumper pins next to the USB port
+    - Data header row (D0-D7) is at the BACK of the module, furthest away from the USB port
+    - LED (D1) is near the 2x8 header pins
+ - **Type B Module** (referred to as an "IC Station module" by Bruce Abbott during development of Micro Expander). Here's how to identify a **Type B** module:
+    - One set of 1x3 jumper pins next to the USB port
+    - Data header row (D0-D7) is towards the MIDDLE of the board, closest to the CH376S chip
+    - LED (D1) is between the USB port and the 1x3 jumper pins
+
+Beginning with v1-4-0b the Aquarius MX supports both **Type A** and **Type B** modules on a single PCB. Versions v1-3-0c and prior of the Aquarius MX PCB support only the **Type A** modules.
+ - **Type A** modules install into the two columns of header pins closer to the BACK of the Aquarius MX. 
+ - **Type B** modules install into the two columns of pins closer to the FRONT of the Aquarius MX. Note that since the **Type B** module is 1/10" further away from the back of the case, some USB thumb drives may be more difficult to insert. 
+
 
 ## Recommended PCB Manufacturing Settings
-- **Base Material:** FR-4
+ - **Base Material:** FR-4
  - **Layers:** 2
  - **Dimension:** 112.5mm x 208.6mm
  - **Different Design:** 1
