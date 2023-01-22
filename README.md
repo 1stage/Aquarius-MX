@@ -17,7 +17,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
-- **11 JAN 2023** - Started working on standardized joystick module adapter for Atari/Sega
+- **21 JAN 2023** - Published version 1-4-0b of the PCB. Allows use of either Type A or Type B CH376S USB interface boards, and allows use of less expensive metal DB9 connectors.
 - **07 NOV 2022** - Created PDF form template for bottom label.
 - **26 SEP 2022** - Released YouTube video on intro to USB BASIC programming. Added source files and tools from the videos into the src/usb-basic folder.
 - **21 SEP 2022** - v1.2 of MX ROM released to fix LOAD into array bug, and added "smart" load of SCR files into Screen RAM; [**AquaLite 1.32 released**](http://aquarius.je/aqualite) with the v1.2 MX ROM included, fixes SAVE issues, and can now be used to develop MX-dependent games & software.
