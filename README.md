@@ -17,6 +17,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
+- **02 FEB 2023** - Published version 1-4-0c of the PCB which fixes a missing mounting hole for Controller B when using a metal DB9 port. If you ordered a 1-4-0b version, the hole can be drilled out at 1/8" / 3.25mm.
 - **21 JAN 2023** - Published version 1-4-0b of the PCB. Allows use of either **[Type A or Type B CH376S USB interface boards](https://github.com/1stage/Aquarius-MX/tree/main/pcb#ch376s-usb-interface-modules)**, and allows use of less expensive metal DB9 connectors.
 - **07 NOV 2022** - Created PDF form template for bottom label.
 - **26 SEP 2022** - Released YouTube video on intro to USB BASIC programming. Added source files and tools from the videos into the src/usb-basic folder.
