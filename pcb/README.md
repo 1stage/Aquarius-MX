@@ -21,10 +21,9 @@ For those who want to build their own Aquarius MX, there are a number of options
 ## Folder Contents
  - **eagle** - This foder contains the files for Eagle (PCB design and layout tool published by Autodesk)
    - **archive** - Contains previous versions of the PCB source files
-   - **aq_mx_v1-4-0b.brd** - Eagle Board file, describing the physical layout for the PCB, including all copper, solder masks, and silkscreen markings
-   - **aq_mx_v1-4-0b.cam** - Eagle CAM board manufacturing profile for exporting proper layers to Gerber format
-   - **aq_mx_v1-4-0b.epf** - Eagle Project file
-   - **aq_mx_v1-4-0b.sch** - Eagle Schematic file, describing the electronic architecture of the Aquarius MX
+   - **aq_mx_v1-4-0c.brd** - Eagle Board file, describing the physical layout for the PCB, including all copper, solder masks, and silkscreen markings
+   - **aq_mx_v1-4-0c.cam** - Eagle CAM board manufacturing profile for exporting proper layers to Gerber format
+   - **aq_mx_v1-4-0c.sch** - Eagle Schematic file, describing the electronic architecture of the Aquarius MX
  - **gerber** - This folder contains a ZIP archive file used to upload to PCB manufacturers such as OSH Park, JLCPCB, PCBWay, and others.
  
 ## CH376S USB Interface Modules
@@ -38,7 +37,7 @@ There are two types of CH376S USB interface modules available. Here is how to id
     - Data header row (D0-D7) is towards the MIDDLE of the board, closest to the CH376S chip
     - LED (D1) is between the USB port and the 1x3 jumper pins
 
-Beginning with v1-4-0b the Aquarius MX supports both **Type A** and **Type B** modules on a single PCB. Versions v1-3-0c and prior of the Aquarius MX PCB support only the **Type A** modules.
+Beginning with v1-4-0, the Aquarius MX supports both **Type A** and **Type B** modules on a single PCB. Versions v1-3-0c and prior of the Aquarius MX PCB support only the **Type A** modules.
  - **Type A** modules install into the two columns of header pins closer to the BACK of the Aquarius MX. 
  - **Type B** modules install into the two columns of pins closer to the FRONT of the Aquarius MX. Note that since the **Type B** module is 1/10" further away from the back of the case, some USB thumb drives may be more difficult to insert. 
 

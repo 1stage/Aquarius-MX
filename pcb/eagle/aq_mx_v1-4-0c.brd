@@ -8,7 +8,7 @@
 </settings>
 <grid distance="50" unitdist="mil" unit="mil" style="lines" multiple="1" display="no" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
 <layer number="2" name="Route2" color="16" fill="1" visible="no" active="no"/>
 <layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
 <layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
@@ -23,7 +23,7 @@
 <layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
 <layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
 <layer number="15" name="Route15" color="23" fill="1" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
@@ -219,8 +219,8 @@
 <wire x1="134.0866" y1="1.27" x2="134.8994" y2="36.1442" width="0" layer="20"/>
 <wire x1="133.4262" y1="112.4966" x2="134.6962" y2="111.3536" width="0" layer="20" curve="-90"/>
 <wire x1="134.6962" y1="111.3536" x2="134.7216" y2="98.7044" width="0" layer="20"/>
-<text x="100.965" y="44.831" size="1.27" layer="21" rot="R180" align="center-left">v1-4-0, Rev B
-21 JAN 2023
+<text x="100.965" y="44.831" size="1.27" layer="21" rot="R180" align="center-left">v1-4-0, Rev C
+02 FEB 2023
 by Sean Harrington, sph@1stage.com</text>
 <circle x="10.1854" y="100.6348" radius="1.5748" width="0.0254" layer="20"/>
 <circle x="10.1854" y="75.6412" radius="1.5748" width="0.0254" layer="20"/>
@@ -681,7 +681,7 @@ Insert it in the RIGHT two pin columns</text>
 <text x="49.911" y="20.828" size="0.6096" layer="21" align="center-left">CS</text>
 <text x="49.911" y="18.288" size="0.6096" layer="21" align="center-left">GND</text>
 <text x="49.911" y="15.748" size="0.6096" layer="21" align="center-left">VCC/5V</text>
-<circle x="18.5674" y="100.6348" radius="1.651" width="0.025" layer="45"/>
+<circle x="18.5674" y="100.6348" radius="1.651" width="0.025" layer="46"/>
 <circle x="18.5674" y="75.6158" radius="1.651" width="0.025" layer="46"/>
 <circle x="18.5674" y="68.5546" radius="1.651" width="0.025" layer="46"/>
 <circle x="18.5674" y="43.561" radius="1.651" width="0.025" layer="46"/>
