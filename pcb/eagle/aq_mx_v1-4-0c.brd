@@ -8,7 +8,7 @@
 </settings>
 <grid distance="50" unitdist="mil" unit="mil" style="lines" multiple="1" display="no" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
-<layer number="1" name="Top" color="4" fill="1" visible="no" active="yes"/>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="16" fill="1" visible="no" active="no"/>
 <layer number="3" name="Route3" color="17" fill="1" visible="no" active="no"/>
 <layer number="4" name="Route4" color="18" fill="1" visible="no" active="no"/>
@@ -23,7 +23,7 @@
 <layer number="13" name="Route13" color="21" fill="1" visible="no" active="no"/>
 <layer number="14" name="Route14" color="22" fill="1" visible="no" active="no"/>
 <layer number="15" name="Route15" color="23" fill="1" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
@@ -685,6 +685,46 @@ Insert it in the RIGHT two pin columns</text>
 <circle x="18.5674" y="75.6158" radius="1.651" width="0.025" layer="46"/>
 <circle x="18.5674" y="68.5546" radius="1.651" width="0.025" layer="46"/>
 <circle x="18.5674" y="43.561" radius="1.651" width="0.025" layer="46"/>
+<polygon width="0.1524" layer="30">
+<vertex x="17.272" y="103.759"/>
+<vertex x="19.812" y="103.759"/>
+<vertex x="21.717" y="101.854"/>
+<vertex x="21.717" y="99.441"/>
+<vertex x="19.812" y="97.536"/>
+<vertex x="17.272" y="97.536"/>
+<vertex x="15.494" y="99.314"/>
+<vertex x="15.494" y="101.981"/>
+</polygon>
+<polygon width="0.1524" layer="30">
+<vertex x="17.272" y="78.74"/>
+<vertex x="19.812" y="78.74"/>
+<vertex x="21.717" y="76.835"/>
+<vertex x="21.717" y="74.422"/>
+<vertex x="19.812" y="72.517"/>
+<vertex x="17.272" y="72.517"/>
+<vertex x="15.494" y="74.295"/>
+<vertex x="15.494" y="76.962"/>
+</polygon>
+<polygon width="0.1524" layer="30">
+<vertex x="17.272" y="71.628"/>
+<vertex x="19.812" y="71.628"/>
+<vertex x="21.717" y="69.723"/>
+<vertex x="21.717" y="67.31"/>
+<vertex x="19.812" y="65.405"/>
+<vertex x="17.272" y="65.405"/>
+<vertex x="15.494" y="67.183"/>
+<vertex x="15.494" y="69.85"/>
+</polygon>
+<polygon width="0.1524" layer="30">
+<vertex x="17.272" y="46.736"/>
+<vertex x="19.812" y="46.736"/>
+<vertex x="21.717" y="44.831"/>
+<vertex x="21.717" y="42.418"/>
+<vertex x="19.812" y="40.513"/>
+<vertex x="17.272" y="40.513"/>
+<vertex x="15.494" y="42.291"/>
+<vertex x="15.494" y="44.958"/>
+</polygon>
 </plain>
 <libraries>
 <library name="aquarius">
@@ -4712,46 +4752,6 @@ design rules under a new name.</description>
 <wire x1="46.5836" y1="19.4564" x2="42.2809125" y2="19.4564" width="0.3048" layer="16"/>
 <wire x1="42.2809125" y1="19.4564" x2="41.4782" y2="20.2591125" width="0.3048" layer="16"/>
 <wire x1="41.4782" y1="20.2591125" x2="41.4782" y2="29.7788875" width="0.3048" layer="16"/>
-<polygon width="0.1524" layer="16">
-<vertex x="17.272" y="103.759"/>
-<vertex x="19.812" y="103.759"/>
-<vertex x="21.717" y="101.854"/>
-<vertex x="21.717" y="99.441"/>
-<vertex x="19.812" y="97.536"/>
-<vertex x="17.272" y="97.536"/>
-<vertex x="15.494" y="99.314"/>
-<vertex x="15.494" y="101.981"/>
-</polygon>
-<polygon width="0.1524" layer="16">
-<vertex x="17.272" y="78.74"/>
-<vertex x="19.812" y="78.74"/>
-<vertex x="21.717" y="76.835"/>
-<vertex x="21.717" y="74.422"/>
-<vertex x="19.812" y="72.517"/>
-<vertex x="17.272" y="72.517"/>
-<vertex x="15.494" y="74.295"/>
-<vertex x="15.494" y="76.962"/>
-</polygon>
-<polygon width="0.1524" layer="16">
-<vertex x="17.272" y="71.628"/>
-<vertex x="19.812" y="71.628"/>
-<vertex x="21.717" y="69.723"/>
-<vertex x="21.717" y="67.31"/>
-<vertex x="19.812" y="65.405"/>
-<vertex x="17.272" y="65.405"/>
-<vertex x="15.494" y="67.183"/>
-<vertex x="15.494" y="69.85"/>
-</polygon>
-<polygon width="0.1524" layer="16">
-<vertex x="17.272" y="46.736"/>
-<vertex x="19.812" y="46.736"/>
-<vertex x="21.717" y="44.831"/>
-<vertex x="21.717" y="42.418"/>
-<vertex x="19.812" y="40.513"/>
-<vertex x="17.272" y="40.513"/>
-<vertex x="15.494" y="42.291"/>
-<vertex x="15.494" y="44.958"/>
-</polygon>
 </signal>
 <signal name="VCC" class="1">
 <contactref element="U8" pad="20"/>
