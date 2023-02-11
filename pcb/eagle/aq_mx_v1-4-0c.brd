@@ -160,6 +160,7 @@
 <layer number="255" name="routoute" color="7" fill="1" visible="yes" active="yes"/>
 </layers>
 <board>
+<fusionsync huburn="a.cGVyc29uYWw6dWUyYWYyYWU4" projecturn="a.cGVyc29uYWw6dWUyYWYyYWU4IzIwMjAwODA5MzIyMjM1NDUx" f3durn="urn:adsk.wipprod:dm.lineage:Rw0K_LX1ScGNJF1mp4TrhQ" pcbguid="6854635e-aae7-4a8f-9b25-ed29eaf951b0" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="b100a790-07cb-4081-81a8-d682f4ef8fa7" lastsyncedrevisionid="b100a790-07cb-4081-81a8-d682f4ef8fa7" lastboardhashguid="e18200b1-7be1-7e8a-f011-d45f1c4ee603" lastpushedtime="2023-02-11T18:16:59Z" linktopcb3d="true"/>
 <plain>
 <wire x1="154.9908" y1="15.4432" x2="180.3908" y2="15.4432" width="0.025" layer="48" locked="yes"/>
 <wire x1="167.6908" y1="2.7432" x2="167.6908" y2="28.1432" width="0.025" layer="48" locked="yes"/>
@@ -640,13 +641,13 @@ Matt Pilz, &amp; David Roper</text>
 <wire x1="187.579" y1="82.169" x2="189.611" y2="86.995" width="0.3048" layer="21"/>
 <wire x1="190.119" y1="82.169" x2="192.151" y2="86.995" width="0.3048" layer="21"/>
 <wire x1="192.659" y1="82.169" x2="194.691" y2="86.995" width="0.3048" layer="21"/>
-<wire x1="3.302" y1="35.179" x2="5.842" y2="35.179" width="0.025" layer="20"/>
-<wire x1="3.302" y1="37.465" x2="5.842" y2="37.465" width="0.025" layer="20"/>
-<wire x1="5.842" y1="37.465" x2="5.842" y2="35.179" width="0.025" layer="20" curve="-180"/>
+<wire x1="3.302" y1="35.179" x2="7.112" y2="35.179" width="0.025" layer="20"/>
+<wire x1="3.302" y1="37.465" x2="7.112" y2="37.465" width="0.025" layer="20"/>
+<wire x1="7.112" y1="37.465" x2="7.112" y2="35.179" width="0.025" layer="20" curve="-180"/>
 <wire x1="3.302" y1="35.179" x2="3.302" y2="37.465" width="0.025" layer="20" curve="-180"/>
-<wire x1="3.302" y1="11.303" x2="5.842" y2="11.303" width="0.025" layer="20"/>
-<wire x1="3.302" y1="13.589" x2="5.842" y2="13.589" width="0.025" layer="20"/>
-<wire x1="5.842" y1="13.589" x2="5.842" y2="11.303" width="0.025" layer="20" curve="-180"/>
+<wire x1="3.302" y1="11.303" x2="7.112" y2="11.303" width="0.025" layer="20"/>
+<wire x1="3.302" y1="13.589" x2="7.112" y2="13.589" width="0.025" layer="20"/>
+<wire x1="7.112" y1="13.589" x2="7.112" y2="11.303" width="0.025" layer="20" curve="-180"/>
 <wire x1="3.302" y1="11.303" x2="3.302" y2="13.589" width="0.025" layer="20" curve="-180"/>
 <wire x1="41.402" y1="14.478" x2="41.402" y2="10.287" width="0.1524" layer="21"/>
 <wire x1="41.402" y1="10.287" x2="46.482" y2="10.287" width="0.1524" layer="21"/>
@@ -7956,6 +7957,11 @@ which will not be processed correctly with this version.
 Since Version 8.2, EAGLE supports online libraries. The ids
 of those online libraries will not be understood (or retained)
 with this version.
+</note>
+<note version="8.3" severity="warning">
+Since Version 8.3, EAGLE supports Fusion synchronisation.
+This feature will not be available in this version and saving
+the document will break the link to the Fusion PCB feature.
 </note>
 <note version="8.3" severity="warning">
 Since Version 8.3, EAGLE supports URNs for individual library
