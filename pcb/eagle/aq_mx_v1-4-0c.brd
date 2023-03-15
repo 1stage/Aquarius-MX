@@ -160,7 +160,7 @@
 <layer number="255" name="routoute" color="7" fill="1" visible="yes" active="yes"/>
 </layers>
 <board>
-<fusionsync huburn="a.cGVyc29uYWw6dWUyYWYyYWU4" projecturn="a.cGVyc29uYWw6dWUyYWYyYWU4IzIwMjAwODA5MzIyMjM1NDUx" f3durn="urn:adsk.wipprod:dm.lineage:Rw0K_LX1ScGNJF1mp4TrhQ" pcbguid="6854635e-aae7-4a8f-9b25-ed29eaf951b0" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="b100a790-07cb-4081-81a8-d682f4ef8fa7" lastsyncedrevisionid="b100a790-07cb-4081-81a8-d682f4ef8fa7" lastboardhashguid="e18200b1-7be1-7e8a-f011-d45f1c4ee603" lastpushedtime="2023-02-11T18:16:59Z" linktopcb3d="true"/>
+<fusionsync huburn="a.cGVyc29uYWw6dWUyYWYyYWU4" projecturn="a.cGVyc29uYWw6dWUyYWYyYWU4IzIwMjAwODA5MzIyMjM1NDUx" f3durn="urn:adsk.wipprod:dm.lineage:Rw0K_LX1ScGNJF1mp4TrhQ" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="b100a790-07cb-4081-81a8-d682f4ef8fa7" lastsyncedrevisionid="b100a790-07cb-4081-81a8-d682f4ef8fa7" lastboardhashguid="e18200b1-7be1-7e8a-f011-d45f1c4ee603" lastpushedtime="2023-02-11T18:16:59Z" linktopcb3d="true"/>
 <plain>
 <wire x1="154.9908" y1="15.4432" x2="180.3908" y2="15.4432" width="0.025" layer="48" locked="yes"/>
 <wire x1="167.6908" y1="2.7432" x2="167.6908" y2="28.1432" width="0.025" layer="48" locked="yes"/>
@@ -221,7 +221,7 @@
 <wire x1="133.4262" y1="112.4966" x2="134.6962" y2="111.3536" width="0" layer="20" curve="-90"/>
 <wire x1="134.6962" y1="111.3536" x2="134.7216" y2="98.7044" width="0" layer="20"/>
 <text x="100.965" y="44.831" size="1.27" layer="21" rot="R180" align="center-left">v1-4-0, Rev C
-02 FEB 2023
+15 MAR 2023
 by Sean Harrington, sph@1stage.com</text>
 <circle x="10.1854" y="100.6348" radius="1.5748" width="0.0254" layer="20"/>
 <circle x="10.1854" y="75.6412" radius="1.5748" width="0.0254" layer="20"/>
@@ -583,7 +583,7 @@ Top Side Faces Down</text>
 <text x="190.119" y="51.816" size="1.016" layer="21" rot="R180" align="center">NO SOCKET!</text>
 <text x="190.119" y="84.836" size="1.016" layer="21" rot="R180" align="center">NO SOCKET!</text>
 <text x="149.098" y="68.072" size="1.016" layer="21" rot="R180" align="center">No socket</text>
-<text x="58.42" y="69.469" size="1.016" layer="21" rot="R180" align="center">No socket</text>
+<text x="58.293" y="67.564" size="1.016" layer="21" rot="R180" align="center">Socket optional</text>
 <text x="114.554" y="94.742" size="1.016" layer="21" rot="R180" align="center">Socket optional</text>
 <text x="114.554" y="69.088" size="1.016" layer="21" rot="R180" align="center">SOCKET!</text>
 <text x="156.083" y="84.455" size="1.016" layer="21" rot="R180" align="center">SOCKET!</text>
@@ -725,6 +725,46 @@ Insert it in the RIGHT two pin columns</text>
 <vertex x="17.272" y="40.513"/>
 <vertex x="15.494" y="42.291"/>
 <vertex x="15.494" y="44.958"/>
+</polygon>
+<polygon width="0.1524" layer="29">
+<vertex x="17.272" y="46.736"/>
+<vertex x="19.812" y="46.736"/>
+<vertex x="21.717" y="44.831"/>
+<vertex x="21.717" y="42.418"/>
+<vertex x="19.812" y="40.513"/>
+<vertex x="17.272" y="40.513"/>
+<vertex x="15.494" y="42.291"/>
+<vertex x="15.494" y="44.958"/>
+</polygon>
+<polygon width="0.1524" layer="29">
+<vertex x="17.272" y="103.759"/>
+<vertex x="19.812" y="103.759"/>
+<vertex x="21.717" y="101.854"/>
+<vertex x="21.717" y="99.441"/>
+<vertex x="19.812" y="97.536"/>
+<vertex x="17.272" y="97.536"/>
+<vertex x="15.494" y="99.314"/>
+<vertex x="15.494" y="101.981"/>
+</polygon>
+<polygon width="0.1524" layer="29">
+<vertex x="17.272" y="78.74"/>
+<vertex x="19.812" y="78.74"/>
+<vertex x="21.717" y="76.835"/>
+<vertex x="21.717" y="74.422"/>
+<vertex x="19.812" y="72.517"/>
+<vertex x="17.272" y="72.517"/>
+<vertex x="15.494" y="74.295"/>
+<vertex x="15.494" y="76.962"/>
+</polygon>
+<polygon width="0.1524" layer="29">
+<vertex x="17.272" y="71.628"/>
+<vertex x="19.812" y="71.628"/>
+<vertex x="21.717" y="69.723"/>
+<vertex x="21.717" y="67.31"/>
+<vertex x="19.812" y="65.405"/>
+<vertex x="17.272" y="65.405"/>
+<vertex x="15.494" y="67.183"/>
+<vertex x="15.494" y="69.85"/>
 </polygon>
 </plain>
 <libraries>
@@ -4753,6 +4793,7 @@ design rules under a new name.</description>
 <wire x1="46.5836" y1="19.4564" x2="42.2809125" y2="19.4564" width="0.3048" layer="16"/>
 <wire x1="42.2809125" y1="19.4564" x2="41.4782" y2="20.2591125" width="0.3048" layer="16"/>
 <wire x1="41.4782" y1="20.2591125" x2="41.4782" y2="29.7788875" width="0.3048" layer="16"/>
+<via x="17.78" y="12.7" extent="1-16" drill="0.35"/>
 </signal>
 <signal name="VCC" class="1">
 <contactref element="U8" pad="20"/>
@@ -7867,6 +7908,150 @@ design rules under a new name.</description>
 <wire x1="77.47" y1="102.87" x2="77.47" y2="107.95" width="0.1524" layer="1"/>
 <wire x1="77.47" y1="107.95" x2="77.978" y2="107.95" width="0.1524" layer="1"/>
 <wire x1="77.47" y1="102.87" x2="77.978" y2="102.362" width="0.1524" layer="1"/>
+</signal>
+<signal name="GND2" class="1">
+<via x="31.75" y="7.62" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND3" class="1">
+<via x="54.61" y="8.89" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND4" class="1">
+<via x="8.89" y="24.13" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND5" class="1">
+<via x="12.7" y="48.26" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND6" class="1">
+<via x="6.35" y="64.77" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND7" class="1">
+<via x="11.43" y="81.28" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND8" class="1">
+<via x="5.08" y="97.79" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND9" class="1">
+<via x="16.51" y="107.95" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND10" class="1">
+<via x="26.67" y="97.79" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND11" class="1">
+<via x="57.15" y="107.95" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND12" class="1">
+<via x="62.992" y="86.995" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND13" class="1">
+<via x="36.576" y="72.009" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND14" class="1">
+<via x="72.009" y="76.581" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND15" class="1">
+<via x="79.883" y="53.34" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND16" class="1">
+<via x="33.274" y="47.244" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND17" class="1">
+<via x="75.057" y="28.194" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND18" class="1">
+<via x="81.534" y="23.495" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND19" class="1">
+<via x="104.648" y="22.225" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND20" class="1">
+<via x="118.491" y="24.384" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND21" class="1">
+<via x="89.662" y="4.826" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND22" class="1">
+<via x="115.824" y="5.588" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND23" class="1">
+<via x="129.794" y="12.319" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND24" class="1">
+<via x="153.924" y="39.624" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND25" class="1">
+<via x="175.133" y="40.386" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND26" class="1">
+<via x="191.008" y="40.386" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND27" class="1">
+<via x="177.927" y="63.5" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND28" class="1">
+<via x="166.878" y="75.057" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND29" class="1">
+<via x="159.004" y="67.183" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND30" class="1">
+<via x="165.608" y="61.595" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND31" class="1">
+<via x="162.941" y="81.153" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND32" class="1">
+<via x="151.892" y="96.647" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND33" class="1">
+<via x="174.244" y="96.266" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND34" class="1">
+<via x="191.262" y="96.012" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND35" class="1">
+<via x="184.277" y="63.5" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND36" class="1">
+<via x="194.31" y="59.817" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND37" class="1">
+<via x="199.517" y="49.657" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND38" class="1">
+<via x="199.517" y="54.864" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND39" class="1">
+<via x="161.544" y="96.52" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND40" class="1">
+<via x="132.588" y="101.981" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND41" class="1">
+<via x="124.841" y="104.013" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND42" class="1">
+<via x="126.746" y="108.458" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND43" class="1">
+<via x="113.792" y="109.093" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND44" class="1">
+<via x="96.012" y="107.061" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND45" class="1">
+<via x="87.376" y="109.474" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND46" class="1">
+<via x="80.772" y="107.823" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND47" class="1">
+<via x="66.929" y="107.95" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND48" class="1">
+<via x="40.894" y="109.728" extent="1-16" drill="0.35"/>
+</signal>
+<signal name="GND49" class="1">
+<via x="30.226" y="109.601" extent="1-16" drill="0.35"/>
 </signal>
 </signals>
 <mfgpreviewcolors>
