@@ -24374,7 +24374,7 @@ Source: &lt;a href="https://datasheet.datasheetarchive.com/originals/distributor
 <wire x1="-134.62" y1="-104.14" x2="-68.58" y2="-104.14" width="0.1524" layer="97"/>
 <wire x1="-68.58" y1="-114.3" x2="-134.62" y2="-114.3" width="0.1524" layer="97"/>
 <wire x1="-134.62" y1="-109.22" x2="-68.58" y2="-109.22" width="0.1524" layer="97"/>
-<text x="-43.18" y="-111.76" size="2.54" layer="97" align="center">15 MAR 2023</text>
+<text x="-43.18" y="-111.76" size="2.54" layer="97" align="center">25 MAR 2023</text>
 <text x="-43.18" y="-106.68" size="2.54" layer="97" align="center">Revision Date</text>
 <wire x1="-68.58" y1="-114.3" x2="-68.58" y2="-109.22" width="0.1524" layer="97"/>
 <wire x1="-68.58" y1="-109.22" x2="-68.58" y2="-104.14" width="0.1524" layer="97"/>
@@ -26734,22 +26734,22 @@ LED next to USB port</text>
 <approved hash="113,1,147.599,-30.6197,JP1,,,,,"/>
 <approved hash="113,1,165.379,-30.6197,JP2,,,,,"/>
 <approved hash="113,1,182.601,-30.6197,JP3,,,,,"/>
-<approved hash="115,1,-10.16,13.97,1-IOB2,,,,,"/>
 <approved hash="115,1,39.37,38.1,1-IOA7,,,,,"/>
-<approved hash="115,1,0,57.15,1-IOA0,,,,,"/>
-<approved hash="115,1,-15.24,12.7,1-IOB3,,,,,"/>
-<approved hash="115,1,7.62,15.24,1-IOB0,,,,,"/>
-<approved hash="115,1,40.64,17.78,1-IOB6,,,,,"/>
-<approved hash="115,1,-5.08,15.24,1-IOB1,,,,,"/>
 <approved hash="115,1,-2.54,31.75,1-IOB7,,,,,"/>
-<approved hash="115,1,-7.62,72.39,1-IOA6,,,,,"/>
-<approved hash="115,1,-15.24,53.34,1-IOA3,,,,,"/>
-<approved hash="115,1,-10.16,54.61,1-IOA2,,,,,"/>
-<approved hash="115,1,-12.7,34.29,1-IOB5,,,,,"/>
-<approved hash="115,1,-17.78,74.93,1-IOA4,,,,,"/>
 <approved hash="115,1,-5.08,55.88,1-IOA1,,,,,"/>
 <approved hash="115,1,-17.78,35.56,1-IOB4,,,,,"/>
+<approved hash="115,1,-15.24,53.34,1-IOA3,,,,,"/>
+<approved hash="115,1,40.64,17.78,1-IOB6,,,,,"/>
+<approved hash="115,1,-10.16,54.61,1-IOA2,,,,,"/>
+<approved hash="115,1,-12.7,34.29,1-IOB5,,,,,"/>
+<approved hash="115,1,7.62,15.24,1-IOB0,,,,,"/>
+<approved hash="115,1,-15.24,12.7,1-IOB3,,,,,"/>
+<approved hash="115,1,-5.08,15.24,1-IOB1,,,,,"/>
+<approved hash="115,1,0,57.15,1-IOA0,,,,,"/>
+<approved hash="115,1,-7.62,72.39,1-IOA6,,,,,"/>
+<approved hash="115,1,-17.78,74.93,1-IOA4,,,,,"/>
 <approved hash="115,1,41.91,43.18,1-IOA5,,,,,"/>
+<approved hash="115,1,-10.16,13.97,1-IOB2,,,,,"/>
 </errors>
 </schematic>
 </drawing>
