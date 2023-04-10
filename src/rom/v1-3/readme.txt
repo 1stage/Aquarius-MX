@@ -17,7 +17,6 @@ keycheck.asm     keyboard scan
 aquarius.i       aquarius system defines
 windows.i        windowed text defines       
 macros.i         structure macros etc.
-pcg.i            defines for the PCG (Programmable Character Generator)
 
 27 AUG 2022 (SPH) - zmac is still the recommended method for compiling the MX ROM into a usable binary file, but the project has been turned into a Visual Studio Code project to make things simpler for most folks to work with. Here are the general steps to setting up Visual Studio Code and zmac on a Windows-based PC:
   - From the Microsoft site, download and install Visual Studio Code (not Visual Studio 2022, etc). The default install settings are fine. You should restart Windows after install is complete.

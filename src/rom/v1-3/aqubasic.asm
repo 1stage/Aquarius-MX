@@ -10,7 +10,7 @@
 ;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
 ;        Mack Wharton                              Mack@Aquarius.je, aquarius.je
 ;
-; For use with the micro-expander (CH376 USB interface, 32K RAM, AY-3-8910 PSG),
+; For use with the micro-expander (CH376S USB interface, 32K RAM, AY-3-8910 PSG),
 ; and the Aquarius MX expander (micro expander in mini expander footprint)
 ; Incudes commands from BLBasic by Martin Steenoven  
 ;
@@ -56,7 +56,7 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2022-09-?? v1.3  TO BE DETERMINED
+; 2022-09-?? v1.3  Removed unimplemented PCG code
 
 VERSION  = 1
 REVISION = 3
@@ -64,7 +64,6 @@ REVISION = 3
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1    ; full featured debugger (else lite version without screen save etc.)
-init_pcg equ 1    ; reset programmable character generator (if present)
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -104,7 +103,6 @@ init_pcg equ 1    ; reset programmable character generator (if present)
     include  "aquarius.i" ; aquarius hardware and system ROM
     include  "macros.i"   ; structure macros
     include  "windows.i"  ; fast windowed text functions
-    include  "pcg.i"      ; programmable character generator
 
 ; alternative system variable names
 VARTAB      = BASEND     ; $38D6 variables table (at end of BASIC program)
@@ -273,23 +271,6 @@ RECOGNIZATION:
      db  80, 168, 128, 112
 
 ROM_ENTRY:
-
-; initialize Programmble Character Generator
-  ifdef init_pcg
-     ld      hl,PCG_UNLOCK
-     ld      (hl),$ff      ; unlock PCG registers
-     ld      hl,PCG_MODE   ; PCG_CHAR is first
-     ld      b,3           ; 3 registers to clear
-     xor     a
-.reset_pcg:
-     ld      (hl),a        ; clear registers PCG_MODE, DBANK, WBANK
-     inc     hl
-     djnz    .reset_pcg
-     inc     hl            ; skip CHRSET
-     ld      (hl),a
-     dec     hl            ; back to WBANK
-     ld      (hl),a        ; load character set #0
-  endif
 
 ; set flag for NTSC or PAL
      call    PAL__NTSC     ; measure video frame period: nc = PAL, c = NTSC
