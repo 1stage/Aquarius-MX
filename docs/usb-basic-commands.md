@@ -8,6 +8,13 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 **LOCATE** - Position cursor on screen
  - Syntax: LOCATE col, row
 
+**DTM** - SET the DateTime on the Dallas DS1244 RTC (Real Time Clock), if present
+ - Syntax: DTM "230411110700" - Sets the RTC to 04 APR 2023 11:08:00 (24 hour clock), uses "YYMMDDHHMMSS" format
+
+**DTM$** - GET the DateTime from the Dallas DS1244 RTC (Real Time Clock), if present
+ - Syntax: DTM$ (0) - Returns the DateTime as a string in "YYMMDDHHMMSSCC" format (CC = hundredths of seconds)
+ - Syntax: DTM$ (1) - Returns the DateTime as a string in "YYYY-MM-DD HH:MM:SS" format (Century is assumed to be 20)
+
 **IN**    - Read data from I/O port
  - Syntax: IN (port)
 
@@ -57,7 +64,7 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
  - Syntax: CD ""         = no operation
  - Syntax: CD            = show path
 
-**DEL**    - delete file
+**DEL**    - delete file (formerly KILL)
  - Syntax: Syntax: DEL "filename"
 	
 **HEX$**   - Convert signed integer (see CALL above) to hexadecimal string
