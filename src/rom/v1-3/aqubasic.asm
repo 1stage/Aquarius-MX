@@ -650,9 +650,8 @@ TBLCMDS:
 
 ; NOTE - Curtis asked that the DTM$ function be listed before DTM command,
 ;        but in the TBLJMPS below, it's expecting commands first
-;        followed by functions. However, the dw sections below MAY be
-;        expecting them in commands followed by functions order, so
-;        DTM$() may be misdirecting to DTM and vice versa. - SPH
+;        followed by functions, so DTM$() may be misdirecting to DTM 
+;        and vice versa. - SPH
 
      db      $80 + 'D', "TM$"   ; DateTime function
      db      $80 + 'D', "TM"    ; DateTime command
