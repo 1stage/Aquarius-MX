@@ -23,7 +23,7 @@ pcg.i            defines for the PCG (Programmable Character Generator)
   - From the Microsoft site, download and install Visual Studio Code (not Visual Studio 2022, etc). The default install settings are fine. You should restart Windows after install is complete.
   - Download the zmac executable from http://48k.ca/zmac.html (ZIP file, usually linked in upper right corner).
   - Unzip and install somewhere easy to access (I use C:\zmac for simplicity.). Copy this path for the next step.
-  - From your Start menue, begin to type "edit the system Environment Variables", click on the applet that comes up, and add a new line to the PATH variable to include the path to zmac you set previously... JUST the path to the folder, not the path to the EXE itself. SAVE this setting and restart Windows (again, sorry).
+  - From your Start menu, begin to type "edit the system Environment Variables", click on the applet that comes up, and add a new line to the PATH variable to include the path to zmac you set previously... JUST the path to the folder, not the path to the EXE itself. SAVE this setting and restart Windows (again, sorry).
   - Assuming you've already made a copy of the Aquarius-MX GitHub repository on your local machine, from within the Aquarius-MX/src/rom/v1-1 folder, right click and select "Open with Code". It should open up the project in VS Code.
   - From the VS Code menu, you can select Terminal > Run Build Task... to compile the source code and create the AQ_MX_ROM.BIN file (64kb) in the root directory of the v1-1 folder. You can use this file to burn to your Winbond 27C512 EEPROM.
   
