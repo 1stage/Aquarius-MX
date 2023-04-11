@@ -12,7 +12,7 @@ windows.asm      windowed text
 filerequest.asm  select file from list 
 string.asm       string functions
 load_rom.asm     rom loader 
-PT3play.asm      play PT3 music files
+PT3play.asm      play PT3 music files - TO BE REMOVED !!!
 edit.asm         BASIC command line editor
 keycheck.asm     keyboard scan
 aquarius.i       aquarius system defines

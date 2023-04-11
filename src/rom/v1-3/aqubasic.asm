@@ -58,10 +58,10 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2022-09-?? v1.3  Removed unimplemented PCG code
+; 2023-04-11 v1.3  Removed unimplemented PCG code
 ;                  Added DTM command and DTM$() function for RealTime Clock access
 ;                  Added VER command for USB BASIC version
-;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM.
+;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 
 VERSION  = 1
 REVISION = 3

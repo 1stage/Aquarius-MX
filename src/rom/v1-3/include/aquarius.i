@@ -12,7 +12,8 @@
 ;                 'set' directive. This can be overridden to extend
 ;                 the system variable area.
 ; 2017-05-06 V0.4 compute equates for buffer lengths
-; 2017-06-12 V1.0  bumped to release version
+; 2017-06-12 V1.0 bumped to release version
+; 2023-04-11 V1.1 Revised color names to more common values
 ;
 ;-------------------------------------------------------------------
 ;                            IO Ports
@@ -50,13 +51,13 @@ MAGENTA   = 5
 CYAN      = 6
 WHITE     = 7
 GREY      = 8
-AQUA      = 9
-PURPLE    = 10
+DKCYAN    = 9
+DKMAGENTA = 10
 DKBLUE    = 11
-STRAW     = 12
+LTYELLOW  = 12
 DKGREEN   = 13
 DKRED     = 14
-BLACK2    = 15
+DKGREY    = 15
 
 ;-------------------------------------------------------------------
 ;                         Screen RAM
