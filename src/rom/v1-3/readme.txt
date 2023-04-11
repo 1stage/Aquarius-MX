@@ -4,6 +4,7 @@ Building Aqubasic from Source
    file                purpose
 aqubasic.asm     ROM initialisation, boot menu, extended BASIC commands
 aqubug.asm       Aqubug debugger
+datetime.asm     Interface to the Dallas DS1244 RTC (Real Time Clock) chip
 debug.asm        'lite' debugger (see notes below)
 dos.asm          interface between BASIC and USB driver 
 ch376.asm        USB driver
