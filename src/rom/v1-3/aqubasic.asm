@@ -74,6 +74,7 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; PSG    - Program PSG register, value
 ; CALL   - call machine code subroutine
 ; DEBUG  - call AquBUG Monitor/debugger
+; DTM    - DateTime command
 
 ; EDIT   - Edit a BASIC line
 
@@ -88,6 +89,7 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; IN()   - get data from I/O port
 ; JOY()  - Read joystick
 ; HEX$() - convert number to hexadecimal string
+; DTM$() - DateTime function
 
 ; Assembled with ZMAC in 'zmac' mode.
 ; command: ZMAC.EXE --zmac -n -I aqubasic.asm
@@ -350,6 +352,7 @@ SPLKEY:
      jp      z, COLDBOOT
      cp      $03                ;  ^C = warm boot
      jp      z, WARMBOOT
+     call    SPL_DATETIME
      jr      SPLKEY
 
 DEBUG:
@@ -394,7 +397,7 @@ SHOWCOPYRIGHT:
 SHOWCOPY:
      ld      hl,$0163           ; point to copyright string in ROM
      ld      a,(hl)
-     cp      $79                ; is it the 'y' in "Copyright"?
+     cp      $79                ; is the 'y' in "Copyright"?
      ret     nz                 ; no, quit
      dec     hl
      dec     hl                 ; yes, back up to start of string
@@ -477,6 +480,12 @@ MEMSIZE:
 ;                      USB Disk Driver
 ;---------------------------------------------------------------------
     include "ch376.asm"
+
+
+;---------------------------------------------------------------------
+;                RTC Driver for Dallas DS1244
+;---------------------------------------------------------------------
+    include "datetime.asm"
 
 
 ;-------------------------------------------------------------------
@@ -635,10 +644,21 @@ TBLCMDS:
      db      $80 + 'C', "AT"
      db      $80 + 'D', "EL"    ; previously KILL
      db      $80 + 'C', "D"
-; functions
-     db      $80 + 'I', "N"
-     db      $80 + 'J', "OY"
-     db      $80 + 'H', "EX$"
+
+; NOTE - Curtis asked that the DTM$ function be listed before DTM command,
+;        but in the TBLJMPS below, it's expecting commands first
+;        followed by functions. However, the dw sections below MAY be
+;        expecting them in commands followed by functions order, so
+;        DTM$() may be misdirecting to DTM and vice versa. - SPH
+
+     db      $80 + 'D', "TM$"   ; DateTime function
+     db      $80 + 'D', "TM"    ; DateTime command
+
+; The order of the DTM$ and DTM tokens above may have to be reversed. - SPH
+
+     db      $80 + 'I', "N"     ; Input function
+     db      $80 + 'J', "OY"    ; Joystick function
+     db      $80 + 'H', "EX$"   ; Hex value function
      db      $80                ; End of table marker
 
 TBLJMPS:
@@ -655,11 +675,13 @@ TBLJMPS:
      dw      ST_CAT
      dw      ST_DEL
      dw      ST_CD
+     dw      ST_DTM
 TBLJEND:
 
 BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
 TBLFNJP:
+     dw      FN_DTM
      dw      FN_IN
      dw      FN_JOY
      dw      FN_HEX
