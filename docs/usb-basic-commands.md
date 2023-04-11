@@ -2,8 +2,9 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 
 # USB BASIC Commands: #
 
-**CLS**    - Clear screen (same as CLS command from Ext BASIC)
- - Syntax: CLS <no arguments>
+**CLS**    - Clear screen 
+ - Syntax: CLS <no arguments> - Clears whole screen with default BLACK text on CYAN background (same as CLS command from Ext BASIC)
+ - Syntax: CLS color - Clears whole screen based on integer value of BG + (FG * 16) - ***SLATED FOR v1.3 ROM***
 
 **LOCATE** - Position cursor on screen
  - Syntax: LOCATE col, row
@@ -67,7 +68,10 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
  - Syntax: CD            = show path
 
 **DEL**    - delete file (formerly KILL)
- - Syntax: Syntax: DEL "filename"
+ - Syntax: DEL "filename"
 	
 **HEX$**   - Convert signed integer (see CALL above) to hexadecimal string
- - Syntax: Syntax: HEX$ (value)
+ - Syntax: HEX$ (value)
+
+**VER**    - Return a string with the current USB BASIC version - ***SLATED FOR v1.3 ROM***
+ - Syntax: VER
