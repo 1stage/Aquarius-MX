@@ -45,17 +45,35 @@
 ;RESLO   $38F8  7 Year            
 
 ;------------------------------------------------------------------------------
-;     DateTime Command
+;     DateTime Command - SET DateTime
 ;------------------------------------------------------------------------------
 ;
+;  The DTM command allows users to SET the DateTime in the Dallas RTC by
+;  using the following format:
+;
+;    DTM "230411101500" (where string is in "YYMMDDHHMMSS" format) - Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
+;
+;  - Improperly formatted string can result in unpredicable results
+;  - DateTime is set by default to 24 hour mode, with cc (hundredths of seconds) set to 0
+;
+
 ST_DTM:
         RET
 
 
 ;------------------------------------------------------------------------------
-;     DateTime Function
+;     DateTime Function - GET DateTime
 ;------------------------------------------------------------------------------
 ;
+;  The DTM$() function allows users to GET the DateTime from the Dallas RTC
+;  by using the following format and parameters:
+;
+;    PRINT DTM$(0) - Returns DateTime as a string in "YYMMDDHHMMSSCC" format
+;
+;    PRINT DTM$(1) - Returns DateTime as a string in "YYYY-MM-DD HH:MM:SS" format
+;  
+;  - Use of other parameter values will return the same result as DTM$(1)
+
 FN_DTM:
         RET
 
