@@ -73,6 +73,8 @@ ST_DTM:
 ;    PRINT DTM$(1) - Returns DateTime as a string in "YYYY-MM-DD HH:MM:SS" format
 ;  
 ;  - Use of other parameter values will return the same result as DTM$(1)
+;  - Additional parameters may be added for discreet results
+;
 
 FN_DTM:
         RET
