@@ -63,9 +63,8 @@ FN_DTM:
 ;     Redraw DateTime at bottom of SPLASH screen
 ;------------------------------------------------------------------------------
 ;
-; DateTime text should begin at $3379 / 13177 (9,22) - SPH
 
-DTMSPL_STRTLOC = $3379
+DTMSPL_STRTLOC = $3379    ; DateTime text should begin at $3379 / 13177 (9,22) - SPH
 
 SPL_DATETIME:
         RET
