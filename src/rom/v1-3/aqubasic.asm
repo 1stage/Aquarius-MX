@@ -60,6 +60,7 @@
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 ; 2022-09-?? v1.3  Removed unimplemented PCG code
 ;                  Added DTM command and DTM$() function for RealTime Clock access
+;                  Added VER command for USB BASIC version
 
 VERSION  = 1
 REVISION = 3
@@ -647,6 +648,7 @@ TBLCMDS:
      db      $80 + 'C', "AT"
      db      $80 + 'D', "EL"    ; previously KILL
      db      $80 + 'C', "D"
+     db      $80 + 'V', "ER"    ; new VERSION command
 
 ; NOTE - Curtis asked that the DTM$ function be listed before DTM command,
 ;        but in the TBLJMPS below, it's expecting commands first
@@ -677,6 +679,7 @@ TBLJMPS:
      dw      ST_CAT
      dw      ST_DEL
      dw      ST_CD
+     dw      ST_VER
      dw      ST_DTM
 TBLJEND:
 
@@ -946,6 +949,14 @@ _run_file:
 ST_reserved:
     ret
 
+;--------------------------------------------------------------------
+;   VER statement 
+;
+;  Will want to use the previously defined VERSION and REVISION
+;  variables. - SPH
+
+ST_VER:
+    ret
 
 ;--------------------------------------------------------------------
 ;   CLS statement
