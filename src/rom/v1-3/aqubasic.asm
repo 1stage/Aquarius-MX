@@ -7,8 +7,10 @@
 ;        Martin van der Steenoven                            www.vdsteenoven.com
 ;
 ; Additional code by:
-;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
+;        Curtis Kaylor                                      revcurtisp@gmail.com
 ;        Mack Wharton                              Mack@Aquarius.je, aquarius.je
+;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
+;      
 ;
 ; For use with the micro-expander (CH376S USB interface, 32K RAM, AY-3-8910 PSG),
 ; and the Aquarius MX expander (micro expander in mini expander footprint)
@@ -57,6 +59,7 @@
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 ; 2022-09-?? v1.3  Removed unimplemented PCG code
+;                  Added DTM command and DTM$() function for RealTime Clock access
 
 VERSION  = 1
 REVISION = 3
@@ -352,7 +355,7 @@ SPLKEY:
      jp      z, COLDBOOT
      cp      $03                ;  ^C = warm boot
      jp      z, WARMBOOT
-     call    SPL_DATETIME
+     call    SPL_DATETIME       ; Redraw the DateTime at the bottom of the screen
      jr      SPLKEY
 
 DEBUG:

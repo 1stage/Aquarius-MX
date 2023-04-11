@@ -1,3 +1,15 @@
+;******************************************************************************
+;                      Dallas DS1244 Real Time Clock Driver
+;******************************************************************************
+; Original code by:
+;        Curtis Kaylor                                      revcurtisp@gmail.com
+;        Mack Wharton                              Mack@Aquarius.je, aquarius.je
+;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
+;
+; Date       Ver    Changes                         
+; 2023-04-11 V0.00  Started
+;
+
 
 Two Digit BCD Numbers
 
@@ -6,12 +18,7 @@ Two Digit BCD Numbers
 
 DS 1244 Time Shadow Registers
 FACLO   $38E4  0 Centiseconds    
-;******************************************************************************
-;                      Dallas DS1244 Real Time Clock Driver
-;******************************************************************************
-;
-;   Date      Ver                     Changes                         Author
-; 2023-04-11 V0.00 Started                                         Bruce Abbott
+
 
 FACMO   $38E5  1 Seconds         
 FACHO   $38E6  2 Minutes         
@@ -51,4 +58,15 @@ ST_DTM:
 ;------------------------------------------------------------------------------
 ;
 FN_DTM:
+        RET
+
+;------------------------------------------------------------------------------
+;     Redraw DateTime at bottom of SPLASH screen
+;------------------------------------------------------------------------------
+;
+; DateTime text should begin at $3379 / 13177 (9,22) - SPH
+
+DTMSPL_LOC = $3379
+
+SPL_DATETIME:
         RET
