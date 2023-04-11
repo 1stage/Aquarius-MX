@@ -61,6 +61,7 @@
 ; 2022-09-?? v1.3  Removed unimplemented PCG code
 ;                  Added DTM command and DTM$() function for RealTime Clock access
 ;                  Added VER command for USB BASIC version
+;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM.
 
 VERSION  = 1
 REVISION = 3
@@ -350,8 +351,8 @@ SPLKEY:
   endif
      cp      "2"                ; '2' = debugger
      jr      z,DEBUG
-     cp      "3"                ; '3' = PT3 player
-     jr      z,PTPLAY
+ ;    cp      "3"                ; '3' = PT3 player
+ ;    jr      z,PTPLAY
      cp      $0d                ; RTN = cold boot
      jp      z, COLDBOOT
      cp      $03                ;  ^C = warm boot
@@ -369,9 +370,9 @@ LoadROM:
      call    Load_ROM           ; ROM loader
      JR      SPLASH
 
-PTPLAY:
-     CALL    PT3_PLAY           ; Music player
-     JR      SPLASH
+;PTPLAY:
+;     CALL    PT3_PLAY           ; Music player
+;     JR      SPLASH
 
 ; CTRL-C pressed in boot menu
 WARMBOOT:
@@ -1315,7 +1316,7 @@ Wait_key:
    include "filerequest.asm"
 
 ; PT3 music player
-     include "pt3play.asm"
+;     include "pt3play.asm"
 
 ; fill with $FF to end of ROM
 
