@@ -418,7 +418,7 @@ STR_BASIC:
      db      $0D,"USB BASIC"
      db      $00
 STR_VERSION:
-     db      " V",VERSION+'0','.',REVISION+'0',$0D,$0A,0
+     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
 
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
@@ -550,25 +550,25 @@ BootWindow:
      dw     0
 
 BootWinTitle:
-     db     " AQUARIUS USB BASIC V"
+     db     " AQUARIUS USB BASIC, v"
      db     VERSION+'0','.',REVISION+'0',' ',0
 
 BootMenuText:
      db     CR
   ifdef softrom
-     db     "    1. (disabled)",CR
+     db     "       1. (disabled)",CR
   else
-     db     "    1. Load ROM",CR
+     db     "       1. Load ROM",CR
   endif
      db     CR,CR
-     db     "    2. Debug",CR
+     db     "       2. Debug",CR
      db     CR,CR
-;     db     "    3. PT3 Player",CR
-     db     CR
+;     db     "       3. PT3 Player",CR
      db     CR,CR,CR,CR
-     db     "    <RTN> BASIC",CR
+     db     "    <RTN> USB BASIC",CR
      db     CR
-     db     "<CTRL-C> Warm Start",0
+     db     " <CTRL-C> Warm Start",CR,CR,CR,CR
+     db     " YYYY-MM-DD HH:MM:SS",0
 
 
 
@@ -639,6 +639,7 @@ UDF_JMP:
 ;
 BTOKEN       equ $d4             ; our first token number
 TBLCMDS:
+; Commands list
      db      $80 + 'E', "DIT"
      db      $80 + 'C', "LS"
      db      $80 + 'L', "OCATE"
@@ -652,21 +653,13 @@ TBLCMDS:
      db      $80 + 'C', "AT"
      db      $80 + 'D', "EL"    ; previously KILL
      db      $80 + 'C', "D"
-
-; NOTE - Curtis asked that the DTM$ function be listed before DTM command,
-;        but in the TBLJMPS below, it's expecting commands first
-;        followed by functions, so DTM$() may be misdirecting to DTM 
-;        and vice versa. - SPH
-
-     db      $80 + 'D', "TM$"   ; DateTime function
-     db      $80 + 'D', "TM"    ; DateTime command
-
-; The order of the DTM$ and DTM tokens above may have to be reversed. - SPH
-
+     db      $80 + 'D', "TM"    ; DateTime command (SETs RTC)
+; Functions list
+     db      $80 + 'D', "TM$"   ; DateTime function (GETs RTC data)
      db      $80 + 'I', "N"     ; Input function
      db      $80 + 'J', "OY"    ; Joystick function
      db      $80 + 'H', "EX$"   ; Hex value function
-     db      $80 + 'V', "ER"    ; MX ROM Version function
+     db      $80 + 'V', "ER"    ; USB BASIC ROM Version function
      db      $80                ; End of table marker
 
 TBLJMPS:
@@ -1239,7 +1232,7 @@ PRINTHEX:
 ;--------------------------------------------------------------------
 ;   VER function 
 ;
-;  Returns 16 bit variable B,A containing the MX ROM Version & Revision
+;  Returns 16 bit variable B,A containing the USB BASIC ROM Version
 
 FN_VER:
     ld     a, VERSION
