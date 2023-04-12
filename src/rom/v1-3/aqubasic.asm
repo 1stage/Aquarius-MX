@@ -651,7 +651,6 @@ TBLCMDS:
      db      $80 + 'C', "AT"
      db      $80 + 'D', "EL"    ; previously KILL
      db      $80 + 'C', "D"
-     db      $80 + 'V', "ER"    ; new VERSION command
 
 ; NOTE - Curtis asked that the DTM$ function be listed before DTM command,
 ;        but in the TBLJMPS below, it's expecting commands first
@@ -666,6 +665,7 @@ TBLCMDS:
      db      $80 + 'I', "N"     ; Input function
      db      $80 + 'J', "OY"    ; Joystick function
      db      $80 + 'H', "EX$"   ; Hex value function
+     db      $80 + 'V', "ER"    ; MX ROM Version function
      db      $80                ; End of table marker
 
 TBLJMPS:
@@ -682,7 +682,6 @@ TBLJMPS:
      dw      ST_CAT
      dw      ST_DEL
      dw      ST_CD
-     dw      ST_VER
      dw      ST_DTM
 TBLJEND:
 
@@ -693,6 +692,7 @@ TBLFNJP:
      dw      FN_IN
      dw      FN_JOY
      dw      FN_HEX
+     dw      FN_VER
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -950,17 +950,6 @@ _run_file:
 ;********************************************************************
 
 ST_reserved:
-    ret
-
-;--------------------------------------------------------------------
-;   VER statement 
-;
-;  Returns float with A and D
-
-ST_VER:
-    ld     a, VERSION
-    ld     d, REVISION
-    jp     FLOATAD
     ret
 
 ;--------------------------------------------------------------------
@@ -1245,6 +1234,16 @@ PRINTHEX:
         add     '0'
         pop     bc
         jp      PRNCHR
+
+;--------------------------------------------------------------------
+;   VER function 
+;
+;  Returns 16 bit variable B,A containing the MX ROM Version & Revision
+
+FN_VER:
+    ld     a, VERSION
+    ld     b, REVISION
+    jp     PUTVAR
 
 
 ;--------------------------------------------------------------------

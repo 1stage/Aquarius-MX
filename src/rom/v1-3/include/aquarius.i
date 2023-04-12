@@ -198,7 +198,6 @@ EVLPAR      = $0a37  ; evaluate expression in brackets
 GETINT      = $0b54  ; evaluate numeric expression (integer 0-255)
 GETNUM      = $0972  ; evaluate numeric expression
 PUTVAR      = $0b22  ; store variable 16 bit (out: B,A = value)
-FLOATAD     = $0b23  ; create float with A and D
 PUTVAR8     = $0b36  ; store variable 8 bit (out: B = value)
 
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
