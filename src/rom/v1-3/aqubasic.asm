@@ -950,7 +950,11 @@ ST_reserved:
 ;   CLS statement
 ;
 ST_CLS:
-    ld      a,CYAN
+    ld      a,CYAN        ; default to black on cyan
+    jr      z,do_cls      ; no parameters, use default
+    call    GETINT        ; get parameter as byte in E
+    ld      a,e
+do_cls:
     call    clearscreen
     ld      de,$3001+40   ; DE cursor at 0,0
     ld      (CURRAM),de
