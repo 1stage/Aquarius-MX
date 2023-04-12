@@ -562,7 +562,7 @@ BootMenuText:
      db     "    2. Debug",CR
      db     CR,CR
 ;     db     "    3. PT3 Player",CR
-     db     "                 ",CR
+     db     CR
      db     CR,CR,CR,CR
      db     "    <RTN> BASIC",CR
      db     CR
