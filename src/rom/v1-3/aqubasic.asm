@@ -96,6 +96,7 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; JOY()  - Read joystick
 ; HEX$() - convert number to hexadecimal string
 ; DTM$() - DateTime function
+; VER()  - Version function, returns the value of the Version and Revision of MX ROM
 
 ; Assembled with ZMAC in 'zmac' mode.
 ; command: ZMAC.EXE --zmac -n -I aqubasic.asm
