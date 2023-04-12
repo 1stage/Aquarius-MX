@@ -36,7 +36,7 @@
 ;                  DIR with wildcards
 ;                  CAT prints 3 filenames per line
 ; 2017-02-20 v0.12 DEBUG
-; 2017-03-03 v0.13 change displayed name to AQUARIUS USB BASIC
+; 2017-03-03 v0.13 change displayed name to Aquarius USB BASIC
 ; 2017-03-06 v0.14 Incorporate ROM initialization, boot menu, ROM loader.
 ; 2017-03-09 v0.15 add PT3 player, tidy vector and function names
 ; 2017-03-12 v0.16 HEX$() function: convert number to Hexadecimal string
@@ -59,13 +59,13 @@
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 ; 2023-04-11 v1.3  Removed unimplemented PCG code
-;                  Added DTM command and DTM$() function for RealTime Clock access
-;                  Added VER command for USB BASIC version
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
+;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
+;                  Modified CLS to accept an optional parameter for BG + (256 * FG) color integer
+;                  Added DTM command and DTM$() function for RealTime Clock access
 
 VERSION  = 1
 REVISION = 3
-VERREV = (VERSION * 256) + REVISION
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
@@ -550,7 +550,7 @@ BootWindow:
      dw     0
 
 BootWinTitle:
-     db     " AQUARIUS USB BASIC, v"
+     db     " Aquarius USB BASIC, v"
      db     VERSION+'0','.',REVISION+'0',' ',0
 
 BootMenuText:
