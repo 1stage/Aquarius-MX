@@ -65,6 +65,7 @@
 
 VERSION  = 1
 REVISION = 3
+VERREV = (VERSION * 256) + REVISION
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
@@ -954,10 +955,12 @@ ST_reserved:
 ;--------------------------------------------------------------------
 ;   VER statement 
 ;
-;  Will want to use the previously defined VERSION and REVISION
-;  variables. - SPH
+;  Returns float with A and D
 
 ST_VER:
+    ld     a, VERSION
+    ld     d, REVISION
+    jp     FLOATAD
     ret
 
 ;--------------------------------------------------------------------
