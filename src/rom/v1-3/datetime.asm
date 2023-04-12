@@ -57,7 +57,7 @@
 ;  - DateTime is set by default to 24 hour mode, with cc (hundredths of seconds) set to 0
 ;
 
-ST_DTM:
+ST_SDT:
         RET
 
 
@@ -76,7 +76,7 @@ ST_DTM:
 ;  - Additional parameters may be added for discreet results
 ;
 
-FN_DTM:
+FN_GDT:
         RET
 
 ;------------------------------------------------------------------------------

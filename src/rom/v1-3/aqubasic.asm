@@ -653,9 +653,9 @@ TBLCMDS:
      db      $80 + 'C', "AT"
      db      $80 + 'D', "EL"    ; previously KILL
      db      $80 + 'C', "D"
-     db      $80 + 'D', "TM"    ; DateTime command (SETs RTC)
+     db      $80 + 'S', "DT"    ; SET DateTime command
 ; Functions list
-     db      $80 + 'D', "TM$"   ; DateTime function (GETs RTC data)
+     db      $80 + 'G', "DT$"   ; GET DateTime function
      db      $80 + 'I', "N"     ; Input function
      db      $80 + 'J', "OY"    ; Joystick function
      db      $80 + 'H', "EX$"   ; Hex value function
@@ -676,13 +676,13 @@ TBLJMPS:
      dw      ST_CAT
      dw      ST_DEL
      dw      ST_CD
-     dw      ST_DTM
+     dw      ST_SDT
 TBLJEND:
 
 BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
 TBLFNJP:
-     dw      FN_DTM
+     dw      FN_GDT
      dw      FN_IN
      dw      FN_JOY
      dw      FN_HEX
