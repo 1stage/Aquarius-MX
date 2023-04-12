@@ -61,7 +61,7 @@
 ; 2023-04-11 v1.3  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
-;                  Modified CLS to accept an optional parameter for BG + (256 * FG) color integer
+;                  Modified CLS to accept an optional parameter for (FG * 16 ) + BG color integer
 ;                  Added DTM command and DTM$() function for RealTime Clock access
 
 VERSION  = 1
@@ -274,103 +274,103 @@ WIN_reserved2     jp  break
 ; 16 bytes
 ;
 RECOGNIZATION:
-     db  66, 79, 79, 84
-     db  83, 156, 84, 176
-     db  82, 108, 65, 100
-     db  80, 168, 128, 112
+    db      66, 79, 79, 84
+    db      83, 156, 84, 176
+    db      82, 108, 65, 100
+    db      80, 168, 128, 112
 
 ROM_ENTRY:
 
 ; set flag for NTSC or PAL
-     call    PAL__NTSC     ; measure video frame period: nc = PAL, c = NTSC
-     ld      a,0
-     jr      nc,.set_sysflags
-     set     SF_NTSC,a
+    call    PAL__NTSC     ; measure video frame period: nc = PAL, c = NTSC
+    ld      a,0
+    jr      nc,.set_sysflags
+    set     SF_NTSC,a
 .set_sysflags:
-     ld      (Sysflags),a
+    ld      (Sysflags),a
 ;
 ; init debugger
-     ld      hl,vars
-     ld      bc,v.size
+    ld      hl,vars
+    ld      bc,v.size
 .clrbugmem:
-     ld      (hl),0             ; clear all debugger variables
-     inc     hl
-     dec     bc
-     ld      a,b
-     or      c
-     jr      nz,.clrbugmem
-     ld      a,$C3
-     ld      (USRJMP),a
-     ld      HL,0
-     ld      (USRADDR),HL       ; set system RST $38 vector
+    ld      (hl),0             ; clear all debugger variables
+    inc     hl
+    dec     bc
+    ld      a,b
+    or      c
+    jr      nz,.clrbugmem
+    ld      a,$C3
+    ld      (USRJMP),a
+    ld      HL,0
+    ld      (USRADDR),HL       ; set system RST $38 vector
   ifdef aqubug
-     ld      de,MemWindows
-     ld      hl,dflt_winaddrs
-     ld      bc,2*4             ; initialize default memory window addresses
-     ldir
+    ld      de,MemWindows
+    ld      hl,dflt_winaddrs
+    ld      bc,2*4             ; initialize default memory window addresses
+    ldir
   endif
 ;
 ; init CH376
-     call    usb__check_exists  ; CH376 present?
-     jr      nz,.no_ch376
-     call    usb__set_usb_mode  ; yes, set USB mode
+    call    usb__check_exists  ; CH376 present?
+    jr      nz,.no_ch376
+    call    usb__set_usb_mode  ; yes, set USB mode
 .no_ch376:
-     call    usb__root          ; root directory
+    call    usb__root          ; root directory
 
 ; init keyboard vars
-     xor     a
-     ld      (LASTKEY),a
-     ld      (SCANCNT),a
+    xor     a
+    ld      (LASTKEY),a
+    ld      (SCANCNT),a
 ;
 ; show splash screen (Boot menu)
 SPLASH:
-     call    usb__root          ; root directory
-     ld      a,CYAN
-     call    clearscreen
-     ld      b,40
-     ld      hl,$3000
+    call    usb__root          ; root directory
+    ld      a,CYAN
+    call    clearscreen
+    ld      b,40
+    ld      hl,$3000
 .topline:
-     ld      (hl),' '
-     set     2,h
-     ld      (hl),WHITE*16+BLACK ; black border, white on black chars in top line
-     res     2,h
-     inc     hl
-     djnz    .topline
-     ld      ix,BootbdrWindow
-     call    OpenWindow
-     ld      ix,bootwindow
-     call    OpenWindow
-     ld      hl,bootmenutext
-     call    WinPrtStr
+    ld      (hl),' '
+    set     2,h
+    ld      (hl),WHITE*16+BLACK ; black border, white on black chars in top line
+    res     2,h
+    inc     hl
+    djnz    .topline
+    ld      ix,BootbdrWindow
+    call    OpenWindow
+    ld      ix,bootwindow
+    call    OpenWindow
+    ld      hl,bootmenutext
+    call    WinPrtStr
 
 ; wait for Boot option key
 SPLKEY:
-     call    Key_Check
-     jr      z,SPLKEY           ; loop until key pressed
+    call    Key_Check
+    jr      z,SPLKEY           ; loop until key pressed
   ifndef softrom
-     cp      "1"                ; '1' = load ROM
-     jr      z,LoadROM
+    cp      "1"                ; '1' = load ROM
+    jr      z,LoadROM
   endif
-     cp      "2"                ; '2' = debugger
-     jr      z,DEBUG
+    cp      "2"                ; '2' = debugger
+    jr      z,DEBUG
  ;    cp      "3"                ; '3' = PT3 player
  ;    jr      z,PTPLAY
-     cp      $0d                ; RTN = cold boot
-     jp      z, COLDBOOT
-     cp      $03                ;  ^C = warm boot
-     jp      z, WARMBOOT
-     call    SPL_DATETIME       ; Redraw the DateTime at the bottom of the screen
-     jr      SPLKEY
+    cp      $0d                ; RTN = cold boot
+    jp      z, COLDBOOT
+    cp      $03                ;  ^C = warm boot
+    jp      z, WARMBOOT
+    call    SPL_DATETIME       ; Redraw the DateTime at the bottom of the screen
+    jr      SPLKEY
 
 DEBUG:
-     call    InitBreak          ; set RST $38 vector to Trace Break
-     ld      hl,0               ; HL = 0 (no BASIC text)
-     call    ST_DEBUG           ; invoke Debugger
-     JR      SPLASH
+    call    InitBreak          ; set RST $38 vector to Trace Break
+    ld      hl,0               ; HL = 0 (no BASIC text)
+    call    ST_DEBUG           ; invoke Debugger
+    JR      SPLASH
 
 LoadROM:
-     call    Load_ROM           ; ROM loader
-     JR      SPLASH
+    call    Load_ROM           ; ROM loader
+    JR      SPLASH
 
 ;PTPLAY:
 ;     CALL    PT3_PLAY           ; Music player
@@ -378,109 +378,109 @@ LoadROM:
 
 ; CTRL-C pressed in boot menu
 WARMBOOT:
-     xor     a
-     ld      (RETYPBUF),a       ; clear history buffer
-     ld      a,$0b
-     rst     $18                ; clear screen
-     call    $0be5              ; clear workspace and prepare to enter BASIC
-     call    $1a40              ; enter BASIC at KEYBREAK
+    xor     a
+    ld      (RETYPBUF),a       ; clear history buffer
+    ld      a,$0b
+    rst     $18                ; clear screen
+    call    $0be5              ; clear workspace and prepare to enter BASIC
+    call    $1a40              ; enter BASIC at KEYBREAK
 JUMPSTART:
-     jp      COLDBOOT           ; if BASIC returns then cold boot it
+    jp      COLDBOOT           ; if BASIC returns then cold boot it
 
 ;
 ; Show copyright message
 ;
 SHOWCOPYRIGHT:
-     call    SHOWCOPY           ; Show system ROM copyright message
-     ld      hl,STR_BASIC       ; "USB BASIC"
-     call    $0e9d              ; PRINTSTR
-     ld      hl, STR_VERSION    ;
-     call    $0e9d              ; PRINTSTR
-     ret
+    call    SHOWCOPY           ; Show system ROM copyright message
+    ld      hl,STR_BASIC       ; "USB BASIC"
+    call    $0e9d              ; PRINTSTR
+    ld      hl, STR_VERSION    ;
+    call    $0e9d              ; PRINTSTR
+    ret
 
 ;
 ; Show Copyright message in system ROM
 ;
 SHOWCOPY:
-     ld      hl,$0163           ; point to copyright string in ROM
-     ld      a,(hl)
-     cp      $79                ; is the 'y' in "Copyright"?
-     ret     nz                 ; no, quit
-     dec     hl
-     dec     hl                 ; yes, back up to start of string
-     dec     hl
+    ld      hl,$0163           ; point to copyright string in ROM
+    ld      a,(hl)
+    cp      $79                ; is the 'y' in "Copyright"?
+    ret     nz                 ; no, quit
+    dec     hl
+    dec     hl                 ; yes, back up to start of string
+    dec     hl
 SHOWIT:
-     dec     hl
-     call    $0e9d              ; PRINTSTR, Print the string pointed to by HL
-     ret
+    dec     hl
+    call    $0e9d              ; PRINTSTR, Print the string pointed to by HL
+    ret
 
 STR_BASIC:
-     db      $0D,"USB BASIC"
-     db      $00
+    db      $0D,"USB BASIC"
+    db      $00
 STR_VERSION:
-     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
+    db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
 
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
-     ld      hl,$0187           ; default values in system ROM
-     ld      bc,$0051           ; 81 bytes to copy
-     ld      de,$3803           ; system variables
-     ldir                       ; copy default values
-     xor     a
-     ld      (BUFEND),a         ; NULL end of input buffer
-     ld      (BINSTART),a       ; NULL binary file start address
-     ld      (RETYPBUF),a       ; NULL history buffer
-     ld      a,$0b
-     rst     $18                ; clear screen
+    ld      hl,$0187           ; default values in system ROM
+    ld      bc,$0051           ; 81 bytes to copy
+    ld      de,$3803           ; system variables
+    ldir                       ; copy default values
+    xor     a
+    ld      (BUFEND),a         ; NULL end of input buffer
+    ld      (BINSTART),a       ; NULL binary file start address
+    ld      (RETYPBUF),a       ; NULL history buffer
+    ld      a,$0b
+    rst     $18                ; clear screen
 ; Test the memory
 ; only testing 1st byte in each 256 byte page!
 ;
-     ld      hl,$3A00           ; first page of free RAM
-     ld      a,$55              ; pattern = 01010101
+    ld      hl,$3A00           ; first page of free RAM
+    ld      a,$55              ; pattern = 01010101
 MEMTEST:
-     ld      c,(hl)             ; save original RAM contents in C
-     ld      (hl),a             ; write pattern
-     cp      (hl)               ; compare read to write
-     jr      nz,MEMREADY        ; if not equal then end of RAM
-     cpl                        ; invert pattern
-     ld      (hl),a             ; write inverted pattern
-     cp      (hl)               ; compare read to write
-     jr      nz,MEMREADY        ; if not equal then end of RAM
-     ld      (hl),c             ; restore original RAM contents
-     cpl                        ; uninvert pattern
-     inc     h                  ; advance to next page
-     jr      nz,MEMTEST         ; continue testing RAM until end of memory
+    ld      c,(hl)             ; save original RAM contents in C
+    ld      (hl),a             ; write pattern
+    cp      (hl)               ; compare read to write
+    jr      nz,MEMREADY        ; if not equal then end of RAM
+    cpl                        ; invert pattern
+    ld      (hl),a             ; write inverted pattern
+    cp      (hl)               ; compare read to write
+    jr      nz,MEMREADY        ; if not equal then end of RAM
+    ld      (hl),c             ; restore original RAM contents
+    cpl                        ; uninvert pattern
+    inc     h                  ; advance to next page
+    jr      nz,MEMTEST         ; continue testing RAM until end of memory
 MEMREADY:
-     ld      a,h
-  ifdef softrom
-     cp      $80                ; 16k expansion
-  else
-     cp      $c0                ; 32k expansion
-  endif
-     jp      c,$0bb7            ; OM error if expansion RAM missing
-     dec     hl                 ; last good RAM addresss
-     ld      hl,vars-1          ; top of public RAM
+    ld      a,h
+ifdef softrom
+    cp      $80                ; 16k expansion
+else
+    cp      $c0                ; 32k expansion
+endif
+    jp      c,$0bb7            ; OM error if expansion RAM missing
+    dec     hl                 ; last good RAM addresss
+    ld      hl,vars-1          ; top of public RAM
 MEMSIZE:
-     ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
-     ld      de,-50             ; subtract 50 for strings space
-     add     hl,de
-     ld      ($384b),hl         ; STKTOP, Top location to be used for stack
-     ld      hl,PROGST
-     ld      (hl), $00          ; NULL at start of BASIC program
-     inc     hl
-     ld      (BASTART), hl      ; beginning of BASIC program text
-     call    $0bbe              ; ST_NEW2 - NEW without syntax check
-     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
-     ld      (UDFADDR),hl       ; store in UDF vector
-     call    SHOWCOPYRIGHT      ; Show our copyright message
-     xor     a
-     jp      $0402              ; Jump to OKMAIN (BASIC command line)
+    ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
+    ld      de,-50             ; subtract 50 for strings space
+    add     hl,de
+    ld      ($384b),hl         ; STKTOP, Top location to be used for stack
+    ld      hl,PROGST
+    ld      (hl), $00          ; NULL at start of BASIC program
+    inc     hl
+    ld      (BASTART), hl      ; beginning of BASIC program text
+    call    $0bbe              ; ST_NEW2 - NEW without syntax check
+    ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
+    ld      (UDFADDR),hl       ; store in UDF vector
+    call    SHOWCOPYRIGHT      ; Show our copyright message
+    xor     a
+    jp      $0402              ; Jump to OKMAIN (BASIC command line)
 
 
 ;---------------------------------------------------------------------
 ;                         ROM loader
 ;---------------------------------------------------------------------
-     include "load_rom.asm"
+    include "load_rom.asm"
 
 
 ;---------------------------------------------------------------------
@@ -535,40 +535,40 @@ PAL__NTSC:
 
 ; boot window with border
 BootBdrWindow:
-     db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
-     db     CYAN
-     db     CYAN
-     db     2,3,36,20
-     dw     bootWinTitle
+    db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
+    db     CYAN
+    db     CYAN
+    db     2,3,36,20
+    dw     bootWinTitle
 
 ; boot window text inside border
 BootWindow:
-     db     0
-     db     CYAN
-     db     CYAN
-     db     9,5,26,18
-     dw     0
+    db     0
+    db     CYAN
+    db     CYAN
+    db     9,5,26,18
+    dw     0
 
 BootWinTitle:
-     db     " Aquarius USB BASIC, v"
-     db     VERSION+'0','.',REVISION+'0',' ',0
+    db     " Aquarius USB BASIC, v"
+    db     VERSION+'0','.',REVISION+'0',' ',0
 
 BootMenuText:
-     db     CR
+    db     CR
   ifdef softrom
-     db     "       1. (disabled)",CR
+    db     "       1. (disabled)",CR
   else
-     db     "       1. Load ROM",CR
+    db     "       1. Load ROM",CR
   endif
-     db     CR,CR
-     db     "       2. Debug",CR
-     db     CR,CR
+    db     CR,CR
+    db     "       2. Debug",CR
+    db     CR,CR
 ;     db     "       3. PT3 Player",CR
-     db     CR,CR,CR,CR
-     db     "    <RTN> USB BASIC",CR
-     db     CR
-     db     " <CTRL-C> Warm Start",CR,CR,CR,CR
-     db     " YYYY-MM-DD HH:MM:SS",0
+    db     CR,CR,CR,CR
+    db     "    <RTN> USB BASIC",CR
+    db     CR
+    db     " <CTRL-C> Warm Start",CR,CR,CR,CR
+    db     " YYYY-MM-DD HH:MM:SS",0
 
 
 
@@ -580,113 +580,113 @@ BootMenuText:
 ; ROM in several places (anywhere a RST $30 is located).
 ;
 HOOK ex      (sp),hl            ; save HL and get address of byte after RST $30
-     push    af                 ; save AF
-     ld      a,(hl)             ; A = byte (RST $30 parameter)
-     inc     hl                 ; skip over byte after RST $30
-     push    hl                 ; push return address (code after RST $30,xx)
-     ld      hl,UDFLIST         ; HL = RST 30 parameter table
-     push    bc
-     ld      bc,UDF_JMP-UDFLIST+1 ; number of UDF parameters
-     cpir                       ; find paramater in list
-     ld      a,c                ; A = parameter number in list
-     pop     bc
-     add     a,a                ; A * 2 to index WORD size vectors
-     ld      hl,UDF_JMP         ; HL = Jump vector table
+    push    af                  ; save AF
+    ld      a,(hl)              ; A = byte (RST $30 parameter)
+    inc     hl                  ; skip over byte after RST $30
+    push    hl                  ; push return address (code after RST $30,xx)
+    ld      hl,UDFLIST          ; HL = RST 30 parameter table
+    push    bc
+    ld      bc,UDF_JMP-UDFLIST+1 ; number of UDF parameters
+    cpir                        ; find paramater in list
+    ld      a,c                 ; A = parameter number in list
+    pop     bc
+    add     a,a                 ; A * 2 to index WORD size vectors
+    ld      hl,UDF_JMP          ; HL = Jump vector table
 do_jump:
-     add     a,l
-     ld      l,a
-     ld      a,$00
-     adc     a,h
-     ld      h,a                ; HL += vector number
-     ld      a,(hl)
-     inc     hl
-     ld      h,(hl)             ; get vector address
-     ld      l,a
-     jp      (hl)               ; and jump to it
+    add     a,l
+    ld      l,a
+    ld      a,$00
+    adc     a,h
+    ld      h,a                 ; HL += vector number
+    ld      a,(hl)
+    inc     hl
+    ld      h,(hl)              ; get vector address
+    ld      l,a
+    jp      (hl)                ; and jump to it
                                 ; will return to HOOKEND
 
 ; End of hook
 HOOKEND:
-     pop     hl                 ; get return address
-     pop     af                 ; restore AF
-     ex      (sp),hl            ; restore HL and set return address
-     ret                        ; return to code after RST $30,xx
+    pop     hl                 ; get return address
+    pop     af                 ; restore AF
+    ex      (sp),hl            ; restore HL and set return address
+    ret                        ; return to code after RST $30,xx
 
 
 ; UDF parameter table
 ; List of RST $30,xx hooks that we are monitoring.
 ; NOTE: order is reverse of UDF jumps!
 UDFLIST:    ; xx     index caller    @addr  performing function:-
-     db      $18     ; 7   RUN       $06be  starting BASIC program
-     db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
-     db      $16     ; 5   PEXPAND   $0598  expanding a token
-     db      $0a     ; 4   REPLCMD   $0536  converting keyword to token
-     db      $1b     ; 3   FUNCTIONS $0a5f  executing a function
-     db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
-     db      $02     ; 1   OKMAIN    $0402  BASIC command line (immediate mode)
+    db      $18     ; 7   RUN       $06be  starting BASIC program
+    db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
+    db      $16     ; 5   PEXPAND   $0598  expanding a token
+    db      $0a     ; 4   REPLCMD   $0536  converting keyword to token
+    db      $1b     ; 3   FUNCTIONS $0a5f  executing a function
+    db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
+    db      $02     ; 1   OKMAIN    $0402  BASIC command line (immediate mode)
 ; UDF parameter Jump table
 UDF_JMP:
-     dw      HOOKEND            ; 0 parameter not found in list
-     dw      AQMAIN             ; 1 replacement immediate mode
-     dw      LINKLINES          ; 2 update BASIC nextline pointers (returns to AQMAIN)
-     dw      AQFUNCTION         ; 3 execute AquBASIC function
-     dw      REPLCMD            ; 4 replace keyword with token
-     dw      PEXPAND            ; 5 expand token to keyword
-     dw      NEXTSTMT           ; 6 execute next BASIC statement
-     dw      RUNPROG            ; 7 run program
+    dw      HOOKEND            ; 0 parameter not found in list
+    dw      AQMAIN             ; 1 replacement immediate mode
+    dw      LINKLINES          ; 2 update BASIC nextline pointers (returns to AQMAIN)
+    dw      AQFUNCTION         ; 3 execute AquBASIC function
+    dw      REPLCMD            ; 4 replace keyword with token
+    dw      PEXPAND            ; 5 expand token to keyword
+    dw      NEXTSTMT           ; 6 execute next BASIC statement
+    dw      RUNPROG            ; 7 run program
 
 ; Our commands and functions
 ;
 BTOKEN       equ $d4             ; our first token number
 TBLCMDS:
 ; Commands list
-     db      $80 + 'E', "DIT"
-     db      $80 + 'C', "LS"
-     db      $80 + 'L', "OCATE"
-     db      $80 + 'O', "UT"
-     db      $80 + 'P', "SG"
-     db      $80 + 'D', "EBUG"
-     db      $80 + 'C', "ALL"
-     db      $80 + 'L', "OAD"
-     db      $80 + 'S', "AVE"
-     db      $80 + 'D', "IR"
-     db      $80 + 'C', "AT"
-     db      $80 + 'D', "EL"    ; previously KILL
-     db      $80 + 'C', "D"
-     db      $80 + 'S', "DT"    ; SET DateTime command
+    db      $80 + 'E', "DIT"
+    db      $80 + 'C', "LS"
+    db      $80 + 'L', "OCATE"
+    db      $80 + 'O', "UT"
+    db      $80 + 'P', "SG"
+    db      $80 + 'D', "EBUG"
+    db      $80 + 'C', "ALL"
+    db      $80 + 'L', "OAD"
+    db      $80 + 'S', "AVE"
+    db      $80 + 'D', "IR"
+    db      $80 + 'C', "AT"
+    db      $80 + 'D', "EL"    ; previously KILL
+    db      $80 + 'C', "D"
+    db      $80 + 'S', "DT"    ; SET DateTime command
 ; Functions list
-     db      $80 + 'G', "DT$"   ; GET DateTime function
-     db      $80 + 'I', "N"     ; Input function
-     db      $80 + 'J', "OY"    ; Joystick function
-     db      $80 + 'H', "EX$"   ; Hex value function
-     db      $80 + 'V', "ER"    ; USB BASIC ROM Version function
-     db      $80                ; End of table marker
+    db      $80 + 'G', "DT$"   ; GET DateTime function
+    db      $80 + 'I', "N"     ; Input function
+    db      $80 + 'J', "OY"    ; Joystick function
+    db      $80 + 'H', "EX$"   ; Hex value function
+    db      $80 + 'V', "ER"    ; USB BASIC ROM Version function
+    db      $80                ; End of table marker
 
 TBLJMPS:
-     dw      ST_EDIT
-     dw      ST_CLS
-     dw      ST_LOCATE
-     dw      ST_OUT
-     dw      ST_PSG
-     dw      ST_DEBUG
-     dw      ST_CALL
-     dw      ST_LOAD
-     dw      ST_SAVE
-     dw      ST_DIR
-     dw      ST_CAT
-     dw      ST_DEL
-     dw      ST_CD
-     dw      ST_SDT
+    dw      ST_EDIT
+    dw      ST_CLS
+    dw      ST_LOCATE
+    dw      ST_OUT
+    dw      ST_PSG
+    dw      ST_DEBUG
+    dw      ST_CALL
+    dw      ST_LOAD
+    dw      ST_SAVE
+    dw      ST_DIR
+    dw      ST_CAT
+    dw      ST_DEL
+    dw      ST_CD
+    dw      ST_SDT
 TBLJEND:
 
 BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
 TBLFNJP:
-     dw      FN_GDT
-     dw      FN_IN
-     dw      FN_JOY
-     dw      FN_HEX
-     dw      FN_VER
+    dw      FN_GDT
+    dw      FN_IN
+    dw      FN_JOY
+    dw      FN_HEX
+    dw      FN_VER
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -971,7 +971,8 @@ do_cls:
 ; - doesn't clear last 24 bytes
 ; - doesn't show cursor
 ;
-; in: A = color attribute (background*16 + foreground)
+; in: A = color attribute (FG * 16) + BG
+
 clearscreen:
     push    hl
     ld      hl,$3000
@@ -1114,47 +1115,52 @@ FN_IN:
 ;                       - 2 will read right joystick only
 ;
 FN_JOY:
-         pop     hl             ; Return address
-         inc     hl             ; skip rst parameter
-         call    $0a37          ; Read number from line - ending with a ')'
-         ex      (sp),hl
-         ld      de,LABBCK      ; set return address
-         push    de
-         call    DEINT          ; convert argument to 16 bit integer in DE
+    pop     hl             ; Return address
+    inc     hl             ; skip rst parameter
+    call    $0a37          ; Read number from line - ending with a ')'
+    ex      (sp),hl
+    ld      de,LABBCK      ; set return address
+    push    de
+    call    DEINT          ; convert argument to 16 bit integer in DE
 
-         ld      a,e
-         or      a
-         jr      nz, joy01
-         ld      a,$03
+    ld      a,e
+    or      a
+    jr      nz, joy01
+    ld      a,$03
 
-joy01:   ld      e,a
-         ld      bc,$00f7
-         ld      a,$ff
-         bit     0,e
-         jr      z, joy03
-         ld      a,$0e
-         out     (c),a
-         dec     c
-         ld      b,$ff
+joy01:   
+    ld      e,a
+    ld      bc,$00f7
+    ld      a,$ff
+    bit     0,e
+    jr      z, joy03
+    ld      a,$0e
+    out     (c),a
+    dec     c
+    ld      b,$ff
 
-joy02:   in      a,(c)
-         djnz    joy02
-         cp      $ff
-         jr      nz,joy05
+joy02:   
+    in      a,(c)
+    djnz    joy02
+    cp      $ff
+    jr      nz,joy05
 
-joy03:   bit     1,e
-         jr      z,joy05
-         ld      bc,$00f7
-         ld      a,$0f
-         out     (c),a
-         dec     c
-         ld      b,$ff
+joy03:   
+    bit     1,e
+    jr      z,joy05
+    ld      bc,$00f7
+    ld      a,$0f
+    out     (c),a
+    dec     c
+    ld      b,$ff
 
-joy04:   in      a,(c)
-         djnz    joy04
+joy04:   
+    in      a,(c)
+    djnz    joy04
 
-joy05:   cpl
-         jp      PUTVAR8
+joy05:   
+    cpl
+    jp      PUTVAR8
 
 
 ;----------------------------------------
@@ -1164,44 +1170,44 @@ joy05:   cpl
 ; eg. A$=HEX$(B)
 ;
 FN_HEX:
-    pop  hl
-    inc  hl
-    call EVLPAR     ; evaluate parameter in brackets
-    ex   (sp),hl
-    ld   de,LABBCK  ; return address
-    push de         ; on stack
-    call DEINT      ; convert argument to 16 bit integer in DE
-    ld   hl,$38e9   ; hl = temp string
-    ld   a,d
-    or   a          ; > zero ?
-    jr   z,.lower_byte
-    ld   a,d
-    call .hexbyte   ; yes, convert byte in D to hex string
+    pop     hl
+    inc     hl
+    call    EVLPAR     ; evaluate parameter in brackets
+    ex      (sp),hl
+    ld      de,LABBCK  ; return address
+    push    de         ; on stack
+    call    DEINT      ; convert argument to 16 bit integer in DE
+    ld      hl,$38e9   ; hl = temp string
+    ld      a,d
+    or      a          ; > zero ?
+    jr      z,.lower_byte
+    ld      a,d
+    call    .hexbyte   ; yes, convert byte in D to hex string
 .lower_byte:
-    ld   a,e
-    call .hexbyte   ; convert byte in E to hex string
-    ld   (hl),0     ; null-terminate string
-    ld   hl,$38e9
+    ld      a,e
+    call    .hexbyte   ; convert byte in E to hex string
+    ld      (hl),0     ; null-terminate string
+    ld      hl,$38e9
 .create_string:
-    jp   $0e2f      ; create BASIC string
+    jp      $0e2f      ; create BASIC string
 
 .hexbyte:
-    ld   b,a
+    ld      b,a
     rra
     rra
     rra
     rra
-    call .hex
-    ld   a,b
+    call    .hex
+    ld      a,b
 .hex:
-    and  $0f
-    cp   10
-    jr   c,.chr
-    add  7
+    and     $0f
+    cp      10
+    jr      c,.chr
+    add     7
 .chr:
-    add  '0'
-    ld   (hl),a
-    inc  hl
+    add     '0'
+    ld      (hl),a
+    inc     hl
     ret
 
 
@@ -1210,28 +1216,28 @@ FN_HEX:
 ;--------------------------
 ; in: A = byte
 PRINTHEX:
-        push    bc
-        ld      b,a
-        and     $f0
-        rra
-        rra
-        rra
-        rra
-        cp      10
-        jr      c,.hi_nib
-        add     7
+    push    bc
+    ld      b,a
+    and     $f0
+    rra
+    rra
+    rra
+    rra
+    cp      10
+    jr      c,.hi_nib
+    add     7
 .hi_nib:
-        add     '0'
-        call    PRNCHR
-        ld      a,b
-        and     $0f
-        cp      10
-        jr      c,.low_nib
-        add     7
+    add     '0'
+    call    PRNCHR
+    ld      a,b
+    and     $0f
+    cp      10
+    jr      c,.low_nib
+    add     7
 .low_nib:
-        add     '0'
-        pop     bc
-        jp      PRNCHR
+    add     '0'
+    pop     bc
+    jp      PRNCHR
 
 ;--------------------------------------------------------------------
 ;   VER function 
@@ -1245,9 +1251,9 @@ FN_VER:
     ex      (sp),hl
     ld      de,LABBCK        ; return address
     push    de               ; on stack
-    ld     a, VERSION        ; returning Version * 256 + Revision
-    ld     b, REVISION
-    jp     PUTVAR
+    ld      a, VERSION       ; returning (VERSION * 256) + REVISION
+    ld      b, REVISION
+    jp      PUTVAR
 
 
 ;--------------------------------------------------------------------
@@ -1276,7 +1282,7 @@ ST_CALL:
 ; ST_DIR
 ; ST_CAT
 ; ST_DEL
-     include "dos.asm"
+    include "dos.asm"
 
 
 ;---------------------------------------------------------------------
@@ -1285,17 +1291,17 @@ ST_CALL:
 ; EDIT (line number)
 ;
 ;ST_EDIT
-     include "edit.asm"
+    include "edit.asm"
 
 
 ;=====================================================================
 ;                  Miscellaneous functions
 
 ; string functions
-   include "strings.asm"
+    include "strings.asm"
 
 ; keyboard scan
-   include "keycheck.asm"
+    include "keycheck.asm"
 
 ;-----------------------------------------------
 ;          Wait for Key Press
@@ -1305,19 +1311,19 @@ ST_CALL:
 ;   out A = char
 ;
 Wait_key:
-       CALL key_check    ; check for key pressed
-       JR   Z,Wait_Key   ; loop until key pressed
+    CALL    key_check    ; check for key pressed
+    JR      Z,Wait_Key   ; loop until key pressed
 .key_click:
-       push af
-       ld   a,$FF        ; speaker ON
-       out  ($fc),a
-       ld   a,128
+    push    af
+    ld      a,$FF        ; speaker ON
+    out     ($fc),a
+    ld      a,128
 .click_wait:
-       dec  a
-       jr   nz,.click_wait
-       out  ($fc),a      ; speaker OFF
-       pop  af
-       RET
+    dec     a
+    jr      nz,.click_wait
+    out     ($fc),a      ; speaker OFF
+    pop     af
+    RET
 
 ; disk file selector
    include "filerequest.asm"
