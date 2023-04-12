@@ -1093,9 +1093,9 @@ FN_IN:
     inc     hl
     call    EVLPAR           ; Read number from line - ending with a ')'
     ex      (sp),hl
-    ld      de,$0a49         ; return address
+    ld      de,LABBCK        ; return address for PUTVAR8
     push    de               ; on stack
-    call    DEINT            ; evalute formula pointed by HL, result in DE
+    call    DEINT            ; convert argument to 16 bit integer in DE
     ld      b,d
     ld      c,e              ; bc = port
     in      a,(c)            ; a = in(port)
@@ -1114,9 +1114,9 @@ FN_JOY:
          inc     hl             ; skip rst parameter
          call    $0a37          ; Read number from line - ending with a ')'
          ex      (sp),hl
-         ld      de,$0a49       ; set return address
+         ld      de,LABBCK      ; set return address
          push    de
-         call    $0682          ; DEINT - evalute formula pointed by HL result in DE
+         call    DEINT          ; convert argument to 16 bit integer in DE
 
          ld      a,e
          or      a
@@ -1150,7 +1150,7 @@ joy04:   in      a,(c)
          djnz    joy04
 
 joy05:   cpl
-         jp      $0b36
+         jp      PUTVAR8
 
 
 ;----------------------------------------
@@ -1164,9 +1164,9 @@ FN_HEX:
     inc  hl
     call EVLPAR     ; evaluate parameter in brackets
     ex   (sp),hl
-    ld   de,$0a49   ; return address
+    ld   de,LABBCK  ; return address
     push de         ; on stack
-    call DEINT      ; evaluate formula @HL, result in DE
+    call DEINT      ; convert argument to 16 bit integer in DE
     ld   hl,$38e9   ; hl = temp string
     ld   a,d
     or   a          ; > zero ?
@@ -1235,7 +1235,13 @@ PRINTHEX:
 ;  Returns 16 bit variable B,A containing the USB BASIC ROM Version
 
 FN_VER:
-    ld     a, VERSION
+    pop     hl
+    inc     hl
+    call    EVLPAR           ; Evaluate argument between parentheses - then ignore it
+    ex      (sp),hl
+    ld      de,LABBCK        ; return address
+    push    de               ; on stack
+    ld     a, VERSION        ; returning Version * 256 + Revision
     ld     b, REVISION
     jp     PUTVAR
 

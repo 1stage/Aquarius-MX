@@ -195,6 +195,7 @@ FINDLIN     = $049f  ; find address of BASIC line (DE = line number)
 EVAL        = $0985  ; evaluate expression
 OPRND       = $09fd  ; evaluate operand
 EVLPAR      = $0a37  ; evaluate expression in brackets
+LABBCK      = $0a49  ; return point for numeric functions
 GETINT      = $0b54  ; evaluate numeric expression (integer 0-255)
 GETNUM      = $0972  ; evaluate numeric expression
 PUTVAR      = $0b22  ; store variable 16 bit (out: B,A = value)
