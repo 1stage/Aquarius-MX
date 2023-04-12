@@ -73,5 +73,5 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 **HEX$**   - Convert signed integer (see CALL above) to hexadecimal string
  - Syntax: HEX$ (value)
 
-**VER**    - Return a string with the current USB BASIC version - ***SLATED FOR v1.3 ROM***
- - Syntax: VER
+**VER**    - Return a value with the current USB BASIC ROM version - ***SLATED FOR v1.3 ROM***
+ - Syntax: VER (0) 
