@@ -17,7 +17,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
-- **11 APR 2023** - Dev team working on v1.3 of the MX ROM, focusing on integrating a Dallas DS1244 RTC (Real Time Clock) that can be used in place of the 32k RAM chip
+- **11 APR 2023** - Dev team working on v1.3 of the MX ROM, focusing on integrating a Dallas DS1244 RTC (Real Time Clock) that can be used in place of the 32k RAM chip, as well as a handful of new or updated commands (SDT, GDT$, CLS, VER, DEF)
 - **02 FEB 2023** - Published version 1-4-0c of the PCB which fixes a missing mounting hole for Controller B when using a metal DB9 port. If you ordered a 1-4-0b version, the hole can be drilled out at 1/8" / 3.25mm.
 - **21 JAN 2023** - Published version 1-4-0b of the PCB. Allows use of either **[Type A or Type B CH376S USB interface boards](https://github.com/1stage/Aquarius-MX/tree/main/pcb#ch376s-usb-interface-modules)**, and allows use of less expensive metal DB9 connectors.
 - **07 NOV 2022** - Created PDF form template for bottom label.
