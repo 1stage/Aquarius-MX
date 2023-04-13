@@ -1,0 +1,46 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CompileBASIC",
+            "type":"shell",
+            "command": "zmac.exe --zmac -e --oo cim -L -n -I include aqubasic.asm",    
+            "group":  "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },
+        {
+            "label": "SaveToROM",
+            "type": "shell",
+            // Next command copies the CIM file into the project root and names it properly.
+            "command": "Get-Content zout/aqubasic.cim -Encoding Byte | Set-Content pt3play.rom -Encoding Byte",
+            "group":  "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },        
+        {
+            "label": "Make ROM",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": ["CompileBASIC", "SaveToROM"]
+        }
+    ]
+}
