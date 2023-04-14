@@ -9,6 +9,12 @@ This folder contains the STL (STereoLithogray) files needed to 3D print an enclo
 - **aq_mx_top2_door.stl** - This is the door that goes with top2.
 - **aq_mx_pcb_feet.stl** - This is a set of feet that can be used instead of a case to hold the PCB at the proper height.
 
+## General Notes:
+- Now that either type of CH376S modules and/or either type of DB9 ports are usable, the 3D printed case MAY have to be modified to allow access to these newer ports...
+  - When using the Type B CH376S module, it is inset further into the case than the Type A. This is not a problem with small USB thumbdrives, but some larger drives might not fit.
+  - When using metal shrouded DB9 ports instead of the plastic automotive grade versions, the port is inset further into the case, so MOST Control Pad connectors won't fit through the standard opening. The area around these ports will have to be modified to allow these plugs to fit. At some point, a version of the 3D printed case will be developed with an OPEN BACK for the ports, where inserts for any type of port can be printed separately and glued in place. There is no timeline on this option, so for now, modifying the case is the only option.
+- The RAM chip can be socketed and eventually replaced with a Dallas DS1244 RTC (Real Time Clock) module. This works as RAM for all released versions of the Aquarius MX (board and ROM), but DateTime commands that access the RTC won't be available until the 1.3 ROM is released (see the src > rom > v1.3 path for the work-in-progress). This relates to the 3D printed case because there is still plenty of HEIGHT inside the case, as-designed, for this RTC, even socketed, but the version of the case with the door (top2) does expose some of the RTC, which could interfere with future Control Pad interfaces or modified doors.
+
 ## FDM Printing
 The typical method people will use to print the Aquarius MX case is FDM (Fused Deposition Modeling), the most common and cost-effective means to create a 3D printed enclosure. For the Aquarius MX case, here are the recommended specifications for FDM printing.
 
