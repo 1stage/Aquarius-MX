@@ -139,6 +139,8 @@ tokens = {
     0xE1: "IN",
     0xE2: "JOY",
     0xE3: "HEX$",
+    0xE4: "VER",
+    0xE5: "DTM$"
 }
 
 
