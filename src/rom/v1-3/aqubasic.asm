@@ -58,11 +58,11 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-04-11 v1.3  Removed unimplemented PCG code
+; 2023-04-15 v1.3  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
 ;                  Modified CLS to accept an optional parameter for (FG * 16 ) + BG color integer
-;                  Added DTM command and DTM$() function for RealTime Clock access
+;                  Added SDTM command and DTM$() function for RealTime Clock access
 
 VERSION  = 1
 REVISION = 3
@@ -80,7 +80,7 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; PSG    - Program PSG register, value
 ; CALL   - call machine code subroutine
 ; DEBUG  - call AquBUG Monitor/debugger
-; DTM    - DateTime command
+; SDTM   - DateTime command
 
 ; EDIT   - Edit a BASIC line
 
@@ -99,7 +99,7 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; VER()  - Version function, returns the value of the Version and Revision of MX ROM
 
 ; Assembled with ZMAC in 'zmac' mode.
-; command: ZMAC.EXE --zmac -n -I aqubasic.asm
+; command: zmac.exe --zmac -e --oo cim -L -n -I include aqubasic.asm
 ;
 ; symbol scope:-
 ; .label   local to current function
@@ -317,6 +317,7 @@ ROM_ENTRY:
 .no_ch376:
     call    usb__root          ; root directory
 
+
 ; init keyboard vars
     xor     a
     ld      (LASTKEY),a
@@ -342,6 +343,8 @@ SPLASH:
     call    OpenWindow
     ld      hl,bootmenutext
     call    WinPrtStr
+
+    call    SPL_DATETIME       ; Print DateTime at the bottom of the screen
 
 ; wait for Boot option key
 SPLKEY:
@@ -393,9 +396,9 @@ JUMPSTART:
 SHOWCOPYRIGHT:
     call    SHOWCOPY           ; Show system ROM copyright message
     ld      hl,STR_BASIC       ; "USB BASIC"
-    call    $0e9d              ; PRINTSTR
+    call    PRINTSTR           
     ld      hl, STR_VERSION    ;
-    call    $0e9d              ; PRINTSTR
+    call    PRINTSTR           
     ret
 
 ;
@@ -411,7 +414,7 @@ SHOWCOPY:
     dec     hl
 SHOWIT:
     dec     hl
-    call    $0e9d              ; PRINTSTR, Print the string pointed to by HL
+    call    PRINTSTR           
     ret
 
 STR_BASIC:
@@ -473,6 +476,7 @@ MEMSIZE:
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SHOWCOPYRIGHT      ; Show our copyright message
+    call    INIT_RTC           ; Initialize Software Clock
     xor     a
     jp      $0402              ; Jump to OKMAIN (BASIC command line)
 
@@ -492,8 +496,9 @@ MEMSIZE:
 ;---------------------------------------------------------------------
 ;                RTC Driver for Dallas DS1244
 ;---------------------------------------------------------------------
-    include "datetime.asm"
-
+    include "dtm_lib.asm"
+    ;Using dummy Soft Clock until driver is done
+    include "softclock.asm" 
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -556,19 +561,18 @@ BootWinTitle:
 BootMenuText:
     db     CR
   ifdef softrom
-    db     "       1. (disabled)",CR
+    db     "     1. (disabled)",CR
   else
-    db     "       1. Load ROM",CR
+    db     "     1. Load ROM",CR
   endif
     db     CR,CR
-    db     "       2. Debug",CR
+    db     "     2. Debug",CR
     db     CR,CR
 ;     db     "       3. PT3 Player",CR
     db     CR,CR,CR,CR
-    db     "    <RTN> USB BASIC",CR
+    db     "   <RTN> USB BASIC",CR
     db     CR
-    db     " <CTRL-C> Warm Start",CR,CR,CR,CR
-    db     " YYYY-MM-DD HH:MM:SS",0
+    db     " <CTRL-C> Warm Start",0
 
 
 
@@ -653,9 +657,9 @@ TBLCMDS:
     db      $80 + 'C', "AT"
     db      $80 + 'D', "EL"    ; previously KILL
     db      $80 + 'C', "D"
-    db      $80 + 'S', "DT"    ; SET DateTime command
+    db      $80 + 'S', "DTM"    ; SET DateTime command
 ; Functions list
-    db      $80 + 'G', "DT$"   ; GET DateTime function
+    db      $80 + 'D', "TM$"   ; GET DateTime function
     db      $80 + 'I', "N"     ; Input function
     db      $80 + 'J', "OY"    ; Joystick function
     db      $80 + 'H', "EX$"   ; Hex value function
@@ -676,13 +680,13 @@ TBLJMPS:
     dw      ST_CAT
     dw      ST_DEL
     dw      ST_CD
-    dw      ST_SDT
+    dw      ST_SDTM
 TBLJEND:
 
 BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
 TBLFNJP:
-    dw      FN_GDT
+    dw      FN_DTM
     dw      FN_IN
     dw      FN_JOY
     dw      FN_HEX
@@ -712,7 +716,7 @@ AQMAIN:
     ld      (LISTCNT),a         ; Set ROWCOUNT to 0
     call    $19de               ; RSTCOL reset cursor to start of (next) line
     ld      hl,$036e            ; 'Ok'+CR+LF
-    call    $0e9d               ; PRINTSTR
+    call    PRINTSTR            
 ;
 ; Immediate Mode Main Loop
 ;l0414:
@@ -1189,7 +1193,7 @@ FN_HEX:
     ld      (hl),0     ; null-terminate string
     ld      hl,$38e9
 .create_string:
-    jp      $0e2f      ; create BASIC string
+    jp      RETSTR     ; create BASIC string
 
 .hexbyte:
     ld      b,a
@@ -1293,6 +1297,101 @@ ST_CALL:
 ;ST_EDIT
     include "edit.asm"
 
+;------------------------------------------------------------------------------
+;     Redraw DateTime at bottom of SPLASH screen
+;------------------------------------------------------------------------------
+;
+
+SPL_DATETIME:
+
+    ;ld      bc,??????     ;Software Clock Registers
+    ;ld      hl,CASNAM     ;DTM Buffer
+    ;call    rtc_read      ;Read RTC
+    ;ret     nz            ;Abort if No Result
+    ld      hl,DEFAULT_DTM
+    ld      de,FBUFFR     
+    call    dtm_to_fmt    ;Convert to Formatted String
+    
+    ld      d,3                
+    ld      e,17              
+    call    WinSetCursor
+    ld      hl,FBUFFR
+    call    WinPrtStr
+    ret    
+    
+;Starting Date-Time for Null RTC Driver
+DEFAULT_DTM:
+    db      $FF,$00,$00,$00,$11,$12,$06,$17  ;2017-06-12 11:00:00
+            ;vld cc  ss  mm  HH  DD  MM  YY   Date Bruce Abbott released Micro Expander (NZ is GMT+11)
+
+FORMATTED_DTM:
+    db      "2017-06-12 11:00:00",0 
+
+
+;------------------------------------------------------------------------------
+;     Initialize the Real Time Clock
+;------------------------------------------------------------------------------
+
+INIT_RTC:
+    ld      bc,RNDTAB         ;Software Clock Registers
+    call    rtc_init          ;Initialize RTC Chip
+    ;This is for the Software RTC Driver, remove if there's an RTC chip
+    ld      hl,DEFAULT_DTM    ;Default Date Time String
+    call    z,rtc_write       ;If successful, write to SoftClock
+    ret
+
+;------------------------------------------------------------------------------
+;     DateTime Command - SET DateTime
+;------------------------------------------------------------------------------
+;
+;  The SDTM command allows users to SET the DateTime in the Dallas RTC by
+;  using the following format:
+;
+;    SDT "230411101500" (where string is in "YYMMDDHHMMSS" format) - Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
+;
+;  - DateTime is set by default to 24 hour mode, with cc (hundredths of seconds) set to 0
+;
+;  An invalid date will generate a ?? Error
+
+;*** Move this into DTM$() - Passing in a String will set the time
+
+ST_SDTM:
+    ret
+
+;------------------------------------------------------------------------------
+;     DateTime Function - GET DateTime
+;------------------------------------------------------------------------------
+;
+;  The DTM$() function allows users to GET the DateTime from the Dallas RTC
+;  by using the following format and parameters:
+;
+;    PRINT DTM$(0) - Returns DateTime as a string in "YYMMDDHHMMSSCC" format
+;
+;    PRINT DTM$(1) - Returns DateTime as a string in "YYYY-MM-DD HH:MM:SS" format
+;  
+;  - Use of other parameter values will return the same result as GDT$(1)
+;  - Additional parameters may be added for discreet results
+;
+
+FN_DTM:
+    pop     hl
+    inc     hl
+    call    EVLPAR           ; Evaluate argument between parentheses into FAC 
+    ex      (sp),hl
+    ld      de,LABBCK        ; return address
+    push    de               ; on stack
+
+    ld      bc,RNDTAB        ;Software Clock Registers
+    ld      hl,CASNAM        ;DTM Buffer
+    call    rtc_read         ;Read RTC
+    ld      de,FBUFFR
+    call    dtm_to_str       ;Convert to String
+    ld      a,(FPREG+3)            
+    or      a                ;If Argument is not 0
+    call    nz,dtm_fmt_str   ;  Format Date
+    
+    ld      hl,FBUFFR
+    jp      RETSTR
 
 ;=====================================================================
 ;                  Miscellaneous functions

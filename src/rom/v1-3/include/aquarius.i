@@ -98,6 +98,7 @@ SCANCNT  = $380f ; 14351           number of SCANS key has been down for
 FDIV     = $3810 ; 14352           subroutine for division ???
                  ;  ...
 RANDOM   = $381F ; 14367           used by random number generator
+RNDTAB   = $3821 ; 14369           Unused 32 byte Random Number TABLE 
                  ; ...
 LPTLST   = $3845 ; 14405           last printer operation status
 PRNCOL   = $3846 ; 14406  LPTPOS   The current printer column (0-131).
@@ -118,6 +119,7 @@ CASFL3   = $385E ; 14430           tape flag (break key check)
 BUFMIN   = $385F ; 14431           buffer used by INPUT statement
 LINBUF   = $3860 ; 14432  BUF      line input buffer (73 bytes).
                  ;  ...
+
 BUFEND   = $38A9 ; 14505           end of line unput buffer
 DIMFLG   = $38AA ; 14506           dimension flag 1 = array
 VALTYP   = $38AB ; 14507           type: 0 = number, 1 = string
@@ -150,6 +152,7 @@ RESTORE  = $38DC ; 14556           Address of line last RESTOREd
                  ;  ...
 FPREG    = $38E4 ; 14564  FPNUM    floating point number
                  ;  ...
+FBUFFR   = $38E8 ; 14568           floating point string buffer 
 FPSTR    = $38E9 ; 14569           floating point string
                  ;  ...
 ;          $38F9 ; 14585           used by keybord routine
@@ -201,6 +204,7 @@ GETNUM      = $0972  ; evaluate numeric expression
 PUTVAR      = $0b22  ; store variable 16 bit (out: B,A = value)
 PUTVAR8     = $0b36  ; store variable 8 bit (out: B = value)
 
+RETSTR      = $0e2f  ; return string in HL from function  
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
 QSTR        = $0e60  ; create string (HL = text starting with '"')
 GETFLNM     = $1006  ; get tape filename string (out: DE = filename, A = 1st char)
@@ -208,6 +212,7 @@ GETVAR      = $10d1  ; get variable (out: BC = addr, DE = len)
 
 GETLEN      = $0ff7  ; get string length (in: (FPREG) = string block)
                      ;                   (out: HL = string block, A = length)
+FRESTR      = $0fC6  ; Free up temp string, out: HL = address, C = length
 TSTNUM      = $0975  ; error if evaluated expression not a number
 TSTSTR      = $0976  ; error if evaluated expression not string
 CHKTYP      = $0977  ; error if type mismatch
