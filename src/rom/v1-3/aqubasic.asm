@@ -62,7 +62,7 @@
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
 ;                  Modified CLS to accept an optional parameter for (FG * 16 ) + BG color integer
-;                  Added SDTM command and DTM$() function for RealTime Clock access
+;                  Added DTM$() function for RealTime Clock access
 
 VERSION  = 1
 REVISION = 3
@@ -80,7 +80,6 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; PSG    - Program PSG register, value
 ; CALL   - call machine code subroutine
 ; DEBUG  - call AquBUG Monitor/debugger
-; SDTM   - DateTime command
 
 ; EDIT   - Edit a BASIC line
 

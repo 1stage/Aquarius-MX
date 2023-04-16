@@ -9,14 +9,14 @@ Full documentation online at https://github.com/1stage/Aquarius-MX
 **LOCATE** - Position cursor on screen
  - Syntax: LOCATE col, row
 
-**SDT** - SET the DateTime on the Dallas DS1244 RTC (Real Time Clock), if present - ***SLATED FOR v1.3 ROM***
- - Syntax: SDT "230411110700" - Sets the RTC to 04 APR 2023 11:08:00 (24 hour clock), uses "YYMMDDHHMMSS" format
-
-**GDT$** - GET the DateTime from the Dallas DS1244 RTC (Real Time Clock), if present - ***SLATED FOR v1.3 ROM***
- - Syntax: GDT$ (format)
- - format
+**GDT$** - GET / SET the DateTime on the Dallas DS1244 RTC (Real Time Clock), if present - ***SLATED FOR v1.3 ROM***
+ - Syntax: GDT$ (number) - GET the DateTime
+ - number
    - 0 : Returns the DateTime as a string in "YYMMDDHHMMSSCC" format (CC = hundredths of seconds)
    - 1 : Returns the DateTime as a string in "YYYY-MM-DD HH:MM:SS" format (Century is assumed to be 20)
+ - Syntax: GDT$ (string) - SET the DateTime
+ - string
+   - "YYMMDDHHMMSS" : Sets the DateTime. Centiseconds are set to 00. Century is assumed to be 2000.
 
 **IN**    - Read data from I/O port
  - Syntax: IN (port)
