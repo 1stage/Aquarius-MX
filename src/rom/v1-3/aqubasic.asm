@@ -657,13 +657,12 @@ TBLCMDS:
     db      $80 + 'C', "AT"
     db      $80 + 'D', "EL"    ; previously KILL
     db      $80 + 'C', "D"
-    db      $80 + 'S', "DTM"    ; SET DateTime command
 ; Functions list
-    db      $80 + 'D', "TM$"   ; GET DateTime function
     db      $80 + 'I', "N"     ; Input function
     db      $80 + 'J', "OY"    ; Joystick function
     db      $80 + 'H', "EX$"   ; Hex value function
     db      $80 + 'V', "ER"    ; USB BASIC ROM Version function
+    db      $80 + 'D', "TM$"   ; GET DateTime function
     db      $80                ; End of table marker
 
 TBLJMPS:
@@ -680,17 +679,16 @@ TBLJMPS:
     dw      ST_CAT
     dw      ST_DEL
     dw      ST_CD
-    dw      ST_SDTM
 TBLJEND:
 
 BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
 TBLFNJP:
-    dw      FN_DTM
     dw      FN_IN
     dw      FN_JOY
     dw      FN_HEX
     dw      FN_VER
+    dw      FN_DTM
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -1341,24 +1339,6 @@ INIT_RTC:
     ret
 
 ;------------------------------------------------------------------------------
-;     DateTime Command - SET DateTime
-;------------------------------------------------------------------------------
-;
-;  The SDTM command allows users to SET the DateTime in the Dallas RTC by
-;  using the following format:
-;
-;    SDT "230411101500" (where string is in "YYMMDDHHMMSS" format) - Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
-;
-;  - DateTime is set by default to 24 hour mode, with cc (hundredths of seconds) set to 0
-;
-;  An invalid date will generate a ?? Error
-
-;*** Move this into DTM$() - Passing in a String will set the time
-
-ST_SDTM:
-    ret
-
-;------------------------------------------------------------------------------
 ;     DateTime Function - GET DateTime
 ;------------------------------------------------------------------------------
 ;
@@ -1369,9 +1349,12 @@ ST_SDTM:
 ;
 ;    PRINT DTM$(1) - Returns DateTime as a string in "YYYY-MM-DD HH:MM:SS" format
 ;  
-;  - Use of other parameter values will return the same result as GDT$(1)
-;  - Additional parameters may be added for discreet results
+;    Any other numeric parameters return the same result as DTM$(1)
+;    although others could be added in the future
 ;
+;    PRINT DTM$("230411101500") - Sets DateTime to 2023-04-23 10:15:00 (24 hour format)
+;    String argument is in format "YYMMDDHHMMSS" with any following characters ignored
+;    Returns the new DateTime string if successful, empty string if not
 
 FN_DTM:
     pop     hl
@@ -1380,18 +1363,45 @@ FN_DTM:
     ex      (sp),hl
     ld      de,LABBCK        ; return address
     push    de               ; on stack
-
+    
+    ld      a,(VALTYP)         
+    or      a                ; If argument is a string
+    jr      nz,SET_DTM       ;   Set the Clock
+    
     ld      bc,RNDTAB        ;Software Clock Registers
     ld      hl,CASNAM        ;DTM Buffer
+
+DTM_READ:
     call    rtc_read         ;Read RTC
     ld      de,FBUFFR
     call    dtm_to_str       ;Convert to String
     ld      a,(FPREG+3)            
     or      a                ;If Argument is not 0
     call    nz,dtm_fmt_str   ;  Format Date
-    
+DTM_RETURN
     ld      hl,FBUFFR
     jp      RETSTR
+
+SET_DTM:
+    call    FRESTR          ; Free up the Temporary String
+    ld      a,c
+    cp      12              ; Abort If then 12 characters long
+    jp      c,DTM_ERROR
+    
+    ld      d,h             ; String Address
+    ld      e,l
+    ld      hl,CASNAM       ; RTC Buffer
+    call    str_to_dtm      ; Convert String to DateTime
+    jr      nz,DTM_ERROR    ; Abort if Date String is Invalid   
+
+    ld      bc,RNDTAB       ;Software Clock Registers
+    call    rtc_write       ;Write new DateTime to clock
+    jr      DTM_READ        ;Read Clock and Return Time
+
+DTM_ERROR:
+    xor     a
+    ld      (FBUFFR),a      ; Return Null String - For Now
+    jr      DTM_RETURN
 
 ;=====================================================================
 ;                  Miscellaneous functions

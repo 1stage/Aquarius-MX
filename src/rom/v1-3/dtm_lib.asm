@@ -131,8 +131,8 @@ dtm_str_loop:
 ;      DE = Address of String Buffer
 ;           Must be in format YYMMDDHHmmss (any following characters are ignored)
 ;Destroys: BC
-;Returns: A = 0 if Successful, $FF if Date String is Invalid
-;         DE and HL unchanged
+;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;         BC, DE, HL unchanged
 str_to_dtm:
         push    hl                ;Save Arguments
         push    de
@@ -181,7 +181,7 @@ str_dtm_err:
 ;Args: HL = Address of DTM Buffer
 ;Destroys: BC
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
-;         DE and HL unchanged
+;         BC, DE, HL unchanged
 dtm_validate:
         push    hl                ;Save Arguments
         push    de
