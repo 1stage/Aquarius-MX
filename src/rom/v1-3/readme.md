@@ -1,23 +1,25 @@
 Building Aqubasic from Source 
 =============================
 
-   file                purpose
-aqubasic.asm     ROM initialisation, boot menu, extended BASIC commands
-aqubug.asm       Aqubug debugger
-datetime.asm     Interface to the Dallas DS1244 RTC (Real Time Clock) chip
-debug.asm        'lite' debugger (see notes below)
-dos.asm          interface between BASIC and USB driver 
-ch376.asm        USB driver
-windows.asm      windowed text
-filerequest.asm  select file from list 
-string.asm       string functions
-load_rom.asm     rom loader 
-PT3play.asm      play PT3 music files - TO BE REMOVED !!!
-edit.asm         BASIC command line editor
-keycheck.asm     keyboard scan
-aquarius.i       aquarius system defines
-windows.i        windowed text defines       
-macros.i         structure macros etc.
+
+| file         |    purpose   |
+|------------------|-----------------------------------------------------------|
+| aqubasic.asm     | ROM initialisation, boot menu, extended BASIC commands |
+| aqubug.asm       | Aqubug debugger |
+| datetime.asm     | Interface to the Dallas DS1244 RTC (Real Time Clock) chip |
+| debug.asm        | 'lite' debugger (see notes below) |
+| dos.asm          | interface between BASIC and USB driver |
+| ch376.asm        | USB driver |
+| windows.asm      | windowed text |
+| filerequest.asm  | select file from list  |
+| string.asm       | string functions |
+| load_rom.asm     | rom loader  |
+| PT3play.asm      | play PT3 music files - TO BE REMOVED !!! |
+| edit.asm         | BASIC command line editor |
+| keycheck.asm     | keyboard scan |
+| aquarius.i       | aquarius system defines |
+| windows.i        | windowed text defines     |   
+| macros.i         | structure macros etc. |
 
 27 AUG 2022 (SPH) - zmac is still the recommended method for compiling the MX ROM into a usable binary file, but the project has been turned into a Visual Studio Code project to make things simpler for most folks to work with. Here are the general steps to setting up Visual Studio Code and zmac on a Windows-based PC:
   - From the Microsoft site, download and install Visual Studio Code (not Visual Studio 2022, etc). The default install settings are fine. You should restart Windows after install is complete.
