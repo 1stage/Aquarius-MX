@@ -36,6 +36,7 @@
 ; 2017-05-17 bugfix: NewLine blanked several lines if
 ;            cursor x was beyond right side of window.
 ; 2017-06-12 V1.0  bumped to release version
+; 2023-04-17 v1.1  Revised characters used for window borders
 ;
 ;---------------------------------------------------------
 ;
