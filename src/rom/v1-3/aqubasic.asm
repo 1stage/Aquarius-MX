@@ -646,7 +646,7 @@ UDF_JMP:
 ;   They also get added at the END of the TBLFNJP list.
 ;
 
-BTOKEN       equ $d4                ; our first token number
+BTOKEN       equ $d4                ; our first token identifier
 TBLCMDS:
 ; Commands list
     db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line
