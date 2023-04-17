@@ -1,4 +1,4 @@
-Building Aqubasic from Source 
+Building AquBASIC from Source 
 =============================
 
 
