@@ -638,31 +638,37 @@ UDF_JMP:
     dw      NEXTSTMT           ; 6 execute next BASIC statement
     dw      RUNPROG            ; 7 run program
 
-; Our commands and functions
+; Our Commands and Functions
+; - New commands get added to the TOP of the commands list,
+;   and the BTOKEN value DECREMENTS as commands are added.
+;   They also get added at the TOP of the TBLJMPS list.
+; - New functions get added to the END of the functions list.
+;   They also get added at the END of the TBLFNJP list.
 ;
-BTOKEN       equ $d4             ; our first token number
+
+BTOKEN       equ $d4                ; our first token number
 TBLCMDS:
 ; Commands list
-    db      $80 + 'E', "DIT"
-    db      $80 + 'C', "LS"
-    db      $80 + 'L', "OCATE"
-    db      $80 + 'O', "UT"
-    db      $80 + 'P', "SG"
-    db      $80 + 'D', "EBUG"
-    db      $80 + 'C', "ALL"
-    db      $80 + 'L', "OAD"
-    db      $80 + 'S', "AVE"
-    db      $80 + 'D', "IR"
-    db      $80 + 'C', "AT"
-    db      $80 + 'D', "EL"    ; previously KILL
-    db      $80 + 'C', "D"
+    db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line
+    db      $80 + 'C', "LS"         ; $d5 - Clear Screen
+    db      $80 + 'L', "OCATE"      ; $d6 - Move cursor to specific location on screen
+    db      $80 + 'O', "UT"         ; $d7 - Send data to serial device
+    db      $80 + 'P', "SG"         ; $d8 - Send sound generator data
+    db      $80 + 'D', "EBUG"       ; $d9 - Activate debugger
+    db      $80 + 'C', "ALL"        ; $da - Force Aquarius to execute code at given location
+    db      $80 + 'L', "OAD"        ; $db - Load file from USB
+    db      $80 + 'S', "AVE"        ; $dc - Save file to USB
+    db      $80 + 'D', "IR"         ; $dd - Directory listing
+    db      $80 + 'C', "AT"         ; $de - Abbreviated directory listing
+    db      $80 + 'D', "EL"         ; $df - delete file (previously KILL)
+    db      $80 + 'C', "D"          ; $e0 - change directory
 ; Functions list
-    db      $80 + 'I', "N"     ; Input function
-    db      $80 + 'J', "OY"    ; Joystick function
-    db      $80 + 'H', "EX$"   ; Hex value function
-    db      $80 + 'V', "ER"    ; USB BASIC ROM Version function
-    db      $80 + 'D', "TM$"   ; GET DateTime function
-    db      $80                ; End of table marker
+    db      $80 + 'I', "N"          ; $e1 - Input function
+    db      $80 + 'J', "OY"         ; $e2 - Joystick function
+    db      $80 + 'H', "EX$"        ; $e3 - Hex value function
+    db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
+    db      $80 + 'D', "TM$"        ; $e5 - GET DateTime function
+    db      $80                     ; End of table marker
 
 TBLJMPS:
     dw      ST_EDIT
