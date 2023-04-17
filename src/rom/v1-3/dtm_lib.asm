@@ -26,6 +26,7 @@
 ;      DE = Address of String Buffer
 ;Destroys: AF, BC
 ;Returns: DE and HL unchanged
+
 dtm_to_fmt:
         call  dtm_to_str          ;Convert RTC Date to Unformatted Date String
                                   ;then Fall into Formatting Routine
