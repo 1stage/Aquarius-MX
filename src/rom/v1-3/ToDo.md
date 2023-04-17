@@ -1,6 +1,8 @@
-; This file is for recording upcoming changes and features that are being added to track them
+# TO-DO List
 
-IN PROCESS:
+This file is for recording upcoming changes and features that are being added to track them
+
+## IN PROCESS:
 
 - DEINT - Create and unsigned DEINT replacement that can be used by IN/OUT/CALL
 
@@ -11,7 +13,7 @@ IN PROCESS:
 - Extand EVAL to manage Hex literals (maybe Binary as well)
 
 
-COMPLETE:
+## COMPLETE:
 
 - VAR
 
