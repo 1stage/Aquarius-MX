@@ -51,6 +51,11 @@ rtc_read:
     ld      (hl),a            ;DTM is Invalid
     dec     a
     ret
+;Read Real Time Clock
+;Args: HL = Address of DTM Buffer
+;      BC = Address of Software Clock 
+;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;         BC, DE, HL unchanged
 do_rtc_read:
  
     ld      a,(ds1244addr)  ; save byte at control address
