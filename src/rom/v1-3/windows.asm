@@ -9,7 +9,7 @@
 ; - Custom text rendering via WinPrtChr. Does not use any
 ;   system variables or routines. Text printing optimized
 ;   for speed! (many times faster than system routines).
-;   To get the fastet possible speed, most housekeeping
+;   To get the fastest possible speed, most housekeeping
 ;   is off-loaded to the user.
 ;
 ; - WinPrtChr does no control code parsing, renders all
@@ -29,7 +29,7 @@
 ;   cursor position. These registers must be preserved!
 ;   Watch out for system functions such as KEYWAIT, which
 ;   uses alternate registers. If alternate registers are
-;   currupted you should call OpenWindow or WinSetCursor
+;   corrupted you should call OpenWindow or WinSetCursor
 ;   to reset them.
 ;
 ; changes:
@@ -39,7 +39,7 @@
 ;
 ;---------------------------------------------------------
 ;
-; OpenWindow - display window, intitialize cursor
+; OpenWindow - display window, initialize cursor
 ;    in: IX  = window
 ;   out: HL' = cursor address in screen RAM
 ;        DE' = x,y position in window

@@ -43,14 +43,16 @@ dtm_fmt_str:
         push    bc
         ld      h,d               ;DE = Start Position in Raw String
         ld      l,e
-        ld      bc,9              ;(Second Digit of Minutes)
+        ld      bc,11              ;(Second Digit of Minutes)
         add     hl,bc
         ld      d,h
         ld      e,l
-        ld      bc,7              ;HL = Start Position in Formatted String
+        ld      bc,8              ;HL = Start Position in Formatted String
         add     hl,bc             ;(Terminator Ending String)
         ld      c,0
-        call    dtm_str_mov       ;Move Minutes + ASCII NUL
+        call    dtm_str_mov       ;Move Seconds + ASCII NUL
+        ld      c,':'
+        call    dtm_str_mov       ;Move Minutes + Colon
         ld      c,':'
         call    dtm_str_mov       ;Move Hours + Colon
         ld      c,' '
@@ -130,7 +132,6 @@ dtm_str_loop:
 ;Args: HL = Address of DTM Buffer
 ;      DE = Address of String Buffer
 ;           Must be in format YYMMDDHHmmss (any following characters are ignored)
-;Destroys: BC
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 str_to_dtm:
@@ -139,7 +140,7 @@ str_to_dtm:
         push    bc
         ld      bc,7              ;Start at RTC Field 7 (Year)
         add     hl,bc             
-        ld      b,c               ;and Process 7 Fields
+        ld      b,6               ;and Process 6 Fields
 str_dtm_loop: 
         call    str_dtm_digit     ;Get Tens Digit
         sla     a                 ;Shift to High Nybble
@@ -161,8 +162,14 @@ str_dtm_loop:
 
 ;Return Binary Value of ASCII Digit at DE, Error Out if Not Digit
 str_dtm_digit:
+
+        exx
+        rst     $18          
+        exx
+
         ld      a,(de)            ;Get ASCII Digit
         sub     '0'               ;Convert to Binary Value
+        ret
         jr      c,str_dtm_err     ;Error if Less than '0'
         cp      ':'
         jr      nc,str_dtm_err    ;Error if Greater than '9'
@@ -170,8 +177,10 @@ str_dtm_digit:
         ret
         
 str_dtm_err:
-        pop     bc                ;Discard Subroutine Return Address
+        pop     bc                ;Discard str_dtm_digit return address
         ld      a,$FF             ;Date Format Error
+        or      a
+        pop     bc                ;Discard Subroutine Return Address
         pop     de                ;Restore Arguments
         pop     hl
         ret                       ;All Done

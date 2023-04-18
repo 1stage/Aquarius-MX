@@ -70,6 +70,7 @@ REVISION = 3
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1    ; full featured debugger (else lite version without screen save etc.)
+softclock equ 1   ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -94,8 +95,8 @@ aqubug   equ 1    ; full featured debugger (else lite version without screen sav
 ; IN()   - get data from I/O port
 ; JOY()  - Read joystick
 ; HEX$() - convert number to hexadecimal string
-; DTM$() - DateTime function
 ; VER()  - Version function, returns the value of the Version and Revision of MX ROM
+; DTM$() - DateTime function
 
 ; Assembled with ZMAC in 'zmac' mode.
 ; command: zmac.exe --zmac -e --oo cim -L -n -I include aqubasic.asm
@@ -248,7 +249,6 @@ WIN_INPUTLINE     jp  InputLine
 WIN_reserved1     jp  break
 WIN_reserved2     jp  break
 
-
 ; windowed text functions
    include "windows.asm"
 
@@ -343,8 +343,19 @@ SPLASH:
     ld      hl,bootmenutext
     call    WinPrtStr
 
+; set up real time clock
+    
+DTM_STRING = RNDTAB
+DTM_BUFFER = CASNAM
+  ifdef softclock
+RTC_ADDR = RNDTAB+20
+RTC_TEMP = FBUFFR
+  endif
+    call    INIT_RTC
+   
+; outer loop for boot option key so date time display gets updated
+SPLLOOP:
     call    SPL_DATETIME       ; Print DateTime at the bottom of the screen
-
 ; wait for Boot option key
 SPLKEY:
     call    Key_Check
@@ -361,8 +372,7 @@ SPLKEY:
     jp      z, COLDBOOT
     cp      $03                ;  ^C = warm boot
     jp      z, WARMBOOT
-    call    SPL_DATETIME       ; Redraw the DateTime at the bottom of the screen
-    jr      SPLKEY
+    jr      SPLLOOP
 
 DEBUG:
     call    InitBreak          ; set RST $38 vector to Trace Break
@@ -474,8 +484,8 @@ MEMSIZE:
     call    $0bbe              ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
+    call    COPY_RTC           ; Copy Software Clock Registers to permanent location
     call    SHOWCOPYRIGHT      ; Show our copyright message
-    call    INIT_RTC           ; Initialize Software Clock
     xor     a
     jp      $0402              ; Jump to OKMAIN (BASIC command line)
 
@@ -640,9 +650,10 @@ UDF_JMP:
 
 ; Our commands and functions
 ;
-BTOKEN       equ $d4             ; our first token number
+BTOKEN       equ $d3             ; our first token number
 TBLCMDS:
 ; Commands list
+    db      $80 + 'S', "DTM"
     db      $80 + 'E', "DIT"
     db      $80 + 'C', "LS"
     db      $80 + 'L', "OCATE"
@@ -665,6 +676,7 @@ TBLCMDS:
     db      $80                ; End of table marker
 
 TBLJMPS:
+    dw      ST_SDTM
     dw      ST_EDIT
     dw      ST_CLS
     dw      ST_LOCATE
@@ -1279,7 +1291,7 @@ ST_CALL:
 ;---------------------------------------------------------------------
 ; ST_CD
 ; ST_LOAD
-; ST_SAVE
+; ST_SAVE7
 ; ST_DIR
 ; ST_CAT
 ; ST_DEL
@@ -1301,41 +1313,79 @@ ST_CALL:
 
 SPL_DATETIME:
 
-    ;ld      bc,??????     ;Software Clock Registers
-    ;ld      hl,CASNAM     ;DTM Buffer
-    ;call    rtc_read      ;Read RTC
-    ;ret     nz            ;Abort if No Result
-    ld      hl,DEFAULT_DTM
-    ld      de,FBUFFR     
-    call    dtm_to_fmt    ;Convert to Formatted String
-    
-    ld      d,3                
+  ifdef RTC_TEMP
+    ld      bc,RTC_TEMP
+  endif
+    ld      hl,DTM_BUFFER
+    call    rtc_read      ;Read RTC
+    ld      de,DTM_STRING
+    call    dtm_to_fmt    ;Convert to Formatted String   
+    ld      d,1                
     ld      e,17              
     call    WinSetCursor
-    ld      hl,FBUFFR
+    ld      hl,DTM_STRING
     call    WinPrtStr
     ret    
     
-;Starting Date-Time for Null RTC Driver
-DEFAULT_DTM:
-    db      $FF,$00,$00,$00,$11,$12,$06,$17  ;2017-06-12 11:00:00
-            ;vld cc  ss  mm  HH  DD  MM  YY   Date Bruce Abbott released Micro Expander (NZ is GMT+11)
-
-FORMATTED_DTM:
-    db      "2017-06-12 11:00:00",0 
-
+;Starting Date-Time for Software Clock
+;2017-06-12 11:00:00 - Date Bruce Abbott released Micro Expander (NZ is GMT+11)
+SPL_DEFAULT:
+    db      $FF,$00,$00,$00,$11,$12,$06,$17,$00,$00 
+            ;enl cc  ss  mm  HH  DD  MM  YY cdl cdh
 
 ;------------------------------------------------------------------------------
 ;     Initialize the Real Time Clock
 ;------------------------------------------------------------------------------
 
 INIT_RTC:
-    ld      bc,RNDTAB         ;Software Clock Registers
+
+  ifdef softclock
+    ld      hl,SPL_DEFAULT    
+    ld      bc,RTC_TEMP
+  endif
     call    rtc_init          ;Initialize RTC Chip
-    ;This is for the Software RTC Driver, remove if there's an RTC chip
-    ld      hl,DEFAULT_DTM    ;Default Date Time String
-    call    z,rtc_write       ;If successful, write to SoftClock
     ret
+
+COPY_RTC:
+  ifdef softclock
+    ld      hl,RTC_TEMP
+    ld      de,RTC_ADDR
+    ld      bc,10
+    ldir
+  endif
+    ret
+    
+;------------------------------------------------------------------------------
+;     DateTime Command - SET DateTime
+;------------------------------------------------------------------------------
+;
+;  The SDTM command allows users to SET the DateTime in the Dallas RTC by
+;  using the following format:
+;
+;    SDTM "230411101500" (where string is in "YYMMDDHHMMSS" format) - Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
+;
+;  - Improperly formatted string causes FC Error
+;  - DateTime is set by default to 24 hour mode, with cc (hundredths of seconds) set to 0
+;
+
+ST_SDTM:
+    call    EVAL            ; Canonical FRMEVL
+    push    hl              ; Save text pointer
+    call    FRESTR          ; Free temp string, return pointer in D,E
+    
+    ld      a,c
+    cp      12              ; Error If less than 12 characters long
+    jp      c,ERROR_FC      
+
+    ld      hl,DTM_BUFFER   ; 
+    call    str_to_dtm      ; Convert String to DateTime
+    ;jp      nz,ERROR_FC     ; Error if Date String is Invalid   
+    ld      bc,RTC_ADDR
+    call    rtc_write
+    pop     hl              ; Restore text pointer
+    ret
+
+
 
 ;------------------------------------------------------------------------------
 ;     DateTime Function - GET DateTime
@@ -1362,45 +1412,20 @@ FN_DTM:
     ex      (sp),hl
     ld      de,LABBCK        ; return address
     push    de               ; on stack
+    call    TSTNUM
     
-    ld      a,(VALTYP)         
-    or      a                ; If argument is a string
-    jr      nz,SET_DTM       ;   Set the Clock
-    
-    ld      bc,RNDTAB        ;Software Clock Registers
-    ld      hl,CASNAM        ;DTM Buffer
-
-DTM_READ:
+    ld      bc,RTC_ADDR      ;Software Clock Registers
+    ld      hl,DTM_BUFFER    ;DTM Buffer
     call    rtc_read         ;Read RTC
-    ld      de,FBUFFR
+    ld      de,DTM_STRING
     call    dtm_to_str       ;Convert to String
     ld      a,(FPREG+3)            
     or      a                ;If Argument is not 0
     call    nz,dtm_fmt_str   ;  Format Date
-DTM_RETURN
-    ld      hl,FBUFFR
+    ld      hl,DTM_STRING
+    ld      a,1              ;Set Value Type to String
+    ld      (VALTYP),a
     jp      RETSTR
-
-SET_DTM:
-    call    FRESTR          ; Free up the Temporary String
-    ld      a,c
-    cp      12              ; Abort If then 12 characters long
-    jp      c,DTM_ERROR
-    
-    ld      d,h             ; String Address
-    ld      e,l
-    ld      hl,CASNAM       ; RTC Buffer
-    call    str_to_dtm      ; Convert String to DateTime
-    jr      nz,DTM_ERROR    ; Abort if Date String is Invalid   
-
-    ld      bc,RNDTAB       ;Software Clock Registers
-    call    rtc_write       ;Write new DateTime to clock
-    jr      DTM_READ        ;Read Clock and Return Time
-
-DTM_ERROR:
-    xor     a
-    ld      (FBUFFR),a      ; Return Null String - For Now
-    jr      DTM_RETURN
 
 ;=====================================================================
 ;                  Miscellaneous functions
