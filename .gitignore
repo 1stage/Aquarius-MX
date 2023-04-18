@@ -9,3 +9,7 @@
 pcb/eagle/aq_mx_v1-4-0c.b\#6
 *.b#7
 *.s#3
+zout/aqubasic.cim
+zout/aqubasic.hex
+zout/USBBasic.rom
+.vscode/tasks.json

@@ -488,7 +488,8 @@ MEMSIZE:
 ;---------------------------------------------------------------------
     include "dtm_lib.asm"
     ;Using dummy Soft Clock until driver is done
-    include "softclock.asm" 
+    ;include "softclock.asm" 
+    include "ds1244rtc.asm" 
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -1293,10 +1294,10 @@ ST_CALL:
 
 SPL_DATETIME:
 
-    ;ld      bc,??????     ;Software Clock Registers
-    ;ld      hl,CASNAM     ;DTM Buffer
-    ;call    rtc_read      ;Read RTC
-    ;ret     nz            ;Abort if No Result
+    ld      bc,RNDTAB     ;Software Clock Registers
+    ld      hl,CASNAM     ;DTM Buffer
+    call    rtc_read      ;Read RTC
+    ret     nz            ;Abort if No Result
     ld      hl,DEFAULT_DTM
     ld      de,FBUFFR     
     call    dtm_to_fmt    ;Convert to Formatted String
