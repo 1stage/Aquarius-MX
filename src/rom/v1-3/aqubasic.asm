@@ -353,7 +353,11 @@ SPLKEY:
     jr      z,LoadROM
   endif
     cp      "2"                ; '2' = debugger
-    jr      z,DEBUG
+    jr      z, DEBUG
+    cp      "a"                ; 'a' = About screen
+    jr      z, AboutSCR        
+    cp      "A"                ; 'A' = About screen
+    jr      z, AboutSCR        
     cp      $0d                ; RTN = cold boot
     jp      z, COLDBOOT
     cp      $03                ;  ^C = warm boot
@@ -370,6 +374,52 @@ DEBUG:
 LoadROM:
     call    Load_ROM           ; ROM loader
     JR      SPLASH
+
+; About/Credits window
+
+AboutSCR:
+    ld      ix,AboutBdrWindow           ; Draw outer window
+    call    OpenWindow
+    ld      ix,AboutWindow              ; Draw smaller inset window
+    call    OpenWindow
+    ld      hl,AboutText
+    call    OpenWindow
+    call    WinPrtStr
+    call    Wait_key
+    JR      SPLASH
+
+AboutBdrWindow:
+    db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
+    db   (BLACK*16)+CYAN              ; text colors,   (FG * 16) + BG
+    db   (DKGREY*16)+CYAN             ; border colors, (FG * 16) + BG
+    db   2,3,36,20                    ; x,y,w,h
+    dw   AboutBdrTitle                ; title
+
+AboutWindow:
+    db   0                            ; attributes
+    db   (BLUE*16)+CYAN               ; text colors,   (FG * 16) + BG
+    db   (DKGREY*16)+CYAN             ; border colors, (FG * 16) + BG
+    db   4,4,32,18                    ; x,y,w,h
+    dw   0                            ; title
+
+AboutBdrTitle:
+    db     " About USB BASIC ",0
+
+AboutText:
+    db     CR,CR,CR
+    db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
+    db     " Release Date - 2023-04-18",CR,CR
+    db     " ROM Dev Team - Curtis Kaylor",CR
+    db     "                Mack Wharton",CR
+    db     "                Sean Harrington",CR
+    db     CR
+    db     "     AquaLite - Richard Chandler",CR
+    db     CR
+    db     "Aquarius Draw - Matt Pilz",CR
+    db     CR
+    db     "Original Code - Bruce Abbott",CR
+    db     CR
+    db     0
 
 ; CTRL-C pressed in boot menu
 WARMBOOT:
@@ -529,13 +579,13 @@ PAL__NTSC:
     POP  BC
     RET
 
-; boot window with border
+; boot outer window with border
 BootBdrWindow:
-    db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
-    db     CYAN
-    db     CYAN
-    db     2,3,36,20
-    dw     bootWinTitle
+    db      (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
+    db      CYAN                   ; text colors
+    db      CYAN                   ; border colors
+    db      2,3,36,20              ; x,y,w,h
+    dw      bootWinTitle           ; Titlebar text
 
 ; boot window text inside border
 BootWindow:
@@ -558,10 +608,13 @@ BootMenuText:
   endif
     db     CR,CR
     db     "     2. Debug",CR
-    db     CR,CR,CR,CR,CR,CR            ; Move down six rows to bottom of screen
-    db     "   <RTN> USB BASIC",CR
+    db     CR,CR,CR,CR,CR              ; Move down a few rows
+    db     "    <RTN> USB BASIC",CR
     db     CR
-    db     " <CTRL-C> Warm Start",0
+    db     " <CTRL-C> Warm Start",CR
+    db     CR
+    db     "      <A> About...",CR
+    db     CR,0
 
 
 
