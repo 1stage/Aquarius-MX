@@ -171,6 +171,7 @@ SF_DEBUG = 7       ; 1 = Debugger available
 ; via these vectors only!
 ;
 ; system vectors
+
 SYS_BREAK         jp  Break
 SYS_DEBUG         jp  ST_DEBUG
 SYS_KEY_CHECK     jp  Key_Check
@@ -179,7 +180,6 @@ SYS_EDITLINE      jp  EditLine
 SYS_reserved1     jp  break
 SYS_reserved2     jp  break
 SYS_reserved3     jp  break
-
 
 ; USB driver vectors
 USB_OPEN_READ     jp  usb__open_read
@@ -365,9 +365,11 @@ SPLKEY:
     jr      z,LoadROM
   endif
     cp      "2"                ; '2' = debugger
-    jr      z,DEBUG
- ;    cp      "3"                ; '3' = PT3 player
- ;    jr      z,PTPLAY
+    jr      z, DEBUG
+    cp      "a"                ; 'a' = About screen
+    jr      z, AboutSCR        
+    cp      "A"                ; 'A' = About screen
+    jr      z, AboutSCR        
     cp      $0d                ; RTN = cold boot
     jp      z, COLDBOOT
     cp      $03                ;  ^C = warm boot
@@ -384,9 +386,51 @@ LoadROM:
     call    Load_ROM           ; ROM loader
     JR      SPLASH
 
-;PTPLAY:
-;     CALL    PT3_PLAY           ; Music player
-;     JR      SPLASH
+; About/Credits window
+
+AboutSCR:
+    ld      ix,AboutBdrWindow           ; Draw outer window
+    call    OpenWindow
+    ld      ix,AboutWindow              ; Draw smaller inset window
+    call    OpenWindow
+    ld      hl,AboutText
+    call    OpenWindow
+    call    WinPrtStr
+    call    Wait_key
+    JR      SPLASH
+
+AboutBdrWindow:
+    db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
+    db   (BLACK*16)+CYAN              ; text colors,   (FG * 16) + BG
+    db   (DKGREY*16)+CYAN             ; border colors, (FG * 16) + BG
+    db   2,3,36,20                    ; x,y,w,h
+    dw   AboutBdrTitle                ; title
+
+AboutWindow:
+    db   0                            ; attributes
+    db   (BLUE*16)+CYAN               ; text colors,   (FG * 16) + BG
+    db   (DKGREY*16)+CYAN             ; border colors, (FG * 16) + BG
+    db   4,4,32,18                    ; x,y,w,h
+    dw   0                            ; title
+
+AboutBdrTitle:
+    db     " About USB BASIC ",0
+
+AboutText:
+    db     CR,CR,CR
+    db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
+    db     " Release Date - 2023-04-18",CR,CR                       ; Can we parameterize this later?
+    db     " ROM Dev Team - Curtis F Kaylor",CR
+    db     "                Mack Wharton",CR
+    db     "                Sean Harrington",CR
+    db     CR
+    db     "     AquaLite - Richard Chandler",CR
+    db     CR
+    db     "Aquarius Draw - Matt Pilz",CR
+    db     CR
+    db     "Original Code - Bruce Abbott",CR
+    db     CR
+    db     0
 
 ; CTRL-C pressed in boot menu
 WARMBOOT:
@@ -410,7 +454,6 @@ SHOWCOPYRIGHT:
     call    PRINTSTR           
     ret
 
-;
 ; Show Copyright message in system ROM
 ;
 SHOWCOPY:
@@ -444,9 +487,10 @@ COLDBOOT:
     ld      (RETYPBUF),a       ; NULL history buffer
     ld      a,$0b
     rst     $18                ; clear screen
+
 ; Test the memory
 ; only testing 1st byte in each 256 byte page!
-;
+
     ld      hl,$3A00           ; first page of free RAM
     ld      a,$55              ; pattern = 01010101
 MEMTEST:
@@ -495,19 +539,18 @@ MEMSIZE:
 ;---------------------------------------------------------------------
     include "load_rom.asm"
 
-
 ;---------------------------------------------------------------------
 ;                      USB Disk Driver
 ;---------------------------------------------------------------------
     include "ch376.asm"
-
 
 ;---------------------------------------------------------------------
 ;                RTC Driver for Dallas DS1244
 ;---------------------------------------------------------------------
     include "dtm_lib.asm"
     ;Using dummy Soft Clock until driver is done
-    include "softclock.asm" 
+    ;include "softclock.asm" 
+    include "ds1244rtc.asm" 
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -518,7 +561,7 @@ MEMSIZE:
 ; out: nc = PAL, c = NTSC
 ;
 ; NOTE: waits for ~17-41ms. Do not use in timing-critical code!
-;
+
 PAL__NTSC:
     PUSH BC
 .wait_vbl1:
@@ -547,13 +590,13 @@ PAL__NTSC:
     POP  BC
     RET
 
-; boot window with border
+; boot outer window with border
 BootBdrWindow:
-    db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
-    db     CYAN
-    db     CYAN
-    db     2,3,36,20
-    dw     bootWinTitle
+    db      (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
+    db      CYAN                   ; text colors
+    db      CYAN                   ; border colors
+    db      2,3,36,20              ; x,y,w,h
+    dw      bootWinTitle           ; Titlebar text
 
 ; boot window text inside border
 BootWindow:
@@ -576,12 +619,13 @@ BootMenuText:
   endif
     db     CR,CR
     db     "     2. Debug",CR
-    db     CR,CR
-;     db     "       3. PT3 Player",CR
-    db     CR,CR,CR,CR
-    db     "   <RTN> USB BASIC",CR
+    db     CR,CR,CR,CR,CR                ; Move down a few rows
+    db     "    <RTN> USB BASIC",CR
     db     CR
-    db     " <CTRL-C> Warm Start",0
+    db     " <CTRL-C> Warm Start",CR
+    db     CR
+    db     "      <A> About...",CR
+    db     CR,0
 
 
 
@@ -591,7 +635,7 @@ BootMenuText:
 ; This address is stored at $3806-7, and is called by
 ; every RST $30. It allows us to hook into the system
 ; ROM in several places (anywhere a RST $30 is located).
-;
+
 HOOK ex      (sp),hl            ; save HL and get address of byte after RST $30
     push    af                  ; save AF
     ld      a,(hl)              ; A = byte (RST $30 parameter)
@@ -629,6 +673,7 @@ HOOKEND:
 ; UDF parameter table
 ; List of RST $30,xx hooks that we are monitoring.
 ; NOTE: order is reverse of UDF jumps!
+
 UDFLIST:    ; xx     index caller    @addr  performing function:-
     db      $18     ; 7   RUN       $06be  starting BASIC program
     db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
@@ -637,7 +682,9 @@ UDFLIST:    ; xx     index caller    @addr  performing function:-
     db      $1b     ; 3   FUNCTIONS $0a5f  executing a function
     db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
     db      $02     ; 1   OKMAIN    $0402  BASIC command line (immediate mode)
+
 ; UDF parameter Jump table
+
 UDF_JMP:
     dw      HOOKEND            ; 0 parameter not found in list
     dw      AQMAIN             ; 1 replacement immediate mode
@@ -648,7 +695,11 @@ UDF_JMP:
     dw      NEXTSTMT           ; 6 execute next BASIC statement
     dw      RUNPROG            ; 7 run program
 
-; Our commands and functions
+; Our Commands and Functions
+;
+; - New commands get added to the TOP of the commands list,
+;   and the BTOKEN value DECREMENTS as commands are added.
+;   They also get added at the TOP of the TBLJMPS list.
 ;
 BTOKEN       equ $d3             ; our first token number
 TBLCMDS:
@@ -667,13 +718,16 @@ TBLCMDS:
     db      $80 + 'C', "AT"
     db      $80 + 'D', "EL"    ; previously KILL
     db      $80 + 'C', "D"
+; - New functions get added to the END of the functions list.
+;   They also get added at the END of the TBLFNJP list.
+;
 ; Functions list
-    db      $80 + 'I', "N"     ; Input function
-    db      $80 + 'J', "OY"    ; Joystick function
-    db      $80 + 'H', "EX$"   ; Hex value function
-    db      $80 + 'V', "ER"    ; USB BASIC ROM Version function
-    db      $80 + 'D', "TM$"   ; GET DateTime function
-    db      $80                ; End of table marker
+    db      $80 + 'I', "N"          ; $e1 - Input function
+    db      $80 + 'J', "OY"         ; $e2 - Joystick function
+    db      $80 + 'H', "EX$"        ; $e3 - Hex value function
+    db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
+    db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
+    db      $80                     ; End of table marker
 
 TBLJMPS:
     dw      ST_SDTM
@@ -714,7 +768,7 @@ lastf  equ firstf+FCOUNT-1        ; token number of last function in table
 ; Replacement Immediate Mode with Line editing
 ;
 ; UDF hook number $02 at OKMAIN ($0402)
-;
+
 AQMAIN:
     pop     af                  ; clean up stack
     pop     af                  ; restore AF
@@ -729,6 +783,7 @@ AQMAIN:
 ;
 ; Immediate Mode Main Loop
 ;l0414:
+
 IMMEDIATE:
     ld      hl,SysFlags
     SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active
@@ -757,6 +812,7 @@ ENTERLINE:
 ; --- linking BASIC lines ---
 ; Redirected here so we can regain control of immediate mode
 ; Comes from $0485 via CALLUDF $05
+
 LINKLINES:
     pop     af                 ; clean up stack
     pop     af                 ; restore AF
@@ -789,7 +845,7 @@ l0495:
 ;        AquBASIC Function
 ;-------------------------------------
 ; called from $0a5f by RST $30,$1b
-;
+
 AQFUNCTION:
     pop     bc                  ; get return address
     pop     af
@@ -812,7 +868,7 @@ AQFUNCTION:
 ;-------------------------------------
 ; Called from $0536 by RST $30,$0a
 ; Replaces keyword with token.
-;
+
 REPLCMD:
      ld      a,b                ; A = current index
      cp      $cb                ; if < $CB then keyword was found in BASIC table
@@ -831,7 +887,7 @@ REPLCMD:
 ;-------------------------------------
 ; Called from $0598 by RST $30,$16
 ; Expand token to keyword
-;
+
 PEXPAND:
     pop     de
     pop     af                  ; restore AF (token)
@@ -853,7 +909,7 @@ PEXPBAB:
 ;-------------------------------------
 ; Called from $064b by RST 30
 ; with parameter $17
-;
+
 NEXTSTMT:
     pop     bc                  ; BC = return address
     pop     af                  ; AF = token, flags
@@ -978,7 +1034,7 @@ do_cls:
     ret
 
 ;-----------------------------------
-;       Clear Screen
+;       Clear Screen, Updated
 ;-----------------------------------
 ; - user-defined colors
 ; - doesn't clear last 24 bytes
@@ -1004,20 +1060,10 @@ clearscreen:
     pop     hl
     ret
 
-;--------------------------------------
-; get/put text area
-; deprecated because they require extra
-; variables, shifting the start of BASIC
-; (possible compatitiblity issue)
-;
-;ST_GET:
-;ST_PUT:
-;    ret
-
 ;--------------------------------------------------------------------
 ;   OUT statement
 ;   syntax: OUT port, data
-;
+
 ST_OUT:
     call    GETNUM              ; get/evaluate port
     call    DEINT               ; convert number to 16 bit integer (result in DE)
@@ -1032,7 +1078,7 @@ ST_OUT:
 ;--------------------------------------------------------------------
 ; LOCATE statement
 ; Syntax: LOCATE col, row
-;
+
 ST_LOCATE:
     call    GETINT              ; read number from command line (column). Stored in A and E
     push    af                  ; column store on stack for later use
@@ -1083,7 +1129,7 @@ GOTO_HL:
 ;--------------------------------------------------------------------
 ;   PSG statement
 ;   syntax: PSG register, value [, ... ]
-;
+
 ST_PSG:
     cp      $00
     jp      z,$03d6          ; MO error if no args
@@ -1101,11 +1147,10 @@ psgloop:
     inc     hl               ; next character on command line
     jr      psgloop          ; parse next register & value
 
-
 ;--------------------------------------------------------------------
 ;   IN() function
 ;   syntax: var = IN(port)
-;
+
 FN_IN:
     pop     hl
     inc     hl
@@ -1126,7 +1171,7 @@ FN_IN:
 ;                 stick - 0 will read left or right
 ;                       - 1 will read left joystick only
 ;                       - 2 will read right joystick only
-;
+
 FN_JOY:
     pop     hl             ; Return address
     inc     hl             ; skip rst parameter
@@ -1181,7 +1226,7 @@ joy05:
 ;----------------------------------------
 ;
 ; eg. A$=HEX$(B)
-;
+
 FN_HEX:
     pop     hl
     inc     hl
@@ -1228,6 +1273,7 @@ FN_HEX:
 ;   print hex byte
 ;--------------------------
 ; in: A = byte
+
 PRINTHEX:
     push    bc
     ld      b,a
@@ -1442,7 +1488,7 @@ FN_DTM:
 ; Wait for next key to be pressed.
 ;
 ;   out A = char
-;
+
 Wait_key:
     CALL    key_check    ; check for key pressed
     JR      Z,Wait_Key   ; loop until key pressed
@@ -1461,9 +1507,6 @@ Wait_key:
 ; disk file selector
    include "filerequest.asm"
 
-; PT3 music player
-;     include "pt3play.asm"
-
 ; fill with $FF to end of ROM
 
      assert !($FFFF<$)   ; ROM full!
@@ -1471,4 +1514,3 @@ Wait_key:
      dc $FFFF-$+1,$FF
 
      end
-

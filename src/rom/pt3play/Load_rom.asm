@@ -125,7 +125,8 @@ _tn_done:
 RomWindow:
       db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
       db   WHITE*16+BLACK               ; text colors
-      db   BLACK*16+RED                 ; border colors
+;      db   BLACK*16+RED                 ; border colors
+      db   RED*16+BLACK                 ; border colors
       db   1,2,38,22                    ; x,y,w,h
       dw   rom_title                    ; title
 rom_title:

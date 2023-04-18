@@ -36,6 +36,7 @@
 ; 2017-05-17 bugfix: NewLine blanked several lines if
 ;            cursor x was beyond right side of window.
 ; 2017-06-12 V1.0  bumped to release version
+; 2023-04-17 v1.1  Revised characters used for window borders
 ;
 ;---------------------------------------------------------
 ;
@@ -217,31 +218,39 @@ DrawBorder:
        ADD   HL,DE              ; HL = border address in color RAM
        PUSH  HL                 ; save top/left address
        LD    C,(IX+win_bcolor)  ; C = border color
-       LD    A,222
+;       LD    A,222              ; This is the UL pipe character
+       LD    A,215              ; This is the UL pipe character
        CALL  ShowGlyph          ; draw top/left corner
        INC   HL
        LD    B,(IX+win_w)
-       LD    A,172
+;       LD    A,172              ; This is the HORIZONTAL pipe character at the TOP
+       LD    A,31               ; This is the HORIZONTAL pipe character at the TOP
        CALL  hline              ; top bar
-       LD    A,206
+;       LD    A,206              ; This is the UR pipe character
+       LD    A,201              ; This is the UR pipe character
        CALL  ShowGlyph          ; top right corner
        LD    DE,40
        ADD   HL,DE
        LD    B,(IX+win_h)
-       LD    A,214
+;       LD    A,214              ; This is the VERTICAL pipe character on the RIGHT
+       LD    A,181              ; This is the VERTICAL pipe character on the RIGHT
        CALL  vline              ; right side
-       LD    A,223
+;       LD    A,223              ; This is the DR pipe character
+       LD    A,217              ; This is the DR pipe character
        CALL  ShowGlyph          ; bottom/right corner
        POP   HL                 ; restore top/left address
        ADD   HL,DE              ; down 1 line
        LD    B,(IX+win_h)
-       LD    A,214
+;       LD    A,214              ; This is the VERTICAL pipe character on the LEFT
+       LD    A,234              ; This is the VERTICAL pipe character on the LEFT
        CALL  vline              ; left side
-       LD    A,207
+;       LD    A,207              ; This is the DL pipe character
+       LD    A,199              ; This is the DL pipe character
        CALL  ShowGlyph          ; bottom/left corner
        INC   HL
        LD    B,(IX+win_w)
-       LD    A,172
+;       LD    A,172              ; This is the HORIZONTAL pipe character at the BOTTOM
+       LD    A,175              ; This is the HORIZONTAL pipe character at the BOTTOM
        JP    hline              ; bottom bar
 
 ;-----------------------------
