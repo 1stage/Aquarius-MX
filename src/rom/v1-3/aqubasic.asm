@@ -608,7 +608,7 @@ BootMenuText:
   endif
     db     CR,CR
     db     "     2. Debug",CR
-    db     CR,CR,CR,CR,CR              ; Move down a few rows
+    db     CR,CR,CR,CR,CR                ; Move down a few rows
     db     "    <RTN> USB BASIC",CR
     db     CR
     db     " <CTRL-C> Warm Start",CR
