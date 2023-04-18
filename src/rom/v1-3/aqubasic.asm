@@ -409,7 +409,7 @@ AboutText:
     db     CR,CR,CR
     db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
     db     " Release Date - 2023-04-18",CR,CR
-    db     " ROM Dev Team - Curtis Kaylor",CR
+    db     " ROM Dev Team - Curtis F Kaylor",CR
     db     "                Mack Wharton",CR
     db     "                Sean Harrington",CR
     db     CR
@@ -608,7 +608,7 @@ BootMenuText:
   endif
     db     CR,CR
     db     "     2. Debug",CR
-    db     CR,CR,CR,CR,CR              ; Move down a few rows
+    db     CR,CR,CR,CR,CR                ; Move down a few rows
     db     "    <RTN> USB BASIC",CR
     db     CR
     db     " <CTRL-C> Warm Start",CR
