@@ -24,8 +24,14 @@ ds1244addr: EQU $4000
 ;         BC, DE, HL unchanged
 rtc_init:
     push    bc
+    push    hl
+    ld      hl,DTM_BUFFER
     ld      bc,RNDTAB+20
+    xor     a
+    dec     a
+    ld      (bc),a
     call    rtc_read  ; since this will error out the clock if needs be
+    pop     hl
     pop     bc
     ret                 
 
@@ -39,9 +45,7 @@ rtc_read:
     ld      bc,RNDTAB+20
     ld      a,(bc)            ;Check RTC Found flag
     or      a                 ;If 0 (Not Found)
-    jr      nz,do_rtc_read    ;  If Clock Was Found, Call Read
-    ld      (hl),a            ;DTM is Invalid
-    dec     a
+    call    nz,do_rtc_read  ;  If Clock Was Found, Call Read
     pop     bc
     ret
 ;Read Real Time Clock
@@ -113,6 +117,97 @@ ds_checkvalues:
     jr      z,ds_noClockFound
     pop     bc
     push    bc
+                            ; Copying to DTM Buffer (already in DE)
+    ld      h,b             ; Copying from SoftClock 
+    ld      l,c
+    ld      bc,5            ; Copying 5 Bytes (Valid + 4 bytes)
+    ldir                    ; Do Copy  (HH:MM:SS.CC)
+    inc     hl              ; skip DAY
+    ld      bc,3
+    ldir                    ; Do Copy (YY-MM-DD)
+    pop     bc              ; Restore Registers
+    pop     hl    
+    pop     de
+    pop     af
+    ld      (ds1244addr),a  ; restore original memory into control address
+    xor     a
+    dec     a
+    ld      (bc),a          ; write FF into (Softclock) to indicate clock present 
+    ;xor     a
+    ret                 
+ds_noClockFound:
+    pop     bc              ;Restore Registers
+    pop     hl    
+    pop     de
+    pop     af
+    ld      (ds1244addr),a  ; restore original memory into control address
+    xor     a               ; Set Z flag to indicate error
+    ld      (bc),a          ; write 00 into (Softclock) to indicate no clock present   
+   ; dec     a         
+    ret    
+rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
+
+;Write Real Time Clock
+;Args: HL = Address of DTM Buffer 
+;      BC = Address of Software Clock 
+;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;         DE and HL unchanged
+rtc_write:
+    ld      a,(ds1244addr)  ; save byte at control address
+    push    af              ;Save Registers
+    push    de
+    push    hl      
+    push    bc              ; Registers saved as AF,DE,HL,BC
+    LD      hl,rtc_Ident
+    inc     bc              ; want to write to softclock +1
+    ld      d,b             ; Save BC for later use (remember no Stack usage here)
+    ld      e,c                 
+    ld      c,8             ; Going to loop round 8 times here
+    xor     a
+    ld      (ds1244addr),a  ; store a 0 here, so if no RTC, then it will just read all zero's
+    ld      a,(ds1244addr)  ; start read sequence (needs a Read cycle before the 64 writes)
+ds_wrIdent:
+    ld      a,(hl)          ; this works by writing the pattern $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
+    ld      b,8             ; to an address within the clock
+ds_wrIdentInner:
+    ld      (ds1244addr),a  ; it is all written by 64 single bit D0, so 
+    rra                     ; rotating A right 8 times for each byte and writing to the control address
+    djnz    ds_wrIdentInner
+    inc     hl
+    dec     c
+    jr      nz,ds_wrIdent
+                            ; okay we should be talking to the clock now....
+    ld      h,d             ; restore HL to = original BC passed in
+    ld      l,e
+    LD      c,8
+ds_wrreadTime:
+    LD      D,0             ; this is the byte we are going to read
+    ld      B,8             ; Have to read in 64 times, as the 8 bytes (64 bits) 
+ds_wrreadByte:               ; all come in in D0
+    LD      A,(ds1244addr)  ; So read a bit
+    AND     $01             ; mask anything else off
+    RRCA                    ; Rotate Right into D7
+    AND     $80             ; mask of anything else (shouldn't be needed but hey ho)
+    OR      D               ; Merge D in
+    RRA                     ; Rotate Right (D0 ->C flag)
+    LD      D,A             ; Save back into D
+    DJNZ    ds_wrreadByte    ; Loop for the byte
+    ld      a,d             ; Need to Correct D for the last Rotate
+    rla                     ; Rotate Left D0 <- C Flag
+    ld      (hl),a          ; Save value in softclock
+    inc     hl              
+    dec     c               
+    jr      nz,ds_wrreadTime ; Loop round for the 8 bytes      
+    pop     bc              ; recover HL & BC
+    pop     hl
+    push    hl              ; Resave them for exit
+    push    bc              ; BC = Softclock ATM
+    ex      de,hl           ; de= DTM Buffer
+    inc     bc              ; SoftClock+1    
+    ld      h,b
+    ld      l,c
+    pop     bc
+    push    bc
     inc     bc              ; Copying to DTM Buffer (already in DE)
     ld      h,b             ; Copying from SoftClock +1
     ld      l,c
@@ -130,37 +225,5 @@ ds_checkvalues:
     dec     a
     ld      (bc),a          ; write FF into (Softclock) to indicate clock present 
     xor     a
-    ret                 
-ds_noClockFound:
-    pop     bc              ;Restore Registers
-    pop     hl    
-    pop     de
-    pop     af
-    ld      (ds1244addr),a  ; restore original memory into control address
-    xor     a               ; Set Z flag to indicate error
-    ld      (bc),a          ; write 00 into (Softclock) to indicate no clock present            
-    ret    
-rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
-
-;Write Real Time Clock
-;Args: HL = Address of DTM Buffer 
-;      BC = Address of Software Clock 
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
-;         DE and HL unchanged
-rtc_write:
-    push    hl            ;Save Registers
-    push    de            
-    push    bc 
-    ld      d,b           ;Copying from SoftClock
-    ld      e,c           ;Copying to DTM Buffer
-    ld      bc,8          ;Copying 8 Bytes
-    ldir                  ;Do Copy
-    xor     a             ;Clear Countdown 
-    ld      (de),a
-    inc     de
-    ld      (de),a
-    pop     bc            ;Restore Registers
-    pop     de
-    pop     hl
-    ret                 
+    ret                               
 
