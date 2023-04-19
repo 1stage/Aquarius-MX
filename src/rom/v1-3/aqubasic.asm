@@ -1454,10 +1454,7 @@ ST_SDTM:
 ;  
 ;    Any other numeric parameters return the same result as DTM$(1)
 ;    although others could be added in the future
-;
-;    PRINT DTM$("230411101500") - Sets DateTime to 2023-04-23 10:15:00 (24 hour format)
-;    String argument is in format "YYMMDDHHMMSS" with any following characters ignored
-;    Returns the new DateTime string if successful, empty string if not
+;    
 
 FN_DTM:
     pop     hl
