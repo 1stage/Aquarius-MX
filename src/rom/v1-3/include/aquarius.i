@@ -180,7 +180,7 @@ FBUFFRLEN   = RESHO-FBUFFR
 ;                          system routines
 ;----------------------------------------------------------------------------
 ;
-; RST $08,xx CHKNXT    syntax error if char at (HL) is not eqaul to xx
+; RST $08,xx SYNCHK    syntax error if char at (HL) is not eqaul to xx
 ; RST $10    GETNXT    get char at (HL)+, Carry set if '0' to '9'
 ; RST $18    PRNTCHR   print char in A
 ; RST $20    CMPHLDE   compare HL to DE. Z if equal, C if DE is greater
@@ -209,7 +209,8 @@ LABBCK      = $0A49  ; Functions that don't return string values come back here
 GETBYT      = $0B54  ; Evaluate Numeric Formula between 0 and 255
 GIVINT      = $0B21  ; Float Integer MSB=[A], LSB=[C] into Floating Point Accumulator
 FLOATB      = $0B22  ; Float Integer MSB=[A], LSB=[B] into Floating Point Accumulator
-FLOATD      = $0B36  ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
+FLOATD      = $0B23  ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
+SNGFLT      = $0B36  ; Float Unsigned Byte in A
 
 RETSTR      = $0e2f  ; return string in HL from function  
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
@@ -225,7 +226,7 @@ CHKNUM      = $0975  ; Issue "TM" Error if result is not a number
 TSTSTR      = $0976  ; error if evaluated expression not string
 CHKTYP      = $0977  ; error if type mismatch
 
-DEINT       = $0682  ; convert fp number to 16 bit signed integer in DE
+FRCINT      = $0682  ; Convert Floating Point Accumulator AC to Signed Integer in DE
 STRTOVAL    = $069c  ; DE = value of decimal number string at HL-1 (65529 max)
 STR2INT     = $069d  ; DE = value of decimal number string at HL
 INT2STR     = $1679  ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
@@ -241,7 +242,7 @@ CHKSTK      = $0ba0  ; check for stack space (in: C = number of words required)
 ;-----------------------------------------------------------------------------
 ;                         RST  macros
 ;-----------------------------------------------------------------------------
-CHKNXT  MACRO char
+SYNCHK  MACRO char
         RST    $08    ; syntax error if char at (HL) is not equal to next byte
         db    'char'
         ENDM
@@ -321,7 +322,9 @@ ERROR_UF    = $03d0  ;   undefined function
 ; process error code, E = code (offset to 2 char error name)
 DO_ERROR    = $03db
 
-
+; Standard BASIC Statement Tokens
+POKETK      = $94   ; POKE Token
+PEEKTK      = $C1   ; PEEK Token
 
 ;-------------------------------------------------
 ;          AquBASIC Binary File Header

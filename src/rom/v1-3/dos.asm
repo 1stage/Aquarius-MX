@@ -181,7 +181,7 @@ _stl_array_parms:
     jr      _stl_start
 _stl_addr:
     call    FRMNUM                ; get number
-    call    DEINT                 ; convert to 16 bit integer
+    call    FRCINT                 ; convert to 16 bit integer
     ld      (BINSTART),de
     ld      a,1<<DF_ADDR
     ld      (DOSFLAGS),a          ; load address specified
@@ -581,14 +581,14 @@ _sts_array:
 ; parse address, length
 _sts_num:
     call    FRMNUM              ; get address
-    call    DEINT               ; convert to 16 bit integer
+    call    FRCINT               ; convert to 16 bit integer
     ld      (BINSTART),de       ; set address
     ld      a,1<<DF_ADDR
     ld      (DOSFLAGS),a        ; flag load address present
     call    get_arg             ; get next char from text, skipping spaces
-    CHKNXT  ","                 ; skip ',' (syntax error if not ',')
+    SYNCHK  ","                 ; skip ',' (syntax error if not ',')
     call    FRMNUM              ; get length
-    call    DEINT               ; convert to 16 bit integer
+    call    FRCINT               ; convert to 16 bit integer
     ld      (BINLEN),de         ; store length
 ; create new file
 _sts_open:

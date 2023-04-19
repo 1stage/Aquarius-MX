@@ -1066,7 +1066,7 @@ clearscreen:
 
 ST_OUT:
     call    FRMNUM              ; get/evaluate port
-    call    DEINT               ; convert number to 16 bit integer (result in DE)
+    call    FRCINT               ; convert number to 16 bit integer (result in DE)
     push    de                  ; stored to be used in BC
     rst     $08                 ; Compare RAM byte with following byte
     db      $2c                 ; character ',' byte used by RST 08
@@ -1156,13 +1156,13 @@ FN_IN:
     inc     hl
     call    PARCHK           ; Read number from line - ending with a ')'
     ex      (sp),hl
-    ld      de,LABBCK        ; return address for FLOATD
+    ld      de,LABBCK        ; return address for SNGFLT
     push    de               ; on stack
-    call    DEINT            ; convert argument to 16 bit integer in DE
+    call    FRCINT            ; convert argument to 16 bit integer in DE
     ld      b,d
     ld      c,e              ; bc = port
     in      a,(c)            ; a = in(port)
-    jp      FLOATD          ; return with 8 bit input value in variable var
+    jp      SNGFLT          ; return with 8 bit input value in variable var
 
 
 ;--------------------------------------------------------------------
@@ -1179,7 +1179,7 @@ FN_JOY:
     ex      (sp),hl
     ld      de,LABBCK      ; set return address
     push    de
-    call    DEINT          ; convert argument to 16 bit integer in DE
+    call    FRCINT          ; convert argument to 16 bit integer in DE
 
     ld      a,e
     or      a
@@ -1218,7 +1218,7 @@ joy04:
 
 joy05:   
     cpl
-    jp      FLOATD
+    jp      SNGFLT
 
 
 ;----------------------------------------
@@ -1234,7 +1234,7 @@ FN_HEX:
     ex      (sp),hl
     ld      de,LABBCK  ; return address
     push    de         ; on stack
-    call    DEINT      ; convert argument to 16 bit integer in DE
+    call    FRCINT      ; convert argument to 16 bit integer in DE
     ld      hl,$38e9   ; hl = temp string
     ld      a,d
     or      a          ; > zero ?
@@ -1327,7 +1327,7 @@ FN_VER:
 ;
 ST_CALL:
     call    FRMNUM           ; get number from BASIC text
-    call    DEINT            ; convert to 16 bit integer
+    call    FRCINT            ; convert to 16 bit integer
     push    de
     ret                      ; jump to user code, HL = BASIC text pointer
 
