@@ -64,6 +64,7 @@ do_rtc_read:
     push    hl      
     push    bc              ; Registers saved as AF,DE,HL,BC
     LD      hl,rtc_Ident
+    inc     bc              ; want to write to softclock +1
     ld      d,b             ; Save BC for later use (remember no Stack usage here)
     ld      e,c                 
     ld      c,8             ; Going to loop round 8 times here
@@ -115,6 +116,9 @@ ds_read_byte
     pop     de
     pop     af
     ld      (ds1244addr),a    ; restore original memory
+    xor     a
+    dec     a
+    ld      (bc),a       ; write FF into (Softclock) to indicate clock present 
     xor     a
     ret                 
 
