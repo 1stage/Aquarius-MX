@@ -70,7 +70,7 @@ REVISION = 3
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1    ; full featured debugger (else lite version without screen save etc.)
-softclock equ 0   ; using software clock
+;softclock equ 0   ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -347,8 +347,10 @@ SPLASH:
     
 DTM_STRING = RNDTAB
 DTM_BUFFER = FILNAM
-  ifdef softclock
+
 RTC_ADDR = RNDTAB+20
+  ifdef softclock
+
 RTC_TEMP = FBUFFR
   endif
     call    INIT_RTC
