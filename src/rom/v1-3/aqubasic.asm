@@ -70,7 +70,7 @@ REVISION = 3
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1    ; full featured debugger (else lite version without screen save etc.)
-softclock equ 1   ; using software clock
+softclock equ 0   ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -549,8 +549,11 @@ MEMSIZE:
 ;---------------------------------------------------------------------
     include "dtm_lib.asm"
     ;Using dummy Soft Clock until driver is done
-    ;include "softclock.asm" 
-    include "ds1244rtc.asm" 
+    ifdef softclock
+        include "softclock.asm" 
+    else
+        include "ds1244rtc.asm" 
+    endif
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC

@@ -23,7 +23,10 @@ ds1244addr: EQU $4000
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 rtc_init:
+    push    bc
+    ld      bc,RNDTAB+20
     call    rtc_read  ; since this will error out the clock if needs be
+    pop     bc
     ret                 
 
 ;Read Real Time Clock
@@ -32,11 +35,14 @@ rtc_init:
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 rtc_read:
+    push    bc
+    ld      bc,RNDTAB+20
     ld      a,(bc)            ;Check RTC Found flag
     or      a                 ;If 0 (Not Found)
     jr      nz,do_rtc_read    ;  If Clock Was Found, Call Read
     ld      (hl),a            ;DTM is Invalid
     dec     a
+    pop     bc
     ret
 ;Read Real Time Clock
 ;Args: HL = Address of DTM Buffer
@@ -94,7 +100,8 @@ ds_readByte:               ; all come in in D0
     pop     hl
     push    hl              ; Resave them for exit
     push    bc              ; BC = Softclock ATM
-    ex      de,hl           ; de= DTM Buffer    
+    ex      de,hl           ; de= DTM Buffer
+    inc     bc              ; SoftClock+1    
     ld      h,b
     ld      l,c
     ld      b,8
@@ -106,12 +113,15 @@ ds_checkvalues:
     jr      z,ds_noClockFound
     pop     bc
     push    bc
-                            ;Copying to DTM Buffer
-    ld      h,b             ;Copying from SoftClock
+    inc     bc              ; Copying to DTM Buffer (already in DE)
+    ld      h,b             ; Copying from SoftClock +1
     ld      l,c
-    ld      bc,8            ;Copying 8 Bytes
-    ldir                    ; Do Copy                        
-    pop     bc              ;Restore Registers
+    ld      bc,4            ; Copying 4 Bytes
+    ldir                    ; Do Copy  (HH:MM:SS.CC)
+    inc     hl              ; skip DAY
+    ld      bc,3
+    ldir                    ; Do Copy (YY-MM-DD)
+    pop     bc              ; Restore Registers
     pop     hl    
     pop     de
     pop     af
