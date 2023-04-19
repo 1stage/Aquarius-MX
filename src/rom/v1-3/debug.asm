@@ -44,7 +44,7 @@ STRING    = 3         ;   flag: entering mixed case string (toggled with ")
      BYTE Digits     ; number of digits in number
      WORD _number    ; 16 bit number
      WORD _BrkAddr   ; address of current breakpoint
-     WORD _UserAddr  ; original USRADDR
+     WORD _UserAddr  ; original USRADD
      WORD _CodeAddr  ; opcode address
      WORD _DumpAddr  ; DumpMem address
      WORD _UnAsmAddr ; UnAssemble Address
@@ -105,7 +105,7 @@ stack_top   = vars+v.size       ; stack grows downwards from here
 ;
 ST_DEBUG:
        LD    A,6                ; cancel pending key down
-       LD    (SCANCNT),A
+       LD    (KCOUNT),A
        LD    (HL_reg),HL        ; save BASIC text pointer in HL_reg
        LD    (SP_SAVE),SP       ; save system stack pointer
        LD    (SP_reg),SP        ; copy to SP_reg
@@ -117,10 +117,10 @@ ST_DEBUG:
        LD    HL,$3001+(40*11)
        LD    (CURRAM),HL        ;    move it down to next line
        XOR   A
-       LD    (CURCOL),A
+       LD    (TTYPOS),A
 .init:
        CALL  ClearBreaks        ; clear all breakpoints
-       LD    HL,(USRADDR)
+       LD    HL,(USRADD)
        LD    (UserAddr),HL      ; save usr address
 DebugMenu:
        LD    SP,stack_top       ; clear our private stack
@@ -453,7 +453,7 @@ Break:
        LD    SP,stack_top    ; switch SP to debug stack
 ;       EI
        LD    HL,(UserAddr)
-       LD    (USRADDR),HL    ; restore original USRADDR
+       LD    (USRADD),HL    ; restore original USRADD
 
        LD    HL,(PC_reg)
        LD    BC,TraceBrk     ; address of 5th byte in sandbox (contains RST $38)
@@ -481,12 +481,12 @@ Break:
 ; - RST $38    replacing user code, address in breakpoint array
 ; - RST $38    in user code
 ; - CALL Break in user code            ''
-; - JP USRJMP  via X=USR(x)  HL = USRJMP, BC = $0203
+; - JP USRPOK  via X=USR(x)  HL = USRPOK, BC = $0203
 ;
 .not_sandbox:
        LD    HL,(HL_reg)
-       LD    DE,USRJMP
-       CMPHLDE               ; HL = USRJMP ?
+       LD    DE,USRPOK
+       CMPHLDE               ; HL = USRPOK ?
        JR    NZ,.not_usrfunc ; no, not USR()
        LD    HL,(BC_reg)
        LD    DE,$0203
@@ -2864,11 +2864,11 @@ Say_Error
 InitBreak:
      push    hl
      ld      a,$C3
-     ld      (USRJMP),a       ; create JP instruction
-     ld      HL,(USRADDR)
+     ld      (USRPOK),a       ; create JP instruction
+     ld      HL,(USRADD)
      ld      (UserAddr),HL    ; save current RST $38 vector
      ld      hl,Break
-     ld      (USRADDR),HL     ; redirect to Trace Break
+     ld      (USRADD),HL     ; redirect to Trace Break
      pop     hl
      ret
 

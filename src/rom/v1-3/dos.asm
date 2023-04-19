@@ -156,9 +156,9 @@ _stl_getarg:
 _stl_arg_array:
     inc     hl                    ; skip '*' token
     ld      a,1
-    ld      (FORFLG),a            ; set array flag
+    ld      (SUBFLG),a            ; set array flag
     call    GETVAR                ; get array (out: BC = address, DE = length)
-    ld      (FORFLG),a            ; clear array flag
+    ld      (SUBFLG),a            ; clear array flag
     jp      nz,FCERR           ; FC Error if array not found
     call    CHKNUM                ; TM error if not numeric
 _stl_array_parms:
@@ -308,7 +308,7 @@ _stl_array_id:
 _stl_basprog:
     call    st_read_sync          ; read 2nd CAQ sync sequence
     jr      nz,_stl_bad_file
-    ld      hl,(BASTART)          ; HL = start of BASIC program
+    ld      hl,(TXTTAB)          ; HL = start of BASIC program
     ld      de,$ffff              ; DE = read to end of file
     call    usb__read_bytes       ; read BASIC program into RAM
     jr      nz,_stl_read_error
@@ -481,25 +481,25 @@ _st_read_caq_lp1
 ; Updates nextline pointers to match location of BASIC program in RAM
 ;
 Init_BASIC:
-        ld      hl,(BASTART)
+        ld      hl,(TXTTAB)
         dec     hl
         ld      (TMPSTAT),hl       ; set next statement to start of program
         ld      (RESTORE),hl       ; set RESTORE to start of program
-        ld      hl,(RAMTOP)
+        ld      hl,(MEMSIZ)
         ld      (FRETOP),hl        ; clear string space
         ld      hl,(BASEND)
         ld      (ARYTAB),hl        ; clear simple variables
         ld      (ARYEND),hl        ; clear array table
-        ld      hl,STRBUF+2
-        ld      (STRBUF),hl        ; clear string buffer
+        ld      hl,TEMPST
+        ld      (TEMPPT),hl        ; clear string buffer
         xor     a
         ld      l,a
         ld      h,a
         ld      (CONTPOS),hl       ; set CONTinue position to 0
-        ld      (FORFLG),a         ; clear locator flag
+        ld      (SUBFLG),a         ; clear locator flag
         ld      ($38de),hl         ; clear array pointer???
 _link_lines:
-        ld      de,(BASTART)       ; DE = start of BASIC program
+        ld      de,(TXTTAB)       ; DE = start of BASIC program
 _ibl_next_line:
         ld      h,d
         ld      l,e                ; HL = DE
@@ -551,9 +551,9 @@ ST_SAVEFILE:
     jr      nz,_sts_num         ; no, parse binary address & length
     inc     hl                  ; yes, skip token
     ld      a,1
-    ld      (FORFLG),a          ; flag = array
+    ld      (SUBFLG),a          ; flag = array
     call    GETVAR              ; BC = array address, DE = array length
-    ld      (FORFLG),a          ; clear flag
+    ld      (SUBFLG),a          ; clear flag
     jp      nz,FCERR         ; report FC Error if array not found
     call    CHKNUM              ; TM error if not numeric
     call    get_next
@@ -622,7 +622,7 @@ _sts_bas:
     jr      nz,_sts_write_error
     call    st_write_sync       ; write 2nd caq sync $FFx12,$00
     jr      nz,_sts_write_error
-    ld      de,(BASTART)        ; DE = start of BASIC program
+    ld      de,(TXTTAB)        ; DE = start of BASIC program
     ld      hl,(BASEND)         ; HL = end of BASIC program
     or      a
     sbc     hl,de
@@ -699,7 +699,7 @@ ST_CAT:
     LD      A,$0D                   ; print carriage return
     CALL    PRNCHR1
     ld      a,23
-    ld      (LISTCNT),a             ; set initial number of lines per page
+    ld      (CNTOFL),a             ; set initial number of lines per page
 .cat_disk:
     call    usb__ready              ; check for USB disk
     jr      nz,.disk_error
@@ -769,7 +769,7 @@ ST_CAT:
     LD      HL,16
     ADD     HL,SP                   ; clean up stack
     LD      SP,HL
-    LD      A,(CURCOL)
+    LD      A,(TTYPOS)
     AND     A                       ; if column = 0 then already on next line
     JR      Z,.cat_go
     LD      A," "                   ; else padding space after filename
@@ -856,7 +856,7 @@ dos__directory:
         CALL    usb__open_dir           ; open '*' for all files in directory
         RET     NZ                      ; abort if error (disk not present?)
         ld      a,22
-        ld      (LISTCNT),a             ; set initial number of lines per page
+        ld      (CNTOFL),a             ; set initial number of lines per page
 .dir_loop:
         LD      A,CH376_CMD_RD_USB_DATA
         OUT     (CH376_CONTROL_PORT),A  ; command: read USB data
@@ -1010,7 +1010,7 @@ dos__prtDirInfo:
         LD      HL,_dir_msg             ; print "<dir>"
         call    PRINTSTR
 .dir_tab:
-        LD      A,(CURCOL)
+        LD      A,(TTYPOS)
         CP      19
         RET     Z                       ; if reached center of screen then return
         JR      NC,.tab_right           ; if on right side then fill to end of line
@@ -1018,7 +1018,7 @@ dos__prtDirInfo:
         CALL    PRNCHR                  ; print " "
         JR      .dir_tab
 .tab_right:
-        LD      A,(CURCOL)
+        LD      A,(TTYPOS)
         CP      0
         RET     Z                       ; reached end of line?
         LD      A,' '

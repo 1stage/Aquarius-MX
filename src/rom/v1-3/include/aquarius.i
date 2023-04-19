@@ -14,7 +14,8 @@
 ; 2017-05-06 V0.4 compute equates for buffer lengths
 ; 2017-06-12 V1.0 bumped to release version
 ; 2023-04-11 V1.1 Revised color names to more common values
-;
+; 2023-04-18 V1.2 Changed symbols to canonical names from Microsoft
+;                 source code for CP/M Basic and 6502 Basic
 ;-------------------------------------------------------------------
 ;                            IO Ports
 ;-------------------------------------------------------------------
@@ -79,63 +80,58 @@ COLRAM   = $3400 ; 13312           Start of colour RAM
 ;-------------------------------------------------------------------
 ;                       System Variables
 ;-------------------------------------------------------------------
-;Name    location Decimal alt name          description
-CURCOL   = $3800 ; 14336  TTYPOS   Current cursor column
-CURRAM   = $3801 ; 14337  CHRPOS   Position in CHARACTER RAM of cursor
-USRJMP   = $3803 ; 14339  USRGO    JMP instruction for USR.
-USRADDR  = $3804 ; 14340  USRAL    address of USR() function
-                 ; 14341  USRAH
-UDFADDR  = $3806 ; 14342  HOKDSP   RST $30 vector, hooks into various system routines
-                 ; 14343
-LISTCNT  = $3808 ; 14344  ROWCOUNT Counter for lines listed (pause every 23 lines)
-LASTFF   = $3809 ; 14345  PTOLD    Last protection code sent to port($FF)
-LSTASCI  = $380a ; 14346  CHARQ    ASCII value of last key pressed.
-KWADDR   = $380b ; 14347  SKEY     Address of keyword in the keyword table.
-                 ; 14348
-CURHOLD  = $380d ; 14349  BUFO     holds character under the cursor.
-LASTKEY  = $380E ; 14350           SCAN CODE of last key pressed
-SCANCNT  = $380f ; 14351           number of SCANS key has been down for
-FDIV     = $3810 ; 14352           subroutine for division ???
-                 ;  ...
-RANDOM   = $381F ; 14367           used by random number generator
-RNDTAB   = $3821 ; 14369           Unused 32 byte Random Number Table 
-                 ; ...
-LPTLST   = $3845 ; 14405           last printer operation status
-PRNCOL   = $3846 ; 14406  LPTPOS   The current printer column (0-131).
-CHANNEL  = $3847 ; 14407  PRTFLG   Channel: 0=screen, 1=printer.
-LINLEN   = $3848 ; 14408           line length (initially set to 40 ???)
-CLMLST   = $3849 ; 14409           position of last comma column
-RUBSW    = $384A ; 14410           rubout switch
-STKTOP   = $384B ; 14411           high address of stack. followed by string storage space
-                 ; 14412
-CURLIN   = $384D ; 14413           current BASIC line number (-1 in direct mode)
-                 ; 14414
-BASTART  = $384F ; 14415  TXTTAB   pointer to start of BASIC program
-                 ; 14416
-CASNAM   = $3851 ; 14417           tape filename (6 chars)
-CASNM2   = $3857 ; 14423           tape read filename (6 chars)
-CASFL2   = $385D ; 14429           tape flag
-CASFL3   = $385E ; 14430           tape flag (break key check)
-BUFMIN   = $385F ; 14431           buffer used by INPUT statement
-LINBUF   = $3860 ; 14432  BUF      line input buffer (73 bytes).
-                 ;  ...
-
-BUFEND   = $38A9 ; 14505           end of line unput buffer
-DIMFLG   = $38AA ; 14506           dimension flag 1 = array
-VALTYP   = $38AB ; 14507           Type Indicator 0=numeric 1=string
-DORES    = $38AC ; 14508           flag for crunch
-RAMTOP   = $38AD ; 14509  MEMSIZ   Address of top of physical RAM.
-                 ; 14510
-STRBUF   = $38AF ; 14511           18 bytes used by string functions
-                 ;  ...
-FRETOP   = $38C1 ; 14529           pointer to top of string space
-                 ; 14530
-SYSTEMP  = $38C3 ; 14531  TEMP     temp space used by FOR etc.
-                 ;  ...
-DATLIN   = $38c9 ; 14537           address of current DATA line
-                 ; 14538
-FORFLG   = $38CB ; 14439           flag FOR:, GETVAR: 0=variable, 1=array
-
+;Name    location Decimal Description
+TTYPOS  = $3800 ; 14336           Current cursor column
+CURRAM  = $3801 ; 14337           Position in CHARACTER RAM of cursor
+USRPOK  = $3803 ; 14339           JMP instruction for USR.
+USRADD  = $3804 ; 14340 - 14341    address of USR() function
+UDFADDR = $3806 ; 14342  HOKDSP   RST $30 vector, hooks into various system routines
+                ; 14343
+CNTOFL  = $3808 ; 14344           Counter for lines listed (pause every 23 lines)
+SCRMBL  = $3809 ; 14345           Last protection code sent to port($FF)
+CHARC   = $380A ; 14346           ASCII value of last key pressed.
+RESPTR  = $380B ; 14347           Address of keyword in the keyword table.
+                ; 14348
+CURCHR  = $380D ; 14349           holds character under the cursor.
+LSTX    = $380E ; 14350           SCAN CODE of last key pressed
+KCOUNT  = $380F ; 14351           number of SCANS key has been down for
+FDIV    = $3810 ; 14352 - 14365   Division routine - self modifying code
+        ; $381E ; 14366           RND function pertubation count
+RNDCNT  = $381F ; 14367 - 14368   used by random number generator
+RNDTAB  = $3821 ; 14369 - 14400   Unused 32 byte Random Number Table 
+RNDX    = $3841 ; 14401 - 14405   Last random number generated, between 0 and 1
+LPTPOS  = $3846 ; 14406           The current printer column (0-131).
+PRTFLG  = $3847 ; 14407           Output goes to: 0=screen, 1=printer.
+LINLEN  = $3848 ; 14408           line length (initially set to 40 ???)
+CLMLST  = $3849 ; 14409           position of last comma column
+RUBSW   = $384A ; 14410           rubout switch
+TOPMEM  = $384B ; 14411 - 14412   High address of stack. followed by string storage space
+CURLIN  = $384D ; 14413 - 14414   Current BASIC line number (-1 in direct mode)
+TXTTAB  = $384F ; 14415 - 14416   Pointer to start of BASIC program
+FILNAM  = $3851 ; 14417           tape filename (6 chars)
+FILNAF  = $3857 ; 14423           tape read filename (6 chars)
+INSYNC  = $385D ; 14429           tape flag
+CLFLAG  = $385E ; 14430           tape flag (break key check)
+BUFMIN  = $385F ; 14431           buffer used by INPUT statement
+LINBUF  = $3860 ; 14432  BUF      line input buffer (73 bytes).
+                ;  ...
+TMPSTK  = $38A0 ;                 Temporary Stack - Set by INIT
+ENDBUF  = $38A9 ; 14505           End of line unput buffer
+DIMFLG  = $38AA ; 14506           dimension flag 1 = array
+VALTYP  = $38AB ; 14507           Type Indicator 0=numeric 1=string
+DORES   = $38AC ; 14508           flag for crunch
+MEMSIZ  = $38AD ; 14509 - 14510   Address of top of physical RAM.
+TEMPPT  = $38AF ; 14511 - 14512               
+TEMPST  = $38B1 ; 14513 -               
+DSCTMP  = $38BD ;       - 14528         
+FRETOP  = $38C1 ; 14529 - 14530   Pointer to top of string space
+TENP3   = $38C3 ; 14531 - 14532   temp space used by FOR etc.
+TEMP8   = $38C5 ; 14533 - 14534
+ENDFOR  = $38C7 ; 14535 - 14536
+DATLIN  = $38c9 ; 14537 - 14538  Address of current DATA line
+SUBFLG  = $38CB ; 14439           flag FOR:, GETVAR: 0=variable, 1=array
+USFLG   = $38CC ; 14440          Direct Mode Flag    
+FLGINP  = $38CD ; 14441           FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
 TMPSTAT  = $38ce ; 14540           temp holder of next statement address
                  ;  ...
 CONTLIN  = $38d2 ; 14546,7         Line number to CONTinue from.
@@ -171,8 +167,8 @@ PROGST   = $3900 ; 14592           NULL before start of BASIC program
 
 ; buffer lengths
 LINBUFLEN   = DIMFLG-LINBUF
-STRBUFLEN   = FRETOP-STRBUF
-SYSTEMPLEN  = DATLIN-SYSTEMP
+STRBUFLEN   = FRETOP-TEMPPT
+SYSTEMPLEN  = DATLIN-TENP3
 TMPSTATLEN  = CONTLIN-TMPSTAT
 FBUFFRLEN   = RESHO-FBUFFR
 
@@ -302,21 +298,21 @@ ERRMO  =    $24             ; Missing operand
 ;----------------------------------------------------------------------------
 SNERR    = $03C4  ; Syntax Error
 FCERR    = $0697  ; Function Call Error
-OVERR    = $03d3  ; Overflow
-OMERR    = $0bb7  ; Out of Memory
-USERR    = $06f3  ;   undefined line number
-BSERR    = $11cd  ;   bad subscript
-DDERR    = $03cd  ;   re-dimensioned array
-DV0ERR   = $03c7  ;   divide by zero
-IDERR    = $0b4F  ;   illegal direct
-TMERR    = $03d9  ;   type mismatch
+OVERR    = $03D3  ; Overflow
+OMERR    = $0BB7  ; Out of Memory
+USERR    = $06F3  ;   undefined line number
+BSERR    = $11CD  ;   bad subscript
+DDERR    = $03CD  ;   re-dimensioned array
+DV0ERR   = $03C7  ;   divide by zero
+IDERR    = $0B4F  ;   illegal direct
+TMERR    = $03D9  ;   type mismatch
 OSERR    = $0CEF  ;   out of string space
 STERR    = $0E97  ;   string formula too complex
 CNERR    = $0C51  ;   cant continue
-UFERR    = $03d0  ;   undefined function
+UFERR    = $03D0  ;   undefined function
                      
 ; process error code, E = code (offset to 2 char error name)
-DO_ERROR    = $03db
+DO_ERROR    = $03db   ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Statement Tokens
 POKETK      = $94   ; POKE Token

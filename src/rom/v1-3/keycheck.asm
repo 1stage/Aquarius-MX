@@ -9,11 +9,11 @@
 ; note: DEBOUNCE is still a constant. If there is a large delay between
 ;       keyscans you can reduce debounce time with the following code:-
 ;
-;       LD   A,(SCANCNT)
+;       LD   A,(KCOUNT)
 ;       CP   6                 ; starting key-up debounce?
 ;       JR   NZ,.check_key
 ;       LD   A,DEBOUNCE-x      ; x = number of scans to go
-;       LD   (SCANCNT),A       ; adjust debounce count
+;       LD   (KCOUNT),A       ; adjust debounce count
 ;  .check_key:
 ;       call Key_Check         ; Get ASCII of last key pressed
 ;
@@ -29,7 +29,7 @@ Key_Check:
         in      a,(c)           ; Read the results
         cpl                     ; invert - (a key down now gives 1)
         and     $3f             ; check all rows
-        ld      hl,LASTKEY      ; HL = &LASTKEY (scan code of last key pressed)
+        ld      hl,LSTX      ; HL = &LSTX (scan code of last key pressed)
         jr      z,.nokeys
         ld      b,$7f           ; 01111111 - scanning column 8
         in      a,(c)
@@ -48,15 +48,15 @@ Key_Check:
 
 ; key up debouncer
 .nokeys:                        ; no keys are down.
-        inc     hl              ; HL = &SCANCNT, counts how many times the same
+        inc     hl              ; HL = &KCOUNT, counts how many times the same
         ld      a,DEBOUNCE      ;                code has been scanned in a row.
         cp      (hl)            ; compare scan count to debounce value
         jr      c,.nokey        ; if scanned more than DEBOUNCE times then done
         jr      z,.keyup        ; if scanned DEBOUNCE times then do KEY UP
-        inc     (hl)            ; else increment SCANCNT
+        inc     (hl)            ; else increment KCOUNT
         jr      .nokey
 
-; HL = &LASTKEY
+; HL = &LSTX
 ; B  = bit pattern of column being scanned.
 ; A  = row bits
 ; KROWCNT converts the BIT number of the row and column into
@@ -80,7 +80,7 @@ Key_Check:
 ; A = (column*6)+row
 .krowcol:
        cp      (hl)            ; is scancode same as last time?
-       ld      (hl),a          ; (LASTKEY) = scancode
+       ld      (hl),a          ; (LSTX) = scancode
        inc     hl              ; HL = &SCANCOUNT
        jr      nz,.newkey      ; no,
        ld      a,4             ; yes, has it been down for 4 scans? (debounce)
@@ -109,17 +109,17 @@ Key_Check:
        ld      hl,KEYTBL-1    ; else point to start of normal key lookup table.
 .klookup:
        ld      b,0
-       ld      a,(LASTKEY)    ; get scancode
+       ld      a,(LSTX)    ; get scancode
        ld      c,a
        add     hl,bc          ; offset into table
        ld      a,(hl)         ; A = ASCII key
        or      a
        jr      .exit          ; return nz with ASCII key in A
 .keyup:
-       inc     (hl)           ; increment SCANCNT
-       dec     hl             ; HL = &LASTKEY
+       inc     (hl)           ; increment KCOUNT
+       dec     hl             ; HL = &LSTX
 .newkey:
-       ld      (hl),0         ; set SCANCNT/LASTKEY to 0
+       ld      (hl),0         ; set KCOUNT/LSTX to 0
 .nokey:
        xor     a              ; return z, A = no key
 .exit:

@@ -299,9 +299,9 @@ ROM_ENTRY:
     or      c
     jr      nz,.clrbugmem
     ld      a,$C3
-    ld      (USRJMP),a
+    ld      (USRPOK),a
     ld      HL,0
-    ld      (USRADDR),HL       ; set system RST $38 vector
+    ld      (USRADD),HL       ; set system RST $38 vector
   ifdef aqubug
     ld      de,MemWindows
     ld      hl,dflt_winaddrs
@@ -319,8 +319,8 @@ ROM_ENTRY:
 
 ; init keyboard vars
     xor     a
-    ld      (LASTKEY),a
-    ld      (SCANCNT),a
+    ld      (LSTX),a
+    ld      (KCOUNT),a
 ;
 ; show splash screen (Boot menu)
 SPLASH:
@@ -346,7 +346,7 @@ SPLASH:
 ; set up real time clock
     
 DTM_STRING = RNDTAB
-DTM_BUFFER = CASNAM
+DTM_BUFFER = FILNAM
   ifdef softclock
 RTC_ADDR = RNDTAB+20
 RTC_TEMP = FBUFFR
@@ -482,7 +482,7 @@ COLDBOOT:
     ld      de,$3803           ; system variables
     ldir                       ; copy default values
     xor     a
-    ld      (BUFEND),a         ; NULL end of input buffer
+    ld      (ENDBUF),a         ; NULL end of input buffer
     ld      (BINSTART),a       ; NULL binary file start address
     ld      (RETYPBUF),a       ; NULL history buffer
     ld      a,$0b
@@ -520,11 +520,11 @@ MEMSIZE:
     ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
     ld      de,-50             ; subtract 50 for strings space
     add     hl,de
-    ld      ($384b),hl         ; STKTOP, Top location to be used for stack
+    ld      (TOPMEM),hl        ; Top location to be used for stack
     ld      hl,PROGST
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
-    ld      (BASTART), hl      ; beginning of BASIC program text
+    ld      (TXTTAB), hl      ; beginning of BASIC program text
     call    $0bbe              ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
@@ -776,7 +776,7 @@ AQMAIN:
 
     call    $19be               ; PRNHOME if we were printing to printer, LPRINT a CR and LF
     xor     a
-    ld      (LISTCNT),a         ; Set ROWCOUNT to 0
+    ld      (CNTOFL),a          ; Set Line Counter to 0
     call    $19de               ; RSTCOL reset cursor to start of (next) line
     ld      hl,$036e            ; 'Ok'+CR+LF
     call    PRINTSTR            
@@ -1028,9 +1028,9 @@ do_cls:
     ld      de,$3001+40   ; DE cursor at 0,0
     ld      (CURRAM),de
     xor     a
-    ld      (CURCOL),a    ; column 0
+    ld      (TTYPOS),a    ; column 0
     ld      a,' '
-    ld      (CURHOLD),a   ; SPACE under cursor
+    ld      (CURCHR),a   ; SPACE under cursor
     ret
 
 ;-----------------------------------
@@ -1102,9 +1102,9 @@ GOTO_HL:
     push    af
     push    hl
     exx
-    ld      hl,($3801)          ; CHRPOS - address of cursor within matrix
-    ld      a,($380d)           ; BUFO - storage of the character behind the cursor
-    ld      (hl),a              ; return the original character on screen
+    ld      hl,(CURRAM)          ; address of cursor within matrix
+    ld      a,(CURCHR)           ; storage of the character behind the cursor
+    ld      (hl),a               ; return the original character on screen
     pop     hl
     ld      a,l
     add     a,a

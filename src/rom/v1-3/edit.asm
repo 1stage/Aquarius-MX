@@ -150,7 +150,7 @@ expand_token:
 ;      buffer holds text entered by user
 ;
 EDITLINE:
-    ld    a,(CURHOLD)
+    ld    a,(CURCHR)
     ld    de,(CURRAM)     ; hide system cursor
     ld    (de),a
     call  _showstr         ; show buffer on screen
@@ -351,7 +351,7 @@ EDITLINE:
 ;
 _clr_key_wait:
     xor     a
-    ld      (LSTASCI),a ; clear last key pressed
+    ld      (CHARC),a ; clear last key pressed
 _key_wait:
     call    $1e7e       ; get last key pressed
     jr      z,_key_wait ; loop until key pressed
@@ -378,7 +378,7 @@ _showstr:
     push  de
     push  bc
     ld    de,(CURRAM)   ; DE = cursor address in character RAM
-    ld    a,(CURCOL)
+    ld    a,(TTYPOS)
     ld    c,a           ; C = cursor column
     jr    .prt_next     ; start printing
 .prt_loop:
@@ -422,7 +422,7 @@ _showstr:
 ; Move cursor to the previous character position on screen. If at
 ; column 0 then go up to colomn 37 on the previous line.
 ;
-; Only updates CURCOL and CURRAM (no affect on cursor display).
+; Only updates TTYPOS and CURRAM (no affect on cursor display).
 ; Cursor should be turned off to avoid leaving colored blocks behind!
 ;
 ; NOTE: does not test for wrap at start of screen, so don't call
@@ -430,7 +430,7 @@ _showstr:
 ;
 _cursor_left:
     push  hl
-    ld    hl,CURCOL
+    ld    hl,TTYPOS
     ld    a,(hl)
     or    a
     jp    nz,.column
@@ -453,12 +453,12 @@ _cursor_left:
 ; screen then scroll up and put cursor on the 1st column of the last
 ; line.
 ;
-; Only updates CURCOL and CURRAM (no affect on cursor display).
+; Only updates TTYPOS and CURRAM (no affect on cursor display).
 ; Cursor should be turned off to avoid leaving colored blocks behind!
 ;
 _cursor_right:
     push  hl
-    ld    hl,CURCOL
+    ld    hl,TTYPOS
     ld    a,(HL)
     inc   a           ; cursor column + 1
     cp    38
