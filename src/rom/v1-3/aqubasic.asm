@@ -704,27 +704,29 @@ UDF_JMP:
 ;   and the BTOKEN value DECREMENTS as commands are added.
 ;   They also get added at the TOP of the TBLJMPS list.
 ;
-BTOKEN       equ $d3             ; our first token number
+BTOKEN       equ $d3                ; our first token number
 TBLCMDS:
 ; Commands list
-    db      $80 + 'S', "DTM"
-    db      $80 + 'E', "DIT"
-    db      $80 + 'C', "LS"
-    db      $80 + 'L', "OCATE"
-    db      $80 + 'O', "UT"
-    db      $80 + 'P', "SG"
-    db      $80 + 'D', "EBUG"
-    db      $80 + 'C', "ALL"
-    db      $80 + 'L', "OAD"
-    db      $80 + 'S', "AVE"
-    db      $80 + 'D', "IR"
-    db      $80 + 'C', "AT"
-    db      $80 + 'D', "EL"    ; previously KILL
-    db      $80 + 'C', "D"
+    db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
+    db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line (advanced editor)
+    db      $80 + 'C', "LS"         ; $d5 - Clear screen
+    db      $80 + 'L', "OCATE"      ; $d6 - Move cursor to position on screen
+    db      $80 + 'O', "UT"         ; $d7 - Read data from serial device
+    db      $80 + 'P', "SG"         ; $d8 - Send data to Programmable Sound Generator
+    db      $80 + 'D', "EBUG"       ; $d9 - Run debugger
+    db      $80 + 'C', "ALL"        ; $da - Call routine in memory
+    db      $80 + 'L', "OAD"        ; $db - Load file
+    db      $80 + 'S', "AVE"        ; $dc - Save file
+    db      $80 + 'D', "IR"         ; $dd - Directory, full listing
+    db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
+    db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
+    db      $80 + 'C', "D"          ; $e0 - Change directory
+
 ; - New functions get added to the END of the functions list.
 ;   They also get added at the END of the TBLFNJP list.
 ;
 ; Functions list
+
     db      $80 + 'I', "N"          ; $e1 - Input function
     db      $80 + 'J', "OY"         ; $e2 - Joystick function
     db      $80 + 'H', "EX$"        ; $e3 - Hex value function
