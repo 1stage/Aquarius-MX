@@ -69,8 +69,8 @@ REVISION = 3
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
-aqubug   equ 1    ; full featured debugger (else lite version without screen save etc.)
-;softclock equ 0   ; using software clock
+aqubug   equ 1     ; full featured debugger (else lite version without screen save etc.)
+softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -345,14 +345,14 @@ SPLASH:
 
 ; set up real time clock
     
+RTC_SHADOW = RNDTAB+20
 DTM_STRING = RNDTAB
 DTM_BUFFER = FILNAM
 
-RTC_ADDR = RNDTAB+20
   ifdef softclock
-
 RTC_TEMP = FBUFFR
   endif
+
     call    INIT_RTC
    
 ; outer loop for boot option key so date time display gets updated
@@ -531,7 +531,12 @@ MEMSIZE:
     call    $0bbe              ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
-    call    COPY_RTC           ; Copy Software Clock Registers to permanent location
+  ifdef RTC_TEMP
+    ld      hl,RTC_TEMP        ; Copy Temporary RTC Registers to where they belong
+    ld      de,RTC_SHADOW
+    ld      bc,10
+    ldir
+  endif
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
     jp      $0402              ; Jump to OKMAIN (BASIC command line)
@@ -1368,7 +1373,9 @@ ST_CALL:
 SPL_DATETIME:
 
   ifdef RTC_TEMP
-    ld      bc,RTC_TEMP
+    ld      bc,RTC_TEMP       
+  else
+    ld      bc,RTC_SHADOW
   endif
     ld      hl,DTM_BUFFER
     call    rtc_read      ;Read RTC
@@ -1381,33 +1388,27 @@ SPL_DATETIME:
     call    WinPrtStr
     ret    
     
-;Starting Date-Time for Software Clock
+;Starting DateTime for Software Clock
 ;2017-06-12 11:00:00 - Date Bruce Abbott released Micro Expander (NZ is GMT+11)
 SPL_DEFAULT:
     db      $FF,$00,$00,$00,$11,$12,$06,$17,$00,$00 
             ;enl cc  ss  mm  HH  DD  MM  YY cdl cdh
-
+ 
 ;------------------------------------------------------------------------------
 ;     Initialize the Real Time Clock
 ;------------------------------------------------------------------------------
 
 INIT_RTC:
-
-  ifdef softclock
-    ld      hl,SPL_DEFAULT    
-    ld      bc,RTC_TEMP
+  ifdef RTC_TEMP
+    ld      bc,RTC_TEMP       
+  else
+    ld      bc,RTC_SHADOW
   endif
+    ld      de,SPL_DEFAULT    ;Default Default Time
+    ld      hl,DTM_BUFFER     
     call    rtc_init          ;Initialize RTC Chip
     ret
 
-COPY_RTC:
-  ifdef softclock
-    ld      hl,RTC_TEMP
-    ld      de,RTC_ADDR
-    ld      bc,10
-    ldir
-  endif
-    ret
     
 ;------------------------------------------------------------------------------
 ;     DateTime Command - SET DateTime
@@ -1423,18 +1424,24 @@ COPY_RTC:
 ;
 
 ST_SDTM:
-    call    FRMEVL            ; Canonical FRMEVL
+    call    FRMEVL          ; Evaluate Argument
     push    hl              ; Save text pointer
-    call    FRESTR          ; Free temp string, return pointer in D,E
+    call    FRESTR          ; Make sure it's a String and Free up tmp
     
-    ld      a,c
-    cp      12              ; Error If less than 12 characters long
-    jp      c,FCERR      
+    ld      a,c             ; If less than 12 characters long
+    cp      12              ;   Return without setting date
+    jp      c,RET           ;
+
+    inc     hl              ; Skip String Descriptor length byte
+    inc     hl              ; Set DE to Address of String Text
+    ld      e,(hl)          ;   using it as the String Buffer
+    inc     hl
+    ld      d,(hl)
 
     ld      hl,DTM_BUFFER   ; 
     call    str_to_dtm      ; Convert String to DateTime
-    ;jp      nz,FCERR     ; Error if Date String is Invalid   
-    ld      bc,RTC_ADDR
+    ret     nz              ; Don't Write if invalid DateTime
+    ld      bc,RTC_SHADOW
     call    rtc_write
     pop     hl              ; Restore text pointer
     ret
@@ -1465,8 +1472,8 @@ FN_DTM:
     push    de               ; on stack
     call    CHKNUM
     
-    ld      bc,RTC_ADDR      ;Software Clock Registers
-    ld      hl,DTM_BUFFER    ;DTM Buffer
+    ld      bc,RTC_SHADOW
+    ld      hl,DTM_BUFFER    
     call    rtc_read         ;Read RTC
     ld      de,DTM_STRING
     call    dtm_to_str       ;Convert to String

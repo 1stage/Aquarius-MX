@@ -19,14 +19,14 @@ ds1244addr: EQU $4000
 ;Initialize Real Time Clock
 ;  Fills date-time buffer with zeros
 ;  causing following reads to return RTC Not Found
-;Args: BC = Address of Clock Buffer
+;Args: BC = Address of RTC Shadow Registers
+;      HL = Address of Normalized DateTime 
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 rtc_init:
     push    bc
     push    hl
-    ld      hl,DTM_BUFFER
-    ld      bc,RTC_ADDR
+    ld      hl,DTM_BUFFER  
     xor     a
     dec     a
     ld      (bc),a
@@ -36,21 +36,19 @@ rtc_init:
     ret                 
 
 ;Read Real Time Clock
-;Args: HL = Address of DTM Buffer
-;      BC = Address of Software Clock 
+;Args: BC = Address of RTC Shadow Registers
+;      HL = Address of Normalized DateTime 
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 rtc_read:
-    push    bc
-    ld      bc,RTC_ADDR
     ld      a,(bc)            ;Check RTC Found flag
     or      a                 ;If 0 (Not Found)
     call    nz,do_rtc_read  ;  If Clock Was Found, Call Read
-    pop     bc
     ret
+
 ;Read Real Time Clock
-;Args: HL = Address of DTM Buffer
-;      BC = Address of Software Clock 
+;Args: BC = Address of RTC Shadow Registers
+;      HL = Address of Normalized DateTime 
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 do_rtc_read:
@@ -60,7 +58,7 @@ do_rtc_read:
     push    hl      
     push    bc              ; Registers saved as AF,DE,HL,BC
     LD      hl,rtc_Ident
-    inc     bc              ; want to write to softclock +1
+    inc     bc              ; want to write to shadow +1
     ld      d,b             ; Save BC for later use (remember no Stack usage here)
     ld      e,c                 
     ld      c,8             ; Going to loop round 8 times here
@@ -95,16 +93,16 @@ ds_readByte:               ; all come in in D0
     DJNZ    ds_readByte    ; Loop for the byte
     ld      a,d             ; Need to Correct D for the last Rotate
     rla                     ; Rotate Left D0 <- C Flag
-    ld      (hl),a          ; Save value in softclock
+    ld      (hl),a          ; Save value in shadow
     inc     hl              
     dec     c               
     jr      nz,ds_readTime ; Loop round for the 8 bytes      
     pop     bc              ; recover HL & BC
     pop     hl
     push    hl              ; Resave them for exit
-    push    bc              ; BC = Softclock ATM
+    push    bc              ; BC = shadow ATM
     ex      de,hl           ; de= DTM Buffer
-    inc     bc              ; SoftClock+1    
+    inc     bc              ; shadow+1    
     ld      h,b
     ld      l,c
     ld      b,8
@@ -117,7 +115,7 @@ ds_checkvalues:
     pop     bc
     push    bc
                             ; Copying to DTM Buffer (already in DE)
-    ld      h,b             ; Copying from SoftClock 
+    ld      h,b             ; Copying from shadow 
     ld      l,c
     ld      bc,5            ; Copying 5 Bytes (Valid + 4 bytes)
     ldir                    ; Do Copy  (HH:MM:SS.CC)
@@ -131,7 +129,7 @@ ds_checkvalues:
     ld      (ds1244addr),a  ; restore original memory into control address
     xor     a
     dec     a
-    ld      (bc),a          ; write FF into (Softclock) to indicate clock present 
+    ld      (bc),a          ; write FF into (shadow) to indicate clock present 
     ;xor     a
     ret                 
 ds_noClockFound:
@@ -141,14 +139,14 @@ ds_noClockFound:
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
     xor     a               ; Set Z flag to indicate error
-    ld      (bc),a          ; write 00 into (Softclock) to indicate no clock present   
+    ld      (bc),a          ; write 00 into (shadow) to indicate no clock present   
    ; dec     a         
     ret    
 rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 
 ;Write Real Time Clock
-;Args: HL = Address of DTM Buffer 
-;      BC = Address of Software Clock 
+;Args: BC = Address of RTC Shadow Registers
+;      HL = Address of Normalized DateTime 
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         DE and HL unchanged
 rtc_write:
@@ -170,7 +168,7 @@ rtc_write:
     pop     de
     push    de
     LD      hl,rtc_Ident
-    inc     bc              ; want to write to softclock +1
+    inc     bc              ; want to write to shadow +1
     ld      c,8             ; Going to loop round 8 times here
     xor     a
     ld      (ds1244addr),a  ; store a 0 here, so if no RTC, then it will just read all zero's
@@ -190,7 +188,7 @@ ds_wrIdentInner:
     ld      l,e
     LD      c,8
 ds_wrData:
-    ld      a,(hl)          ; this works by writing the pattern RTC_ADDR 
+    ld      a,(hl)          ; this works by writing the pattern RTC_SHADOW 
     ld      b,8             ; to an address within the clock
 ds_wrDataInner:
     ld      (ds1244addr),a  ; it is all written by 64 single bit D0, so 

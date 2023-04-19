@@ -15,26 +15,29 @@
 
 ;Initialize Real Time Clock
 ;  Sets SoftClock fields as specified
-;Args: BC = Address of Software Clock
-;      HL = Initial RTC Data
-;Returns: A = 0 if Successful, otherwise $FF
+;Args: BC = Address Software Clock Registers
+;      DE = Address of Initial RTC Data
+;      HL = Address of DateTime Buffer
+;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 rtc_init:
     push    hl            ;Save Registers
     push    de
     push    bc 
-    ld      d,b           
+    ld      h,d           ;Copying from Init Data
+    ld      l,e
+    ld      d,b           ;to Clock Registers
     ld      e,c
-    ld      bc,10         ;Copy All Fields
-    ldir                  
+    ld      bc,10         ;Copy 10 Bytes
+    ldir                    
     pop     bc            ;Restore Registers
     pop     de
     pop     hl
     ret                 
 
 ;Read Real Time Clock
-;Args: HL = Address of DTM Buffer
-;      BC = Address of Software Clock 
+;Args: BC = Address Software Clock Registers
+;      HL = Address of DateTime Buffer
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
 ;         BC, DE, HL unchanged
 rtc_read:
@@ -61,10 +64,10 @@ do_rtc_read:
 
 
 ;Write Real Time Clock
-;Args: HL = Address of DTM Buffer 
-;      BC = Address of Software Clock 
+;Args: BC = Address Software Clock Registers
+;      HL = Address of DateTime Buffer
 ;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
-;         DE and HL unchanged
+;         BC, DE, HL unchanged
 rtc_write:
     push    hl            ;Save Registers
     push    de            

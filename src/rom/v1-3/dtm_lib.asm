@@ -163,14 +163,8 @@ str_dtm_loop:
 
 ;Return Binary Value of ASCII Digit at DE, Error Out if Not Digit
 str_dtm_digit:
-
-        exx
-        rst     $18          
-        exx
-
         ld      a,(de)            ;Get ASCII Digit
         sub     '0'               ;Convert to Binary Value
-        ret
         jr      c,str_dtm_err     ;Error if Less than '0'
         cp      ':'
         jr      nc,str_dtm_err    ;Error if Greater than '9'
