@@ -22,7 +22,7 @@ ST_EDIT:
     ld    a,d
     or    e
     jr    nz,.prtline
-    ld    e,MO_ERR        ; if no line number then MO error
+    ld    e,ERRMO        ; if no line number then MO error
     JP    DO_ERROR
 .prtline:
     ex    de,hl           ; HL = line number

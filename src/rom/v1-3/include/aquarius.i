@@ -275,50 +275,46 @@ CTRLX   = $18   ; ^X = undo line
 ;----------------------------------------------------------------------------
 ; code is offset to error name (2 characters)
 ;
-;name        code            description
-NF_ERR  =    $00             ; NEXT without FOR
-SN_ERR  =    $02             ; Syntax error
-RG_ERR  =    $04             ; RETURN without GOSUB
-OD_ERR  =    $06             ; Out of DATA
-FC_ERR  =    $08             ; Function Call error
-OV_ERR  =    $0A             ; Overflow
-OM_ERR  =    $0C             ; Out of memory
-UL_ERR  =    $0E             ; Undefined line number
-BS_ERR  =    $10             ; Bad subscript
-DD_ERR  =    $12             ; Re-DIMensioned array
-DZ_ERR  =    $14             ; Division by zero (/0)
-ID_ERR  =    $16             ; Illegal direct
-TM_ERR  =    $18             ; Type mismatch
-OS_ERR  =    $1A             ; out of string space
-LS_ERR  =    $1C             ; String too long
-ST_ERR  =    $1E             ; String formula too complex
-CN_ERR  =    $20             ; Cant CONTinue
-UF_ERR  =    $22             ; UnDEFined FN function
-MO_ERR  =    $24             ; Missing operand
+;name       code            description
+ERRNF  =    $00             ; NEXT without FOR
+ERRSN  =    $02             ; Syntax error
+ERRRG  =    $04             ; RETURN without GOSUB
+ERROD  =    $06             ; Out of DATA
+ERRFC  =    $08             ; Function Call error
+ERROV  =    $0A             ; Overflow
+ERROM  =    $0C             ; Out of memory
+ERRUS  =    $0E             ; Undefined Line Number (Undefined Statement)
+ERRBS  =    $10             ; Bad subscript
+ERRDD  =    $12             ; Re-DIMensioned array
+ERRDZ  =    $14             ; Division by zero (/0)
+ERRID  =    $16             ; Illegal direct
+ERRTM  =    $18             ; Type mismatch
+ERROS  =    $1A             ; out of string space
+ERRLS  =    $1C             ; String too long
+ERRST  =    $1E             ; String formula too complex
+ERRCN  =    $20             ; Cant CONTinue
+ERRUF  =    $22             ; UnDEFined FN function
+ERRMO  =    $24             ; Missing operand
 
 
 ;----------------------------------------------------------------------------
 ;     jump addresses for BASIC errors (returns to command prompt)
 ;----------------------------------------------------------------------------
-ERROR_SN    = $03c4  ;   syntax error
-                     ;   return without gosub
-                     ;   out of data
-ERROR_FC    = $0697  ;   function code error
-ERROR_OV    = $03d3  ;   overflow
-ERROR_OM    = $0bb7  ;   out of memory
-ERROR_UL    = $06f3  ;   undefined line number
-ERROR_BS    = $11cd  ;   bad subscript
-ERROR_DD    = $03cd  ;   re-dimensioned array
-ERROR_DIV0  = $03c7  ;   divide by zero
-ERROR_ID    = $0b4F  ;   illegal direct
-ERROR_TM    = $03d9  ;   type mismatch
-ERROR_OS    = $0CEF  ;   out of string space
-                     ;   string to long
-ERROR_ST    = $0E97  ;   string formula too complex
-ERROR_CN    = $0C51  ;   cant continue
-ERROR_UF    = $03d0  ;   undefined function
-                     ;   missing operand
-
+SNERR    = $03C4  ; Syntax Error
+FCERR    = $0697  ; Function Call Error
+OVERR    = $03d3  ; Overflow
+OMERR    = $0bb7  ; Out of Memory
+USERR    = $06f3  ;   undefined line number
+BSERR    = $11cd  ;   bad subscript
+DDERR    = $03cd  ;   re-dimensioned array
+DV0ERR   = $03c7  ;   divide by zero
+IDERR    = $0b4F  ;   illegal direct
+TMERR    = $03d9  ;   type mismatch
+OSERR    = $0CEF  ;   out of string space
+STERR    = $0E97  ;   string formula too complex
+CNERR    = $0C51  ;   cant continue
+UFERR    = $03d0  ;   undefined function
+                     
 ; process error code, E = code (offset to 2 char error name)
 DO_ERROR    = $03db
 

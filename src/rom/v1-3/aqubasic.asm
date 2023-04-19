@@ -969,7 +969,7 @@ _run_file:
     call    PRINTSTR
     pop     hl                 ; restore BASIC text pointer
 .error:
-    ld      e,FC_ERR           ; function code error
+    ld      e,ERRFC           ; function code error
     jp      DO_ERROR           ; return to BASIC
 .extend:
     dec     hl
@@ -1421,11 +1421,11 @@ ST_SDTM:
     
     ld      a,c
     cp      12              ; Error If less than 12 characters long
-    jp      c,ERROR_FC      
+    jp      c,FCERR      
 
     ld      hl,DTM_BUFFER   ; 
     call    str_to_dtm      ; Convert String to DateTime
-    ;jp      nz,ERROR_FC     ; Error if Date String is Invalid   
+    ;jp      nz,FCERR     ; Error if Date String is Invalid   
     ld      bc,RTC_ADDR
     call    rtc_write
     pop     hl              ; Restore text pointer

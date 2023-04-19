@@ -103,7 +103,7 @@ ST_CD:
     ld     a,ERROR_NO_DIR        ; error = missing directory
 .do_error:
     call   _show_error           ; print error message
-    ld     e,FC_ERR
+    ld     e,ERRFC
     pop    hl
     jp     DO_ERROR              ; return to BASIC with FC error
 .done:
@@ -137,7 +137,7 @@ ST_LOAD:
     jp      z,ST_LOADFILE         ; good filename?
     push    hl                    ; push BASIC text pointer
     ld      e,a
-    cp      FC_ERR                ; if Function Call error then show DOS error
+    cp      ERRFC                ; if Function Call error then show DOS error
     jp      nz,_stl_do_error      ; else show BASIC error code
     ld      a,ERROR_BAD_NAME
     jp      _stl_show_error       ; break with bad filename error
@@ -159,7 +159,7 @@ _stl_arg_array:
     ld      (FORFLG),a            ; set array flag
     call    GETVAR                ; get array (out: BC = address, DE = length)
     ld      (FORFLG),a            ; clear array flag
-    jp      nz,ERROR_FC           ; FC Error if array not found
+    jp      nz,FCERR           ; FC Error if array not found
     call    CHKNUM                ; TM error if not numeric
 _stl_array_parms:
     push    hl                    ; push BASIC text pointer
@@ -347,7 +347,7 @@ _stl_no_addr:
 _stl_show_error:
     call    _show_error           ; print DOS error message (A = error code)
     call    usb__close_file       ; close file (if opened)
-    ld      e,FC_ERR              ; Function Call error
+    ld      e,ERRFC              ; Function Call error
 _stl_do_error:
     pop     hl                    ; restore BASIC text pointer
     jp      DO_ERROR              ; return to BASIC with error code in E
@@ -537,7 +537,7 @@ ST_SAVE:
     jr      z,ST_SAVEFILE
     push    hl                  ; push BASIC text pointer
     ld      e,a                 ; E = error code
-    cp      FC_ERR
+    cp      ERRFC
     jp      nz,_sts_error       ; if not FC error then show BASIC error code
     ld      a,ERROR_BAD_NAME
     jp      DO_ERROR            ; bad filename, quit to BASIC
@@ -554,7 +554,7 @@ ST_SAVEFILE:
     ld      (FORFLG),a          ; flag = array
     call    GETVAR              ; BC = array address, DE = array length
     ld      (FORFLG),a          ; clear flag
-    jp      nz,ERROR_FC         ; report FC Error if array not found
+    jp      nz,FCERR         ; report FC Error if array not found
     call    CHKNUM              ; TM error if not numeric
     call    get_next
     cp      'A'
@@ -660,7 +660,7 @@ _sts_open_error:
     ld      a,ERROR_CREATE_FAIL
 _sts_show_error:
     call    _show_error         ; show DOS error message (A = error code)
-    ld      e,FC_ERR
+    ld      e,ERRFC
 _sts_error:
     pop     hl
     jp      DO_ERROR            ; return to BASIC with error code in E
@@ -709,7 +709,7 @@ ST_CAT:
 .disk_error:
     call    _show_error             ; show error code
     pop     hl
-    ld      e,FC_ERR
+    ld      e,ERRFC
     jp      DO_ERROR                ; return to BASIC with FC error
 .cat_loop:
     LD      A,CH376_CMD_RD_USB_DATA
@@ -813,7 +813,7 @@ ST_DIR:
     jr      z,.st_dir_done    ; if successful listing then done
 .error:
     call    _show_error       ; else show error message (A = error code)
-    ld      e,FC_ERR
+    ld      e,ERRFC
     pop     hl
     jp      DO_ERROR          ; return to BASIC with FC error
 .st_dir_done:
@@ -1073,7 +1073,7 @@ ST_DEL:
     ld     hl,FileName
     call   usb__delete       ; delete file
     jr     z,.done
-    ld     e,FC_ERR
+    ld     e,ERRFC
     ld     a,ERROR_NO_FILE
 .do_error:
     call   _show_error       ; print error message
