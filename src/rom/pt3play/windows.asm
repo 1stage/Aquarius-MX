@@ -224,7 +224,7 @@ DrawBorder:
        INC   HL
        LD    B,(IX+win_w)
 ;       LD    A,172              ; This is the HORIZONTAL pipe character at the TOP
-       LD    A,31               ; This is the HORIZONTAL pipe character at the TOP
+       LD    A,252              ; This is the HORIZONTAL pipe character at the TOP
        CALL  hline              ; top bar
 ;       LD    A,206              ; This is the UR pipe character
        LD    A,201              ; This is the UR pipe character

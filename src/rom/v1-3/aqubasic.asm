@@ -401,15 +401,15 @@ AboutSCR:
 
 AboutBdrWindow:
     db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
-    db   (BLACK*16)+CYAN              ; text colors,   (FG * 16) + BG
-    db   (DKGREY*16)+CYAN             ; border colors, (FG * 16) + BG
+    db   (BLUE*16)+CYAN               ; text colors,   (FG * 16) + BG
+    db   (DKBLUE*16)+CYAN             ; border colors, (FG * 16) + BG
     db   2,3,36,20                    ; x,y,w,h
     dw   AboutBdrTitle                ; title
 
 AboutWindow:
     db   0                            ; attributes
     db   (BLUE*16)+CYAN               ; text colors,   (FG * 16) + BG
-    db   (DKGREY*16)+CYAN             ; border colors, (FG * 16) + BG
+    db   (DKBLUE*16)+CYAN             ; border colors, (FG * 16) + BG
     db   4,4,32,18                    ; x,y,w,h
     dw   0                            ; title
 
@@ -419,17 +419,18 @@ AboutBdrTitle:
 AboutText:
     db     CR,CR,CR
     db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
-    db     " Release Date - 2023-04-18",CR,CR                       ; Can we parameterize this later?
+    db     " Release Date - 2023-04-??",CR,CR                       ; Can we parameterize this later?
     db     " ROM Dev Team - Curtis F Kaylor",CR
     db     "                Mack Wharton",CR
     db     "                Sean Harrington",CR
     db     CR
+    db     "Original Code - Bruce Abbott",CR
+    db     CR
     db     "     AquaLite - Richard Chandler",CR
     db     CR
     db     "Aquarius Draw - Matt Pilz",CR
-    db     CR
-    db     "Original Code - Bruce Abbott",CR
-    db     CR
+    db     CR,CR
+    db     "  github.com/1stage/Aquarius-MX",CR
     db     0
 
 ; CTRL-C pressed in boot menu
