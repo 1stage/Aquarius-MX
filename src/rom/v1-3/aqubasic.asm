@@ -430,7 +430,7 @@ AboutText:
     db     CR
     db     "Aquarius Draw - Matt Pilz",CR
     db     CR,CR
-    db     "  github.com/1stage/Aquarius-MX",CR
+    db     " github.com/1stage/Aquarius-MX",CR
     db     0
 
 ; CTRL-C pressed in boot menu
