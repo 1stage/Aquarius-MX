@@ -882,7 +882,7 @@ ShowFileBytes:
        ld    e,(IX+win_h)
        srl   e
        call  WinSetCursor
-       LD    HL,FPSTR+1
+       LD    HL,FBUFFR+2
        JP    WinPrtStr        ; print bytes written
 
 

@@ -74,7 +74,7 @@ ST_CD:
     jr     .done
 .change_dir:
     pop    hl                    ; pop BASIC text pointer
-    CALL   EVAL                  ; evaluate expression
+    CALL   FRMEVL                  ; evaluate expression
     PUSH   HL                    ; push BASIC text pointer
     CALL   TSTSTR                ; type mismatch error if not string
     CALL   GETLEN                ; get string and its length
@@ -160,7 +160,7 @@ _stl_arg_array:
     call    GETVAR                ; get array (out: BC = address, DE = length)
     ld      (FORFLG),a            ; clear array flag
     jp      nz,ERROR_FC           ; FC Error if array not found
-    call    TSTNUM                ; TM error if not numeric
+    call    CHKNUM                ; TM error if not numeric
 _stl_array_parms:
     push    hl                    ; push BASIC text pointer
     ld      h,b
@@ -180,7 +180,7 @@ _stl_array_parms:
     pop     hl                    ; POP text pointer
     jr      _stl_start
 _stl_addr:
-    call    GETNUM                ; get number
+    call    FRMNUM                ; get number
     call    DEINT                 ; convert to 16 bit integer
     ld      (BINSTART),de
     ld      a,1<<DF_ADDR
@@ -555,7 +555,7 @@ ST_SAVEFILE:
     call    GETVAR              ; BC = array address, DE = array length
     ld      (FORFLG),a          ; clear flag
     jp      nz,ERROR_FC         ; report FC Error if array not found
-    call    TSTNUM              ; TM error if not numeric
+    call    CHKNUM              ; TM error if not numeric
     call    get_next
     cp      'A'
     jr      c,_sts_array
@@ -580,14 +580,14 @@ _sts_array:
     jr      _sts_open
 ; parse address, length
 _sts_num:
-    call    GETNUM              ; get address
+    call    FRMNUM              ; get address
     call    DEINT               ; convert to 16 bit integer
     ld      (BINSTART),de       ; set address
     ld      a,1<<DF_ADDR
     ld      (DOSFLAGS),a        ; flag load address present
     call    get_arg             ; get next char from text, skipping spaces
     CHKNXT  ","                 ; skip ',' (syntax error if not ',')
-    call    GETNUM              ; get length
+    call    FRMNUM              ; get length
     call    DEINT               ; convert to 16 bit integer
     ld      (BINLEN),de         ; store length
 ; create new file
@@ -1035,7 +1035,7 @@ print_integer:
        PUSH     BC
        PUSH     AF
        CALL     INT2STR
-       LD       HL,FPSTR+1
+       LD       HL,FBUFFR+2
        CALL     strlen
        POP      BC
        LD       C,A
@@ -1200,7 +1200,7 @@ dos__set_path:
 ; uses: BC,DE
 ;
 dos__getfilename:
-    call    EVAL              ; evaluate expression
+    call    FRMEVL              ; evaluate expression
     push    hl                ; save BASIC text pointer
     ld      a,(VALTYP)        ; get type
     dec     a

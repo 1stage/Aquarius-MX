@@ -937,7 +937,7 @@ RUNPROG:
     pop     hl                 ; restore HL
     jp      z,$0bcb            ; if no argument then RUN from 1st line
     push    hl
-    call    EVAL               ; get argument type
+    call    FRMEVL               ; get argument type
     pop     hl
     ld      a,(VALTYP)
     dec     a                  ; 0 = string
@@ -1021,7 +1021,7 @@ ST_reserved:
 ST_CLS:
     ld      a,CYAN        ; default to black on cyan
     jr      z,do_cls      ; no parameters, use default
-    call    GETINT        ; get parameter as byte in E
+    call    GETBYT        ; get parameter as byte in E
     ld      a,e
 do_cls:
     call    clearscreen
@@ -1065,12 +1065,12 @@ clearscreen:
 ;   syntax: OUT port, data
 
 ST_OUT:
-    call    GETNUM              ; get/evaluate port
+    call    FRMNUM              ; get/evaluate port
     call    DEINT               ; convert number to 16 bit integer (result in DE)
     push    de                  ; stored to be used in BC
     rst     $08                 ; Compare RAM byte with following byte
     db      $2c                 ; character ',' byte used by RST 08
-    call    GETINT              ; get/evaluate data
+    call    GETBYT              ; get/evaluate data
     pop     bc                  ; BC = port
     out     (c),a               ; out data to port
     ret
@@ -1080,14 +1080,14 @@ ST_OUT:
 ; Syntax: LOCATE col, row
 
 ST_LOCATE:
-    call    GETINT              ; read number from command line (column). Stored in A and E
+    call    GETBYT              ; read number from command line (column). Stored in A and E
     push    af                  ; column store on stack for later use
     dec     a
     cp      38                  ; compare with 38 decimal (max cols on screen)
     jp      nc,$0697            ; If higher then 38 goto FC error
     rst     $08                 ; Compare RAM byte with following byte
     db      $2c                 ; character ',' byte used by RST 08
-    call    GETINT              ; read number from command line (row). Stored in A and E
+    call    GETBYT              ; read number from command line (row). Stored in A and E
     cp      $18                 ; compare with 24 decimal (max rows on screen)
     jp      nc,$0697            ; if higher then 24 goto FC error
     inc     e
@@ -1134,11 +1134,11 @@ ST_PSG:
     cp      $00
     jp      z,$03d6          ; MO error if no args
 psgloop:
-    call    GETINT           ; get/evaluate register
+    call    GETBYT           ; get/evaluate register
     out     ($f7),a          ; set the PSG register
     rst     $08              ; next character must be ','
     db      $2c              ; ','
-    call    GETINT           ; get/evaluate value
+    call    GETBYT           ; get/evaluate value
     out     ($f6),a          ; send data to the selected PSG register
     ld      a,(hl)           ; get next character on command line
     cp      $2c              ; compare with ','
@@ -1154,15 +1154,15 @@ psgloop:
 FN_IN:
     pop     hl
     inc     hl
-    call    EVLPAR           ; Read number from line - ending with a ')'
+    call    PARCHK           ; Read number from line - ending with a ')'
     ex      (sp),hl
-    ld      de,LABBCK        ; return address for PUTVAR8
+    ld      de,LABBCK        ; return address for FLOATD
     push    de               ; on stack
     call    DEINT            ; convert argument to 16 bit integer in DE
     ld      b,d
     ld      c,e              ; bc = port
     in      a,(c)            ; a = in(port)
-    jp      PUTVAR8          ; return with 8 bit input value in variable var
+    jp      FLOATD          ; return with 8 bit input value in variable var
 
 
 ;--------------------------------------------------------------------
@@ -1218,7 +1218,7 @@ joy04:
 
 joy05:   
     cpl
-    jp      PUTVAR8
+    jp      FLOATD
 
 
 ;----------------------------------------
@@ -1230,7 +1230,7 @@ joy05:
 FN_HEX:
     pop     hl
     inc     hl
-    call    EVLPAR     ; evaluate parameter in brackets
+    call    PARCHK     ; evaluate parameter in brackets
     ex      (sp),hl
     ld      de,LABBCK  ; return address
     push    de         ; on stack
@@ -1306,13 +1306,13 @@ PRINTHEX:
 FN_VER:
     pop     hl
     inc     hl
-    call    EVLPAR           ; Evaluate argument between parentheses - then ignore it
+    call    PARCHK           ; Evaluate argument between parentheses - then ignore it
     ex      (sp),hl
     ld      de,LABBCK        ; return address
     push    de               ; on stack
     ld      a, VERSION       ; returning (VERSION * 256) + REVISION
     ld      b, REVISION
-    jp      PUTVAR
+    jp      FLOATB
 
 
 ;--------------------------------------------------------------------
@@ -1326,7 +1326,7 @@ FN_VER:
 ; on exit from user code, HL should point to end of statement
 ;
 ST_CALL:
-    call    GETNUM           ; get number from BASIC text
+    call    FRMNUM           ; get number from BASIC text
     call    DEINT            ; convert to 16 bit integer
     push    de
     ret                      ; jump to user code, HL = BASIC text pointer
@@ -1415,7 +1415,7 @@ COPY_RTC:
 ;
 
 ST_SDTM:
-    call    EVAL            ; Canonical FRMEVL
+    call    FRMEVL            ; Canonical FRMEVL
     push    hl              ; Save text pointer
     call    FRESTR          ; Free temp string, return pointer in D,E
     
@@ -1454,18 +1454,18 @@ ST_SDTM:
 FN_DTM:
     pop     hl
     inc     hl
-    call    EVLPAR           ; Evaluate argument between parentheses into FAC 
+    call    PARCHK           ; Evaluate argument between parentheses into FAC 
     ex      (sp),hl
     ld      de,LABBCK        ; return address
     push    de               ; on stack
-    call    TSTNUM
+    call    CHKNUM
     
     ld      bc,RTC_ADDR      ;Software Clock Registers
     ld      hl,DTM_BUFFER    ;DTM Buffer
     call    rtc_read         ;Read RTC
     ld      de,DTM_STRING
     call    dtm_to_str       ;Convert to String
-    ld      a,(FPREG+3)            
+    ld      a,(FAC)            
     or      a                ;If Argument is not 0
     call    nz,dtm_fmt_str   ;  Format Date
     ld      hl,DTM_STRING

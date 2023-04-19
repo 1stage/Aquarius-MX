@@ -98,7 +98,7 @@ SCANCNT  = $380f ; 14351           number of SCANS key has been down for
 FDIV     = $3810 ; 14352           subroutine for division ???
                  ;  ...
 RANDOM   = $381F ; 14367           used by random number generator
-RNDTAB   = $3821 ; 14369           Unused 32 byte Random Number TABLE 
+RNDTAB   = $3821 ; 14369           Unused 32 byte Random Number Table 
                  ; ...
 LPTLST   = $3845 ; 14405           last printer operation status
 PRNCOL   = $3846 ; 14406  LPTPOS   The current printer column (0-131).
@@ -122,7 +122,7 @@ LINBUF   = $3860 ; 14432  BUF      line input buffer (73 bytes).
 
 BUFEND   = $38A9 ; 14505           end of line unput buffer
 DIMFLG   = $38AA ; 14506           dimension flag 1 = array
-VALTYP   = $38AB ; 14507           type: 0 = number, 1 = string
+VALTYP   = $38AB ; 14507           Type Indicator 0=numeric 1=string
 DORES    = $38AC ; 14508           flag for crunch
 RAMTOP   = $38AD ; 14509  MEMSIZ   Address of top of physical RAM.
                  ; 14510
@@ -150,12 +150,19 @@ RESTORE  = $38DC ; 14556           Address of line last RESTOREd
                  ; 14557
 ;          $38DE ; 14558           pointer and flag for arrays
                  ;  ...
-FPREG    = $38E4 ; 14564  FPNUM    floating point number
-                 ;  ...
-FBUFFR   = $38E8 ; 14568           floating point string buffer 
-FPSTR    = $38E9 ; 14569           floating point string
-                 ;  ...
-;          $38F9 ; 14585           used by keybord routine
+                 ;                 Floating Point Accumulator
+FACLO    = $38E4 ; 14564  FPNUM    Low Order of Mantissa
+FACMO    = $38E5 ; 14565           Middle Order of Mantissa
+FACHO    = $38E6 ; 14566           High Order of Mantissa
+FAC      = $38E7 ; 14567           Exponent 
+
+FBUFFR   = $38E8 ; 14568           Floating Point String Buffer 
+
+RESHO    = $38F6 ; 14582           Result of Multiplier and Divider
+RESMO    = $38F7 ; 14583
+RESLO    = $38F8 ; 14584
+
+SAVSTK   = $38F9 ; 14585           used by keybord routine
                  ;  ...
 PROGST   = $3900 ; 14592           NULL before start of BASIC program
 
@@ -167,8 +174,7 @@ LINBUFLEN   = DIMFLG-LINBUF
 STRBUFLEN   = FRETOP-STRBUF
 SYSTEMPLEN  = DATLIN-SYSTEMP
 TMPSTATLEN  = CONTLIN-TMPSTAT
-FPREGLEN    = FPSTR-FPREG
-FPSTRLEN    = $38F9-FPSTR
+FBUFFRLEN   = RESHO-FBUFFR
 
 ;----------------------------------------------------------------------------
 ;                          system routines
@@ -195,14 +201,15 @@ SVCURCOL    = $1e3e  ; save cursor position (HL = address, A = column)
 LINEDONE    = $19e5  ; line entered (CR pressed)
 FINDLIN     = $049f  ; find address of BASIC line (DE = line number)
 
-EVAL        = $0985  ; evaluate expression
-OPRND       = $09fd  ; evaluate operand
-EVLPAR      = $0a37  ; evaluate expression in brackets
-LABBCK      = $0a49  ; return point for numeric functions
-GETINT      = $0b54  ; evaluate numeric expression (integer 0-255)
-GETNUM      = $0972  ; evaluate numeric expression
-PUTVAR      = $0b22  ; store variable 16 bit (out: B,A = value)
-PUTVAR8     = $0b36  ; store variable 8 bit (out: B = value)
+FRMNUM      = $0972  ; Evaluate Numeric Formula
+FRMEVL      = $0985  ; Evaluate Formula
+EVAL        = $09FD  ; Evaluate Variable, Constant, or Function Call
+PARCHK      = $0A37  ; Evaluate Formula in Parentheses
+LABBCK      = $0A49  ; Functions that don't return string values come back here
+GETBYT      = $0B54  ; Evaluate Numeric Formula between 0 and 255
+GIVINT      = $0B21  ; Float Integer MSB=[A], LSB=[C] into Floating Point Accumulator
+FLOATB      = $0B22  ; Float Integer MSB=[A], LSB=[B] into Floating Point Accumulator
+FLOATD      = $0B36  ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
 
 RETSTR      = $0e2f  ; return string in HL from function  
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
@@ -210,10 +217,11 @@ QSTR        = $0e60  ; create string (HL = text starting with '"')
 GETFLNM     = $1006  ; get tape filename string (out: DE = filename, A = 1st char)
 GETVAR      = $10d1  ; get variable (out: BC = addr, DE = len)
 
-GETLEN      = $0ff7  ; get string length (in: (FPREG) = string block)
+GETLEN      = $0ff7  ; get string length (in: (FACLO) = string block)
                      ;                   (out: HL = string block, A = length)
-FRESTR      = $0fC6  ; Free up temp string, out: HL = address, C = length
-TSTNUM      = $0975  ; error if evaluated expression not a number
+FRESTR      = $0FC6  ; Free up temporary string
+FREFAC      = $0fc9
+CHKNUM      = $0975  ; Issue "TM" Error if result is not a number
 TSTSTR      = $0976  ; error if evaluated expression not string
 CHKTYP      = $0977  ; error if type mismatch
 
