@@ -1080,9 +1080,21 @@ clearscreen:
     pop     hl
     ret
 
-;--------------------------------------------------------------------
-;   OUT statement
-;   syntax: OUT port, data
+
+;----------------------------------------------------------------------------
+;;; IN() Function - Read Z80 I/O Port
+;;; 
+;;; FORMAT: OUT <address>,<byte>
+;;;  
+;;; Action: Writes <byte> to the I/O port specified by LSB of <address>. 
+;;;         
+;;; Advanced: During the write, <address> is put on the Z80 address bus.
+;;;         .
+;;; 
+;;; EXAMPLES of OUT Statement:
+;;; 
+;;;   !!!TODO
+;----------------------------------------------------------------------------
 
 ST_OUT:
     call    FRMNUM              ; get/evaluate port
@@ -1167,9 +1179,21 @@ psgloop:
     inc     hl               ; next character on command line
     jr      psgloop          ; parse next register & value
 
-;--------------------------------------------------------------------
-;   IN() function
-;   syntax: var = IN(port)
+;----------------------------------------------------------------------------
+;;; IN() Function - Read Z80 I/O Port
+;;; 
+;;; FORMAT: IN(<address>)
+;;;  
+;;; Action: Reads a byte from the I/O port specified by LSB of <address>. 
+;;;         
+;;; Advanced: wtDuring the read, <address> is put on the Z80 address bus.
+;;;         .
+;;; 
+;;; EXAMPLES of IN Function:
+;;; 
+;;;   PRINT IN(252)     (Prints cassette port input status)
+;;;   S=IN(254)         (Set S to Printer Ready status)
+;----------------------------------------------------------------------------
 
 FN_IN:
     pop     hl
@@ -1241,11 +1265,19 @@ joy05:
     jp      SNGFLT
 
 
-;----------------------------------------
-;  Convert number to HEX string
-;----------------------------------------
-;
-; eg. A$=HEX$(B)
+;----------------------------------------------------------------------------
+;;; HEX$() Function
+;;; 
+;;; Format: HEX$(<number>)
+;;; 
+;;; Action: Returns string containing <number> in hexadecimal format.
+;;;         Generates FC Error if <number> is not in the range -8,388,608
+;;;         through 8,388,607.
+;;; 
+;;; EXAMPLES of HEX Function:
+;;; 
+;;;   PRINT HEX$(1)  !!!TODO 
+;----------------------------------------------------------------------------
 
 FN_HEX:
     pop     hl
@@ -1254,18 +1286,19 @@ FN_HEX:
     ex      (sp),hl
     ld      de,LABBCK  ; return address
     push    de         ; on stack
-    call    FRCINT      ; convert argument to 16 bit integer in DE
-    ld      hl,$38e9   ; hl = temp string
-    ld      a,d
-    or      a          ; > zero ?
-    jr      z,.lower_byte
+    ld      a,(FAC)
+    cp      154         ; If more than 23 bits 
+    jp      nc,FCERR    ;   Error Out
+    call    QINT        ; convert argument to 24 bit signed integer in C,DE
+    ld      hl,FBUFFR+1 ; hl = temp string
+    ld      a,c
+    call    .hexbyte   ; yes, convert byte in C to hex string
     ld      a,d
     call    .hexbyte   ; yes, convert byte in D to hex string
-.lower_byte:
     ld      a,e
     call    .hexbyte   ; convert byte in E to hex string
     ld      (hl),0     ; null-terminate string
-    ld      hl,$38e9
+    ld      hl,FBUFFR+1
 .create_string:
     jp      RETSTR     ; create BASIC string
 
@@ -1464,19 +1497,25 @@ ST_SDTM:
 
 
 ;------------------------------------------------------------------------------
-;     DateTime Function - GET DateTime
-;------------------------------------------------------------------------------
-;
-;  The DTM$() function allows users to GET the DateTime from the Dallas RTC
-;  by using the following format and parameters:
-;
-;    PRINT DTM$(0) - Returns DateTime as a string in "YYMMDDHHMMSSCC" format
-;
-;    PRINT DTM$(1) - Returns DateTime as a string in "YYYY-MM-DD HH:MM:SS" format
-;  
-;    Any other numeric parameters return the same result as DTM$(1)
-;    although others could be added in the future
-;    
+;;; DTM$ Function
+;;;
+;;; Format: DTM$(<number>)
+;;; 
+;;; Action: If a Real Time Clock is installed:
+;;;            if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
+;;;            otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
+;;;         Returns "" if a Real Time Clock is not detected.
+;;; 
+;;; EXAMPLES of DTM$ Function:
+;;; 
+;;;   PRINT DTM$(0)             38011903140700            
+;;;   PRINT DTM$(1)             2038-01-19 03:14:07      
+;;;   
+;;;   PRINT LEFT$(DTM$(1),10)   2038-01-19
+;;;   PRINT RIGHT$(DTM$(1),8)   03:14:07
+;;;   PRINT MID$(DTM$(1),6,11)  01-19 03:14
+;---------------------------------------------------------------------------
+
 
 FN_DTM:
     pop     hl
