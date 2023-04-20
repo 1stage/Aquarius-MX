@@ -222,9 +222,11 @@ CHKNUM      = $0975  ; Issue "TM" Error if result is not a number
 TSTSTR      = $0976  ; error if evaluated expression not string
 CHKTYP      = $0977  ; error if type mismatch
 
-FRCINT      = $0682  ; Convert Floating Point Accumulator AC to Signed Integer in DE
+FRCINT      = $0682  ; Convert Floating Point Accumulator to Signed Integer in DE
+FRCIN1      = $068A  ; Alternate entry point into FRCINT
 STRTOVAL    = $069c  ; DE = value of decimal number string at HL-1 (65529 max)
 STR2INT     = $069d  ; DE = value of decimal number string at HL
+QINT        = $1586  ; Convert Floating Point Accumulator to Signed Integer in C,DE
 INT2STR     = $1679  ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
 
 KEYWAIT     = $1a33  ; wait for keypress (out: A = key)

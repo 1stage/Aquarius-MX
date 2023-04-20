@@ -1340,10 +1340,17 @@ FN_VER:
 ;
 ST_CALL:
     call    FRMNUM           ; get number from BASIC text
-    call    FRCINT            ; convert to 16 bit integer
+    call    FRCADR           ; convert to 16 bit integer
     push    de
     ret                      ; jump to user code, HL = BASIC text pointer
 
+
+; Convert FAC to Address or Signed Integer and Return in DE
+; Converts floats from -32676 to 655358 in 16 bit integer
+FRCADR: ld      a,(FAC)           ;
+        cp      145               ;If Float < 65536
+        jp      c,QINT            ;  Convert to Integer and Return
+        jp      FRCINT
 
 ;---------------------------------------------------------------------
 ;                       DOS commands
