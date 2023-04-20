@@ -6,7 +6,7 @@
         {
             "label": "CompileBASIC",
             "type":"shell",
-            "command": "zmac.exe --zmac -e --oo cim -L -n -I include aqubasic.asm",    
+            "command": "zmac.exe --zmac -e --oo cim -L -n -I include pt3play.asm",    
             "group":  "build",
             "presentation": {
                 "echo": false,
@@ -21,7 +21,7 @@
             "label": "SaveToROM",
             "type": "shell",
             // Next command copies the CIM file into the project root and names it properly.
-            "command": "Get-Content zout/aqubasic.cim -Encoding Byte | Set-Content pt3play.rom -Encoding Byte",
+            "command": "Get-Content zout/pt3play.cim -Encoding Byte | Set-Content pt3play.rom -Encoding Byte",
             "group":  "build",
             "presentation": {
                 "echo": false,

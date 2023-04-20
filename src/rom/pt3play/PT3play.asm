@@ -1,1329 +1,1185 @@
-; PT3 player for USB BASIC ROM
+;===============================================================================
+;    PT3PLAY: Standalone PT3 Player ROM for Aquarius MX / Micro Expander
+;===============================================================================
+; Original code by:
+;        Bruce Abbott                         www.bhabbott.net.nz (domain down?)
+;                                 bruce.abbott@xtra.co.nz (email non-responsive)
+;        Martin van der Steenoven                            www.vdsteenoven.com
 ;
-; 2017-03-22 V0.01 add visuals
-; 2017-05-03 V0.03 checking flag bit SF_NTSC to adjust timing for NTSC
-; 2017-05-04 V0.04 replaced KEYCHK with AquBASIC Key_Check, SCANCNT set
-;                  to 66 after pressing SPACE to reduce debounce time.
-; 2017-06-12 V1.0  bumped to release version
-; 2023-04-13 v1.5  Standalone ROM version
-
-60Hz = 0  ; make this -1 to play 50Hz songs on 60Hz machine
-
-; address of variables in RAM
-VARMEM = $38A0  ; top of stack at boot (before initializing BASIC)
-
-PLAYER_VER = 1
-PLAYER_REV = 5
-
-PSG1A       = $F6   ; PSG1 low  IO port $F6
-PSG1B       = $F7   ; PSG1 high IO port $F7
-PSG2A       = $F8   ; PSG2 low  IO port $F8
-PSG2B       = $F9   ; PSG2 high IO port $F9
-
-; AY registers
-; STRUCT AYREGS
-TonA     = 0
-TonB     = 2
-TonC     = 4
-Noise    = 6
-Mixer    = 7
-AmplA    = 8
-AmplB    = 9
-AmplC    = 10
-Env      = 11
-EnvTp    = 13
-
-;ChannelsVars
-; STRUCT  CHP
-;reset group
-PsInOr   =  0
-PsInSm   =  1
-CrAmSl   =  2
-CrNsSl   =  3
-CrEnSl   =  4
-TSlCnt   =  5
-CrTnSl   =  6
-TnAcc    =  8
-COnOff   = 10
-;reset group
-
-OnOffD   = 11
-
-;IX for PTDECOD here (+12)
-OffOnD   = 12
-OrnPtr   = 13
-SamPtr   = 15
-NNtSkp   = 17
-Note     = 18
-SlToNt   = 19
-Env_En   = 20
-PtFlags  = 21
- ;Enabled - 0,SimpleGliss - 2
-TnSlDl   = 22
-TSlStp   = 23
-TnDelt   = 25
-NtSkCn   = 27
-Volume   = 28
-;   ENDS
-CHP_size = 29
-
-;---------------------------------------------------------
-; Variables (and self-mofifying code, if present) in RAM
-; NOTE: must be initialized before use!
-;---------------------------------------------------------
+; Additional code by:
+;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
 ;
- STRUCTURE VARS,VARMEM
-      BYTE SETUP        ; bit7 = 1 when loop point reached
-      WORD CrPsPtr
-      BYTE AddToEn
-      WORD AdInPtA
-      WORD AdInPtB
-      WORD AdInPtC
-      BYTE Env_Del
-      WORD MODADDR
-      WORD ESldAdd
-      BYTE Delay
-      WORD SaveSP
-      WORD SamPtrs
-      WORD OrnPtrs
-      WORD PatsPtr
-      WORD LPosPtr
-      WORD PrSlide
-L3       = PrSlide    ; opcode + RET
-M2       = PrSlide
-      BYTE PrNote
-      BYTE PtVersion
-;end of variables and self-modifying code
-;start of cleared data area
-    STRUCT ChanA,CHP_size
-    STRUCT ChanB,CHP_size
-    STRUCT ChanC,CHP_size
-
-;GlobalVars
-      BYTE DelyCnt
-      WORD CurESld
-      WORD CurEDel
-;arrays
-      BYTE Ns_Base
-Ns_Base_AddToNs = Ns_Base
-      BYTE AddToNs
-    STRUCT VT_,256  ; 256 bytes CreatedVolumeTableAddress
-
-AYREGS   = VT_      ; 14 AY-3-8910 registers
-EnvBase  = VT_+14
-VAR0END  = VT_+16   ; end of cleared data area
-
-T1_      = VT_+16   ; Tone table data depacked here
-T_OLD_1  = T1_
-T_OLD_2  = T_OLD_1+24
-T_OLD_3  = T_OLD_2+24
-T_OLD_0  = T_OLD_3+2
-T_NEW_0  = T_OLD_0
-T_NEW_1  = T_OLD_1
-T_NEW_2  = T_NEW_0+24
-T_NEW_3  = T_OLD_3
-
-;local vars
-Ampl     = AYREGS+AmplC
-
-NT_      = VT_+256       ; 192 bytes Note Table
-VAREND   = NT_+192       ; end of variable data area
-VAR_size = VAREND-VARMEM
-
-; GUI player variables
-  STRUCTURE Player,VAREND
-       BYTE numsongs          ; number of songs (1-36)
-       BYTE song              ; current song number (0-35)
-     STRUCT pt3_files,(36*16) ; array to store 36 file infos
-     STRUCT SongData,0        ; pt3 file loaded here!
-  ENDSTRUCT Player
-
-PT3_PLAY:
-       LD   IX,SelectWindow
-       CALL OpenWindow
-       LD   HL,pt3_files      ; array of file infos to fill
-       LD   B,36              ; 36 files max.
-       LD   DE,pt3pat         ; "*.PT3"
-       CALL RequestFile       ; user selects file
-       RET  NZ                ; if no file selected then quit
-       LD   (Song),A
-       LD   A,C
-       LD   (NumSongs),A
-PT3_LOAD:
-       LD   IX,PlayWindow
-       CALL OpenWindow        ; open/clear window
-       LD   DE,256*1+21
-       CALL WinSetCursor      ; cursor at window bottm/left
-       LD   HL,PT3help
-       CALL WinPrtStr         ; show key help
-       LD   A,(Song)
-       LD   HL,pt3_files
-       CALL IndexArray        ; HL = pt3files[song]
-       PUSH HL
-       POP  IY
-       BIT  ATTR_B_DIRECTORY,(IY+11) ; directory?
-       JR   NZ,.next_song     ; yes, skip file
-       PUSH HL                ; push filename
-       LD   D,13
-       LD   E,1
-       CALL WinSetCursor
-       LD   A,(SONG)
-       ADD  '0'
-       CP   '0'+10            ; ID = '0-9', 'A-Z'
-       JR   C,.shownum
-       ADD  7
-.shownum:
-       CALL WinPrtChr         ; print ID
-       CALL WinPrtMsg         ; print ": "
-       db   ": ",0
-       LD   A,8
-       CALL WinPrtChrs        ; print filename
-       POP  HL                ; pop filename
-       CALL usb__open_read    ; open song file
-       RET  NZ                ; quit if error opening file
-       LD   HL,SongData
-       LD   DE,-1
-       CALL usb__read_bytes   ; read song file into buffer
-       PUSH AF
-       CALL usb__close_file
-       POP  AF
-       RET  NZ                ; quit if error reading file
-       LD   HL,SongData
-       CALL INIT              ; initialize player
-.play_quark:
-       LD   B,5               ; play 5 'quarks'
-.play_loop:
-       PUSH BC
-       CALL wait_vbl
-       CALL Animation
-       LD   HL,SongData
-       CALL PLAY              ; play next line
-       POP  BC
-       ld   hl,SETUP
-       bit  7,(hl)            ; quit if end of song
-       jr   nz,.next_song
-       LD   HL,SCANCNT
-       LD   A,6               ; starting key up debounce?
-       CP   (HL)
-       JR   NZ,.debounced     ; no
-       LD   (HL),DEBOUNCE-4   ; yes, debounce count to go = 4 scans (~250ms)
-.debounced:
-       call Key_Check         ; Get ASCII of last key pressed
-       cp   $0d
-       jr   z,.restart        ; if RTN pressed then return to file list
-       cp   " "
-       jr   z,.next_song      ; if SPACE pressed then play next song
-.no_key:
-       DJNZ .play_loop        ; 5 lines at 60Hz
-       LD   A,(SysFlags)
-       BIT  SF_NTSC,A
-       JR   Z,.play_quark
-       CALL wait_vbl          ; if NTSC then delay one vblank to get 50Hz playback
-       JR   .play_quark
-.next_song:
-       CALL MUTE              ; stop song
-       LD   A,(NumSongs)
-       LD   B,A
-       LD   A,(Song)
-       INC  A                 ; song number + 1
-       CP   B                 ; done all songs?
-       JR   C,.upd
-       XOR  A                 ; yes, wrap to song 0
-.upd:  LD   (Song),A
-       JP   PT3_LOAD
-.restart:
-       CALL MUTE              ; stop song
-       JP   PT3_PLAY          ; back to file list
-
-; eye candy
-Animation:
-        PUSH HL
-        PUSH DE
-        PUSH BC
-        LD   HL,$3400+(40*20)+13   ; HL = screen address of bars
-        LD   IX,AYREGS
-        LD   A,(IX+AmplA)
-        LD   E,WHITE*16+BLACK
-        LD   D,WHITE*16+RED
-        CALL show_bar              ; show red volume bar
-        LD   A,(IX+AmplB)
-        LD   D,WHITE*16+GREEN
-        CALL show_bar              ; show green volume bar
-        LD   A,(IX+AmplC)
-        LD   D,WHITE*16+BLUE
-        CALL show_bar              ; show blue volume bar
-        POP  BC
-        POP  DE
-        POP  HL
-        RET
-
-;-----------------------------------------
-;   show vertical bar 0-15 characters
-;-----------------------------------------
-;  in: A = bar height
-;      D = bar color
-;      E = no bar color
+; For use with the micro-expander (CH376 USB interface, 32K RAM, AY-3-8910 PSG),
+; and the Aquarius MX expander (micro expander in mini expander footprint)
+; Incudes commands from BLBasic by Martin Steenoven  
 ;
-show_bar:
-        LD   B,15
-        LD   C,D             ; bar color
-        INC  A
-.bar11  DEC  A
-        JR   NZ,.bar12
-        LD   C,E             ; no bar color
-.bar12  LD   (HL),C
-        INC  HL
-        LD   (HL),C
-        INC  HL              ; 3 char width bar
-        LD   (HL),C
-        PUSH BC
-        LD   BC,-42
-        ADD  HL,BC           ; up to previous line
-        POP  BC
-        DJNZ .bar11
-        LD   BC,(15*40)+5
-        ADD  HL,BC           ; move to next bar
-        RET
+; Changes:
+; 2023-04-?? v1.5   Repurposed AQUBASIC.ASM shell as new PT3PLAY.ASM shell
+;                   Renamed original PT3PLAY.ASM to PROTRACKER.ASM
+;                   Revised exit points (COLDBOOT) from RTN on main screen
+;                   Added About... screen
 
-;------------------------------------------------------------------------------
-; Wait for Vertical Blank (PAL=50Hz, NTSC=60Hz)
-;------------------------------------------------------------------------------
-wait_vbl:
-       IN   A,($FD)
-       BIT  0,A              ; wait for end of previous vertical blank
-       JR   Z,wait_vbl
-wait_vbl_low:
-       IN   A,($FD)
-       BIT  0,A              ; wait for start of next vertical blank
-       JR   NZ,wait_vbl_low
+VERSION  = 1
+REVISION = 5
+
+; code options
+;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
+;aqubug   equ 1    ; full featured debugger (else lite version without screen save etc.)
+;debug    equ 1    ; debugging our code. Undefine for release version!
+;
+; Commands:
+; CLS    - Clear screen
+; LOCATE - Position on screen
+; SCR    - Scroll screen
+; OUT    - output data to I/O port
+; PSG    - Program PSG register, value
+; CALL   - call machine code subroutine
+; DEBUG  - call AquBUG Monitor/debugger
+
+; EDIT   - Edit a BASIC line
+
+; LOAD   - load file from USB disk
+; SAVE   - save file to USB disk
+; DIR    - display USB disk directory with wildcard
+; CAT    - display USB disk directory
+; CD     - change directory
+; DEL    - delete file
+
+; functions:
+; IN()   - get data from I/O port
+; JOY()  - Read joystick
+; HEX$() - convert number to hexadecimal string
+
+; Assembled with ZMAC in 'zmac' mode.
+; command: ZMAC.EXE --zmac -n -I aqubasic.asm
+;
+; symbol scope:-
+; .label   local to current function
+; _label   local to current source file
+; label    global to entire ROM and system (aquarius.i)
+; function naming:-
+; MODULE_FUNCTION    vector for use by external progams
+; module__function   internal name for code in this ROM
+
+    include  "aquarius.i" ; aquarius hardware and system ROM
+    include  "macros.i"   ; structure macros
+    include  "windows.i"  ; fast windowed text functions
+
+; alternative system variable names
+VARTAB      = BASEND     ; $38D6 variables table (at end of BASIC program)
+
+  ifdef softrom
+RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
+  else
+RAMEND = $C000           ; we are in ROM, 32k expansion RAM available
+  endif
+
+path.size = 37           ; length of file path buffer
+
+; high RAM usage
+ STRUCTURE _sysvars,0
+    STRUCT _retypbuf,74         ; BASIC command line history
+    STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
+    STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
+    BYTE   _filetype            ; file type BASIC/array/binary/etc.
+    WORD   _binstart            ; binary file load/save address
+    WORD   _binlen              ; binary file length
+    BYTE   _dosflags            ; DOS flags
+    BYTE   _sysflags            ; system flags
+ ENDSTRUCT _sysvars
+
+SysVars  = RAMEND-_sysvars.size
+ReTypBuf = sysvars+_retypbuf
+PathName = sysvars+_pathname
+FileName = sysvars+_filename
+FileType = sysvars+_filetype
+BinStart = sysvars+_binstart
+BinLen   = sysvars+_binlen
+DosFlags = sysvars+_dosflags
+SysFlags = sysvars+_sysflags
+
+ifdef debug
+  pathname = $3006  ; store path in top line of screen
+endif
+
+;system flags
+SF_NTSC  = 1       ; 1 = NTSC, 0 = PAL
+SF_RETYP = 1       ; 1 = CTRL-O is retype
+SF_DEBUG = 7       ; 1 = Debugger available
+
+
+;=======================================
+;             ROM Code
+;=======================================
+;
+; 16k ROM start address
+     ORG $C000
+
+;----------------------------------------------
+;            External Vectors
+;----------------------------------------------
+;
+; User programs should call ROM functions
+; via these vectors only!
+;
+; system vectors
+;SYS_BREAK         jp  Break
+;SYS_DEBUG         jp  ST_DEBUG
+SYS_KEY_CHECK     jp  Key_Check
+SYS_WAIT_KEY      jp  Wait_key
+SYS_EDITLINE      jp  EditLine
+;SYS_reserved1     jp  break
+;SYS_reserved2     jp  break
+;SYS_reserved3     jp  break
+
+
+; USB driver vectors
+USB_OPEN_READ     jp  usb__open_read
+USB_READ_BYTE     jp  usb__read_byte
+USB_READ_BYTES    jp  usb__read_bytes
+USB_OPEN_WRITE    jp  usb__open_write
+USB_WRITE_BYTE    jp  usb__write_byte
+USB_WRITE_BYTES   jp  usb__write_bytes
+USB_CLOSE_FILE    jp  usb__close_file
+USB_DELETE_FILE   jp  usb__delete
+USB_FILE_EXIST    jp  usb__file_exist
+USB_SEEK_FILE     jp  usb__seek
+USB_WILDCARD      jp  usb__wildcard
+USB_DIR           jp  usb__dir
+USB_SORT          jp  usb__sort
+USB_SET_FILENAME  jp  usb__set_filename
+USB_MOUNT         jp  usb__mount
+USB_SET_USB_MODE  jp  usb__set_usb_mode
+USB_CHECK_EXISTS  jp  usb__check_exists
+USB_READY         jp  usb__ready
+USB_Wait_Int      jp  usb__wait_int
+USB_GET_PATH      jp  usb__get_path
+USB_ROOT          jp  usb__root
+USB_OPEN_PATH     jp  usb__open_path
+USB_OPEN_DIR      jp  usb__open_dir
+;USB_reserved1     jp  Break
+;USB_reserved2     jp  Break
+
+; DOS vectors
+DOS_GETFILENAME   jp  dos__getfilename
+DOS_DIRECTORY     jp  dos__directory
+DOS_PRTDIRINFO    jp  dos__prtDirInfo
+DOS_GETFILETYPE   jp  dos__getfiletype
+DOS_NAME          jp  dos__name
+DOS_CHAR          jp  dos__char
+DOS_SET_PATH      jp  dos__set_path
+;DOS_reserved1     jp  break
+;DOS_reserved2     jp  break
+
+; file requester
+FRQ_FILEREQ       jp  RequestFile
+FRQ_LISTFILES     jp  ListFiles
+FRQ_SHOWLIST      jp  ShowList
+FRQ_SELECT        jp  SelectFile
+;FRQ_reserved      jp  break
+
+; windows
+WIN_OPENWINDOW    jp  OpenWindow
+WIN_SETCURSOR     jp  WinSetCursor
+WIN_CLEARWINDOW   jp  ClearWindow
+WIN_SHOWTITLE     jp  ShowTitle
+WIN_DRAWBORDER    jp  DrawBorder
+WIN_COLORWINDOW   jp  ColorWindow
+WIN_PRTCHR        jp  WinPrtChr
+WIN_PRTCHARS      jp  WinPrtChrs
+WIN_PRTSTR        jp  WinPrtStr
+WIN_PRTMSG        jp  WinPrtMsg
+WIN_CURSORADDR    jp  CursorAddr
+WIN_TEXTADDR      jp  WinTextAddr
+WIN_SCROLLWINDOW  jp  ScrollWindow
+WIN_NEWLINE       jp  NewLine
+WIN_CLEARTOEND    jp  ClearToEnd
+WIN_BACKSPACE     jp  BackSpace
+WIN_WAITKEY       jp  Wait_Key
+WIN_CAT_DISK      jp  WinCatDisk
+;WIN_INPUTLINE     jp  InputLine
+;WIN_reserved1     jp  break
+;WIN_reserved2     jp  break
+
+;---------------------------------------------------------------------
+;                       DOS commands
+;---------------------------------------------------------------------
+; ST_CD
+; ST_LOAD
+; ST_SAVE
+; ST_DIR
+; ST_CAT
+; ST_DEL
+     include "dos.asm"
+
+
+;---------------------------------------------------------------------
+;                     BASIC Line Editor
+;---------------------------------------------------------------------
+; EDIT (line number)
+;
+;ST_EDIT
+     include "edit.asm"
+
+
+;=====================================================================
+;                  Miscellaneous functions
+
+; string functions
+     include "strings.asm"
+
+; keyboard scan
+     include "keycheck.asm"
+
+; windowed text functions
+     include "windows.asm"
+
+; disk file selector
+     include "filerequest.asm"
+
+; PT3 music player
+     include "protracker.asm"
+
+; Lite debugger
+;     include "debug.asm"
+
+; debugger
+ ifdef aqubug
+   include "aqubug.asm"
+ else
+   include "debug.asm"
+ endif
+ 
+; fill with $FF to $E000
+     ; assert !($E000 < $) ; low rom full!!!
+     ; dc  $E000-$,$FF
+
+;=================================================================
+;                     AquBASIC BOOT ROM
+;=================================================================
+
+     ORG $E000
+
+; Rom recognization
+; 16 bytes
+;
+RECOGNIZATION:
+     db  66, 79, 79, 84
+     db  83, 156, 84, 176
+     db  82, 108, 65, 100
+     db  80, 168, 128, 112
+
+ROM_ENTRY:
+
+; set flag for NTSC or PAL
+     call    PAL__NTSC     ; measure video frame period: nc = PAL, c = NTSC
+     ld      a,0
+     jr      nc,.set_sysflags
+     set     SF_NTSC,a
+.set_sysflags:
+     ld      (Sysflags),a
+
+
+; init CH376
+     call    usb__check_exists  ; CH376 present?
+     jr      nz,.no_ch376
+     call    usb__set_usb_mode  ; yes, set USB mode
+.no_ch376:
+     call    usb__root          ; root directory
+
+; init keyboard vars
+     xor     a
+     ld      (LASTKEY),a
+     ld      (SCANCNT),a
+
+; Jump directly to PT3 Player
+     call    PT3_PLAY;
+     call    WARMBOOT;
+
+; CTRL-C pressed in boot menu
+WARMBOOT:
+     xor     a
+     ld      (RETYPBUF),a       ; clear history buffer
+     ld      a,$0b
+     rst     $18                ; clear screen
+     call    $0be5              ; clear workspace and prepare to enter BASIC
+     call    $1a40              ; enter BASIC at KEYBREAK
+JUMPSTART:
+     jp      COLDBOOT           ; if BASIC returns then cold boot it
+
+;
+; Show copyright message
+;
+; SHOWCOPYRIGHT:
+;      call    SHOWCOPY           ; Show system ROM copyright message
+;      ld      hl,STR_BASIC       ; "USB BASIC"
+;      call    $0e9d              ; PRINTSTR
+;      ld      hl, STR_VERSION    ;
+;      call    $0e9d              ; PRINTSTR
+;      ret
+
+;
+; Show Copyright message in system ROM
+;
+; SHOWCOPY:
+;      ld      hl,$0163           ; point to copyright string in ROM
+;      ld      a,(hl)
+;      cp      $79                ; is it the 'y' in "Copyright"?
+;      ret     nz                 ; no, quit
+;      dec     hl
+;      dec     hl                 ; yes, back up to start of string
+;      dec     hl
+; SHOWIT:
+;      dec     hl
+;      call    $0e9d              ; PRINTSTR, Print the string pointed to by HL
+;      ret
+
+; STR_BASIC:
+;      db      $0D,"USB BASIC"
+;      db      $00
+; STR_VERSION:
+;      db      " V",VERSION+'0','.',REVISION+'0',$0D,$0A,0
+
+; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
+COLDBOOT:
+     ld      hl,$0187           ; default values in system ROM
+     ld      bc,$0051           ; 81 bytes to copy
+     ld      de,$3803           ; system variables
+     ldir                       ; copy default values
+     xor     a
+     ld      (BUFEND),a         ; NULL end of input buffer
+     ld      (BINSTART),a       ; NULL binary file start address
+     ld      (RETYPBUF),a       ; NULL history buffer
+     ld      a,$0b
+     rst     $18                ; clear screen
+; Test the memory
+; only testing 1st byte in each 256 byte page!
+;
+     ld      hl,$3A00           ; first page of free RAM
+     ld      a,$55              ; pattern = 01010101
+MEMTEST:
+     ld      c,(hl)             ; save original RAM contents in C
+     ld      (hl),a             ; write pattern
+     cp      (hl)               ; compare read to write
+     jr      nz,MEMREADY        ; if not equal then end of RAM
+     cpl                        ; invert pattern
+     ld      (hl),a             ; write inverted pattern
+     cp      (hl)               ; compare read to write
+     jr      nz,MEMREADY        ; if not equal then end of RAM
+     ld      (hl),c             ; restore original RAM contents
+     cpl                        ; uninvert pattern
+     inc     h                  ; advance to next page
+     jr      nz,MEMTEST         ; continue testing RAM until end of memory
+MEMREADY:
+     ld      a,h
+  ifdef softrom
+     cp      $80                ; 16k expansion
+  else
+     cp      $c0                ; 32k expansion
+  endif
+     jp      c,$0bb7            ; OM error if expansion RAM missing
+     dec     hl                 ; last good RAM addresss
+     ld      hl,vars-1          ; top of public RAM
+MEMSIZE:
+     ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
+     ld      de,-50             ; subtract 50 for strings space
+     add     hl,de
+     ld      ($384b),hl         ; STKTOP, Top location to be used for stack
+     ld      hl,PROGST
+     ld      (hl), $00          ; NULL at start of BASIC program
+     inc     hl
+     ld      (BASTART), hl      ; beginning of BASIC program text
+     call    $0bbe              ; ST_NEW2 - NEW without syntax check
+     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
+     ld      (UDFADDR),hl       ; store in UDF vector
+;     call    SHOWCOPYRIGHT      ; Show our copyright message
+     xor     a
+     jp      $0402              ; Jump to OKMAIN (BASIC command line)
+
+
+;---------------------------------------------------------------------
+;                         ROM loader
+;---------------------------------------------------------------------
+     include "load_rom.asm"
+
+
+;---------------------------------------------------------------------
+;                      USB Disk Driver
+;---------------------------------------------------------------------
+    include "ch376.asm"
+
+
+;-------------------------------------------------------------------
+;                  Test for PAL or NTSC
+;-------------------------------------------------------------------
+; Measure video frame period, compare to 1.80ms
+; NTSC = 16.7ms, PAL = 20ms
+;
+; out: nc = PAL, c = NTSC
+;
+; NOTE: waits for ~17-41ms. Do not use in timing-critical code!
+;
+PAL__NTSC:
+    PUSH BC
+.wait_vbl1:
+    IN   A,($FD)
+    RRA                   ; wait for start of vertical blank
+    JR   C,.wait_vbl1
+.wait_vbh1:
+    IN   A,($FD)
+    RRA                   ; wait for end of vertical blank
+    JR   NC,.wait_vbh1
+    LD   BC,0
+.wait_vbl2:               ; 1.117us/cycle
+    INC  BC               ; 2 count                 ]
+    IN   A,($FD)          ; 3 read status reg       ]
+    RRA                   ; 1 test VBL bit          ]   9 cycles per loop
+    JR   C,.wait_vbl2     ; 3 loop until VLB high   ]   10.06us/loop
+.wait_vbh2:               ; cycles (1.12us/cycle)
+    INC  BC               ; 2 count                 ]
+    IN   A,($FD)          ; 3 read status reg       ]   9 cycles per loop
+    RRA                   ; 1 test VBL bit          ]   10.06us/loop
+    JR   NC,.wait_vbh2    ; 3 loop until VLB high   ]
+    LD   C,A
+    LD   A,B              ; ~1657 = 60Hz, ~1989 = 50Hz
+    CP   7                ; c = NTSC, nc = PAL
+    LD   A,C
+    POP  BC
+    RET
+
+; boot window with border
+BootBdrWindow:
+     db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
+     db     CYAN
+     db     CYAN
+     db     2,3,36,20
+     dw     bootWinTitle
+
+; boot window text inside border
+BootWindow:
+     db     0
+     db     CYAN
+     db     CYAN
+     db     9,5,26,18
+     dw     0
+
+BootWinTitle:
+     db     " AQUARIUS USB BASIC V"
+     db     VERSION+'0','.',REVISION+'0',' ',0
+
+BootMenuText:
+     db     CR
+  ifdef softrom
+     db     "    1. (disabled)",CR
+  else
+     db     "    1. Load ROM",CR
+  endif
+     db     CR,CR
+     db     "    2. Debug",CR
+     db     CR,CR
+     db     "    3. PT3 Player",CR
+     db     CR,CR,CR,CR
+     db     "    <RTN> BASIC",CR
+     db     CR
+     db     "<CTRL-C> Warm Start",0
+
+
+
+;------------------------------------------------------
+;             UDF Hook Service Routine
+;------------------------------------------------------
+; This address is stored at $3806-7, and is called by
+; every RST $30. It allows us to hook into the system
+; ROM in several places (anywhere a RST $30 is located).
+;
+HOOK ex      (sp),hl            ; save HL and get address of byte after RST $30
+     push    af                 ; save AF
+     ld      a,(hl)             ; A = byte (RST $30 parameter)
+     inc     hl                 ; skip over byte after RST $30
+     push    hl                 ; push return address (code after RST $30,xx)
+     ld      hl,UDFLIST         ; HL = RST 30 parameter table
+     push    bc
+     ld      bc,UDF_JMP-UDFLIST+1 ; number of UDF parameters
+     cpir                       ; find paramater in list
+     ld      a,c                ; A = parameter number in list
+     pop     bc
+     add     a,a                ; A * 2 to index WORD size vectors
+     ld      hl,UDF_JMP         ; HL = Jump vector table
+do_jump:
+     add     a,l
+     ld      l,a
+     ld      a,$00
+     adc     a,h
+     ld      h,a                ; HL += vector number
+     ld      a,(hl)
+     inc     hl
+     ld      h,(hl)             ; get vector address
+     ld      l,a
+     jp      (hl)               ; and jump to it
+                                ; will return to HOOKEND
+
+; End of hook
+HOOKEND:
+     pop     hl                 ; get return address
+     pop     af                 ; restore AF
+     ex      (sp),hl            ; restore HL and set return address
+     ret                        ; return to code after RST $30,xx
+
+
+; UDF parameter table
+; List of RST $30,xx hooks that we are monitoring.
+; NOTE: order is reverse of UDF jumps!
+UDFLIST:    ; xx     index caller    @addr  performing function:-
+     db      $18     ; 7   RUN       $06be  starting BASIC program
+     db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
+     db      $16     ; 5   PEXPAND   $0598  expanding a token
+     db      $0a     ; 4   REPLCMD   $0536  converting keyword to token
+     db      $1b     ; 3   FUNCTIONS $0a5f  executing a function
+     db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
+     db      $02     ; 1   OKMAIN    $0402  BASIC command line (immediate mode)
+; UDF parameter Jump table
+UDF_JMP:
+     dw      HOOKEND            ; 0 parameter not found in list
+     dw      AQMAIN             ; 1 replacement immediate mode
+     dw      LINKLINES          ; 2 update BASIC nextline pointers (returns to AQMAIN)
+     dw      AQFUNCTION         ; 3 execute AquBASIC function
+     dw      REPLCMD            ; 4 replace keyword with token
+     dw      PEXPAND            ; 5 expand token to keyword
+     dw      NEXTSTMT           ; 6 execute next BASIC statement
+     dw      RUNPROG            ; 7 run program
+
+; Our commands and functions
+;
+BTOKEN       equ $d4             ; our first token number
+TBLCMDS:
+     db      $80 + 'E', "DIT"
+     db      $80 + 'C', "LS"
+     db      $80 + 'L', "OCATE"
+     db      $80 + 'O', "UT"
+     db      $80 + 'P', "SG"
+;     db      $80 + 'D', "EBUG"
+     db      $80 + 'C', "ALL"
+     db      $80 + 'L', "OAD"
+     db      $80 + 'S', "AVE"
+     db      $80 + 'D', "IR"
+     db      $80 + 'C', "AT"
+     db      $80 + 'D', "EL"    ; previously KILL
+     db      $80 + 'C', "D"
+; functions
+     db      $80 + 'I', "N"
+     db      $80 + 'J', "OY"
+     db      $80 + 'H', "EX$"
+     db      $80                ; End of table marker
+
+TBLJMPS:
+     dw      ST_EDIT
+     dw      ST_CLS
+     dw      ST_LOCATE
+     dw      ST_OUT
+     dw      ST_PSG
+;     dw      ST_DEBUG
+     dw      ST_CALL
+     dw      ST_LOAD
+     dw      ST_SAVE
+     dw      ST_DIR
+     dw      ST_CAT
+     dw      ST_DEL
+     dw      ST_CD
+TBLJEND:
+
+BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
+
+TBLFNJP:
+     dw      FN_IN
+     dw      FN_JOY
+     dw      FN_HEX
+TBLFEND:
+
+FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
+
+firstf equ BTOKEN+BCOUNT          ; token number of first function in table
+lastf  equ firstf+FCOUNT-1        ; token number of last function in table
+
+
+;--------------------------------------------------------------------
+;                          Command Line
+;--------------------------------------------------------------------
+; Replacement Immediate Mode with Line editing
+;
+; UDF hook number $02 at OKMAIN ($0402)
+;
+AQMAIN:
+    pop     af                  ; clean up stack
+    pop     af                  ; restore AF
+    pop     hl                  ; restore HL
+
+    call    $19be               ; PRNHOME if we were printing to printer, LPRINT a CR and LF
+    xor     a
+    ld      (LISTCNT),a         ; Set ROWCOUNT to 0
+    call    $19de               ; RSTCOL reset cursor to start of (next) line
+    ld      hl,$036e            ; 'Ok'+CR+LF
+    call    $0e9d               ; PRINTSTR
+;
+; Immediate Mode Main Loop
+;l0414:
+IMMEDIATE:
+    ld      hl,SysFlags
+    SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active
+    ld      hl,-1
+    ld      (CURLIN),hl         ; Current BASIC line number is -1 (immediate mode)
+    ld      hl,LINBUF           ; HL = line input buffer
+    ld      (hl),0              ; buffer empty
+    ld      b,LINBUFLEN         ; 74 bytes including terminator
+    call    EDITLINE            ; Input a line from keyboard.
+    ld      hl,SysFlags
+    RES     SF_RETYP,(HL)       ; CTRL-R inactive
+ENTERLINE:
+    ld      hl,LINBUF-1
+    jr      c,immediate         ; If c then discard line
+    rst     $10                 ; get next char (1st character in line buffer)
+    inc     a
+    dec     a                   ; set z flag if A = 0
+    jr      z,immediate         ; If nothing on line then loop back to immediate mode
+    push    hl
+    ld      de,ReTypBuf
+    ld      bc,LINBUFLEN        ; save line in history buffer
+    ldir
+    pop     hl
+    jp      $0424               ; back to system ROM
+
+; --- linking BASIC lines ---
+; Redirected here so we can regain control of immediate mode
+; Comes from $0485 via CALLUDF $05
+LINKLINES:
+    pop     af                 ; clean up stack
+    pop     af                 ; restore AF
+    pop     hl                 ; restore HL
+    inc     hl
+    ex      de,hl              ; DE = start of BASIC program
+l0489:
+    ld      h,d
+    ld      l,e                ; HL = DE
+    ld      a,(hl)
+    inc     hl                 ; get address of next line
+    or      (hl)
+    jr      z,immediate        ; if next line = 0 then done so return to immediate mode
+    inc     hl
+    inc     hl                 ; skip line number
+    inc     hl
+    xor     a
+l0495:
+    cp      (hl)               ; search for next null byte (end of line)
+    inc     hl
+    jr      nz,l0495
+    ex      de,hl              ; HL = current line, DE = next line
+    ld      (hl),e
+    inc     hl                 ; update address of next line
+    ld      (hl),d
+    jr      l0489              ; next line
+
+
+;-------------------------------------
+;        AquBASIC Function
+;-------------------------------------
+; called from $0a5f by RST $30,$1b
+;
+AQFUNCTION:
+    pop     bc                  ; get return address
+    pop     af
+    pop     hl
+    push    bc                  ; push return address back on stack
+    cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
+    ret     c                   ; return if function number below ours
+    cp      (lastf-$B2+1)
+    ret     nc                  ; return if function number above ours
+    sub     (firstf-$B2)
+    add     a,a                 ; index = A * 2
+    push    hl
+    ld      hl,TBLFNJP          ; function address table
+    jp      do_jump             ; JP to our function
+
+
+
+;-------------------------------------
+;         Replace Command
+;-------------------------------------
+; Called from $0536 by RST $30,$0a
+; Replaces keyword with token.
+;
+REPLCMD:
+     ld      a,b                ; A = current index
+     cp      $cb                ; if < $CB then keyword was found in BASIC table
+     jp      nz,HOOKEND         ;    so return
+     pop     bc                 ; get return address from stack
+     pop     af                 ; restore AF
+     pop     hl                 ; restore HL
+     push    bc                 ; put return address back onto stack
+     ex      de,hl              ; HL = Line buffer
+     ld      de,TBLCMDS-1       ; DE = our keyword table
+     ld      b,BTOKEN-1         ; B = our first token
+     jp      $04f9              ; continue searching using our keyword table
+
+;-------------------------------------
+;             PEXPAND
+;-------------------------------------
+; Called from $0598 by RST $30,$16
+; Expand token to keyword
+;
+PEXPAND:
+    pop     de
+    pop     af                  ; restore AF (token)
+    pop     hl                  ; restore HL (BASIC text)
+    cp      BTOKEN              ; is it one of our tokens?
+    jr      nc,PEXPBAB          ; yes, expand it
+    push    de
+    ret                         ; no, return to system for expansion
+
+PEXPBAB:
+    sub     BTOKEN - 1
+    ld      c,a                 ; C = offset to AquBASIC command
+    ld      de,TBLCMDS          ; DE = table of AquBASIC command names
+    jp      $05a8               ; Print keyword indexed by C
+
+
+;-------------------------------------
+;            NEXTSTMT
+;-------------------------------------
+; Called from $064b by RST 30
+; with parameter $17
+;
+NEXTSTMT:
+    pop     bc                  ; BC = return address
+    pop     af                  ; AF = token, flags
+    pop     hl                  ; HL = text
+    jr      nc,BASTMT           ; if NC then process BASIC statement
+    push    bc
+    ret                         ; else return to system
+
+BASTMT:
+    sub     (BTOKEN)-$80
+    jp      c,$03c4             ; SN error if < our 1st BASIC command token
+    cp      BCOUNT              ; Count number of commands
+    jp      nc,$03c4            ; SN error if > out last BASIC command token
+    rlca                        ; A*2 indexing WORDs
+    ld      c,a
+    ld      b,$00               ; BC = index
+    ex      de,hl
+    ld      hl,TBLJMPS          ; HL = our command jump table
+    jp      $0665               ; Continue with NEXTSTMT
+
+; RUN
+RUNPROG:
+    pop     af                 ; clean up stack
+    pop     af                 ; restore AF
+    pop     hl                 ; restore HL
+    jp      z,$0bcb            ; if no argument then RUN from 1st line
+    push    hl
+    call    EVAL               ; get argument type
+    pop     hl
+    ld      a,(VALTYP)
+    dec     a                  ; 0 = string
+    jr      z,_run_file
+    call    $0bcf              ; else line number so init BASIC program and
+    ld      bc,$062c
+    jp      $06db              ;    GOTO line number
+_run_file:
+    call    dos__getfilename   ; convert filename, store in FileName
+    push    hl                 ; save BASIC text pointer
+    ld      hl,FileName
+    call    usb__open_read     ; try to open file
+    jr      z,.load_run
+    cp      CH376_ERR_MISS_FILE ; error = file not found?
+    jp      nz,.nofile         ; no, break
+    ld      b,9                ; max 9 chars in name (including '.' or NULL)
+.instr:
+    ld      a,(hl)             ; get next name char
+    inc     hl
+    cp      '.'                ; if already has '.' then cannot extend
+    jp      z,.nofile
+    cp      ' '
+    jr      z,.extend          ; until SPACE or NULL
+    or      a
+    jr      z,.extend
+    djnz    .instr
+.nofile:
+    ld      hl,.nofile_msg
+    call    PRINTSTR
+    pop     hl                 ; restore BASIC text pointer
+.error:
+    ld      e,FC_ERR           ; function code error
+    jp      DO_ERROR           ; return to BASIC
+.extend:
+    dec     hl
+    push    hl                 ; save extn address
+    ld      de,.bas_extn
+    call    strcat             ; append ".BAS"
+    ld      hl,FileName
+    call    usb__open_read     ; try to open file
+    pop     hl                 ; restore extn address
+    jr      z,.load_run
+    cp      CH376_ERR_MISS_FILE ; error = file not found?
+    jp      nz,.nofile         ; no, break
+    ld      de,.bin_extn
+    ld      (hl),0             ; remove extn
+    call    strcat             ; append ".BIN"
+.load_run:
+    pop     hl                 ; restore BASIC text pointer
+    call    ST_LOADFILE        ; load file from disk, name in FileName
+    jp      nz,.error          ; if load failed then return to command prompt
+    cp      FT_BAS             ; filetype is BASIC?
+    jp      z,$0bcb            ; yes, run loaded BASIC program
+    cp      FT_BIN             ; BINARY?
+    jp      nz,immediate       ; no, return to command line prompt
+    ld      de,immediate
+    push    de                 ; set return address
+    ld      de,(BINSTART)
+    push    de                 ; set jump address
+    ret                        ; jump into binary
+
+.bas_extn:
+    db     ".BAS",0
+.bin_extn:
+    db     ".BIN",0
+
+.nofile_msg:
+    db     "file not found",$0D,$0A,0
+
+
+;********************************************************************
+;                   Command Entry Points
+;********************************************************************
+
+ST_reserved:
+    ret
+
+
+;--------------------------------------------------------------------
+;   CLS statement
+;
+ST_CLS:
+    ld      a,CYAN
+    call    clearscreen
+    ld      de,$3001+40   ; DE cursor at 0,0
+    ld      (CURRAM),de
+    xor     a
+    ld      (CURCOL),a    ; column 0
+    ld      a,' '
+    ld      (CURHOLD),a   ; SPACE under cursor
+    ret
+
+;-----------------------------------
+;       Clear Screen
+;-----------------------------------
+; - user-defined colors
+; - doesn't clear last 24 bytes
+; - doesn't show cursor
+;
+; in: A = color attribute (background*16 + foreground)
+clearscreen:
+    push    hl
+    ld      hl,$3000
+    ld      c,25
+.line:
+    ld      b,40
+.char:
+    ld      (hl),' '
+    set     2,h
+    ld      (hl),a
+    res     2,h
+    inc     hl
+    djnz    .char
+    dec     c
+    jr      nz,.line
+    pop     hl
+    ret
+
+;--------------------------------------
+; get/put text area
+; deprecated because they require extra
+; variables, shifting the start of BASIC
+; (possible compatitiblity issue)
+;
+;ST_GET:
+;ST_PUT:
+;    ret
+
+;--------------------------------------------------------------------
+;   OUT statement
+;   syntax: OUT port, data
+;
+ST_OUT:
+    call    GETNUM              ; get/evaluate port
+    call    DEINT               ; convert number to 16 bit integer (result in DE)
+    push    de                  ; stored to be used in BC
+    rst     $08                 ; Compare RAM byte with following byte
+    db      $2c                 ; character ',' byte used by RST 08
+    call    GETINT              ; get/evaluate data
+    pop     bc                  ; BC = port
+    out     (c),a               ; out data to port
+    ret
+
+;--------------------------------------------------------------------
+; LOCATE statement
+; Syntax: LOCATE col, row
+;
+ST_LOCATE:
+    call    GETINT              ; read number from command line (column). Stored in A and E
+    push    af                  ; column store on stack for later use
+    dec     a
+    cp      38                  ; compare with 38 decimal (max cols on screen)
+    jp      nc,$0697            ; If higher then 38 goto FC error
+    rst     $08                 ; Compare RAM byte with following byte
+    db      $2c                 ; character ',' byte used by RST 08
+    call    GETINT              ; read number from command line (row). Stored in A and E
+    cp      $18                 ; compare with 24 decimal (max rows on screen)
+    jp      nc,$0697            ; if higher then 24 goto FC error
+    inc     e
+    pop     af                  ; restore column from store
+    ld      d,a                 ; column in register D, row in register E
+    ex      de,hl               ; switch DE with HL
+    call    GOTO_HL             ; cursor to screenlocation HL (H=col, L=row)
+    ex      de,hl
+    ret
+
+GOTO_HL:
+    push    af
+    push    hl
+    exx
+    ld      hl,($3801)          ; CHRPOS - address of cursor within matrix
+    ld      a,($380d)           ; BUFO - storage of the character behind the cursor
+    ld      (hl),a              ; return the original character on screen
+    pop     hl
+    ld      a,l
+    add     a,a
+    add     a,a
+    add     a,l
+    ex      de,hl
+    ld      e,d
+    ld      d,$00
+    ld      h,d
+    ld      l,a
+    ld      a,e
+    dec     a
+    add     hl,hl
+    add     hl,hl
+    add     hl,hl               ; hl is now 40 * rows
+    add     hl,de               ; added the columns
+    ld      de,$3000            ; screen character-matrix (= 12288 dec)
+    add     hl,de               ; putting it al together
+    jp      $1de7               ; Save cursor position and return
+
+
+;--------------------------------------------------------------------
+;   PSG statement
+;   syntax: PSG register, value [, ... ]
+;
+ST_PSG:
+    cp      $00
+    jp      z,$03d6          ; MO error if no args
+psgloop:
+    call    GETINT           ; get/evaluate register
+    out     ($f7),a          ; set the PSG register
+    rst     $08              ; next character must be ','
+    db      $2c              ; ','
+    call    GETINT           ; get/evaluate value
+    out     ($f6),a          ; send data to the selected PSG register
+    ld      a,(hl)           ; get next character on command line
+    cp      $2c              ; compare with ','
+    ret     nz               ; no comma = no more parameters -> return
+
+    inc     hl               ; next character on command line
+    jr      psgloop          ; parse next register & value
+
+
+;--------------------------------------------------------------------
+;   IN() function
+;   syntax: var = IN(port)
+;
+FN_IN:
+    pop     hl
+    inc     hl
+    call    EVLPAR           ; Read number from line - ending with a ')'
+    ex      (sp),hl
+    ld      de,$0a49         ; return address
+    push    de               ; on stack
+    call    DEINT            ; evalute formula pointed by HL, result in DE
+    ld      b,d
+    ld      c,e              ; bc = port
+    in      a,(c)            ; a = in(port)
+    jp      PUTVAR8          ; return with 8 bit input value in variable var
+
+
+;--------------------------------------------------------------------
+;   Entry point for JOY() function
+;   syntax: var = JOY( stick )
+;                 stick - 0 will read left or right
+;                       - 1 will read left joystick only
+;                       - 2 will read right joystick only
+;
+FN_JOY:
+         pop     hl             ; Return address
+         inc     hl             ; skip rst parameter
+         call    $0a37          ; Read number from line - ending with a ')'
+         ex      (sp),hl
+         ld      de,$0a49       ; set return address
+         push    de
+         call    $0682          ; DEINT - evalute formula pointed by HL result in DE
+
+         ld      a,e
+         or      a
+         jr      nz, joy01
+         ld      a,$03
+
+joy01:   ld      e,a
+         ld      bc,$00f7
+         ld      a,$ff
+         bit     0,e
+         jr      z, joy03
+         ld      a,$0e
+         out     (c),a
+         dec     c
+         ld      b,$ff
+
+joy02:   in      a,(c)
+         djnz    joy02
+         cp      $ff
+         jr      nz,joy05
+
+joy03:   bit     1,e
+         jr      z,joy05
+         ld      bc,$00f7
+         ld      a,$0f
+         out     (c),a
+         dec     c
+         ld      b,$ff
+
+joy04:   in      a,(c)
+         djnz    joy04
+
+joy05:   cpl
+         jp      $0b36
+
+
+;----------------------------------------
+;  Convert number to HEX string
+;----------------------------------------
+;
+; eg. A$=HEX$(B)
+;
+FN_HEX:
+    pop  hl
+    inc  hl
+    call EVLPAR     ; evaluate parameter in brackets
+    ex   (sp),hl
+    ld   de,$0a49   ; return address
+    push de         ; on stack
+    call DEINT      ; evaluate formula @HL, result in DE
+    ld   hl,$38e9   ; hl = temp string
+    ld   a,d
+    or   a          ; > zero ?
+    jr   z,.lower_byte
+    ld   a,d
+    call .hexbyte   ; yes, convert byte in D to hex string
+.lower_byte:
+    ld   a,e
+    call .hexbyte   ; convert byte in E to hex string
+    ld   (hl),0     ; null-terminate string
+    ld   hl,$38e9
+.create_string:
+    jp   $0e2f      ; create BASIC string
+
+.hexbyte:
+    ld   b,a
+    rra
+    rra
+    rra
+    rra
+    call .hex
+    ld   a,b
+.hex:
+    and  $0f
+    cp   10
+    jr   c,.chr
+    add  7
+.chr:
+    add  '0'
+    ld   (hl),a
+    inc  hl
+    ret
+
+
+;--------------------------
+;   print hex byte
+;--------------------------
+; in: A = byte
+PRINTHEX:
+        push    bc
+        ld      b,a
+        and     $f0
+        rra
+        rra
+        rra
+        rra
+        cp      10
+        jr      c,.hi_nib
+        add     7
+.hi_nib:
+        add     '0'
+        call    PRNCHR
+        ld      a,b
+        and     $0f
+        cp      10
+        jr      c,.low_nib
+        add     7
+.low_nib:
+        add     '0'
+        pop     bc
+        jp      PRNCHR
+
+
+;--------------------------------------------------------------------
+;                            CALL
+;--------------------------------------------------------------------
+; syntax: CALL address
+; address is signed integer, 0 to 32767   = $0000-$7FFF
+;                            -32768 to -1 = $8000-$FFFF
+;
+; on entry to user code, HL = text after address
+; on exit from user code, HL should point to end of statement
+;
+ST_CALL:
+    call    GETNUM           ; get number from BASIC text
+    call    DEINT            ; convert to 16 bit integer
+    push    de
+    ret                      ; jump to user code, HL = BASIC text pointer
+
+;-----------------------------------------------
+;          Wait for Key Press
+;-----------------------------------------------
+; Wait for next key to be pressed.
+;
+;   out A = char
+;
+Wait_key:
+       CALL key_check    ; check for key pressed
+       JR   Z,Wait_Key   ; loop until key pressed
+.key_click:
+       push af
+       ld   a,$FF        ; speaker ON
+       out  ($fc),a
+       ld   a,128
+.click_wait:
+       dec  a
+       jr   nz,.click_wait
+       out  ($fc),a      ; speaker OFF
+       pop  af
        RET
 
-;PT3 player version
-    DB   "=VTII PT3 Player r.7ROM="
+; fill with $FF to end of ROM
 
-CHECKLP:
-    LD   HL,SETUP
-    SET  7,(HL)
-    BIT  0,(HL)
-    RET  Z
-    POP  HL
-    LD   HL,DelyCnt
-    INC  (HL)
-    LD   HL,ChanA+NtSkCn
-    INC  (HL)
-MUTE:
-    XOR  A
-    LD   H,A
-    LD   L,A
-    LD   (AYREGS+AmplA),A
-    LD   (AYREGS+AmplB),HL
-    JP   ROUT_A0
+     assert !($FFFF<$)   ; ROM full!
 
-INIT:
-;HL - AddressOfModule
-    LD   (MODADDR),HL
-    PUSH HL
-    LD   DE,100
-    ADD  HL,DE
-    LD   A,(HL)
-    LD   (Delay),A
-    PUSH HL
-    POP  IX
-    ADD  HL,DE
-    LD   (CrPsPtr),HL
-    LD   E,(IX+102-100)
-    ADD  HL,DE
-    INC  HL
-    LD   (LPosPtr),HL
-    POP  DE
-    LD   L,(IX+103-100)
-    LD   H,(IX+104-100)
-    ADD  HL,DE
-    LD   (PatsPtr),HL
-    LD   HL,169
-    ADD  HL,DE
-    LD   (OrnPtrs),HL
-    LD   HL,105
-    ADD  HL,DE
-    LD   (SamPtrs),HL
-    LD   HL,SETUP
-    RES  7,(HL)
+     dc $FFFF-$+1,$FF
 
-;note table data depacker
-    LD   DE,T_PACK
-    LD   BC,T1_+(2*49)-1
-TP_0:
-    LD   A,(DE)
-    INC  DE
-    CP   15*2
-    JR   NC,TP_1
-    LD   H,A
-    LD   A,(DE)
-    LD   L,A
-    INC  DE
-    JR   TP_2
-TP_1:
-    PUSH DE
-    LD   D,0
-    LD   E,A
-    ADD  HL,DE
-    ADD  HL,DE
-    POP  DE
-TP_2:
-    LD   A,H
-    LD   (BC),A
-    DEC  BC
-    LD   A,L
-    LD   (BC),A
-    DEC  BC
-    SUB  low($F8*2)
-    JR   NZ,TP_0
-
-    LD   HL,ChanA
-    LD   (HL),A                   ; clear first variable byte
-    LD   D,H
-    LD   E,L
-    INC  DE
-    LD   BC,VAR0END-ChanA-1
-    LDIR                          ; clear all other variable bytes
-    INC  A
-    LD   (DelyCnt),A
-    LD   HL,$F001 ;H - Volume, L - NtSkCn
-    LD   (ChanA+NtSkCn),HL
-    LD   (ChanB+NtSkCn),HL
-    LD   (ChanC+NtSkCn),HL
-
-    LD   HL,EMPTYSAMORN
-    LD   (AdInPtA),HL ;ptr to zero
-    LD   (ChanA+OrnPtr),HL ;ornament 0 is "0,1,0"
-    LD   (ChanB+OrnPtr),HL ;in all Versions from
-    LD   (ChanC+OrnPtr),HL ;3.xx to 3.6x and VTII
-
-    LD   (ChanA+SamPtr),HL ;S1 There is no default
-    LD   (ChanB+SamPtr),HL ;S2 sample in PT3, so, you
-    LD   (ChanC+SamPtr),HL ;S3 can comment S1,2,3; see
-                    ;also EMPTYSAMORN comment
-    LD   A,(IX+13-100) ;EXTRACT Version NUMBER
-    SUB  $30
-    JR   C,L20
-    CP   10
-    JR   C,L21
-L20 LD   A,6
-L21 LD   (PtVersion),A
-    PUSH AF
-    CP   4
-    LD   A,(IX+99-100) ;TONE TABLE NUMBER
-    RLA
-    AND  7
-;NoteTableCreator (c) Ivan Roshin
-;A - NoteTableNumber*2+VersionForNoteTable
-;(xx1b - 3.xx..3.4r, xx0b - 3.4x..3.6x..VTII1.0)
-    LD   HL,NT_DATA
-    PUSH DE
-    LD   D,B
-    ADD  A,A
-    LD   E,A
-    ADD  HL,DE
-    LD   E,(HL)
-    INC  HL
-    SRL  E
-    SBC  A,A
-    AND  $A7      ; $00 (NOP) or $A7 (AND A)
-    LD   (L3),A
-    LD   A,$C9    ; RET temporary
-    LD   (L3+1),A ; temporary
-    EX   DE,HL
-    POP  BC       ; BC=T1_
-    ADD  HL,BC
-
-    LD   A,(DE)
-
-    ADD  A,low(T_)
-    LD   C,A
-    ADC  A,high(T_)
-
-    SUB  C
-    LD   B,A
-    PUSH BC
-    LD   DE,NT_
-    PUSH DE
-
-    LD   B,12
-L1  PUSH BC
-    LD   C,(HL)
-    INC  HL
-    PUSH HL
-    LD   B,(HL)
-
-    PUSH DE
-    EX   DE,HL
-    LD   DE,23
-    LD   IXH,8
-
-L2  SRL  B
-    RR   C
-    CALL L3     ;temporary
-;L3 DB    $19   ;AND A or NOP
-    LD   A,C
-    ADC  A,D    ;=ADC 0
-    LD   (HL),A
-    INC  HL
-    LD   A,B
-    ADC  A,D
-    LD   (HL),A
-    ADD  HL,DE
-    DEC  IXH
-    JR   NZ,L2
-
-    POP  DE
-    INC  DE
-    INC  DE
-    POP  HL
-    INC  HL
-    POP  BC
-    DJNZ L1
-
-    POP  HL
-    POP  DE
-
-    LD   A,E
-    CP   low(TCOLD_1)
-    JR   NZ,CORR_1
-    LD   A,$FD
-    LD   (NT_+$2E),A
-
-CORR_1:
-    LD   A,(DE)
-    AND  A
-    JR   Z,TC_EXIT
-    RRA
-    PUSH AF
-    ADD  A,A
-    LD   C,A
-    ADD  HL,BC
-    POP  AF
-    JR   NC,CORR_2
-    DEC  (HL)
-    DEC  (HL)
-CORR_2:
-    INC  (HL)
-    AND  A
-    SBC  HL,BC
-    INC  DE
-    JR   CORR_1
-
-TC_EXIT:
-    POP  AF
-
-;VolTableCreator (c) Ivan Roshin
-;A - VersionForVolumeTable (0..4 - 3.xx..3.4x;
-               ;5.. - 3.5x..3.6x..VTII1.0)
-    CP   5
-    LD   HL,$11
-    LD   D,H
-    LD   E,H
-    LD   A,$17
-    JR   NC,M1
-    DEC  L
-    LD   E,L
-    XOR  A
-M1:
-    LD   (M2),A      ; $17 or $00
-
-    LD   IX,VT_+16
-    LD   C,$10
-
-INITV2:
-    PUSH HL
-    ADD  HL,DE
-    EX   DE,HL
-    SBC  HL,HL
-INITV1:
-    LD   A,L
-;M2      DB $7D
-    CALL M2 ;temporary
-    LD   A,H
-    ADC  A,0
-    LD   (IX),A
-    INC  IX
-    ADD  HL,DE
-    INC  C
-    LD   A,C
-    AND  15
-    JR   NZ,INITV1
-
-    POP  HL
-    LD   A,E
-    CP   $77
-    JR   NZ,M3
-    INC  E
-M3:
-    LD   A,C
-    AND  A
-    JR   NZ,INITV2
-    JP   ROUT_A0
-
-;pattern decoder
-PD_OrSm:
-    LD   (IX-12+Env_En),0
-    CALL SETORN
-    LD   A,(BC)
-    INC  BC
-    RRCA
-PD_SAM:
-    ADD  A,A
-PD_SAM_:
-    LD   E,A
-    LD   D,0
-    LD   HL,(SamPtrs)
-    ADD  HL,DE
-    LD   E,(HL)
-    INC  HL
-    LD   D,(HL)
-    LD   HL,(MODADDR)
-    ADD  HL,DE
-    LD   (IX-12+SamPtr),L
-    LD   (IX-12+SamPtr+1),H
-    JR   PD_LOOP
-
-PD_VOL:
-    RLCA
-    RLCA
-    RLCA
-    RLCA
-    LD   (IX-12+Volume),A
-    JR   PD_LP2
-
-PD_EOff:
-    LD  (IX-12+Env_En),A
-    LD  (IX-12+PsInOr),A
-    JR   PD_LP2
-
-PD_SorE:
-    DEC  A
-    JR   NZ,PD_ENV
-    LD   A,(BC)
-    INC  BC
-    LD   (IX-12+NNtSkp),A
-    JR   PD_LP2
-
-PD_ENV:
-    CALL SETENV
-    JR   PD_LP2
-
-PD_ORN:
-    CALL SETORN
-    JR   PD_LOOP
-
-PD_ESAM:
-    LD   (IX-12+Env_En),A
-    LD   (IX-12+PsInOr),A
-    CALL NZ,SETENV
-    LD   A,(BC)
-    INC  BC
-    JR   PD_SAM_
-
-PTDECOD:
-    LD   A,(IX-12+Note)
-    LD   (PrNote),A
-    LD   L,(IX-12+CrTnSl)
-    LD   H,(IX-12+CrTnSl+1)
-    LD   (PrSlide),HL
-PD_LOOP:
-    LD   DE,$2010
-PD_LP2:
-    LD   A,(BC)
-    INC  BC
-    ADD  A,E
-    JR   C,PD_OrSm
-    ADD  A,D
-    JR   Z,PD_FIN
-    JR   C,PD_SAM
-    ADD  A,E
-    JR   Z,PD_REL
-    JR   C,PD_VOL
-    ADD  A,E
-    JR   Z,PD_EOff
-    JR   C,PD_SorE
-    ADD  A,96
-    JR   C,PD_NOTE
-    ADD  A,E
-    JR   C,PD_ORN
-    ADD  A,D
-    JR   C,PD_NOIS
-    ADD  A,E
-    JR   C,PD_ESAM
-    ADD  A,A
-    LD   E,A
-    LD   HL,SPCCOMS-$20E0 ; +$FF20-$2000
-    ADD  HL,DE
-    LD   E,(HL)
-    INC  HL
-    LD   D,(HL)
-    PUSH DE
-    JR   PD_LOOP
-
-PD_NOIS:
-    LD   (Ns_Base),A
-    JR   PD_LP2
-
-PD_REL:
-    RES  0,(IX-12+PtFlags)
-    JR   PD_RES
-
-PD_NOTE:
-    LD   (IX-12+Note),A
-    SET  0,(IX-12+PtFlags)
-    XOR  A
-PD_RES:   ;LD (SaveSP+1),SP
-    LD   (SaveSP),SP
-    LD   SP,IX
-    LD   H,A
-    LD   L,A
-    PUSH HL
-    PUSH HL
-    PUSH HL
-    PUSH HL
-    PUSH HL
-    PUSH HL
-    LD   SP,(SaveSP)
-
-PD_FIN:
-    LD   A,(IX-12+NNtSkp)
-    LD   (IX-12+NtSkCn),A
-    RET
-
-C_PORTM:
-    RES  2,(IX-12+PtFlags)
-    LD   A,(BC)
-    INC  BC
-;SKIP PRECALCULATED TONE DELTA (BECAUSE
-;CANNOT BE RIGHT AFTER PT3 COMPILATION)
-    INC  BC
-    INC  BC
-    LD   (IX-12+TnSlDl),A
-    LD   (IX-12+TSlCnt),A
-    LD   DE,NT_
-    LD   A,(IX-12+Note)
-    LD   (IX-12+SlToNt),A
-    ADD  A,A
-    LD   L,A
-    LD   H,0
-    ADD  HL,DE
-    LD   A,(HL)
-    INC  HL
-    LD   H,(HL)
-    LD   L,A
-    PUSH HL
-    LD   A,(PrNote)
-    LD   (IX-12+Note),A
-    ADD  A,A
-    LD   L,A
-    LD   H,0
-    ADD  HL,DE
-    LD   E,(HL)
-    INC  HL
-    LD   D,(HL)
-    POP  HL
-    SBC  HL,DE
-    LD   (IX-12+TnDelt),L
-    LD   (IX-12+TnDelt+1),H
-    LD   E,(IX-12+CrTnSl)
-    LD   D,(IX-12+CrTnSl+1)
-    LD   A,(PtVersion)
-    CP   6
-    JR   C,OLDPRTM ;Old 3xxx for PT v3.5-
-    LD   DE,(PrSlide)
-    LD   (IX-12+CrTnSl),E
-    LD   (IX-12+CrTnSl+1),D
-OLDPRTM:
-    LD   A,(BC) ;SIGNED TONE STEP
-    INC  BC
-    EX   AF,AF'
-    LD   A,(BC)
-    INC  BC
-    AND  A
-    JR   Z,NOSIG
-    EX   DE,HL
-NOSIG:
-    SBC  HL,DE
-    JP   P,SET_STP
-    CPL
-    EX   AF,AF'
-    NEG
-    EX   AF,AF'
-SET_STP:
-    LD   (IX-12+TSlStp+1),A
-    EX   AF,AF'
-    LD   (IX-12+TSlStp),A
-    LD   (IX-12+COnOff),0
-    RET
-
-C_GLISS:
-    SET  2,(IX-12+PtFlags)
-    LD   A,(BC)
-    INC  BC
-    LD   (IX-12+TnSlDl),A
-    AND  A
-    JR   NZ,GL36
-    LD   A,(PtVersion) ;AlCo PT3.7+
-    CP   7
-    SBC  A,A
-    INC  A
-GL36:
-    LD   (IX-12+TSlCnt),A
-    LD   A,(BC)
-    INC  BC
-    EX   AF,AF'
-    LD   A,(BC)
-    INC  BC
-    JR   SET_STP
-
-C_SMPOS:
-    LD   A,(BC)
-    INC  BC
-    LD   (IX-12+PsInSm),A
-    RET
-
-C_ORPOS:
-    LD   A,(BC)
-    INC  BC
-    LD   (IX-12+PsInOr),A
-    RET
-
-C_VIBRT:
-    LD   A,(BC)
-    INC  BC
-    LD   (IX-12+OnOffD),A
-    LD   (IX-12+COnOff),A
-    LD   A,(BC)
-    INC  BC
-    LD   (IX-12+OffOnD),A
-    XOR  A
-    LD   (IX-12+TSlCnt),A
-    LD   (IX-12+CrTnSl),A
-    LD   (IX-12+CrTnSl+1),A
-    RET
-
-C_ENGLS:
-    LD   A,(BC)
-    INC  BC
-    LD   (Env_Del),A
-    LD   (CurEDel),A
-    LD   A,(BC)
-    INC  BC
-    LD   L,A
-    LD   A,(BC)
-    INC  BC
-    LD   H,A
-    LD   (ESldAdd),HL
-    RET
-
-C_DELAY:
-    LD   A,(BC)
-    INC  BC
-    LD   (Delay),A
-    RET
-
-SETENV:
-    LD   (IX-12+Env_En),E
-    LD   (AYREGS+EnvTp),A
-    LD   A,(BC)
-    INC  BC
-    LD   H,A
-    LD   A,(BC)
-    INC  BC
-    LD   L,A
-    LD   (EnvBase),HL
-    XOR  A
-    LD   (IX-12+PsInOr),A
-    LD   (CurEDel),A
-    LD   H,A
-    LD   L,A
-    LD   (CurESld),HL
-C_NOP:
-    RET
-
-SETORN:
-    ADD  A,A
-    LD   E,A
-    LD   D,0
-    LD   (IX-12+PsInOr),D
-    LD   HL,(OrnPtrs)
-    ADD  HL,DE
-    LD   E,(HL)
-    INC  HL
-    LD   D,(HL)
-    LD   HL,(MODADDR)
-    ADD  HL,DE
-    LD   (IX-12+OrnPtr),L
-    LD   (IX-12+OrnPtr+1),H
-    RET
-
-;ALL 16 ADDRESSES TO PROTECT FROM BROKEN PT3 MODULES
-SPCCOMS:
-    DW   C_NOP
-    DW   C_GLISS
-    DW   C_PORTM
-    DW   C_SMPOS
-    DW   C_ORPOS
-    DW   C_VIBRT
-    DW   C_NOP
-    DW   C_NOP
-    DW   C_ENGLS
-    DW   C_DELAY
-    DW   C_NOP
-    DW   C_NOP
-    DW   C_NOP
-    DW   C_NOP
-    DW   C_NOP
-    DW   C_NOP
-
-CHREGS:
-    XOR  A
-    LD   (Ampl),A
-    BIT  0,(IX+PtFlags)
-    PUSH HL
-    JP   Z,CH_EXIT
-    LD   (SaveSP),SP
-    LD   L,(IX+OrnPtr)
-    LD   H,(IX+OrnPtr+1)
-    LD   SP,HL
-    POP  DE
-    LD   H,A
-    LD   A,(IX+PsInOr)
-    LD   L,A
-    ADD  HL,SP
-    INC  A
-    CP   D
-    JR   C,CH_ORPS
-    LD   A,E
-CH_ORPS:
-    LD   (IX+PsInOr),A
-    LD   A,(IX+Note)
-    ADD  A,(HL)
-    JP   P,CH_NTP
-    XOR  A
-CH_NTP:
-    CP   96
-    JR   C,CH_NOK
-    LD   A,95
-CH_NOK:
-    ADD  A,A
-    EX   AF,AF'
-    LD   L,(IX+SamPtr)
-    LD   H,(IX+SamPtr+1)
-    LD   SP,HL
-    POP  DE
-    LD   H,0
-    LD   A,(IX+PsInSm)
-    LD   B,A
-    ADD  A,A
-    ADD  A,A
-    LD   L,A
-    ADD  HL,SP
-    LD   SP,HL
-    LD   A,B
-    INC  A
-    CP   D
-    JR   C,CH_SMPS
-    LD   A,E
-CH_SMPS:
-    LD   (IX+PsInSm),A
-    POP  BC
-    POP  HL
-    LD   E,(IX+TnAcc)
-    LD   D,(IX+TnAcc+1)
-    ADD  HL,DE
-    BIT  6,B
-    JR   Z,CH_NOAC
-    LD   (IX+TnAcc),L
-    LD   (IX+TnAcc+1),H
-CH_NOAC:
-    EX   DE,HL
-    EX   AF,AF'
-    LD   L,A
-    LD   H,0
-    LD   SP,NT_
-    ADD  HL,SP
-    LD   SP,HL
-    POP  HL
-    ADD  HL,DE
-    LD   E,(IX+CrTnSl)
-    LD   D,(IX+CrTnSl+1)
-    ADD  HL,DE
-    LD   SP,(SaveSP)
-    EX   (SP),HL
-    XOR  A
-    OR   (IX+TSlCnt)
-    JR   Z,CH_AMP
-    DEC  (IX+TSlCnt)
-    JR   NZ,CH_AMP
-    LD   A,(IX+TnSlDl)
-    LD   (IX+TSlCnt),A
-    LD   L,(IX+TSlStp)
-    LD   H,(IX+TSlStp+1)
-    LD   A,H
-    ADD  HL,DE
-    LD   (IX+CrTnSl),L
-    LD   (IX+CrTnSl+1),H
-    BIT  2,(IX+PtFlags)
-    JR   NZ,CH_AMP
-    LD   E,(IX+TnDelt)
-    LD   D,(IX+TnDelt+1)
-    AND  A
-    JR   Z,CH_STPP
-    EX   DE,HL
-CH_STPP:
-    SBC  HL,DE
-    JP   M,CH_AMP
-    LD   A,(IX+SlToNt)
-    LD   (IX+Note),A
-    XOR  A
-    LD   (IX+TSlCnt),A
-    LD   (IX+CrTnSl),A
-    LD   (IX+CrTnSl+1),A
-CH_AMP:
-    LD   A,(IX+CrAmSl)
-    BIT  7,C
-    JR   Z,CH_NOAM
-    BIT  6,C
-    JR   Z,CH_AMIN
-    CP   15
-    JR   Z,CH_NOAM
-    INC  A
-    JR   CH_SVAM
-CH_AMIN:
-    CP   -15
-    JR   Z,CH_NOAM
-    DEC  A
-CH_SVAM:
-    LD   (IX+CrAmSl),A
-CH_NOAM:
-    LD   L,A
-    LD   A,B
-    AND  15
-    ADD  A,L
-    JP   P,CH_APOS
-    XOR  A
-CH_APOS:
-    CP   16
-    JR   C,CH_VOL
-    LD   A,15
-CH_VOL:
-    OR   (IX+Volume)
-    LD   L,A
-    LD   H,0
-    LD   DE,VT_
-    ADD  HL,DE
-    LD   A,(HL)
-CH_ENV:
-    BIT  0,C
-    JR   NZ,CH_NOEN
-    OR   (IX+Env_En)
-CH_NOEN:
-    LD   (Ampl),A
-    BIT  7,B
-    LD   A,C
-    JR   Z,NO_ENSL
-    RLA
-    RLA
-    SRA  A
-    SRA  A
-    SRA  A
-    ADD  A,(IX+CrEnSl) ;SEE COMMENT BELOW
-    BIT  5,B
-    JR   Z,NO_ENAC
-    LD   (IX+CrEnSl),A
-NO_ENAC:
-    LD   HL,AddToEn
-    ADD  A,(HL)    ;BUG IN PT3 - NEED WORD HERE.
-                   ;FIX IT IN NEXT Version?
-    LD   (HL),A
-    JR   CH_MIX
-NO_ENSL:
-    RRA
-    ADD  A,(IX+CrNsSl)
-    LD   (AddToNs),A
-    BIT  5,B
-    JR   Z,CH_MIX
-    LD   (IX+CrNsSl),A
-CH_MIX:
-    LD   A,B
-    RRA
-    AND  $48
-CH_EXIT:
-    LD   HL,AYREGS+Mixer
-    OR   (HL)
-    RRCA
-    LD   (HL),A
-    POP  HL
-    XOR  A
-    OR   (IX+COnOff)
-    RET  Z
-    DEC  (IX+COnOff)
-    RET  NZ
-    XOR  (IX+PtFlags)
-    LD   (IX+PtFlags),A
-    RRA
-    LD   A,(IX+OnOffD)
-    JR   C,CH_ONDL
-    LD   A,(IX+OffOnD)
-CH_ONDL:
-    LD   (IX+COnOff),A
-    RET
-
-PLAY:
-    XOR   A
-    LD   (AddToEn),A
-    LD   (AYREGS+Mixer),A
-    DEC   A
-    LD   (AYREGS+EnvTp),A
-    LD   HL,DelyCnt
-    DEC  (HL)
-    JP   NZ,PL2
-    LD   HL,ChanA+NtSkCn
-    DEC  (HL)
-    JR   NZ,PL1B
-    LD   BC,(AdInPtA)
-    LD   A,(BC)
-    AND  A
-    JR   NZ,PL1A
-    LD   D,A
-    LD   (Ns_Base),A
-    LD   HL,(CrPsPtr)
-    INC  HL
-    LD   A,(HL)
-    INC  A
-    JR   NZ,PLNLP
-    CALL CHECKLP
-    LD   HL,(LPosPtr)
-    LD   A,(HL)
-    INC  A
-PLNLP:
-    LD   (CrPsPtr),HL
-    DEC  A
-    ADD  A,A
-    LD   E,A
-    RL   D
-    LD   HL,(PatsPtr)
-    ADD  HL,DE
-    LD   DE,(MODADDR)
-    LD   (SaveSP),SP
-    LD   SP,HL
-    POP  HL
-    ADD  HL,DE
-    LD   B,H
-    LD   C,L
-    POP  HL
-    ADD  HL,DE
-    LD   (AdInPtB),HL
-    POP  HL
-    ADD  HL,DE
-    LD   (AdInPtC),HL
-    LD   SP,(SaveSP)
-PL1A:
-    LD   IX,ChanA+12
-    CALL PTDECOD
-    LD   (AdInPtA),BC
-
-PL1B:
-    LD   HL,ChanB+NtSkCn
-    DEC  (HL)
-    JR   NZ,PL1C
-    LD   IX,ChanB+12
-    LD   BC,(AdInPtB)
-    CALL PTDECOD
-    LD   (AdInPtB),BC
-PL1C:
-    LD   HL,ChanC+NtSkCn
-    DEC  (HL)
-    JR   NZ,PL1D
-    LD   IX,ChanC+12
-    LD   BC,(AdInPtC)
-    CALL PTDECOD
-    LD   (AdInPtC),BC
-
-PL1D:
-    LD   A,(Delay)
-    LD   (DelyCnt),A
-
-PL2:
-    LD   IX,ChanA
-    LD   HL,(AYREGS+TonA)
-    CALL CHREGS
-    LD   (AYREGS+TonA),HL
-    LD   A,(Ampl)
-    LD   (AYREGS+AmplA),A
-    LD   IX,ChanB
-    LD   HL,(AYREGS+TonB)
-    CALL CHREGS
-    LD   (AYREGS+TonB),HL
-    LD   A,(Ampl)
-    LD   (AYREGS+AmplB),A
-    LD   IX,ChanC
-    LD   HL,(AYREGS+TonC)
-    CALL CHREGS
-    LD   (AYREGS+TonC),HL
-    LD   HL,(Ns_Base_AddToNs)
-    LD   A,H
-    ADD  A,L
-    LD   (AYREGS+Noise),A
-    LD   A,(AddToEn)
-    LD   E,A
-    ADD  A,A
-    SBC  A,A
-    LD   D,A
-    LD   HL,(EnvBase)
-    ADD  HL,DE
-    LD   DE,(CurESld)
-    ADD  HL,DE
-    LD   (AYREGS+Env),HL
-    XOR  A
-    LD   HL,CurEDel
-    OR   (HL)
-    JR   Z,ROUT_A0
-    DEC (HL)
-    JR   NZ,ROUT
-    LD   A,(Env_Del)
-    LD   (HL),A
-    LD   HL,(ESldAdd)
-    ADD  HL,DE
-    LD   (CurESld),HL
-ROUT:
-    XOR  A           ; A  = register 0
-ROUT_A0:
-    LD   HL,AYREGS   ; HL = register data
-    LD   C,PSG1A     ; C  = AY data port 1
-LOUT:
-    OUT  (PSG1B),A   ; select PSG1 register
-    INC  A           ; A = next register
-    OUTI             ; (HL) -> AY register, inc HL
-    CP   13          ; loaded registers 0~12?
-    JR   NZ,LOUT
-    OUT  (PSG1B),A   ; select PSG1 register 13
-    LD   A,(HL)      ; get register 13 data
-    AND  A
-    RET  M           ; return if bit 7 = 1
-    OUT  (C),A       ; load register 13
-    RET
-
-;Stupid ALASM limitations
-NT_DATA:
-    DB (T_NEW_0-T1_)*2 ; 50*2
-    DB TCNEW_0-T_
-    DB 50*2+1          ;(T_OLD_0-T1_)*2+1
-    DB TCOLD_0-T_
-    DB 0*2+1           ;(T_NEW_1-T1_)*2+1
-    DB TCNEW_1-T_
-    DB 0*2+1           ;(T_OLD_1-T1_)*2+1
-    DB TCOLD_1-T_
-    DB 74*2            ;(T_NEW_2-T1_)*2
-    DB TCNEW_2-T_
-    DB 24*2            ;(T_OLD_2-T1_)*2
-    DB TCOLD_2-T_
-    DB 48*2            ;(T_NEW_3-T1_)*2
-    DB TCNEW_3-T_
-    DB 48*2            ;(T_OLD_3-T1_)*2
-    DB TCOLD_3-T_
-
-T_
-
-TCOLD_0:
-    DB $00+1,$04+1,$08+1,$0A+1,$0C+1,$0E+1,$12+1,$14+1
-    DB $18+1,$24+1,$3C+1,0
-TCOLD_1:
-TCNEW_1:
-    DB $5C+1,0
-TCOLD_2:
-    DB $30+1,$36+1,$4C+1,$52+1,$5E+1,$70+1,$82,$8C,$9C
-    DB $9E,$A0,$A6,$A8,$AA,$AC,$AE,$AE,0
-TCNEW_3:
-    DB $56+1
-TCOLD_3:
-    DB $1E+1,$22+1,$24+1,$28+1,$2C+1,$2E+1,$32+1,$BE+1,0
-TCNEW_0:
-    DB $1C+1,$20+1,$22+1,$26+1,$2A+1,$2C+1,$30+1,$54+1
-    DB $BC+1,$BE+1,0
-TCNEW_2:
-    DB $1A+1,$20+1,$24+1,$28+1,$2A+1,$3A+1,$4C+1,$5E+1
-    DB $BA+1,$BC+1,$BE+1
-EMPTYSAMORN:
-    DB 0
-    DB 1,0,$90 ;delete $90 if you don't need default sample
-
-;first 12 values of tone tables (packed)
-
-T_PACK:
-    DB high($06EC*2),low($06EC*2)
-    DB $0755-$06EC
-    DB $07C5-$0755
-    DB $083B-$07C5
-    DB $08B8-$083B
-    DB $093D-$08B8
-    DB $09CA-$093D
-    DB $0A5F-$09CA
-    DB $0AFC-$0A5F
-    DB $0BA4-$0AFC
-    DB $0C55-$0BA4
-    DB $0D10-$0C55
-    DB high($066D*2),low($066D*2)
-    DB $06CF-$066D
-    DB $0737-$06CF
-    DB $07A4-$0737
-    DB $0819-$07A4
-    DB $0894-$0819
-    DB $0917-$0894
-    DB $09A1-$0917
-    DB $0A33-$09A1
-    DB $0ACF-$0A33
-    DB $0B73-$0ACF
-    DB $0C22-$0B73
-    DB $0CDA-$0C22
-    DB high($0704*2),low($0704*2)
-    DB $076E-$0704
-    DB $07E0-$076E
-    DB $0858-$07E0
-    DB $08D6-$0858
-    DB $095C-$08D6
-    DB $09EC-$095C
-    DB $0A82-$09EC
-    DB $0B22-$0A82
-    DB $0BCC-$0B22
-    DB $0C80-$0BCC
-    DB $0D3E-$0C80
-    DB high($07E0*2),low($07E0*2)
-    DB $0858-$07E0
-    DB $08E0-$0858
-    DB $0960-$08E0
-    DB $09F0-$0960
-    DB $0A88-$09F0
-    DB $0B28-$0A88
-    DB $0BD8-$0B28
-    DB $0C80-$0BD8
-    DB $0D60-$0C80
-    DB $0E10-$0D60
-    DB $0EF8-$0E10
-
-SelectWindow:
-      db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
-      db   WHITE*16+BLACK               ; text colors
-      db   CYAN*16+BLACK                ; border colors
-      db   1,2,38,22                    ; x,y,w,h
-      dw   .title                       ; title
-.title:
-      db   " PT3 Player "
-
-PlayWindow:
-      db   0                            ; attributes
-      db   WHITE*16+BLACK               ; text colors
-      db   0                            ; border colors
-      db   1,2,38,22                    ; x,y,w,h
-      dw   0                            ; title
-
-PT3pat:
-      db   "*.PT3",0
-
-PT3help:
-      db   "SPACE = next song    RTN = playlist",0
+     end
 
