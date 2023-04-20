@@ -360,8 +360,15 @@ SPLLOOP:
     call    SPL_DATETIME       ; Print DateTime at the bottom of the screen
 ; wait for Boot option key
 SPLKEY:
+    ld      c,0                 ;call the clock update every 256 loops
+SPLKEYInner:
     call    Key_Check
-    jr      z,SPLKEY           ; loop until key pressed
+    jr      nz,SPLGOTKEY        ; We got a key pressed
+    dec     c
+    jr      nz,SPLKEYInner      ; loop until c=0
+    call    SPL_DATETIME        ; Print DateTime at the bottom of the screen
+    jr      SPLKEY
+SPLGOTKEY:
   ifndef softrom
     cp      "1"                ; '1' = load ROM
     jr      z,LoadROM
@@ -399,7 +406,7 @@ AboutSCR:
     call    OpenWindow
     call    WinPrtStr
     call    Wait_key
-    JR      SPLASH
+    JP      SPLASH
 
 AboutBdrWindow:
     db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
@@ -1378,7 +1385,7 @@ FRCADR: ld      a,(FAC)           ;
 ;
 
 SPL_DATETIME:
-
+    push    bc          ; Save BC
   ifdef RTC_TEMP
     ld      bc,RTC_TEMP       
   else
@@ -1393,6 +1400,7 @@ SPL_DATETIME:
     call    WinSetCursor
     ld      hl,DTM_STRING
     call    WinPrtStr
+    pop     bc          ;Restore BC
     ret    
     
 ;Starting DateTime for Software Clock
