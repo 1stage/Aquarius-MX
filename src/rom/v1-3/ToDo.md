@@ -17,8 +17,11 @@ This file is for recording upcoming changes and features that are being added to
 
 ## COMPLETE:
 
-- VAR
+- Created FRCADR - FRCINT replacement that accepts -32768 through 65535
+  - Replaced FRCINT with FRCADR in IN/OUT/CALL
 
-- DTM$( )
+- VER() - Return version and revision
 
-- CLS
+- DTM$() - Get DateTime from RTC
+
+- CLS - Specify Screen Colors
