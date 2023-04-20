@@ -1079,7 +1079,7 @@ clearscreen:
 
 ST_OUT:
     call    FRMNUM              ; get/evaluate port
-    call    FRCINT               ; convert number to 16 bit integer (result in DE)
+    call    FRCADR              ; convert number to 16 bit integer (result in DE)
     push    de                  ; stored to be used in BC
     rst     $08                 ; Compare RAM byte with following byte
     db      $2c                 ; character ',' byte used by RST 08
@@ -1171,7 +1171,7 @@ FN_IN:
     ex      (sp),hl
     ld      de,LABBCK        ; return address for SNGFLT
     push    de               ; on stack
-    call    FRCINT            ; convert argument to 16 bit integer in DE
+    call    FRCADR            ; convert argument to 16 bit integer in DE
     ld      b,d
     ld      c,e              ; bc = port
     in      a,(c)            ; a = in(port)
@@ -1192,7 +1192,7 @@ FN_JOY:
     ex      (sp),hl
     ld      de,LABBCK      ; set return address
     push    de
-    call    FRCINT          ; convert argument to 16 bit integer in DE
+    call    FRCINT         ; convert argument to 16 bit integer in DE
 
     ld      a,e
     or      a
@@ -1340,10 +1340,17 @@ FN_VER:
 ;
 ST_CALL:
     call    FRMNUM           ; get number from BASIC text
-    call    FRCINT            ; convert to 16 bit integer
+    call    FRCADR           ; convert to 16 bit integer
     push    de
     ret                      ; jump to user code, HL = BASIC text pointer
 
+
+; Convert FAC to Address or Signed Integer and Return in DE
+; Converts floats from -32676 to 655358 in 16 bit integer
+FRCADR: ld      a,(FAC)           ;
+        cp      145               ;If Float < 65536
+        jp      c,QINT            ;  Convert to Integer and Return
+        jp      FRCINT
 
 ;---------------------------------------------------------------------
 ;                       DOS commands
