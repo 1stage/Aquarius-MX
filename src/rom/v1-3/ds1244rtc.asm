@@ -43,7 +43,8 @@ rtc_init:
 rtc_read:
     ld      a,(bc)            ;Check RTC Found flag
     or      a                 ;If 0 (Not Found)
-    call    nz,do_rtc_read  ;  If Clock Was Found, Call Read
+    ;call    nz,do_rtc_read  ;  If Clock Was Found, Call Read
+    call do_rtc_read
     ret
 
 ;Read Real Time Clock
@@ -152,23 +153,22 @@ rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 rtc_write:
     ld      a,(ds1244addr)  ; save byte at control address
     push    af              ;Save Registers
-    push    de
-    push    bc      
-    push    hl              ; Registers saved as AF,DE,BC,HL
-    ex      de,hl 
+    push    de          
+    push    hl              ; Registers saved as AF,DE,HL,BC
+    push    bc
     inc     hl          
-    ld      d,b
+    ld      d,b             ; DE = RTC_SHADOW
     ld      e,c
     ld      bc,4
     ldir    
-    ld      (hl),$21        ; Clock enable and Day 1    
-    inc     hl
+    ld      a,$11
+    ld      (de),a        ; Clock enable No Reset and Day 1    
+    inc     de
     ld      bc,3
     ldir
     pop     de
     push    de
     LD      hl,rtc_Ident
-    inc     bc              ; want to write to shadow +1
     ld      c,8             ; Going to loop round 8 times here
     xor     a
     ld      (ds1244addr),a  ; store a 0 here, so if no RTC, then it will just read all zero's
@@ -197,10 +197,9 @@ ds_wrDataInner:
     inc     hl
     dec     c
     jr      nz,ds_wrData
-    pop     hl              ; Restore Registers
-    pop     bc    
+    pop     bc
+    pop     hl              ; Restore Registers        
     pop     de
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
-    ret                               
-
+    ret                                     
