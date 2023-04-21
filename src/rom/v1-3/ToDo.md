@@ -9,6 +9,8 @@ This file is for recording upcoming changes and features that are being added to
 
 - Complete Dallas RTC read/write routines
 
+- Working on switchable "skins" for the stand-alone PT3 Player ROM, as well as some other goodies. Still need to go in with the weed whacker and remove the legacy aqubasic.asm code to free up some space for the goodies.
+
 
 ## COMPLETE:
 
@@ -21,7 +23,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - CLS - Specify Screen Colors
 
-- Fix: Allowed spaces between FN name and ( in USB BASIC functions
+- Fix: Allowed spaces between FN name and "(" in USB BASIC functions
 
 - DEC("FFFF") - Hex to Decimal (unsigned)
 
