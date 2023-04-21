@@ -1333,8 +1333,7 @@ joy05:
 ;;; Format: HEX$(<number>)
 ;;; 
 ;;; Action: Returns string containing <number> in hexadecimal format.
-;;;         Generates FC Error if <number> is not in the range -8,388,608
-;;;         through 8,388,607.
+;;;         FC Error if <number> is not in the range -32676 through 65535.
 ;;; 
 ;;; EXAMPLES of HEX Function:
 ;;; 
@@ -1351,10 +1350,8 @@ FN_HEX:
     ld      a,(FAC)
     cp      154         ; If more than 23 bits 
     jp      nc,FCERR    ;   Error Out
-    call    QINT        ; convert argument to 24 bit signed integer in C,DE
+    call    FRCADR        ; convert argument to 24 bit signed integer in C,DE
     ld      hl,FBUFFR+1 ; hl = temp string
-    ld      a,c
-    call    .hexbyte   ; yes, convert byte in C to hex string
     ld      a,d
     call    .hexbyte   ; yes, convert byte in D to hex string
     ld      a,e
@@ -1448,7 +1445,7 @@ ST_CALL:
 
 
 ; Convert FAC to Address or Signed Integer and Return in DE
-; Converts floats from -32676 to 655358 in 16 bit integer
+; Converts floats from -32676 to 65535 in 16 bit integer
 FRCADR: ld      a,(FAC)           ;
         cp      145               ;If Float < 65536
         jp      c,QINT            ;  Convert to Integer and Return
@@ -1604,9 +1601,9 @@ FN_DTM:
 ; EVAL Extension - Hook 9
 
 EVAL_EXT:
-    pop     bc                  ; BC = return address
-    pop     af                  ; AF = token, flags
-    pop     hl                  ; HL = text
+    pop     bc                  ; BC = Hook Return Address
+    pop     af                  ; AF = whatever was in AF
+    pop     hl                  ; HL = Text Pointer
 
     CHRGET                      
     cp      '$'                 
