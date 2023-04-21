@@ -7,7 +7,9 @@ This file is for recording upcoming changes and features that are being added to
 
 - Extand FRMEVL to manage Hex literals (maybe Binary as well)
 
-- Complete Dallas RTC read/write routines
+- Test hardware behavior without RTC installed (RAM only)
+
+- Fix print DTM$(1) issue where no result is returned. print DTM$(0) and print DTM$(2) work fine.
 
 - Working on switchable "skins" for the stand-alone PT3 Player ROM, as well as some other goodies. Still need to go in with the weed whacker and remove the legacy aqubasic.asm code to free up some space for the goodies.
 
