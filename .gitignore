@@ -14,3 +14,7 @@ src/rom/v1-3/zout/aqubasic.hex
 src/rom/v1-3/zout/USBBasic.rom
 .vscode/tasks.json
 src/rom/v1-3/zout/aqubasic (1).rom
+zout/aqubasic (1).rom
+zout/aqubasic.cim
+zout/USBBasic.rom
+zout/aqubasic.hex
