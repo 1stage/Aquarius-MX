@@ -245,7 +245,7 @@ SYNCHK  MACRO char
         db    'char'
         ENDM
 
-GETNEXT MACRO
+CHRGET  MACRO
         RST    $10    ; get next char and test for numeric
         ENDM
 
