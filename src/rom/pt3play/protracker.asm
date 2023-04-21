@@ -10,8 +10,7 @@
 60Hz = -1  ; make this -1 to play 50Hz songs on 60Hz machine
 
 ; address of variables in RAM
-VARMEM = $38A0  ; top of stack at boot (before initializing BASIC)
-
+VARMEM = $38A0      ; Top of stack at boot (before initializing BASIC)
 PLAYER_VER = 1
 PLAYER_REV = 5
 
@@ -132,14 +131,19 @@ VAR_size = VAREND-VARMEM
 
 ; GUI player variables
   STRUCTURE Player,VAREND
+
+       WORD SKINPTR           ; Pointer to the current meter skin
        BYTE numsongs          ; number of songs (1-36)
        BYTE song              ; current song number (0-35)
      STRUCT pt3_files,(36*16) ; array to store 36 file infos
      STRUCT SongData,0        ; pt3 file loaded here!
   ENDSTRUCT Player
 
+PT3_START:
+    LD      HL,EQText            ; Set HL to address of default EQ skin
+    LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
 PT3_PLAY:
-       LD   IX,BgdWindow
+    LD      IX,BgdWindow
        CALL OpenWindow
        LD   IX,SelectWindow
        CALL OpenWindow
@@ -164,8 +168,8 @@ PT3_LOAD:
        PUSH HL
        POP  IY
        BIT  ATTR_B_DIRECTORY,(IY+11) ; directory?
-       JR   NZ,.next_song     ; yes, skip file
-       PUSH HL                ; push filename
+       JR   NZ, .next_song     ; yes, skip file
+       PUSH HL                ; Save filename address to HL stack
        LD   D,13
        LD   E,1
        CALL WinSetCursor
@@ -175,25 +179,28 @@ PT3_LOAD:
        JR   C,.shownum
        ADD  7
 .shownum:
-       CALL WinPrtChr         ; print ID
-       CALL WinPrtMsg         ; print ": "
-       db   ": ",0
-       LD   A,8
-       CALL WinPrtChrs        ; print filename
-       POP  HL                ; pop filename
-       CALL usb__open_read    ; open song file
-       RET  NZ                ; quit if error opening file
+       CALL WinPrtChr           ; Print ID
+       CALL WinPrtMsg           ; Print ": "
+       db   ": ",0              ; Print colon and space before filename
+       LD   A,8                 ; Save name length of 8 into A
+       CALL WinPrtChrs          ; Print filename (address in HL)
+       POP  HL                  ; Retrieve saved filename address from HL
+       CALL usb__open_read      ; Open song file
+       RET  NZ                  ; Quit if error opening file
        LD   HL,SongData
        LD   DE,-1
-       CALL usb__read_bytes   ; read song file into buffer
+       CALL usb__read_bytes     ; Read song file into buffer
        PUSH AF
        CALL usb__close_file
        POP  AF
-       RET  NZ                ; quit if error reading file
+       RET  NZ                  ; quit if error reading file
        LD   HL,SongData
-       CALL INIT              ; initialize player
+                                ; Different background char loads will go here
+        CALL    DrawBarChars        
+
+       CALL INIT                ; Initialize player
 .play_quark:
-       LD   B,5               ; play 5 'quarks'
+       LD   B,5                 ; Play 5 'quarks'
 .play_loop:
        PUSH BC
        CALL wait_vbl
@@ -211,10 +218,24 @@ PT3_LOAD:
        LD   (HL),DEBOUNCE-4   ; yes, debounce count to go = 4 scans (~250ms)
 .debounced:
        call Key_Check         ; Get ASCII of last key pressed
+;
+;  ANY IDEA WHY I CAN'T UNCOMMENT EITHER OR BOTH OF THE PAIRS OF LINES BELOW WITHOUT 
+;  GETTING A COMPILER VALUE ERROR in line 171 (JR   NZ, .next_song) ?
+;
+        ; CP   "1"                 ; If 1 key pressed...
+        ; JR   Z, .ss1         ; ...set to skin 1 (EQText)
+        ; CP   "2"                 ; If 2 key pressed...
+        ; JR   Z, .ss2         ; ...set to skin 2 (MeterText)
+        CP   "3"                 ; If 3 key pressed...
+        JR   Z, .ss3         ; ...set to skin 3 (KelpText)
+    ;                           --- Add More skins below ---
+
        cp   $0d
        jr   z,.restart        ; if RTN pressed then return to file list
        cp   " "
        jr   z,.next_song      ; if SPACE pressed then play next song
+
+
 .no_key:
        DJNZ .play_loop        ; 5 lines at 60Hz
        LD   A,(SysFlags)
@@ -236,6 +257,30 @@ PT3_LOAD:
 .restart:
        CALL MUTE              ; stop song
        JP   PT3_PLAY          ; back to file list
+.ss1:
+        PUSH    HL
+        LD      HL,EQText            ; Set HL to address of default EQ skin
+        LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
+        CALL    DrawBarChars
+        POP     HL
+        JP      .play_loop
+
+.ss2:
+        PUSH    HL
+        LD      HL,MeterText            ; Set HL to address of Meter skin
+        LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
+        CALL    DrawBarChars
+        POP     HL
+        JP      .play_loop
+
+.ss3:
+        PUSH    HL
+        LD      HL,KelpText            ; Set HL to address of Kelp skin
+        LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
+        CALL    DrawBarChars
+        POP     HL
+        JP      .play_loop
+
 
 ; - ANIMATION -
 ; This section draws the animated bars on the screen based on the volume/amplitude 
@@ -250,16 +295,16 @@ Animation:
                                     ;       Row 20, 13 spaces right
         LD   IX,AYREGS              ; Set IX to the base address of the AY registers structure
         LD   A,(IX+AmplA)           ; Set A to be the value of ChA's volume/amplitude register
-        LD   E,WHITE*16+BLACK       ; Set E to be all bars' "empty" color,         (FG * 16) + BG
-        LD   D,WHITE*16+RED         ; Set D to be the first bar's "filled" color,  (FG * 16) + BG
+        LD   E,DKGREY*16+BLACK      ; Set E to be the first bar's "empty" color,   (FG * 16) + BG
+        LD   D,RED*16+BLACK        ; Set D to be the first bar's "filled" color,  (FG * 16) + BG
         CALL show_bar               ; Draw/show the first volume bar
         LD   A,(IX+AmplB)           ; Set A to be the value of ChB's volume/amplitude register
-                                    ; Note that E inherits the "empty" color from above
-        LD   D,WHITE*16+GREEN       ; Set D to be the second bar's "filled" color, (FG * 16) + BG
+        LD   E,DKGREY*16+BLACK      ; Set E to be the second bar's "empty" color,  (FG * 16) + BG
+        LD   D,GREEN*16+BLACK      ; Set D to be the second bar's "filled" color, (FG * 16) + BG
         CALL show_bar               ; Draw/show the second volume bar
         LD   A,(IX+AmplC)           ; Set A to be the value of ChC's volume/amplitude register
-                                    ; Note that E inherits the "empty" color from above
-        LD   D,WHITE*16+BLUE        ; Set D to be the third bar's "filled" color,  (FG * 16) + BG
+        LD   E,DKGREY*16+BLACK      ; Set E to be the third bar's "empty" color,   (FG * 16) + BG
+        LD   D,BLUE*16+BLACK       ; Set D to be the third bar's "filled" color,  (FG * 16) + BG
         CALL show_bar               ; Draw/show the third volume bar
         POP  BC                     ; Restore the saved BC value from the stack
         POP  DE                     ; Restore the saved DE value from the stack
@@ -1346,3 +1391,82 @@ PT3pat:
 PT3help:
       db   " SPACE = next song   RTN = playlist",0
 
+; This draws the meter characters in the background for the color bars
+;
+
+DrawBarChars:
+    PUSH    AF
+    PUSH    IX
+    PUSH    HL
+
+    ld      ix,BarWindow              ; Draw smaller inset window
+    call    OpenWindow
+    ld      hl,(SKINPTR)            ; Use the currently select Skin in SKINPTR 
+    call    OpenWindow
+    call    WinPrtStr
+
+    POP     HL
+    POP     IX
+    POP     AF
+    RET
+
+BarWindow:
+    db   0                              ; attributes
+    db   (DKGREY*16)+BLACK              ; text colors,   (FG * 16) + BG
+    db   0                              ; border colors, (FG * 16) + BG
+    db   13,6,13,17                     ; x,y,w,h
+    dw   0                              ; title
+
+KelpText:
+	db 135,210,135,215,201,135,210,135,215,201,135,210,135,CR
+	db 210,159,210,199,217,210,159,210,199,217,210,159,210,CR
+	db 159,143,159,203,219,159,143,159,203,219,159,143,159,CR
+	db 143,159,143,215,201,143,159,143,215,201,143,159,143,CR
+	db 159,143,159,199,217,159,143,159,199,217,159,143,159,CR
+	db 143,159,143,203,219,143,159,143,203,219,143,159,143,CR
+	db 159,143,159,215,201,159,143,159,215,201,159,143,159,CR
+	db 143,159,143,199,217,143,159,143,199,217,143,159,143,CR
+	db 159,143,159,203,219,159,143,159,203,219,159,143,159,CR
+	db 143,159,143,215,201,143,159,143,215,201,143,159,143,CR
+	db 159,143,159,199,217,159,143,159,199,217,159,143,159,CR
+	db 143,159,143,203,219,143,159,143,203,219,143,159,143,CR
+	db 159,143,159,215,201,159,143,159,215,201,159,143,159,CR
+	db 143,159,143,199,217,143,159,143,199,217,143,159,143,CR
+	db 194,135,194,203,219,194,135,194,203,219,194,135,194,CR
+    db 0
+
+MeterText:
+	db  32,132, 32,255,255, 32,132, 32,255,255, 32,132, 32,CR
+	db 149,255,133,128,128,149,255,133,128,128,149,255,133,CR
+	db 149,255,133,128,128,149,255,133,128,128,149,255,133,CR
+	db 149,255,133,137,137,149,255,133,137,137,149,255,133,CR
+	db 149,255,133,137,137,149,255,133,137,137,149,255,133,CR
+	db 149,255,133,252,252,149,255,133,252,252,149,255,133,CR
+	db 149,255,133,252,252,149,255,133,252,252,149,255,133,CR
+	db 149,255,133, 31, 31,149,255,133, 31, 31,149,255,133,CR
+	db 149,255,133, 31, 31,149,255,133, 31, 31,149,255,133,CR
+	db 149,255,133,240,240,149,255,133,240,240,149,255,133,CR
+	db 149,255,133,240,240,149,255,133,240,240,149,255,133,CR
+	db 149,255,133,136,136,149,255,133,136,136,149,255,133,CR
+	db 149,255,133,136,136,149,255,133,136,136,149,255,133,CR
+	db 149,255,133,144,144,149,255,133,144,144,149,255,133,CR
+	db  32,148, 32,144,144, 32,148, 32,144,144, 32,148, 32,CR
+    db 0
+
+EQText:
+	db 222,172,206, 32, 32,222,172,206, 32, 32,222,172,206,CR
+	db 214,255,214,203,219,214,255,214,203,219,214,255,214,CR
+	db 214,128,214,132,132,214,128,214,132,132,214,128,214,CR
+	db 214,128,214,132,132,214,128,214,132,132,214,128,214,CR
+	db 214,137,214,132,132,214,137,214,132,132,214,137,214,CR
+	db 214,137,214,132,132,214,137,214,132,132,214,137,214,CR
+	db 214,252,214,132,132,214,252,214,132,132,214,252,214,CR
+	db 214,252,214,172,172,214,252,214,172,172,214,252,214,CR
+	db 214, 31,214,148,148,214, 31,214,148,148,214, 31,214,CR
+	db 214, 31,214,148,148,214, 31,214,148,148,214, 31,214,CR
+	db 214,240,214,148,148,214,240,214,148,148,214,240,214,CR
+	db 214,240,214,148,148,214,240,214,148,148,214,240,214,CR
+	db 214,136,214,148,148,214,136,214,148,148,214,136,214,CR
+	db 214,144,214,203,219,214,144,214,203,219,214,144,214,CR
+	db 207,172,223, 32, 32,207,172,223, 32, 32,207,172,223,CR
+    db 0

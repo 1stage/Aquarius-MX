@@ -293,7 +293,7 @@ ROM_ENTRY:
      ld      (SCANCNT),a
 
 ; Jump directly to PT3 Player
-     call    PT3_PLAY;
+     call    PT3_START;
      call    WARMBOOT;
 
 ; CTRL-C pressed in boot menu
@@ -448,40 +448,40 @@ PAL__NTSC:
     RET
 
 ; boot window with border
-BootBdrWindow:
-     db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
-     db     CYAN
-     db     CYAN
-     db     2,3,36,20
-     dw     bootWinTitle
+; BootBdrWindow:
+;      db     (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER)
+;      db     CYAN
+;      db     CYAN
+;      db     2,3,36,20
+;      dw     bootWinTitle
 
-; boot window text inside border
-BootWindow:
-     db     0
-     db     CYAN
-     db     CYAN
-     db     9,5,26,18
-     dw     0
+; ; boot window text inside border
+; BootWindow:
+;      db     0
+;      db     CYAN
+;      db     CYAN
+;      db     9,5,26,18
+;      dw     0
 
-BootWinTitle:
-     db     " AQUARIUS USB BASIC V"
-     db     VERSION+'0','.',REVISION+'0',' ',0
+; BootWinTitle:
+;      db     " AQUARIUS USB BASIC V"
+;      db     VERSION+'0','.',REVISION+'0',' ',0
 
-BootMenuText:
-     db     CR
-  ifdef softrom
-     db     "    1. (disabled)",CR
-  else
-     db     "    1. Load ROM",CR
-  endif
-     db     CR,CR
-     db     "    2. Debug",CR
-     db     CR,CR
-     db     "    3. PT3 Player",CR
-     db     CR,CR,CR,CR
-     db     "    <RTN> BASIC",CR
-     db     CR
-     db     "<CTRL-C> Warm Start",0
+; BootMenuText:
+;      db     CR
+;   ifdef softrom
+;      db     "    1. (disabled)",CR
+;   else
+;      db     "    1. Load ROM",CR
+;   endif
+;      db     CR,CR
+;      db     "    2. Debug",CR
+;      db     CR,CR
+;      db     "    3. PT3 Player",CR
+;      db     CR,CR,CR,CR
+;      db     "    <RTN> BASIC",CR
+;      db     CR
+;      db     "<CTRL-C> Warm Start",0
 
 
 
