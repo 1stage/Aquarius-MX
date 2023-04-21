@@ -293,7 +293,7 @@ ROM_ENTRY:
      ld      (SCANCNT),a
 
 ; Jump directly to PT3 Player
-     call    PT3_PLAY;
+     call    PT3_START;
      call    WARMBOOT;
 
 ; CTRL-C pressed in boot menu
