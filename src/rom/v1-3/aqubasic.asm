@@ -114,7 +114,7 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
     include  "windows.i"  ; fast windowed text functions
 
 ; alternative system variable names
-VARTAB      = BASEND     ; $38D6 variables table (at end of BASIC program)
+VARTAB      = VARTAB     ; $38D6 variables table (at end of BASIC program)
 
   ifdef softrom
 RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
@@ -654,7 +654,8 @@ BootMenuText:
 ; every RST $30. It allows us to hook into the system
 ; ROM in several places (anywhere a RST $30 is located).
 
-HOOK ex      (sp),hl            ; save HL and get address of byte after RST $30
+HOOK: 
+    ex      (sp), hl            ; save HL and get address of byte after RST $30
     push    af                  ; save AF
     ld      a,(hl)              ; A = byte (RST $30 parameter)
     inc     hl                  ; skip over byte after RST $30
@@ -871,6 +872,8 @@ AQFUNCTION:
     pop     af
     pop     hl
     push    bc                  ; push return address back on stack
+    cp      PEEKTK-$B2          ; If PEEK Token
+    jp      z,FN_PEEK           ;   Do Extended PEEK
     cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
     ret     c                   ; return if function number below ours
     cp      (lastf-$B2+1)
@@ -932,11 +935,15 @@ PEXPBAB:
 
 NEXTSTMT:
     pop     bc                  ; BC = return address
-    pop     af                  ; AF = token, flags
+    pop     af                  ; AF = token - $80, flags
     pop     hl                  ; HL = text
     jr      nc,BASTMT           ; if NC then process BASIC statement
-    push    bc
-    ret                         ; else return to system
+    push    af                  ; Save Flags
+    cp      POKETK-$80          ; If POKE Token
+    jp      z,ST_POKE           ;   Do Extended POKE
+    pop     af                  ; Else
+    push    bc                  ;   Return to Standard Dispatch Routine
+    ret                        
 
 BASTMT:
     sub     (BTOKEN)-$80
@@ -990,7 +997,7 @@ _run_file:
     pop     hl                 ; restore BASIC text pointer
 .error:
     ld      e,ERRFC           ; function code error
-    jp      DO_ERROR           ; return to BASIC
+    jp      ERROR           ; return to BASIC
 .extend:
     dec     hl
     push    hl                 ; save extn address
@@ -1034,6 +1041,38 @@ _run_file:
 
 ST_reserved:
     ret
+
+;----------------------------------------------------------------------------
+;;; Extended POKE Statement - Write to Memory Location(s)
+;;; 
+;;; FORMAT: POKE <address>, <byte> [,<byte>...]
+;;;  
+;;; Action: Writes <byte>s to memory starting at <address>. 
+;;;         
+;;; EXAMPLES of POKE Statement:
+;;; 
+;;;   !!!TODO
+;----------------------------------------------------------------------------
+
+ST_POKE:   
+    pop     af              ; Discard Saved Token, Flags
+    inc     hl              ; Skip Poke Token
+    call    FRMNUM          ; Get <address>
+    call    FRCADR          ; Convert To Integer in DE
+    push    de              ; Save Address  
+    SYNCHK  ','             ; Require a Comma
+.poke_loop:
+    call    GETBYT          ; Get <byte> in A
+    pop     de              ; Restore Address
+    ld      (de),a          ; Write Byte to Memory
+    ld      a,(hl)          ; If Next Character
+    cp      ','             ; is Not a Comma
+    ret     nz              ;   We are done
+    inc     hl              ; Skip Comma
+    inc     de              ; Bump Poke Address
+    push    de              ; and Save It
+    jr      .poke_loop      ; Do the Next Byte
+     
 
 ;--------------------------------------------------------------------
 ;   CLS statement
@@ -1082,7 +1121,7 @@ clearscreen:
 
 
 ;----------------------------------------------------------------------------
-;;; IN() Function - Read Z80 I/O Port
+;;; OUT Statement - Write to Z80 I/O Port
 ;;; 
 ;;; FORMAT: OUT <address>,<byte>
 ;;;  
@@ -1180,6 +1219,29 @@ psgloop:
     jr      psgloop          ; parse next register & value
 
 ;----------------------------------------------------------------------------
+;;; PEEK() Function - Read from Memory
+;;; 
+;;; FORMAT: PEEK(<address>)
+;;;  
+;;; Action: Reads a byte from memory location <address>. 
+;;;         
+;;; 
+;;; EXAMPLES of PEEK Function:
+;;; 
+;;;   !!!TODO
+;----------------------------------------------------------------------------
+
+FN_PEEK
+    inc     hl                ; Skip PEEK Token
+    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
+    ex      (sp),hl           
+    ld      de,LABBCK         ; return address for SNGFLT
+    push    de                ; on stack
+    call    FRCADR            ; Convert to Integer
+    ld      a,(de)            ;[M80] GET THE VALUE TO RETURN
+    jp      SNGFLT            ;[M80] AND FLOAT IT
+
+;----------------------------------------------------------------------------
 ;;; IN() Function - Read Z80 I/O Port
 ;;; 
 ;;; FORMAT: IN(<address>)
@@ -1271,8 +1333,7 @@ joy05:
 ;;; Format: HEX$(<number>)
 ;;; 
 ;;; Action: Returns string containing <number> in hexadecimal format.
-;;;         Generates FC Error if <number> is not in the range -8,388,608
-;;;         through 8,388,607.
+;;;         FC Error if <number> is not in the range -32676 through 65535.
 ;;; 
 ;;; EXAMPLES of HEX Function:
 ;;; 
@@ -1289,10 +1350,8 @@ FN_HEX:
     ld      a,(FAC)
     cp      154         ; If more than 23 bits 
     jp      nc,FCERR    ;   Error Out
-    call    QINT        ; convert argument to 24 bit signed integer in C,DE
+    call    FRCADR        ; convert argument to 24 bit signed integer in C,DE
     ld      hl,FBUFFR+1 ; hl = temp string
-    ld      a,c
-    call    .hexbyte   ; yes, convert byte in C to hex string
     ld      a,d
     call    .hexbyte   ; yes, convert byte in D to hex string
     ld      a,e
@@ -1386,7 +1445,7 @@ ST_CALL:
 
 
 ; Convert FAC to Address or Signed Integer and Return in DE
-; Converts floats from -32676 to 655358 in 16 bit integer
+; Converts floats from -32676 to 65535 in 16 bit integer
 FRCADR: ld      a,(FAC)           ;
         cp      145               ;If Float < 65536
         jp      c,QINT            ;  Convert to Integer and Return
@@ -1494,8 +1553,6 @@ ST_SDTM:
     pop     hl              ; Restore text pointer
     ret
 
-
-
 ;------------------------------------------------------------------------------
 ;;; DTM$ Function
 ;;;
@@ -1538,6 +1595,40 @@ FN_DTM:
     ld      a,1              ;Set Value Type to String
     ld      (VALTYP),a
     jp      RETSTR
+
+
+;-------------------------------------------------------------------------
+; EVAL Extension - Hook 9
+
+EVAL_EXT:
+    pop     bc                  ; BC = Hook Return Address
+    pop     af                  ; AF = whatever was in AF
+    pop     hl                  ; HL = Text Pointer
+
+    CHRGET                      
+    cp      '$'                 
+    jr      z,EVAL_HEX
+ 
+return_to_eval:
+    push    bc                  ; Put HOOK Return Address back on stack
+    dec     hl                  ; Back up Text Pointer
+    ret
+
+;-------------------------------------------------------------------------
+; Parse Hexadecimal Literal into Floating Point Accumulator
+; HL points to first Hex Digit
+
+EVAL_HEX:
+   jp    return_to_eval       ; for now
+   
+
+;Step 1: Convert ASCII Hex Digits to Binary in FACC
+;Step 2: Jump to NORMAL
+;Step 3: Profit
+   
+   ret
+ 
+
 
 ;=====================================================================
 ;                  Miscellaneous functions
