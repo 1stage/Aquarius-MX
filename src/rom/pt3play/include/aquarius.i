@@ -50,13 +50,13 @@ MAGENTA   = 5
 CYAN      = 6
 WHITE     = 7
 GREY      = 8
-AQUA      = 9
-PURPLE    = 10
+DKCYAN    = 9
+DKMAGENTA = 10
 DKBLUE    = 11
-STRAW     = 12
+LTYELLOW  = 12
 DKGREEN   = 13
 DKRED     = 14
-BLACK2    = 15
+DKGREY    = 15
 
 ;-------------------------------------------------------------------
 ;                         Screen RAM
