@@ -693,7 +693,8 @@ HOOKEND:
 ; List of RST $30,xx hooks that we are monitoring.
 ; NOTE: order is reverse of UDF jumps!
 
-UDFLIST:    ; xx     index caller    @addr  performing function:-
+UDFLIST:    ; xx     index caller   @addr  performing function:-
+    db      $09     ; 8   EVAL      $09FD  evaluate number or string
     db      $18     ; 7   RUN       $06be  starting BASIC program
     db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
     db      $16     ; 5   PEXPAND   $0598  expanding a token
@@ -713,6 +714,8 @@ UDF_JMP:
     dw      PEXPAND            ; 5 expand token to keyword
     dw      NEXTSTMT           ; 6 execute next BASIC statement
     dw      RUNPROG            ; 7 run program
+    dw      EVAL_EXT           ; 8 evaluate hexadecimal number
+    
 
 ; Our Commands and Functions
 ;
@@ -737,6 +740,7 @@ TBLCMDS:
     db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
     db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
     db      $80 + 'C', "D"          ; $e0 - Change directory
+CDTK  =  $E0
 
 ; - New functions get added to the END of the functions list.
 ;   They also get added at the END of the TBLFNJP list.
@@ -748,6 +752,7 @@ TBLCMDS:
     db      $80 + 'H', "EX$"        ; $e3 - Hex value function
     db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
     db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
+    db      $80 + 'D', "EC"         ; $e6 - Decimal value function
     db      $80                     ; End of table marker
 
 TBLJMPS:
@@ -775,6 +780,7 @@ TBLFNJP:
     dw      FN_HEX
     dw      FN_VER
     dw      FN_DTM
+    dw      FN_DEC
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -1232,7 +1238,7 @@ psgloop:
 ;----------------------------------------------------------------------------
 
 FN_PEEK
-    inc     hl                ; Skip PEEK Token
+    CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
     ex      (sp),hl           
     ld      de,LABBCK         ; return address for SNGFLT
@@ -1259,7 +1265,7 @@ FN_PEEK
 
 FN_IN:
     pop     hl
-    inc     hl
+    CHRGET  
     call    PARCHK           ; Read number from line - ending with a ')'
     ex      (sp),hl
     ld      de,LABBCK        ; return address for SNGFLT
@@ -1280,7 +1286,7 @@ FN_IN:
 
 FN_JOY:
     pop     hl             ; Return address
-    inc     hl             ; skip rst parameter
+    CHRGET  
     call    $0a37          ; Read number from line - ending with a ')'
     ex      (sp),hl
     ld      de,LABBCK      ; set return address
@@ -1328,6 +1334,40 @@ joy05:
 
 
 ;----------------------------------------------------------------------------
+;;; DEC() Function
+;;; 
+;;; Format: DEC(<string>)
+;;; 
+;;; Action: Returns the DECimal value of the hexadecimal number in <string>.
+;;;         If the first non-blank character of the string is not a decimal
+;;;         digit or the letters A through F, the value returned is zero. 
+;;;         String conversion is finished when the end of the string or any
+;;;         character that is not a hexadecimal digit is found.
+;;; 
+;;; EXAMPLES of DEC Function:
+;;; 
+;;;   
+;----------------------------------------------------------------------------
+
+FN_DEC:
+    pop     hl
+    CHRGET  
+    call    PARCHK          ; Read number from line - ending with a ')'
+    ex      (sp),hl         ; 
+    ld      de,LABBCK       ; return address for SNGFLT
+    push    de              ; on stack
+
+    call    FRESTR          ; Make sure it's a String and Free up temp
+    inc     hl              ; Skip String Descriptor length byte
+    inc     hl              ; Set Address of String Text into HL
+    ld      a,(hl)          ;
+    inc     hl
+    ld      h,(hl)
+    ld      l,a
+    dec     hl              ; Back up Text Pointer
+    jp      EVAL_HEX        ; Convert the Text
+
+;----------------------------------------------------------------------------
 ;;; HEX$() Function
 ;;; 
 ;;; Format: HEX$(<number>)
@@ -1342,7 +1382,7 @@ joy05:
 
 FN_HEX:
     pop     hl
-    inc     hl
+    CHRGET  
     call    PARCHK     ; evaluate parameter in brackets
     ex      (sp),hl
     ld      de,LABBCK  ; return address
@@ -1417,7 +1457,7 @@ PRINTHEX:
 
 FN_VER:
     pop     hl
-    inc     hl
+    CHRGET  
     call    PARCHK           ; Evaluate argument between parentheses - then ignore it
     ex      (sp),hl
     ld      de,LABBCK        ; return address
@@ -1616,19 +1656,57 @@ return_to_eval:
 
 ;-------------------------------------------------------------------------
 ; Parse Hexadecimal Literal into Floating Point Accumulator
-; HL points to first Hex Digit
+; On Entry, HL points to first Hex Digit
+; On Exit, HL points to character after Hex String
 
 EVAL_HEX:
-   jp    return_to_eval       ; for now
-   
+;    inc     hl                  ; skip $ and return
+;    jp      return_to_eval      ; for now
 
-;Step 1: Convert ASCII Hex Digits to Binary in FACC
-;Step 2: Jump to NORMAL
-;Step 3: Profit
-   
-   ret
- 
+    xor     a
+    ld      (VALTYP),a        ; Returning Number
+    ld      d,a               
+    ld      e,a               ; DE is the parsed Integer
+.hex_loop:    
+    CHRGET
+    jr      z,FLOAT_DE        ; End of Line - float it
+    jr      c,.dec_digit      ; Decimal Digit - process it
+    cp      CDTK              ; If CD token
+    jr      z,.hex_cdtoken    ;   Handle it
+    and     $DF               ; Convert to Upper Case
+    cp      'A'               ; If < 'A'
+    jr      c,FLOAT_DE        ;   Not Hex Digit - float it
+    cp      'G'               ; If > 'F'
+    jp      nc,FLOAT_DE       ;   Not Hex Digit - float it
+    sub     'A'-':'           ; Make 'A' come after '9'
+.dec_digit:
+    sub     '0'               ; Convert Hex Digit to Binary
+    ld      b,4               ; Shift DE Left 4 bits
+.sla_loop
+    sla     e                
+    rl      d
+    jp      c,OVERR           ;   Overflow!
+    djnz    .sla_loop
+    or      e                 ; Put into low nybble
+    ld      e,a
+    jr      .hex_loop         ; Look for Next Hex Digit
 
+.hex_cdtoken:
+    ld      a,d               
+    or      a                 ; If there's anything in the MSB
+    jp      nz,OVERR          ;   Overflow!
+    ld      d,e               ; Move LSB to MSB
+    ld      e,$CD             ; Make LSB CD  
+    jr      .hex_loop
+
+FLOAT_DE:
+    ;call    break
+    xor     a                 ; Set HO to 0
+    ld      b,$98             ; Exponent = 2^24
+    push    hl
+    call    FLOATR            ; Float It
+    pop     hl
+    ret
 
 ;=====================================================================
 ;                  Miscellaneous functions
