@@ -114,7 +114,7 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
     include  "windows.i"  ; fast windowed text functions
 
 ; alternative system variable names
-VARTAB      = BASEND     ; $38D6 variables table (at end of BASIC program)
+VARTAB      = VARTAB     ; $38D6 variables table (at end of BASIC program)
 
   ifdef softrom
 RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
@@ -997,7 +997,7 @@ _run_file:
     pop     hl                 ; restore BASIC text pointer
 .error:
     ld      e,ERRFC           ; function code error
-    jp      DO_ERROR           ; return to BASIC
+    jp      ERROR           ; return to BASIC
 .extend:
     dec     hl
     push    hl                 ; save extn address
@@ -1620,6 +1620,8 @@ return_to_eval:
 
 EVAL_HEX:
    jp    return_to_eval       ; for now
+   
+
 ;Step 1: Convert ASCII Hex Digits to Binary in FACC
 ;Step 2: Jump to NORMAL
 ;Step 3: Profit

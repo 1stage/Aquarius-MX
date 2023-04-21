@@ -105,7 +105,7 @@ ST_CD:
     call   _show_error           ; print error message
     ld     e,ERRFC
     pop    hl
-    jp     DO_ERROR              ; return to BASIC with FC error
+    jp     ERROR              ; return to BASIC with FC error
 .done:
     pop    hl                    ; restore BASIC text pointer
     ret
@@ -321,7 +321,7 @@ _stl_bas_end:
     inc     hl
     inc     hl                    ; forward past 3 zeros = end of BASIC program
     inc     hl
-    ld      (BASEND),hl           ; set end of BASIC program
+    ld      (VARTAB),hl           ; set end of BASIC program
     call    Init_BASIC            ; clear variables etc. and update line addresses
     ld      a,FT_BAS
     ld      (FILETYPE),a          ; filetype is BASIC
@@ -350,7 +350,7 @@ _stl_show_error:
     ld      e,ERRFC              ; Function Call error
 _stl_do_error:
     pop     hl                    ; restore BASIC text pointer
-    jp      DO_ERROR              ; return to BASIC with error code in E
+    jp      ERROR              ; return to BASIC with error code in E
 _stl_done:
     call    usb__close_file       ; close file
     ld      a,(FILETYPE)
@@ -483,21 +483,21 @@ _st_read_caq_lp1
 Init_BASIC:
         ld      hl,(TXTTAB)
         dec     hl
-        ld      (TMPSTAT),hl       ; set next statement to start of program
-        ld      (RESTORE),hl       ; set RESTORE to start of program
+        ld      (SAVTXT),hl       ; set next statement to start of program
+        ld      (DATPTR),hl       ; set DATPTR to start of program
         ld      hl,(MEMSIZ)
         ld      (FRETOP),hl        ; clear string space
-        ld      hl,(BASEND)
+        ld      hl,(VARTAB)
         ld      (ARYTAB),hl        ; clear simple variables
-        ld      (ARYEND),hl        ; clear array table
+        ld      (STREND),hl        ; clear array table
         ld      hl,TEMPST
         ld      (TEMPPT),hl        ; clear string buffer
         xor     a
         ld      l,a
         ld      h,a
-        ld      (CONTPOS),hl       ; set CONTinue position to 0
+        ld      (OLDTXT),hl       ; set CONTinue position to 0
         ld      (SUBFLG),a         ; clear locator flag
-        ld      ($38de),hl         ; clear array pointer???
+        ld      (VARNAM),hl       ; Clear Variable Name
 _link_lines:
         ld      de,(TXTTAB)       ; DE = start of BASIC program
 _ibl_next_line:
@@ -540,7 +540,7 @@ ST_SAVE:
     cp      ERRFC
     jp      nz,_sts_error       ; if not FC error then show BASIC error code
     ld      a,ERROR_BAD_NAME
-    jp      DO_ERROR            ; bad filename, quit to BASIC
+    jp      ERROR            ; bad filename, quit to BASIC
 ; save with filename in FileName
 ST_SAVEFILE:
     call    get_arg             ; get current char (skipping spaces)
@@ -623,7 +623,7 @@ _sts_bas:
     call    st_write_sync       ; write 2nd caq sync $FFx12,$00
     jr      nz,_sts_write_error
     ld      de,(TXTTAB)        ; DE = start of BASIC program
-    ld      hl,(BASEND)         ; HL = end of BASIC program
+    ld      hl,(VARTAB)         ; HL = end of BASIC program
     or      a
     sbc     hl,de
     ex      de,hl               ; HL = start, DE = length of BASIC program
@@ -663,7 +663,7 @@ _sts_show_error:
     ld      e,ERRFC
 _sts_error:
     pop     hl
-    jp      DO_ERROR            ; return to BASIC with error code in E
+    jp      ERROR            ; return to BASIC with error code in E
 _sts_done:
     pop     hl                  ; restore BASIC text pointer
     ret
@@ -710,7 +710,7 @@ ST_CAT:
     call    _show_error             ; show error code
     pop     hl
     ld      e,ERRFC
-    jp      DO_ERROR                ; return to BASIC with FC error
+    jp      ERROR                ; return to BASIC with FC error
 .cat_loop:
     LD      A,CH376_CMD_RD_USB_DATA
     OUT     (CH376_CONTROL_PORT),A  ; command: read USB data (directory entry)
@@ -815,7 +815,7 @@ ST_DIR:
     call    _show_error       ; else show error message (A = error code)
     ld      e,ERRFC
     pop     hl
-    jp      DO_ERROR          ; return to BASIC with FC error
+    jp      ERROR          ; return to BASIC with FC error
 .st_dir_done:
     pop     hl                ; POP text pointer
     ret
@@ -1078,7 +1078,7 @@ ST_DEL:
 .do_error:
     call   _show_error       ; print error message
     pop    hl                ; pop BASIC text pointer
-    jp     DO_ERROR
+    jp     ERROR
 .done:
     pop    hl                ; pop BASIC text pointer
     ret

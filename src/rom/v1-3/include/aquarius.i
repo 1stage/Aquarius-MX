@@ -128,23 +128,20 @@ FRETOP  = $38C1 ; 14529 - 14530   Pointer to top of string space
 TENP3   = $38C3 ; 14531 - 14532   temp space used by FOR etc.
 TEMP8   = $38C5 ; 14533 - 14534
 ENDFOR  = $38C7 ; 14535 - 14536
-DATLIN  = $38c9 ; 14537 - 14538  Address of current DATA line
+DATLIN  = $38c9 ; 14537 - 14538   Address of current DATA line
 SUBFLG  = $38CB ; 14439           flag FOR:, GETVAR: 0=variable, 1=array
-USFLG   = $38CC ; 14440          Direct Mode Flag    
+USFLG   = $38CC ; 14440           Direct Mode Flag    
 FLGINP  = $38CD ; 14441           FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
-TMPSTAT  = $38ce ; 14540           temp holder of next statement address
-                 ;  ...
-CONTLIN  = $38d2 ; 14546,7         Line number to CONTinue from.
-CONTPOS  = $38d4 ; 14548,9         address of line to CONTinue from.
-BASEND   = $38d6 ; 14550  VARTAB   variable table (end of BASIC program)
-                 ; 14551
-ARYTAB   = $38D8 ; 14552           start of array table
-                 ; 14553
-ARYEND   = $38DA ; 14554           end of array table
-                 ; 14555
-RESTORE  = $38DC ; 14556           Address of line last RESTOREd
-                 ; 14557
-;          $38DE ; 14558           pointer and flag for arrays
+SAVTXT  = $38CE ; 14542 - 14543   temp holder of next statement address
+TENP2   = $38D0 ; 14544 - 14545   Formula Evaluator temporary
+OLDLIN  = $38D2 ; 14546 - 14547   Line number to CONTinue from.
+OLDTXT  = $38D4 ; 14548 - 14549   Old Text Pointer - address of line to CONTinue from.
+VARTAB  = $38D6 ; 14550 - 14551   Start of Variable Table (end of BASIC program)
+ARYTAB  = $38D8 ; 14552 - 14553   Start of array table
+STREND  = $38DA ; 14554 - 14555   end of array table
+DATPTR  = $38DC ; 14556 - 14557   Address of line last DATPTRd
+                 ; 
+VARNAM  = $38DE ; 14558 - 14559   Variable Name
                  ;  ...
                  ;                 Floating Point Accumulator
 FACLO    = $38E4 ; 14564  FPNUM    Low Order of Mantissa
@@ -169,7 +166,7 @@ PROGST   = $3900 ; 14592           NULL before start of BASIC program
 LINBUFLEN   = DIMFLG-LINBUF
 STRBUFLEN   = FRETOP-TEMPPT
 SYSTEMPLEN  = DATLIN-TENP3
-TMPSTATLEN  = CONTLIN-TMPSTAT
+SAVTXTLEN  = OLDLIN-SAVTXT
 FBUFFRLEN   = RESHO-FBUFFR
 
 ;----------------------------------------------------------------------------
@@ -314,7 +311,7 @@ CNERR    = $0C51  ;   cant continue
 UFERR    = $03D0  ;   undefined function
                      
 ; process error code, E = code (offset to 2 char error name)
-DO_ERROR    = $03db   ; The canonical name is ERROR - close enough!
+ERROR    = $03db   ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Statement Tokens
 POKETK      = $94   ; POKE Token
