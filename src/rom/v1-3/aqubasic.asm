@@ -82,7 +82,7 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ; CALL   - call machine code subroutine
 ; DEBUG  - call AquBUG Monitor/debugger
 
-; EDIT   - Edit a BASIC line
+; EDITEDIT   - Edit a BASIC line
 
 ; LOAD   - load file from USB disk
 ; SAVE   - save file to USB disk
@@ -1065,20 +1065,34 @@ ST_POKE:
     inc     hl              ; Skip Poke Token
     call    FRMNUM          ; Get <address>
     call    FRCADR          ; Convert To Integer in DE
-    push    de              ; Save Address  
     SYNCHK  ','             ; Require a Comma
 .poke_loop:
+    cp      STEPTK          ; If STEP Token
+    jr      z,.poke_step     ;   Do STEP
+    push    de              ; Save Address  
     call    GETBYT          ; Get <byte> in A
     pop     de              ; Restore Address
     ld      (de),a          ; Write Byte to Memory
     ld      a,(hl)          ; If Next Character
     cp      ','             ; is Not a Comma
     ret     nz              ;   We are done
-    inc     hl              ; Skip Comma
+    CHRGET                  ; Skip Comma
     inc     de              ; Bump Poke Address
-    push    de              ; and Save It
     jr      .poke_loop      ; Do the Next Byte
      
+.poke_step:
+    ;call    break
+    CHRGET                  ; Skip STEP 
+    push    de              ; Save Poke Address
+    call    GETINT          ; Get Step Amount in DE
+    ;call    break
+    ex      (sp),hl         ; HL=Poke Address, STK=Text Pointer
+    add     hl,de           ; Add Step to Address
+    ld      d,h             ; Now DE contains
+    ld      e,l             ;   new Address
+    pop     hl              ; Get Text Pointer back
+    SYNCHK  ','             ; Require a Comma
+    jr      .poke_loop
 
 ;--------------------------------------------------------------------
 ;   CLS statement
