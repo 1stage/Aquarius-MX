@@ -9,7 +9,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - Test hardware behavior without RTC installed (RAM only)
 
-- Fix print DTM$(1) issue where no result is returned. print DTM$(0) and print DTM$(2) work fine.
+- Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
 
 - Working on switchable "skins" for the stand-alone PT3 Player ROM, as well as some other goodies. Still need to go in with the weed whacker and remove the legacy aqubasic.asm code to free up some space for the goodies.
 
