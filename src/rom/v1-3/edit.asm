@@ -103,12 +103,12 @@ expand_token:
     jr    z,.exp_char
     cp    $95           ; if token for PRINT then expand to '?'
     jr    z,.exp_print
-    ld    hl,$0245      ; DE = system BASIC keyword table
+    ld    hl,$0245      ; HL = system BASIC keyword table
     sub   $7f           ; keyword table number number 1~xx
-    cp    $d3-$7f
+    cp    BTOKEN-1-$7f
     jr    c,.exp_count  ; if > $D3 then it must be a BABASIC keyword, so...
-    ld    hl,TBLCMDS    ;    DE = BABASIC keyword table
-    sub   $d3-$7f       ;    BABASIC keyword table entry number 1~xx
+    ld    hl,TBLCMDS    ;    HL = BABASIC keyword table
+    sub   BTOKEN-1-$7f  ;    BABASIC keyword table entry number 1~xx
 .exp_count:
     ld    c,a           ; C = keyword counter
 .exp_find:
