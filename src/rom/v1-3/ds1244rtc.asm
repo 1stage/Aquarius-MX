@@ -44,7 +44,7 @@ rtc_read:
     ld      a,(bc)            ;Check RTC Found flag
     or      a                 ;If 0 (Not Found)
     ;call    nz,do_rtc_read  ;  If Clock Was Found, Call Read
-    call do_rtc_read
+    call    do_rtc_read
     ret
 
 ;Read Real Time Clock
@@ -131,7 +131,6 @@ ds_checkvalues:
     xor     a
     dec     a
     ld      (bc),a          ; write FF into (shadow) to indicate clock present 
-    ;xor     a
     ret                 
 ds_noClockFound:
     pop     bc              ;Restore Registers
@@ -141,7 +140,6 @@ ds_noClockFound:
     ld      (ds1244addr),a  ; restore original memory into control address
     xor     a               ; Set Z flag to indicate error
     ld      (bc),a          ; write 00 into (shadow) to indicate no clock present   
-   ; dec     a         
     ret    
 rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 
