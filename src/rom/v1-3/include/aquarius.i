@@ -144,16 +144,16 @@ DATPTR  = $38DC ; 14556 - 14557   Address of line last DATPTRd
 VARNAM  = $38DE ; 14558 - 14559   Variable Name
                  ;  ...
                  ;                 Floating Point Accumulator
-FACLO    = $38E4 ; 14564  FPNUM    Low Order of Mantissa
-FACMO    = $38E5 ; 14565           Middle Order of Mantissa
-FACHO    = $38E6 ; 14566           High Order of Mantissa
-FAC      = $38E7 ; 14567           Exponent 
+FACLO   = $38E4 ; 14564  FPNUM    Low Order of Mantissa
+FACMO   = $38E5 ; 14565           Middle Order of Mantissa
+FACHO   = $38E6 ; 14566           High Order of Mantissa
+FAC     = $38E7 ; 14567           Exponent 
 
-FBUFFR   = $38E8 ; 14568           Floating Point String Buffer 
+FBUFFR  = $38E8 ; 14568           Floating Point String Buffer 
 
-RESHO    = $38F6 ; 14582           Result of Multiplier and Divider
-RESMO    = $38F7 ; 14583
-RESLO    = $38F8 ; 14584
+RESHO   = $38F6 ; 14582           Result of Multiplier and Divider
+RESMO   = $38F7 ; 14583
+RESLO   = $38F8 ; 14584
 
 SAVSTK   = $38F9 ; 14585           used by keybord routine
                  ;  ...
@@ -194,16 +194,23 @@ SVCURCOL    = $1e3e  ; save cursor position (HL = address, A = column)
 LINEDONE    = $19e5  ; line entered (CR pressed)
 FINDLIN     = $049f  ; find address of BASIC line (DE = line number)
 
-FRMNUM      = $0972  ; Evaluate Numeric Formula
-FRMEVL      = $0985  ; Evaluate Formula
-EVAL        = $09FD  ; Evaluate Variable, Constant, or Function Call
-PARCHK      = $0A37  ; Evaluate Formula in Parentheses
-LABBCK      = $0A49  ; Functions that don't return string values come back here
-GETBYT      = $0B54  ; Evaluate Numeric Formula between 0 and 255
-GIVINT      = $0B21  ; Float Integer MSB=[A], LSB=[C] into Floating Point Accumulator
-FLOATB      = $0B22  ; Float Integer MSB=[A], LSB=[B] into Floating Point Accumulator
-FLOATD      = $0B23  ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
-SNGFLT      = $0B36  ; Float Unsigned Byte in A
+FRMNUM  = $0972   ; Evaluate Numeric Formula
+FRMEVL  = $0985   ; Evaluate Formula
+EVAL    = $09FD   ; Evaluate Variable, Constant, or Function Call
+PARCHK  = $0A37   ; Evaluate Formula in Parentheses
+LABBCK  = $0A49   ; Functions that don't return string values come back here
+GETBYT  = $0B54   ; Evaluate Numeric Formula between 0 and 255
+GIVINT  = $0B21   ; Float Integer MSB=[A], LSB=[C] into Floating Point Accumulator
+FLOATB  = $0B22   ; Float Integer MSB=[A], LSB=[B] into Floating Point Accumulator
+FLOATD  = $0B23   ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
+SNGFLT  = $0B36   ; Float Unsigned Byte in A
+FLOATR  = $14FB   ; Float Signed Number in B,A,D,E
+GETINT  = $1AD0   ; Parse an Integer
+
+NORMAL  = $12B0   ; Normalize Floating Point Accumulator
+ZERO    = $12C3   ; Zero FAC
+
+MOVFR   = $1523   ; Move Registers to FAC
 
 RETSTR      = $0e2f  ; return string in HL from function  
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
@@ -315,6 +322,7 @@ ERROR    = $03db   ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Statement Tokens
 POKETK      = $94   ; POKE Token
+STEPTK      = $A7   ; STEP Token
 PEEKTK      = $C1   ; PEEK Token
 
 ;-------------------------------------------------

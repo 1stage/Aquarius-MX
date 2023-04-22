@@ -139,10 +139,10 @@ VAR_size = VAREND-VARMEM
      STRUCT SongData,0        ; pt3 file loaded here!
   ENDSTRUCT Player
 
-PT3_PLAY:
+PT3_START:
     LD      HL,EQText            ; Set HL to address of default EQ skin
     LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
-
+PT3_PLAY:
     LD      IX,BgdWindow
        CALL OpenWindow
        LD   IX,SelectWindow
@@ -218,13 +218,18 @@ PT3_LOAD:
        LD   (HL),DEBOUNCE-4   ; yes, debounce count to go = 4 scans (~250ms)
 .debounced:
        call Key_Check         ; Get ASCII of last key pressed
-       cp   "1"                 ; If 1 key pressed...
-       jr   z, .ss1         ; ...set to skin 1 (EQText)
-    ;   cp   "2"                 ; If 2 key pressed...
-    ;   jr   z, .ss2         ; ...set to skin 2 (MeterText)
-    ;    cp   "3"                 ; If 3 key pressed...
-    ;    jr   z, .ss3         ; ...set to skin 3 (SquidText)
+;
+;  ANY IDEA WHY I CAN'T UNCOMMENT EITHER OR BOTH OF THE PAIRS OF LINES BELOW WITHOUT 
+;  GETTING A COMPILER VALUE ERROR in line 171 (JR   NZ, .next_song) ?
+;
+        ; CP   "1"                 ; If 1 key pressed...
+        ; JR   Z, .ss1         ; ...set to skin 1 (EQText)
+        ; CP   "2"                 ; If 2 key pressed...
+        ; JR   Z, .ss2         ; ...set to skin 2 (MeterText)
+        CP   "3"                 ; If 3 key pressed...
+        JR   Z, .ss3         ; ...set to skin 3 (KelpText)
     ;                           --- Add More skins below ---
+
        cp   $0d
        jr   z,.restart        ; if RTN pressed then return to file list
        cp   " "
@@ -258,21 +263,24 @@ PT3_LOAD:
         LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
         CALL    DrawBarChars
         POP     HL
-        RET
+        JP      .play_loop
+
 .ss2:
         PUSH    HL
         LD      HL,MeterText            ; Set HL to address of Meter skin
         LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
         CALL    DrawBarChars
         POP     HL
-        RET
+        JP      .play_loop
+
 .ss3:
         PUSH    HL
-        LD      HL,SquidText            ; Set HL to address of Squid skin
+        LD      HL,KelpText            ; Set HL to address of Kelp skin
         LD      (SKINPTR),HL         ; Set pointer to the default EQ skin address
         CALL    DrawBarChars
         POP     HL
-        RET
+        JP      .play_loop
+
 
 ; - ANIMATION -
 ; This section draws the animated bars on the screen based on the volume/amplitude 
@@ -1409,7 +1417,7 @@ BarWindow:
     db   13,6,13,17                     ; x,y,w,h
     dw   0                              ; title
 
-SquidText:
+KelpText:
 	db 135,210,135,215,201,135,210,135,215,201,135,210,135,CR
 	db 210,159,210,199,217,210,159,210,199,217,210,159,210,CR
 	db 159,143,159,203,219,159,143,159,203,219,159,143,159,CR
