@@ -4,8 +4,7 @@ This file is for recording upcoming changes and features that are being added to
 
 ## IN PROCESS:
 
-
-- Extand FRMEVL to manage Hex literals (maybe Binary as well)
+- LOAD, SAVE, etc - use FRCADR instead of FRCINT 
 
 - Test hardware behavior without RTC installed (RAM only)
 
@@ -31,3 +30,5 @@ This file is for recording upcoming changes and features that are being added to
 
 - PEEK/POKE - Override PEEK&POKE to use a 16bit unsigned integer as well a 16 Bit Signed
 
+- Extend FRMEVL to parse unsigned hex 16 bit hex literals prefixed with dollar sign
+  - not doing binary at this time, 9 to 17 character literals seem less useful than just using hex
