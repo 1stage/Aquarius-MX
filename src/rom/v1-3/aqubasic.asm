@@ -1079,7 +1079,7 @@ ST_POKE:
     CHRGET                  ; Skip Comma
     inc     de              ; Bump Poke Address
     jr      .poke_loop      ; Do the Next Byte
-     
+
 .poke_step:
     ;call    break
     CHRGET                  ; Skip STEP 
@@ -1755,6 +1755,9 @@ Wait_key:
 
 ; disk file selector
    include "filerequest.asm"
+   
+CODE_END:   
+CODE_SIZE = CODE_END - $C000
 
 ; fill with $FF to end of ROM
 
