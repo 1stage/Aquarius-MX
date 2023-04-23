@@ -9,12 +9,6 @@
 pcb/eagle/aq_mx_v1-4-0c.b\#6
 *.b#7
 *.s#3
-src/rom/v1-3/zout/aqubasic.cim
-src/rom/v1-3/zout/aqubasic.hex
-src/rom/v1-3/zout/USBBasic.rom
 .vscode/tasks.json
-src/rom/v1-3/zout/aqubasic (1).rom
-zout/aqubasic (1).rom
-zout/aqubasic.cim
-zout/USBBasic.rom
-zout/aqubasic.hex
+zout/
+src/rom/v1-3/*.bat
