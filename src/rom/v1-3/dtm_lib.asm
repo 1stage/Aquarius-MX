@@ -15,10 +15,10 @@
 ;+6 MM  Month 
 ;+7 YY  Year
 
-;Date String Structure: 17 bytes (14 unformatted)
+;Date String Structure: 19 bytes formatted, 14 unformatted
 ;      Raw: YYMMDDHHmmsscc.  
-;Formatted: YYYY-MM-DD HH:mm.
-;   Offset: 01234567890123456
+;Formatted: YYYY-MM-DD HH:mm:ss.
+;   Offset: 01234567890123456789
 ;* period denotes null terminator
 
 ;Convert BCD Date to Formatted Date String
@@ -31,7 +31,7 @@ dtm_to_fmt:
         call  dtm_to_str          ;Convert RTC Date to Unformatted Date String
                                   ;then Fall into Formatting Routine
 ;Format Date String
-;Converts Date String from YYMMDDHHmmsscc to YYYY-MM-DD HH:mm
+;Converts Date String from YYMMDDHHmmsscc to YYYY-MM-DD HH:mm:ss
 ;Args: DE = Address of String Buffer
 ;Returns: A = 0 if Successful, $FF if Date String is Invalid
 ;         DE and HL unchanged

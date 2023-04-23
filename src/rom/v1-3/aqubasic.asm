@@ -70,7 +70,7 @@ REVISION = 3
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1     ; full featured debugger (else lite version without screen save etc.)
-;softclock equ 1    ; using software clock
+softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -113,8 +113,24 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
     include  "macros.i"   ; structure macros
     include  "windows.i"  ; fast windowed text functions
 
-; alternative system variable names
-VARTAB      = VARTAB     ; $38D6 variables table (at end of BASIC program)
+; Standard BASIC System Variable Extensions
+;
+; Persistent USB BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
+;   During a cold boot, an unused table is written here, then it is never used again
+LASTKEY    = $3821      ; Last key read using key_check
+;    $3822 - $382F        Unassigned, 14 bytes
+RTC_SHADOW = $3830      ; Real Time Clock Shadow Registers, 10 bytes
+;    $383C - $383F        Reserved, 6 bytes
+
+; Temporary USB BASIC system variables 
+DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
+;   FILNAM,FILNAF,INSYNC,CLFLAG: $3851-$385E. 14 bytes
+DTM_STRING = $38E6      ; DTM String Buffer, 19 bytes
+;   FACHO,FAC,FBUFFR,RESHO,RESMO,RESLO: $38E6-$38F8, 19 bytes
+  ifdef softclock
+RTC_TEMP = $38A1        ; Software Clock Temporary Shadow Register, 10 bytes  
+;   TMPSTK+1...DIMFLG: $38A1-$38AA. 10 bytes
+  endif
 
   ifdef softrom
 RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
@@ -345,13 +361,6 @@ SPLASH:
 
 ; set up real time clock
     
-RTC_SHADOW = RNDTAB+20
-DTM_STRING = RNDTAB
-DTM_BUFFER = FILNAM
-
-  ifdef softclock
-RTC_TEMP = FBUFFR
-  endif
 
     call    INIT_RTC
    
@@ -546,6 +555,7 @@ MEMSIZE:
   endif
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
+    ld      (LASTKEY),a       ; Clear KEY() buffer
     jp      $0402              ; Jump to OKMAIN (BASIC command line)
 
 
@@ -753,6 +763,7 @@ CDTK  =  $E0
     db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
     db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
     db      $80 + 'D', "EC"         ; $e6 - Decimal value function
+    db      $80 + 'K', "EY"         ; $e7 - key function
     db      $80                     ; End of table marker
 
 TBLJMPS:
@@ -781,6 +792,7 @@ TBLFNJP:
     dw      FN_VER
     dw      FN_DTM
     dw      FN_DEC
+    dw      FN_KEY
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -940,6 +952,11 @@ PEXPBAB:
 ; with parameter $17
 
 NEXTSTMT:
+;    CALL    key_check           ; Poll Keyboard    
+;    jr      z,.no_key           ; If Key was Pressed
+;    ld      ($3000),a
+;    ld      (LASTKEY),a         ;   Save It
+;.no_key
     pop     bc                  ; BC = return address
     pop     af                  ; AF = token - $80, flags
     pop     hl                  ; HL = text
@@ -1346,6 +1363,48 @@ joy05:
     cpl
     jp      SNGFLT
 
+
+;----------------------------------------------------------------------------
+;;; KEY() Function
+;;; 
+;;; Format: KEY(<number>)
+
+FN_KEY
+    pop     hl             ; Return address
+    CHRGET  
+    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
+    ex      (sp),hl           
+    ld      de,LABBCK         ; return address for SNGFLT
+    push    de                ; on stack
+
+    call    FRCADR            ; DE = Timeout
+    ld      a,d
+    or      a,e
+    jr      nz,.fn_wait       ; Check until timed out
+
+.fn_loop:
+    call    key_check         ; Check for a key
+    jr      nz,.fn_done       ; Found a key, return it
+    jr      .fn_loop
+
+.fn_wait
+    call    key_check         ; Check for a key
+    jr      nz,.fn_done       ; Found a key, return it
+    dec     de                
+    ld      a,d               ; If DE<>0, return
+    or      a                 
+    jr      nz,.fn_wait       
+    ld      a,e
+    or      a
+    jr      nz,.fn_wait
+    push    af
+    xor     a
+    ld      (LSTX),a
+    ld      (KCOUNT),a
+    pop     af
+    
+.fn_done
+    jp      SNGFLT            ; and float it
 
 ;----------------------------------------------------------------------------
 ;;; DEC() Function
@@ -1757,7 +1816,7 @@ Wait_key:
    include "filerequest.asm"
    
 CODE_END:   
-CODE_SIZE = CODE_END - $C000
+CODE_SIZE = CODE_END - RAMEND
 
 ; fill with $FF to end of ROM
 

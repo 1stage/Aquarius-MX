@@ -4,7 +4,8 @@
 ; differences from Stock Aquarius KEYCHK:-
 ; - does not expand control codes to BASIC keywords
 ; - does not use IX, HL', DE',BC'
-; - CTRL-O = '~'
+; 
+; Control Keys remapped to cover entire standard ASCII character set
 ;
 ; note: DEBOUNCE is still a constant. If there is a large delay between
 ;       keyscans you can reduce debounce time with the following code:-
@@ -29,7 +30,7 @@ Key_Check:
         in      a,(c)           ; Read the results
         cpl                     ; invert - (a key down now gives 1)
         and     $3f             ; check all rows
-        ld      hl,LSTX      ; HL = &LSTX (scan code of last key pressed)
+        ld      hl,LSTX         ; HL = &LSTX (scan code of last key pressed)
         jr      z,.nokeys
         ld      b,$7f           ; 01111111 - scanning column 8
         in      a,(c)
@@ -134,69 +135,37 @@ Key_Check:
 
 ;Vanilla key table - no shift or control keys pressed:
 KEYTBL:
-    db    '='
-    db    $08    ; backspace
-    db    ':'
-    db    CR
-    db    ";.-/0pl,9okmnj8i7uhb6ygvcf5t"
-    db    "4rdx3esz a2w1q"
+    db    '=',$08,':',$0D,';','.' ;Backspace, Return
+    db    '-','/','0','p','l',',' 
+    db    '9','o','k','m','n','j' 
+    db    '8','i','7','u','h','b' 
+    db    '6','y','g','v','c','f' 
+    db    '5','t','4','r','d','x' 
+    db    '3','e','s','z',' ','a' 
+    db    '2','w','1','q'         
 
 ; SHIFT key table
 SHFTBL:
-    db    "+\*",CR
-    db    "@>_^?PL<)OKMNJ(I'UHB&YGVCF%T$"
-    db    "RDX#ESZ A"
-    db    $22    ; '"'
-    db    "W!Q"
+    db    '+',$5C,'*',$86,'@','>' ;Backslash, Checkerboard
+    db    '_','^','?','P','L','<' 
+    db    ')','O','K','M','N','J' 
+    db    '(','I',$27,'U','H','B' ;Apostrophe	
+    db    '&','Y','G','V','C','F' 
+    db    '%','T','$','R','D','X' 
+    db    '#','E','S','Z',$A0,'A' ;Blank
+    db    $22,'W','!','Q'         ;Quotation Mark
 
 ; CTL key table
 ;      code  key#  symbol   ctrl-name      operation
 ;       ---  ----  ------   ---------   ----------------
 CTLTBL:
-    db  $82  ; 1     =
-    db  $1c  ; 2     <-        BS       Backspace
-    db  $c1  ; 3     :
-    db  $0d  ; 4     CR        CR       Carriage Return
-    db  $94  ; 5     ;
-    db  $c4  ; 6     .
-    db  $81  ; 7     -
-    db  $1e  ; 8     /       CTRL-/
-    db  $30  ; 9     0         0        '0' (zero)
-    db  $10  ;10     p       CTRL-P
-    db  $ca  ;11     l
-    db  $c3  ;12     ,
-    db  $92  ;13     9
-    db  '~'  ;14     o       CTRL-O
-    db  $9d  ;15     k
-    db  $0d  ;16     m       CTRL-M
-    db  $c8  ;17     n
-    db  $9c  ;18     j
-    db  $8d  ;19     8
-    db  $09  ;20     i       CTRL-I     TAB
-    db  $8c  ;21     7
-    db  $15  ;22     u       CTRL-U     abandon line
-    db  $08  ;23     h       CTRL-H
-    db  $c9  ;24     b
-    db  $90  ;25     6
-    db  $19  ;26     y       CTRL-Y
-    db  $07  ;27     g       CTRL-G     ring the bell
-    db  $c7  ;28     v
-    db  $03  ;29     c       CTRL-C     break
-    db  $83  ;30     f
-    db  $88  ;31     5
-    db  $84  ;32     t
-    db  $a5  ;33     4
-    db  $12  ;34     r       CTRL-R
-    db  $86  ;35     d
-    db  $18  ;36     x       CTRL-X     undo line
-    db  $8a  ;37     3
-    db  $85  ;38     e
-    db  $13  ;39     s       CTRL-S     pause (wait for key press)
-    db  $9a  ;40     z
-    db  $c6  ;41    " "
-    db  $9b  ;42     a
-    db  $97  ;43     2
-    db  $8e  ;44     w
-    db  $89  ;45     1
-    db  $11  ;46     q       CTRL-Q
+    db    $1B,$7F,$1D,$FF,$80,$7D ;ESC DEL GS  blk NUL  }   
+    db    $1F,$1E,$1C,$10,$0C,$7B ;GS  RS  FS  DLE FF   {   
+    db    $5D,$0F,$0B,$0D,$0E,$0A ; ]  SI  VT  CR  SO  LF   
+    db    $5B,$09,$60,$15,$08,$02 ; [  tab  `  NAK BS  SOH  
+    db    $8E,$19,$07,$16,$03,$06 ;rt  EM  BEL SYN ETX ACK  
+    db    $9F,$14,$8F,$12,$04,$18 ;dn  DC4 up  DC2 EOT CAN  
+    db    $9E,$05,$13,$1A,$C6,$01 ;lft ENC DC3 SUB dot SOH  
+    db    $7E,$17,$7C,$11         ; ~  ETB  |  DC1
+
 KEYTBL_END
