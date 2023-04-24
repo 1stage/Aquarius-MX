@@ -184,6 +184,7 @@ FBUFFRLEN   = RESHO-FBUFFR
 ; RST $38    CALLUSR   maskable interrupt handler
 ; RST $66       -      NMI entry point. No code in ROM for this, do NOT use it!
   
+SYNCHR  = $08     ; Syntax Check
 CHRGET  = $10     ; Scan for Next Character
 FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
@@ -200,6 +201,7 @@ LINEDONE    = $19e5  ; line entered (CR pressed)
 FINDLIN     = $049f  ; find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
+ERRDIR  = $0B45   ; Issue Error if in Direct Mode
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEVL  = $0985   ; Evaluate Formula
@@ -328,7 +330,7 @@ USERR    = $06F3  ;   undefined line number
 BSERR    = $11CD  ;   bad subscript
 DDERR    = $03CD  ;   re-dimensioned array
 DV0ERR   = $03C7  ;   divide by zero
-IDERR    = $0B4F  ;   illegal direct
+IDERR    = $0B4E  ;   illegal direct
 TMERR    = $03D9  ;   type mismatch
 OSERR    = $0CEF  ;   out of string space
 STERR    = $0E97  ;   string formula too complex
@@ -336,11 +338,14 @@ CNERR    = $0C51  ;   cant continue
 UFERR    = $03D0  ;   undefined function
                      
 ; process error code, E = code (offset to 2 char error name)
-ERROR    = $03db   ; The canonical name is ERROR - close enough!
+ERROR    = $03db  ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Statement Tokens
 POKETK      = $94   ; POKE Token
+TOTK        = $A1   ; TO Token
+FNTK        = $A2   ; FN Token
 STEPTK      = $A7   ; STEP Token
+EQUATK      = $B0   ; = Token
 PEEKTK      = $C1   ; PEEK Token
 
 ;-------------------------------------------------

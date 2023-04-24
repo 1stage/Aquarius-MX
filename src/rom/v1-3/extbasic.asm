@@ -26,12 +26,9 @@ DEFX:   pop     hl
         pop     af              
         pop     hl              
         call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
-
-        call    IDERR          ; DEF IS "ILLEGAL DIRECT"
-                                ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
-                                ; SKIPPING THE REST OF THE FORMULA
-        ld      bc,DATA      
-        push    bc              
+        call    ERRDIR          ; DEF IS "ILLEGAL DIRECT"
+        ld      bc,DATA         ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
+        push    bc              ; SKIPPING THE REST OF THE FORMULA
         push    de              
         SYNCHK  '('             ;{GWB} SKIP OVER OPEN PAREN
         call    PTRGET          ; GET POINTER TO DUMMY VAR(CREATE VAR)
@@ -44,7 +41,8 @@ DEFX:   pop     hl
         pop     hl              
         call    CHKNUM          
         SYNCHK  ')'             ;{M80} MUST BE FOLLOWED BY )
-        SYNCHK  EQUATK
+        rst     SYNCHR
+        db      EQUATK
         ld      b,h             
         ld      c,l             
         ex      (sp),hl         
@@ -53,7 +51,7 @@ DEFX:   pop     hl
         ld      (hl),b          
         jp      STRADX           
 
-FNDOER: pop     hl              
+FNDOEX: pop     hl              
         pop     af              
         pop     hl              
         call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
@@ -104,7 +102,8 @@ FNDOER: pop     hl
 
 ; SUBROUTINE TO GET A POINTER TO A FUNCTION NAME
 ; 
-GETFNM: SYNCHK  FNTK            ;  MUST START WITH "FN"
+GETFNM: rst     SYNCHR  
+        db      FNTK            ;  MUST START WITH "FN"
         ld      a,128           ;  DONT ALLOW AN ARRAY
         ld      (SUBFLG),a      ;  DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
         or      (hl)            ;  PUT FUNCTION BIT ON

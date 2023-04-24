@@ -703,7 +703,10 @@ HOOKEND:
 ; List of RST $30,xx hooks that we are monitoring.
 ; NOTE: order is reverse of UDF jumps!
 
-UDFLIST:    ; xx     index caller   @addr  performing function:-
+UDFLIST:    ;xx     index caller    @addr  performing function:-
+    db      $10     ;11   FNDOER    $0B40  FNxx() call
+    db      $0F     ;10   DEF       $0B3B  DEF Statement
+    db      $0E     ; 9   ATN       $1985  ATN() function
     db      $09     ; 8   EVAL      $09FD  evaluate number or string
     db      $18     ; 7   RUN       $06be  starting BASIC program
     db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
@@ -725,7 +728,9 @@ UDF_JMP:
     dw      NEXTSTMT           ; 6 execute next BASIC statement
     dw      RUNPROG            ; 7 run program
     dw      EVAL_EXT           ; 8 evaluate hexadecimal number
-    
+    dw      ATN1               ; 9 ATN() function
+    dw      DEFX               ;10 DEF statement
+    dw      FNDOEX             ;11 FNxx() call
 
 ; Our Commands and Functions
 ;
@@ -1363,6 +1368,8 @@ joy05:
 
 
 ;----------------------------------------------------------------------------
+;;; EXPERIMENTAL!
+;;; 
 ;;; KEY() Function
 ;;; 
 ;;; Format: KEY(<number>)

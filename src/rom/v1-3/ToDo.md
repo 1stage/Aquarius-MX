@@ -6,7 +6,6 @@ This file is for recording upcoming changes and features that are being added to
 
 - LOAD, SAVE, etc - use FRCADR instead of FRCINT
 
-- Implement DEF FN and ATN()
 
 - Test/Tweak, document KEY() function
 
@@ -15,6 +14,7 @@ This file is for recording upcoming changes and features that are being added to
 - Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
 
 - Create SFX("filename.pt3") function that will load a short PT3 file and play it, ideally asynchronously (allows BASIC interpreter to still process commands). SFX(0) will STOP any PT3 file currently playing and mute all channels. SFX(1) will STOP and REPLAY any already queued PT3 file.
+  - NON-STARTER???? PT3PLAY is now in a separate ROM so BASIC does not have access to any of the PT3PLAY code - You can have BASIC or PT3PLAY but not both
 
 - Stand-alone PT3 Player doesn't work on actual hardware, only in AquaLite.
 
@@ -42,3 +42,5 @@ This file is for recording upcoming changes and features that are being added to
 
 - Extend FRMEVL to parse unsigned hex 16 bit hex literals prefixed with dollar sign
   - not doing binary at this time, 9 to 17 character literals seem less useful than just using hex
+
+- Implement DEF FN and ATN()
