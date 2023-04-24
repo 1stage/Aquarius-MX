@@ -10,6 +10,8 @@ This file is for recording upcoming changes and features that are being added to
 
 - Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
 
+- Create SFX("filename.pt3") function that will load a short PT3 file and play it, ideally asynchronously (allows BASIC interpreter to still process commands). SFX(0) will STOP any PT3 file currently playing and mute all channels. SFX(1) will STOP and REPLAY any already queued PT3 file.
+
 - Working on switchable "skins" for the stand-alone PT3 Player ROM, as well as some other goodies. Still need to go in with the weed whacker and remove the legacy aqubasic.asm code to free up some space for the goodies.
 
 
