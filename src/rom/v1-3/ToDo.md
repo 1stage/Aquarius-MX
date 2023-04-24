@@ -4,7 +4,11 @@ This file is for recording upcoming changes and features that are being added to
 
 ## IN PROCESS:
 
-- LOAD, SAVE, etc - use FRCADR instead of FRCINT 
+- LOAD, SAVE, etc - use FRCADR instead of FRCINT
+
+- Implement DEF FN and ATN()
+
+- Test/Tweak, document KEY() function
 
 - Test hardware behavior without RTC installed (RAM only)
 

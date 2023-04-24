@@ -27,14 +27,13 @@ DEFX:   pop     hl
         pop     hl              
         call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
 
-        call    ERRDIR          ; DEF IS "ILLEGAL DIRECT"
+        call    IDERR          ; DEF IS "ILLEGAL DIRECT"
                                 ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
                                 ; SKIPPING THE REST OF THE FORMULA
         ld      bc,DATA      
         push    bc              
         push    de              
-        rst     SYNCHK          
-        byte    '('             ;{GWB} SKIP OVER OPEN PAREN
+        SYNCHK  '('             ;{GWB} SKIP OVER OPEN PAREN
         call    PTRGET          ; GET POINTER TO DUMMY VAR(CREATE VAR)
         push    hl              
         ex      de,hl           
@@ -44,10 +43,8 @@ DEFX:   pop     hl
         ld      e,(hl)          
         pop     hl              
         call    CHKNUM          
-        rst     SYNCHK          
-        byte    ')'             ;{M80} MUST BE FOLLOWED BY )
-        rst     SYNCHK          
-        byte    EQUATK
+        SYNCHK  ')'             ;{M80} MUST BE FOLLOWED BY )
+        SYNCHK  EQUATK
         ld      b,h             
         ld      c,l             
         ex      (sp),hl         
@@ -107,14 +104,13 @@ FNDOER: pop     hl
 
 ; SUBROUTINE TO GET A POINTER TO A FUNCTION NAME
 ; 
-GETFNM: rst     SYNCHK          
-            byte    FNTK            ;  MUST START WITH "FN"
-            ld      a,128           ;  DONT ALLOW AN ARRAY
-            ld      (SUBFLG),a      ;  DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
-            or      (hl)            ;  PUT FUNCTION BIT ON
-            ld      c,a             ;  GET FIRST CHARACTER INTO [C]
-            call    PTRGT2          
-            jp      CHKNUM          
+GETFNM: SYNCHK  FNTK            ;  MUST START WITH "FN"
+        ld      a,128           ;  DONT ALLOW AN ARRAY
+        ld      (SUBFLG),a      ;  DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
+        or      (hl)            ;  PUT FUNCTION BIT ON
+        ld      c,a             ;  GET FIRST CHARACTER INTO [C]
+        call    PTRGT2          
+        jp      CHKNUM          
 
 ; ARCTANGENT FUNCTION
 ; IDEA: USE IDENTITIES TO GET ARG BETWEEN 0 AND 1 AND THEN USE AN
@@ -142,13 +138,13 @@ ATN2:   ld      hl,ATNCON       ; EVALUATE APPROXIMATION POLYNOMIAL
         ret                     ;  SUBTRACT THE RESULT FROM PI/2
 
 ;CONSTANTS FOR ATN
-ATNCON: byte    9               ;DEGREE
-        byte    $4A,$D7,$3B,$78 ; .002866226
-        byte    $02,$6E,$84,$7B ; -.01616574
-        byte    $FE,$C1,$2F,$2F ; .04290961
-        byte    $74,$31,$9A,$7D ; -.07528964
-        byte    $84,$3D,$5A,$7D ; .1065626
-        byte    $C8,$7F,$91,$7E ; -.142089
-        byte    $E4,$BB,$4C,$7E ; .1999355
-        byte    $6C,$AA,$AA,$7F ; -.3333315
-        byte    $00,$00,$00,$81 ; 1.0
+ATNCON: db    9               ;DEGREE
+        db    $4A,$D7,$3B,$78 ; .002866226
+        db    $02,$6E,$84,$7B ; -.01616574
+        db    $FE,$C1,$2F,$2F ; .04290961
+        db    $74,$31,$9A,$7D ; -.07528964
+        db    $84,$3D,$5A,$7D ; .1065626
+        db    $C8,$7F,$91,$7E ; -.142089
+        db    $E4,$BB,$4C,$7E ; .1999355
+        db    $6C,$AA,$AA,$7F ; -.3333315
+        db    $00,$00,$00,$81 ; 1.0

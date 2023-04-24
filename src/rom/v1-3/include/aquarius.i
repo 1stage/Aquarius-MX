@@ -143,8 +143,10 @@ DATPTR  = $38DC ; 14556 - 14557   Address of line last DATPTRd
                  ; 
 VARNAM  = $38DE ; 14558 - 14559   Variable Name
                  ;  ...
-                 ;                 Floating Point Accumulator
-FACLO   = $38E4 ; 14564  FPNUM    Low Order of Mantissa
+VARPNT  = $38E0 ; 14560 - 14561   Pointer to Variable
+FNPARM  = $38E2 ; 14562 - 14563   Defined Function Parameter
+                ;                 Floating Point Accumulator
+FACLO   = $38E4 ; 14564           Low Order of Mantissa
 FACMO   = $38E5 ; 14565           Middle Order of Mantissa
 FACHO   = $38E6 ; 14566           High Order of Mantissa
 FAC     = $38E7 ; 14567           Exponent 
@@ -181,6 +183,9 @@ FBUFFRLEN   = RESHO-FBUFFR
 ; RST $30,xx CALLUDF   hooks into various places in the ROM (identified by xx)
 ; RST $38    CALLUSR   maskable interrupt handler
 ; RST $66       -      NMI entry point. No code in ROM for this, do NOT use it!
+  
+CHRGET  = $10     ; Scan for Next Character
+FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
 PRNCHR      = $1d94  ; print character in A
 PRNCHR1     = $1d72  ; print character in A with pause/break at end of page
@@ -193,6 +198,8 @@ SVCURCOL    = $1e3e  ; save cursor position (HL = address, A = column)
 
 LINEDONE    = $19e5  ; line entered (CR pressed)
 FINDLIN     = $049f  ; find address of BASIC line (DE = line number)
+
+DATA    = $071C   ; Execute DATA statement
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEVL  = $0985   ; Evaluate Formula
@@ -210,10 +217,13 @@ GETINT  = $1AD0   ; Parse an Integer
 NORMAL  = $12B0   ; Normalize Floating Point Accumulator
 ZERO    = $12C3   ; Zero FAC
 
-MOVFR   = $1523   ; Move Registers to FAC
+MOVFR   = $1523   ; Move Number fron Registers to  Floating Point Accumulator
+MOVMF   = $153A   ; Move Number from Floating Point Accumulator to (HL)
+MOVE    = $153D   ; Move Number from (DE) TO (HL)
 
 RETSTR      = $0e2f  ; return string in HL from function  
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
+STRADX  = $0E59   ; Entry into end of STRCPY
 QSTR        = $0e60  ; create string (HL = text starting with '"')
 GETFLNM     = $1006  ; get tape filename string (out: DE = filename, A = 1st char)
 GETVAR      = $10d1  ; get variable (out: BC = addr, DE = len)
@@ -233,6 +243,14 @@ STR2INT     = $069d  ; DE = value of decimal number string at HL
 QINT        = $1586  ; Convert Floating Point Accumulator to Signed Integer in C,DE
 INT2STR     = $1679  ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
 
+PTRGET  = $10D1   ; Get Pointer to Variable
+PTRGT2  = $10D6   ; Get Pointer to Variable after reading first char
+
+FSUBS   = $1258   ; Floating Point Subtract
+PSHNEG  = $1770   ; Push address of NEG routine on Stack
+POLYX   = $1837   ; Polynomial Evaluator
+PI2     = $1953   ; Floating Point Constant Pi/2  
+
 KEYWAIT     = $1a33  ; wait for keypress (out: A = key)
 UKEYCHK     = $1e7e  ; get current key pressed (through UDF)
 KEYCHK      = $1e80  ; get current key pressed (direct)
@@ -249,9 +267,9 @@ SYNCHK  MACRO char
         db    'char'
         ENDM
 
-CHRGET  MACRO
-        RST    $10    ; get next char and test for numeric
-        ENDM
+;CHRGET  MACRO
+;        RST    $10    ; get next char and test for numeric
+;        ENDM
 
 PRNTCHR MACRO
         RST   $18     ; print char in A

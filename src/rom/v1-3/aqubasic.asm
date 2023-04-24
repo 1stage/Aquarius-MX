@@ -1093,16 +1093,14 @@ ST_POKE:
     ld      a,(hl)          ; If Next Character
     cp      ','             ; is Not a Comma
     ret     nz              ;   We are done
-    CHRGET                  ; Skip Comma
+    rst     CHRGET          ; Skip Comma
     inc     de              ; Bump Poke Address
     jr      .poke_loop      ; Do the Next Byte
 
 .poke_step:
-    ;call    break
-    CHRGET                  ; Skip STEP 
+    rst     CHRGET          ; Skip STEP 
     push    de              ; Save Poke Address
     call    GETINT          ; Get Step Amount in DE
-    ;call    break
     ex      (sp),hl         ; HL=Poke Address, STK=Text Pointer
     add     hl,de           ; Add Step to Address
     ld      d,h             ; Now DE contains
@@ -1269,7 +1267,7 @@ psgloop:
 ;----------------------------------------------------------------------------
 
 FN_PEEK
-    CHRGET  
+    rst     CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
     ex      (sp),hl           
     ld      de,LABBCK         ; return address for SNGFLT
@@ -1296,7 +1294,7 @@ FN_PEEK
 
 FN_IN:
     pop     hl
-    CHRGET  
+    rst     CHRGET  
     call    PARCHK           ; Read number from line - ending with a ')'
     ex      (sp),hl
     ld      de,LABBCK        ; return address for SNGFLT
@@ -1317,7 +1315,7 @@ FN_IN:
 
 FN_JOY:
     pop     hl             ; Return address
-    CHRGET  
+    rst     CHRGET  
     call    $0a37          ; Read number from line - ending with a ')'
     ex      (sp),hl
     ld      de,LABBCK      ; set return address
@@ -1371,7 +1369,7 @@ joy05:
 
 FN_KEY
     pop     hl             ; Return address
-    CHRGET  
+    rst     CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
     ex      (sp),hl           
     ld      de,LABBCK         ; return address for SNGFLT
@@ -1424,7 +1422,7 @@ FN_KEY
 
 FN_DEC:
     pop     hl
-    CHRGET  
+    rst     CHRGET  
     call    PARCHK          ; Read number from line - ending with a ')'
     ex      (sp),hl         ; 
     ld      de,LABBCK       ; return address for SNGFLT
@@ -1455,7 +1453,7 @@ FN_DEC:
 
 FN_HEX:
     pop     hl
-    CHRGET  
+    rst     CHRGET  
     call    PARCHK     ; evaluate parameter in brackets
     ex      (sp),hl
     ld      de,LABBCK  ; return address
@@ -1530,7 +1528,7 @@ PRINTHEX:
 
 FN_VER:
     pop     hl
-    CHRGET  
+    rst     CHRGET  
     call    PARCHK           ; Evaluate argument between parentheses - then ignore it
     ex      (sp),hl
     ld      de,LABBCK        ; return address
@@ -1718,7 +1716,7 @@ EVAL_EXT:
     pop     af                  ; AF = whatever was in AF
     pop     hl                  ; HL = Text Pointer
 
-    CHRGET                      
+    rst CHRGET                  
     cp      '$'                 
     jr      z,EVAL_HEX
  
@@ -1741,7 +1739,7 @@ EVAL_HEX:
     ld      d,a               
     ld      e,a               ; DE is the parsed Integer
 .hex_loop:    
-    CHRGET
+    rst     CHRGET
     jr      z,FLOAT_DE        ; End of Line - float it
     jr      c,.dec_digit      ; Decimal Digit - process it
     cp      CDTK              ; If CD token
@@ -1783,6 +1781,9 @@ FLOAT_DE:
 
 ;=====================================================================
 ;                  Miscellaneous functions
+
+; routines from Extended BASIC
+    include "extbasic.asm"
 
 ; string functions
     include "strings.asm"
