@@ -1283,7 +1283,7 @@ FN_PEEK
 ;;;  
 ;;; Action: Reads a byte from the I/O port specified by LSB of <address>. 
 ;;;         
-;;; Advanced: wtDuring the read, <address> is put on the Z80 address bus.
+;;; Advanced: During the read, <address> is put on the Z80 address bus.
 ;;;         .
 ;;; 
 ;;; EXAMPLES of IN Function:
@@ -1366,6 +1366,20 @@ joy05:
 ;;; KEY() Function
 ;;; 
 ;;; Format: KEY(<number>)
+;;;
+;;; Action: Checks for a key press and returns the ASCII code of the key.
+;;;         Returns after the keyboard is polled <number> times, or a key
+;;;         is pressed, whichever comes first, returning 0 if no key was
+;;;         pressed. KEY(0) does not return until a key is pressed.
+;;; 
+;;;         Note: Ctrl-C will not break out of an executing call to the 
+;;;         KEY() function, but will still break out of the BASIC program
+;;;         if pressed between calls to KEY().
+;;; 
+;;; EXAMPLES of KEY Function:
+;;; 
+;;;   !!!TODO 
+;;; 
 
 FN_KEY
     pop     hl             ; Return address
