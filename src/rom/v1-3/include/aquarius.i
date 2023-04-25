@@ -227,6 +227,7 @@ MOVE    = $153D   ; Move Number from (DE) TO (HL)
 RETSTR      = $0e2f  ; return string in HL from function  
 CRTST       = $0e5f  ; create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
+GETSPA  = $0EB3   ; Allocate Space for Temporary String
 QSTR        = $0e60  ; create string (HL = text starting with '"')
 GETFLNM     = $1006  ; get tape filename string (out: DE = filename, A = 1st char)
 GETVAR      = $10d1  ; get variable (out: BC = addr, DE = len)
@@ -261,6 +262,7 @@ CLRKEYWT    = $19da  ; flush keyboard buffer and wait for keypress
 
 CHKSTK      = $0ba0  ; check for stack space (in: C = number of words required)
 
+COPY    = $1B15   ; COPY statement
 
 ;-----------------------------------------------------------------------------
 ;                         RST  macros
@@ -342,6 +344,7 @@ UFERR    = $03D0  ;   undefined function
 ERROR    = $03db  ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Statement Tokens
+COPYTK      = $92   ; COPY Token
 POKETK      = $94   ; POKE Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token

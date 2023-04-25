@@ -70,7 +70,7 @@ REVISION = 3
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1     ; full featured debugger (else lite version without screen save etc.)
-softclock equ 1    ; using software clock
+;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; Commands:
@@ -971,6 +971,8 @@ NEXTSTMT:
     pop     hl                  ; HL = text
     jr      nc,BASTMT           ; if NC then process BASIC statement
     push    af                  ; Save Flags
+    ;cp      COPYTK-$80          ; If POKE Token
+    ;jp      z,ST_COPY           ;   Do Extended POKE
     cp      POKETK-$80          ; If POKE Token
     jp      z,ST_POKE           ;   Do Extended POKE
     pop     af                  ; Else
@@ -1172,6 +1174,33 @@ ST_POKE:
     jr      c,.fill_loop    ; Loop if < DE
     pop     hl              ; Restore Text Pointer
     ret
+
+;----------------------------------------------------------------------------
+;  Extended COPY Statement
+;;; COPY Statement - Copy Memory
+;;; 
+;;; FORMAT: COPY <source>, <dest>, <count>
+;;;  
+;----------------------------------------------------------------------------
+
+ST_COPY:   
+    pop     af              ; Discard Saved Token, Flags
+    rst     CHRGET          ; Skip COPY Token
+    jp      z,COPY          ; No Parameters? Do Standard COPY
+    call    GETADR          ; 
+    push    de              ; Stack = <source>
+    SYNCHK  ','             ; 
+    call    GETADR          ; 
+    push    de              ; Stack = <dest>, <source>
+    SYNCHK  ','             ; 
+    call    GETADR          ; Get <count> 
+    ld      b,d             ; BC = <count>
+    ld      c,e
+    ld      a,b             ; FC Error if <count>
+    
+    pop     de              ; DE = <dest>, Stack = <source>
+    ex      (sp),hl         ; HL = <source>, Stack = Text Pointer
+    ldir
  
 ;----------------------------------------------------------------------------
 ;;; CLS Statement - Clear Screen
@@ -1831,13 +1860,15 @@ FN_DTM:
     push    de               ; on stack
     call    CHKNUM
     
+    ld      a,(FAC)          ;  
+    or      a                
+    push    af
     ld      bc,RTC_SHADOW
     ld      hl,DTM_BUFFER    
     call    rtc_read         ;Read RTC
     ld      de,DTM_STRING
     call    dtm_to_str       ;Convert to String
-    ld      a,(FAC)            
-    or      a                ;If Argument is not 0
+    pop     af 
     call    nz,dtm_fmt_str   ;  Format Date
     ld      hl,DTM_STRING
     ld      a,1              ;Set Value Type to String
