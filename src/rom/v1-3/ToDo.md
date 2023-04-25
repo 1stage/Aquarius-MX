@@ -5,7 +5,6 @@ This file is for recording upcoming changes and features that are being added to
 ## IN PROCESS:
 
 
-- DEEK and DOKE -16 bit PEEK and POKE
 
 - Test/Tweak, document KEY() function
 
@@ -36,6 +35,9 @@ This file is for recording upcoming changes and features that are being added to
 
 - DEC("FFFF") - Hex to Decimal (unsigned)
 
+- Extend FRMEVL to parse unsigned hex 16 bit hex literals prefixed with dollar sign
+  - not doing binary at this time, 9 to 17 character literals seem less useful than just using hex
+
 - Override PEEK and POKE to use a 16bit unsigned integer as well a 16 Bit Signed.
 
 - Multi-byte POKE addr, byte, byte, STEP count, byte, byte...
@@ -44,8 +46,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - POKE addr TO addr, byte
 
-- Extend FRMEVL to parse unsigned hex 16 bit hex literals prefixed with dollar sign
-  - not doing binary at this time, 9 to 17 character literals seem less useful than just using hex
+- DEEK and DOKE -16 bit PEEK and POKE
 
 - LOAD, SAVE, etc - use FRCADR instead of FRCINT
 

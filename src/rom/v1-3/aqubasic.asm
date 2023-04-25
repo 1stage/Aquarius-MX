@@ -738,9 +738,10 @@ UDF_JMP:
 ;   and the BTOKEN value DECREMENTS as commands are added.
 ;   They also get added at the TOP of the TBLJMPS list.
 ;
-BTOKEN       equ $d3                ; our first token number
+BTOKEN       equ $d2                ; our first token number
 TBLCMDS:
 ; Commands list
+    db      $80 + 'D', "OKE"        ; $d2 - Double Poke
     db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
     db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line (advanced editor)
     db      $80 + 'C', "LS"         ; $d5 - Clear screen
@@ -768,10 +769,12 @@ CDTK  =  $E0
     db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
     db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
     db      $80 + 'D', "EC"         ; $e6 - Decimal value function
-    db      $80 + 'K', "EY"         ; $e7 - key function
+    db      $80 + 'K', "EY"         ; $e7 - Key function
+    db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
     db      $80                     ; End of table marker
 
 TBLJMPS:
+    dw      ST_DOKE
     dw      ST_SDTM
     dw      ST_EDIT
     dw      ST_CLS
@@ -798,6 +801,7 @@ TBLFNJP:
     dw      FN_DTM
     dw      FN_DEC
     dw      FN_KEY
+    dw      FN_DEEK
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -1071,9 +1075,34 @@ ST_reserved:
     ret
 
 ;----------------------------------------------------------------------------
+;;; DOKE Statement - Write 16 bit word to Memory Location(s
+;;; 
+;;; FORMAT: DOKE <address>, <word>
+;;;  
+;;; Action: Writes <word> to memory starting <address>. 
+;;;         
+;;; EXAMPLES of DOKE Statement:
+;;; 
+;;;   !!!TODO
+;----------------------------------------------------------------------------
+
+ST_DOKE:   
+    call    GETADR          ; Get <address>
+    SYNCHK  ','             ; Require a Comma
+    push    de              ; Stack = address  
+    call    GETADR          ; Get <word> in DE
+    ex      (sp),hl         ; HL = address, Stack = Text Pointer
+    ld      (hl),e          ; Write word to <address> 
+    inc     hl
+    ld      (hl),d
+    pop     hl
+    ret
+
+;----------------------------------------------------------------------------
 ;;; Extended POKE Statement - Write to Memory Location(s)
 ;;; 
-;;; FORMAT: POKE <address>, <byte> [,<byte>...]
+;;; FORMAT: POKE <address>, <byte> [,<byte>...] [,STEP count, <byte>...]
+;;;         POKE <address> TO <address>, <byte>
 ;;;  
 ;;; Action: Writes <byte>s to memory starting at <address>. 
 ;;;         
@@ -1279,7 +1308,7 @@ psgloop:
     jr      psgloop          ; parse next register & value
 
 ;----------------------------------------------------------------------------
-;;; PEEK() Function - Read from Memory
+;;; Extended PEEK() Function - Read from Memory
 ;;; 
 ;;; FORMAT: PEEK(<address>)
 ;;;  
@@ -1291,7 +1320,7 @@ psgloop:
 ;;;   !!!TODO
 ;----------------------------------------------------------------------------
 
-FN_PEEK
+FN_PEEK:
     rst     CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
     ex      (sp),hl           
@@ -1299,8 +1328,36 @@ FN_PEEK
     push    de                ; on stack
     call    FRCADR            ; Convert to Integer
     ld      a,(de)            ;[M80] GET THE VALUE TO RETURN
-    jp      SNGFLT            ;[M80] AND FLOAT IT
+    jp      SNGFLT            ;[M80] AND FLOAT ITnc
 
+;----------------------------------------------------------------------------
+;;; DEEK() Function - Read 16 bit word from Memory
+;;; 
+;;; FORMAT: DEEK(<address>)
+;;;  
+;;; Action: Reads a word from memory location <address>. 
+;;;         
+;;; 
+;;; EXAMPLES of DEEK Function:
+;;; 
+;;;   !!!TODO
+;----------------------------------------------------------------------------
+
+FN_DEEK:
+    POP     hl                ; Restore Text Pointer
+    rst     CHRGET            ; Skip DEEK Token
+    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
+    ex      (sp),hl           
+    ld      de,LABBCK         ; return address for SNGFLT
+    push    de                ; on stack
+    call    FRCADR            ; Convert to Integer
+    ld      h,d               ; HL = <address>
+    ld      l,e
+    ld      e,(hl)            ; Read word at address
+    inc     hl
+    ld      d,(hl)
+    jp      FLOAT_DE          ; Float and Return
+    
 ;----------------------------------------------------------------------------
 ;;; IN() Function - Read Z80 I/O Port
 ;;; 
@@ -1813,7 +1870,6 @@ EVAL_HEX:
     jr      .hex_loop
 
 FLOAT_DE:
-    ;call    break
     xor     a                 ; Set HO to 0
     ld      b,$98             ; Exponent = 2^24
     push    hl
