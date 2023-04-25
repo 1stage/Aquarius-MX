@@ -4,24 +4,51 @@
 ;
 ; 2023-04-22 - Extracted from Aquarius Extended BASIC Disassembly
 
-;SIMPLE-USER-DEFINED-FUNCTION CODE
-;
-; IN THE 8K VERSION (SEE LATER COMMENT FOR EXTENDED)
-; NOTE ONLY SINGLE ARGUMENTS ARE ALLOWED TO FUNCTIONS
-; AND FUNCTIONS MUST BE OF THE SINGLE LINE FORM:
-; DEF FNA(X)=X^2+X-2
-; NO STRINGS CAN BE INVOLVED WITH THESE FUNCTIONS
-;
-; IDEA: CREATE A FUNNY SIMPLE VARIABLE ENTRY
-; WHOSE FIRST CHARACTER (SECOND WORD IN MEMORY)
-; HAS THE 200 BIT SET.
-; THE VALUE WILL BE:
-;
-;   A TXTPTR TO THE FORMULA
-; THE NAME OF THE PARAMETER VARIABLE
-;
-; FUNCTION NAMES CAN BE LIKE "FNA4"
-;
+;----------------------------------------------------------------------------
+;;; DEF FN Statement - Define User Function
+;;;
+;;; FORMAT: DEF FN <name> ( <variable> ) = <expression>
+;;;
+;;;   Action: This sets up a user-defined function that can be used later in
+;;; the program. The function can consist of any mathematical formula. User-
+;;; defined functions save space in programs where a long formula is used in
+;;; several places. The formula need only be specified once, in the
+;;; definition statement, and then it is abbreviated as a function name. It
+;;; must be executed once, but any subsequent executions are ignored.
+;;;   The function name is the letters FN followed by any variable name. This
+;;; can be 1 or 2 characters, the first being a letter and the second a
+;;; letter or digit.
+;;;   The parametern <variable> represents the argument variable or value that
+;;; will be given in the function call and does not affect any program
+;;; variable with the same name. For any other variable name in <expression>,
+;;; the value of that program variable is used.
+;;;   A DEF FN statement must be executed before the function it defines may 
+;;; be called. If a function is called before it has been defined, an 
+;;; "Undefined user function" error occurs. DEF FN is illegal in direct mode.
+;;;
+;;; EXAMPLES of DEF FN Statement:
+;;;
+;;;   10 DEF FN A(X)=X+7
+;;;   20 DEF FN AA(X)=Y*Z
+;;;   30 DEF FN A9(Q) = INT(RND(1)*Q+1)
+;;;
+;;;   The function is called later in the program by using the function name
+;;; with a variable in parentheses. This function name is used like any other
+;;; variable, and its value is automatically calculated,
+;;;
+;;; EXAMPLES of FN Use:
+;;;
+;;;   40 PRINT FN A(9)
+;;;   50 R=FN AA(9)
+;;;   60 G=G+FN A9(10)
+;;;
+;;;   In line 50 above, the number 9 inside the parentheses does not affect
+;;; the outcome of the function, because the function definition in line 20
+;;; doesn't use the variable in the parentheses. The result is Y times Z,
+;;; regardless of the value of X. In the other two functions, the value in
+;;; parentheses does affect the result.
+;----------------------------------------------------------------------------
+
 DEFX:   pop     hl              
         pop     af              
         pop     hl              
@@ -111,9 +138,22 @@ GETFNM: rst     SYNCHR
         call    PTRGT2          
         jp      CHKNUM          
 
-; ARCTANGENT FUNCTION
-; IDEA: USE IDENTITIES TO GET ARG BETWEEN 0 AND 1 AND THEN USE AN
-; APPROXIMATION POLYNOMIAL TO COMPUTE ARCTAN(X)
+
+;----------------------------------------------------------------------------
+;;; ATN Function - Arctangent
+;;;
+;;; FORMAT: ATN ( <number> )
+;;;
+;;;   Action: This mathematical function returns the arctangent of the
+;;; number. The result is the angle (in radians) whose tangent is the number
+;;; given. The result is always in the range -pi/2 to +pi/2.
+;;;
+;;; EXAMPLES of ATN Function:
+;;;
+;;;   10 PRINT ATN(0)
+;;;   20 X = ATN(J)*180/ {pi} : REM CONVERT TO DEGREES
+;----------------------------------------------------------------------------
+
 ATN1:   pop     hl
         pop     af
         pop     hl
