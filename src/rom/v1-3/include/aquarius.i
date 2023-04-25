@@ -186,6 +186,7 @@ FBUFFRLEN   = RESHO-FBUFFR
   
 SYNCHR  = $08     ; Syntax Check
 CHRGET  = $10     ; Scan for Next Character
+COMPAR  = $20     ; Compare HL to DE
 FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
 PRNCHR      = $1d94  ; print character in A

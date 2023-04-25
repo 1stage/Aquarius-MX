@@ -1084,8 +1084,11 @@ ST_reserved:
 
 ST_POKE:   
     pop     af              ; Discard Saved Token, Flags
-    inc     hl              ; Skip Poke Token
+    rst     CHRGET          ; Skip POKE Token
     call    GETADR          ; Get <address>
+    ld      a,(hl)          ; If next character 
+    cp      TOTK            ; is TO Token 
+    jr      z,.poke_fill    ;   Do Fill
     SYNCHK  ','             ; Require a Comma
 .poke_loop:
     cp      STEPTK          ; If STEP Token
@@ -1113,6 +1116,25 @@ ST_POKE:
     SYNCHK  ','             ; Require a Comma
     jr      .poke_loop
 
+.poke_fill:
+    rst     CHRGET          ; Skip TO Token
+    push    de              ; Stack = Start Address
+    call    GETADR          ; Get to Address
+    push    de              ; Stack = End Address, Start Address
+    SYNCHK  ','             ; Require a Comma
+    call    GETBYT          ; 
+    ld      c,a             ; Get <byte> in C
+    pop     de              
+    inc     de              ; DE = End Address + 1
+    ex      (sp),hl         ; HL = Start Address, Stack = Text Pointer
+.fill_loop:
+    ld      (hl),c          ; Store Byte
+    inc     hl              ; Bump Poke Address
+    rst     COMPAR          
+    jr      c,.fill_loop    ; Loop if < DE
+    pop     hl              ; Restore Text Pointer
+    ret
+ 
 ;--------------------------------------------------------------------
 ;   CLS statement
 ;
