@@ -1083,7 +1083,7 @@ ST_reserved:
 ;;;         
 ;;; EXAMPLES of DOKE Statement:
 ;;; 
-;;;   !!!TODO
+;;;   DOKE 14340,1382                   Set USR() function address
 ;----------------------------------------------------------------------------
 
 ST_DOKE:   
@@ -1099,7 +1099,9 @@ ST_DOKE:
     ret
 
 ;----------------------------------------------------------------------------
-;;; Extended POKE Statement - Write to Memory Location(s)
+; Extended POKE 
+;
+;;; POKE Statement - Write to Memory Location(s)
 ;;; 
 ;;; FORMAT: POKE <address>, <byte> [,<byte>...] [,STEP count, <byte>...]
 ;;;         POKE <address> TO <address>, <byte>
@@ -1108,7 +1110,14 @@ ST_DOKE:
 ;;;         
 ;;; EXAMPLES of POKE Statement:
 ;;; 
-;;;   !!!TODO
+;;;   POKE $3000+500,64                 Display '@' at screen center 
+;;;   POKE 12347,7,6                    Display double-ended arrow
+;;;   POKE 12366,$13,STEP 39,$14        Display standing person "sprite"
+;;;   POKE 12329,$D4,STEP 1023,$10      Display red heart on black background
+;;;
+;;;
+;;;   POKE $3400 TO $3427,5             Set border color to magenta.
+;;;   POKE $3028 TO $33E7,$86           Fill screen with checkerboard character
 ;----------------------------------------------------------------------------
 
 ST_POKE:   
@@ -1164,9 +1173,38 @@ ST_POKE:
     pop     hl              ; Restore Text Pointer
     ret
  
-;--------------------------------------------------------------------
-;   CLS statement
-;
+;----------------------------------------------------------------------------
+;;; CLS Statement - Clear Screen
+;;; 
+;;; FORMAT: CLS [<colors>]
+;;;  
+;;; Action: Clears the screen. The optional parameter <colors> is a number 
+;;; between 0 and 255 that specifies the new foreground and background color
+;;; combination. The default combination is black on cyan.
+;;;
+;;;   The colors value can be represented as a two-digit hexadecimal number 
+;;; where the left digit is the foreground color and the right digit is the
+;;; background color, using the following chart:
+;;;
+;;;     0 black    4 blue      8 grey           C light yellow   
+;;;     1 red      5 magenta   9 dark cyan      D dark green    
+;;;     2 green    6 cyan      A dark magenta   E dark red      
+;;;     3 yellow   7 white     B dark blue      F dark grey     
+;;;
+;;; Warning: If the foreground and background colors are the same, typed and
+;;; and PRINTed text will be invisible.
+;;;
+;;; Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 
+;;; 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).  
+
+;;; EXAMPLES of POKE Statement:
+;;; 
+;;;   CLS               Clear screen with default colors
+;;;   CLS 7             Clear screen - black text on white background
+;;;   CLS $30           Clear screen - yellow text on black background
+;;;   CLS F*16+B        Clear screen - text color F, background color B
+;----------------------------------------------------------------------------
+
 ST_CLS:
     ld      a,CYAN        ; default to black on cyan
     jr      z,do_cls      ; no parameters, use default
@@ -1775,12 +1813,12 @@ ST_SDTM:
 ;;; 
 ;;; EXAMPLES of DTM$ Function:
 ;;; 
-;;;   PRINT DTM$(0)             38011903140700            
-;;;   PRINT DTM$(1)             2038-01-19 03:14:07      
-;;;   
-;;;   PRINT LEFT$(DTM$(1),10)   2038-01-19
-;;;   PRINT RIGHT$(DTM$(1),8)   03:14:07
-;;;   PRINT MID$(DTM$(1),6,11)  01-19 03:14
+;;;   PRINT DTM$(0)                    38011903140700            
+;;;   PRINT DTM$(1)                    2038-01-19 03:14:07      
+;;;                                    
+;;;   PRINT LEFT$(DTM$(1),10)          2038-01-19
+;;;   PRINT RIGHT$(DTM$(1),8)          03:14:07
+;;;   PRINT MID$(DTM$(1),6,11)         01-19 03:14
 ;---------------------------------------------------------------------------
 
 
