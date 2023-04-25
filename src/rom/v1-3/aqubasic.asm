@@ -1818,6 +1818,8 @@ EVAL_EXT:
     rst CHRGET                  
     cp      '$'                 
     jr      z,EVAL_HEX
+    cp      '&'                 
+    jr      z,GET_VARPTR
  
 return_to_eval:
     push    bc                  ; Put HOOK Return Address back on stack
@@ -1830,9 +1832,6 @@ return_to_eval:
 ; On Exit, HL points to character after Hex String
 
 EVAL_HEX:
-;    inc     hl                  ; skip $ and return
-;    jp      return_to_eval      ; for now
-
     xor     a
     ld      (VALTYP),a        ; Returning Number
     ld      d,a               
@@ -1869,10 +1868,23 @@ EVAL_HEX:
     ld      e,$CD             ; Make LSB CD  
     jr      .hex_loop
 
+
+;-------------------------------------------------------------------------
+; Get Variable Pointer
+; On Entry, HL points to first character of Variable Name
+; On Exit, HL points to character after Variable Name/Array Element
+GET_VARPTR:
+    rst     CHRGET            ; Skip '&'
+    xor     a
+    ld      (SUBFLG),a        ; Evaluate Array Indexes
+    call    PTRGET
+    xor     a
+    ld      (VALTYP),a        ; Force Return Type to numeric
+
 FLOAT_DE:
+    push    hl
     xor     a                 ; Set HO to 0
     ld      b,$98             ; Exponent = 2^24
-    push    hl
     call    FLOATR            ; Float It
     pop     hl
     ret
