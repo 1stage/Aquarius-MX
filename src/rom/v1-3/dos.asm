@@ -180,8 +180,7 @@ _stl_array_parms:
     pop     hl                    ; POP text pointer
     jr      _stl_start
 _stl_addr:
-    call    FRMNUM                ; get number
-    call    FRCINT                 ; convert to 16 bit integer
+    call    GETADR                ; get address
     ld      (BINSTART),de
     ld      a,1<<DF_ADDR
     ld      (DOSFLAGS),a          ; load address specified
@@ -540,7 +539,7 @@ ST_SAVE:
     cp      ERRFC
     jp      nz,_sts_error       ; if not FC error then show BASIC error code
     ld      a,ERROR_BAD_NAME
-    jp      ERROR            ; bad filename, quit to BASIC
+    jp      ERROR               ; bad filename, quit to BASIC
 ; save with filename in FileName
 ST_SAVEFILE:
     call    get_arg             ; get current char (skipping spaces)
@@ -554,7 +553,7 @@ ST_SAVEFILE:
     ld      (SUBFLG),a          ; flag = array
     call    GETVAR              ; BC = array address, DE = array length
     ld      (SUBFLG),a          ; clear flag
-    jp      nz,FCERR         ; report FC Error if array not found
+    jp      nz,FCERR            ; report FC Error if array not found
     call    CHKNUM              ; TM error if not numeric
     call    get_next
     cp      'A'
@@ -580,15 +579,13 @@ _sts_array:
     jr      _sts_open
 ; parse address, length
 _sts_num:
-    call    FRMNUM              ; get address
-    call    FRCINT               ; convert to 16 bit integer
+    call    GETADR              ; get address
     ld      (BINSTART),de       ; set address
     ld      a,1<<DF_ADDR
     ld      (DOSFLAGS),a        ; flag load address present
     call    get_arg             ; get next char from text, skipping spaces
     SYNCHK  ","                 ; skip ',' (syntax error if not ',')
-    call    FRMNUM              ; get length
-    call    FRCINT               ; convert to 16 bit integer
+    call    GETADR              ; get length
     ld      (BINLEN),de         ; store length
 ; create new file
 _sts_open:

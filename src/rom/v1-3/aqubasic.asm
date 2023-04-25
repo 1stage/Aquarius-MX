@@ -1085,8 +1085,7 @@ ST_reserved:
 ST_POKE:   
     pop     af              ; Discard Saved Token, Flags
     inc     hl              ; Skip Poke Token
-    call    FRMNUM          ; Get <address>
-    call    FRCADR          ; Convert To Integer in DE
+    call    GETADR          ; Get <address>
     SYNCHK  ','             ; Require a Comma
 .poke_loop:
     cp      STEPTK          ; If STEP Token
@@ -1176,8 +1175,7 @@ clearscreen:
 ;----------------------------------------------------------------------------
 
 ST_OUT:
-    call    FRMNUM              ; get/evaluate port
-    call    FRCADR              ; convert number to 16 bit integer (result in DE)
+    call    GETADR              ; get/evaluate port
     push    de                  ; stored to be used in BC
     rst     $08                 ; Compare RAM byte with following byte
     db      $2c                 ; character ',' byte used by RST 08
@@ -1570,12 +1568,13 @@ FN_VER:
 ; on exit from user code, HL should point to end of statement
 ;
 ST_CALL:
-    call    FRMNUM           ; get number from BASIC text
-    call    FRCADR           ; convert to 16 bit integer
+    call    GETADR           ; get <address>
     push    de
     ret                      ; jump to user code, HL = BASIC text pointer
 
 
+; Parse an Address (-32676 to 65535 in 16 bit integer)  
+GETADR: call    FRMNUM
 ; Convert FAC to Address or Signed Integer and Return in DE
 ; Converts floats from -32676 to 65535 in 16 bit integer
 FRCADR: ld      a,(FAC)           ;

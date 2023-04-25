@@ -4,8 +4,6 @@ This file is for recording upcoming changes and features that are being added to
 
 ## IN PROCESS:
 
-- LOAD, SAVE, etc - use FRCADR instead of FRCINT
-
 
 - Test/Tweak, document KEY() function
 
@@ -42,5 +40,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - Extend FRMEVL to parse unsigned hex 16 bit hex literals prefixed with dollar sign
   - not doing binary at this time, 9 to 17 character literals seem less useful than just using hex
+
+- LOAD, SAVE, etc - use FRCADR instead of FRCINT
 
 - Implement DEF FN and ATN()
