@@ -117,10 +117,8 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ;
 ; Persistent USB BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
 ;   During a cold boot, an unused table is written here, then it is never used again
-LASTKEY    = $3821      ; Last key read using key_check
-;    $3822 - $382F        Unassigned, 14 bytes
-RTC_SHADOW = $3830      ; Real Time Clock Shadow Registers, 10 bytes
-;    $383C - $383F        Reserved, 6 bytes
+RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes - WILL NOT CHANGE
+;    $3822 - $383F        Unassigned, 22 bytes
 
 ; Temporary USB BASIC system variables 
 DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
@@ -555,7 +553,6 @@ MEMSIZE:
   endif
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
-    ld      (LASTKEY),a       ; Clear KEY() buffer
     jp      $0402              ; Jump to OKMAIN (BASIC command line)
 
 
@@ -961,11 +958,6 @@ PEXPBAB:
 ; with parameter $17
 
 NEXTSTMT:
-;    CALL    key_check           ; Poll Keyboard    
-;    jr      z,.no_key           ; If Key was Pressed
-;    ld      ($3000),a
-;    ld      (LASTKEY),a         ;   Save It
-;.no_key
     pop     bc                  ; BC = return address
     pop     af                  ; AF = token - $80, flags
     pop     hl                  ; HL = text
