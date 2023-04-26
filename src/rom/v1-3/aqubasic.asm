@@ -117,8 +117,11 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ;
 ; Persistent USB BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
 ;   During a cold boot, an unused table is written here, then it is never used again
-RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes - WILL NOT CHANGE
-;    $3822 - $383F        Unassigned, 22 bytes
+RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes. 
+                        ; This Address assignment will not change in the future.
+                        ; Any emulators RTC hacks should read/write this buffer.
+
+;    $3822 - $383F      ; Unassigned, 22 bytes
 
 ; Temporary USB BASIC system variables 
 DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
@@ -963,8 +966,8 @@ NEXTSTMT:
     pop     hl                  ; HL = text
     jr      nc,BASTMT           ; if NC then process BASIC statement
     push    af                  ; Save Flags
-    ;cp      COPYTK-$80          ; If POKE Token
-    ;jp      z,ST_COPY           ;   Do Extended POKE
+    cp      COPYTK-$80          ; If POKE Token
+    jp      z,ST_COPY           ;   Do Extended POKE
     cp      POKETK-$80          ; If POKE Token
     jp      z,ST_POKE           ;   Do Extended POKE
     pop     af                  ; Else
@@ -1109,7 +1112,6 @@ ST_DOKE:
 ;;;   POKE 12366,$13,STEP 39,$14        Display standing person "sprite"
 ;;;   POKE 12329,$D4,STEP 1023,$10      Display red heart on black background
 ;;;
-;;;
 ;;;   POKE $3400 TO $3427,5             Set border color to magenta.
 ;;;   POKE $3028 TO $33E7,$86           Fill screen with checkerboard character
 ;----------------------------------------------------------------------------
@@ -1172,7 +1174,15 @@ ST_POKE:
 ;;; COPY Statement - Copy Memory
 ;;; 
 ;;; FORMAT: COPY <source>, <dest>, <count>
-;;;  
+;;;
+;;; 
+;;; EXAMPLES of COPY Statement:
+;;; 
+;;;   COPY 12368,12328,920              Scroll Screen Up One Line
+;;;   COPY 12288,12328,920              Scroll Screen Down One Line
+;;;   COPY 12329,12328,39               Scroll Row 1 right 1 char
+;;;   COPY $3000,$2000,2048             Copy Screen and Colors to Low RAM
+;;;   COPY $2000,$3000,2048             Restore Screen and Colors 
 ;----------------------------------------------------------------------------
 
 ST_COPY:   
@@ -1188,12 +1198,32 @@ ST_COPY:
     call    GETADR          ; Get <count> 
     ld      b,d             ; BC = <count>
     ld      c,e
-    ld      a,b             ; FC Error if <count>
-    
+    ld      a,b             ; FC Error if <count> = 0
+    or      c
+    jp      z,FCERR
     pop     de              ; DE = <dest>, Stack = <source>
     ex      (sp),hl         ; HL = <source>, Stack = Text Pointer
-    ldir
+    rst     COMPAR          ; If <source> < <dest>
+    jr      c,.copy_down    ;   Do Reverse Copy Instead
+    ldir                    ; Do the Copy
+    pop     hl              ; Restore Text Pointer
+    ret
  
+ .copy_down
+    push    de              ; Stack = <dest>, Text Pointer
+    ex      (sp),hl         ; HL = <dest>, Stack = <source>, Text pointer
+    add     hl,bc
+    dec     hl              
+    ld      d,h
+    ld      e,l             ; DE = <dest> + <count> - 1
+    pop     hl              ; HL = <source>, Stack = Text Pointer
+    add     hl,bc
+    dec     hl              ; HL = <source> + <count> - 1
+    lddr                    ; Do the Copy
+    pop     hl              ; Restore Text Pointer
+    ret
+    
+
 ;----------------------------------------------------------------------------
 ;;; CLS Statement - Clear Screen
 ;;; 
