@@ -68,11 +68,8 @@ REVISION = 5
 ; alternative system variable names
 VARTAB      = BASEND     ; $38D6 variables table (at end of BASIC program)
 
-  ifdef softrom
-RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
-  else
-RAMEND = $C000           ; we are in ROM, 32k expansion RAM available
-  endif
+RAMEND = $4000           ; Running in a Cart so only 4k RAM avail (that we can assume)
+
 
 path.size = 37           ; length of file path buffer
 

@@ -12,3 +12,11 @@ pcb/eagle/aq_mx_v1-4-0c.b\#6
 .vscode/tasks.json
 zout/
 src/rom/v1-3/*.bat
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.abs
+.gitignore
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.doc
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.docx
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.jed
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.pdf
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.PLD
+src/gal-rom-ram-usb/v1.1/AQ_MX_RRUT.sim
