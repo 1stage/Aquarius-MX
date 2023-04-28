@@ -9,27 +9,33 @@
 ;;;
 ;;; FORMAT: DEF FN <name> ( <variable> ) = <expression>
 ;;;
-;;;   Action: This sets up a user-defined function that can be used later in
-;;; the program. The function can consist of any mathematical formula. User-
-;;; defined functions save space in programs where a long formula is used in
-;;; several places. The formula need only be specified once, in the
+;;; Action: This sets up a user-defined function that can be used later in
+;;; the program. The function can consist of any mathematical formula. 
+;;; User-defined functions save space in programs where a long formula is 
+;;; used in several places. The formula need only be specified once, in the
 ;;; definition statement, and then it is abbreviated as a function name. It
 ;;; must be executed once, but any subsequent executions are ignored.
-;;;   The function name is the letters FN followed by any variable name. This
-;;; can be 1 or 2 characters, the first being a letter and the second a
+;;;   The function name is the letters FN followed by any variable name. 
+;;; This can be 1 or 2 characters, the first being a letter and the second a
 ;;; letter or digit.
-;;;   The parametern <variable> represents the argument variable or value that
-;;; will be given in the function call and does not affect any program
+;;;   The parametern <variable> represents the argument variable or value 
+;;; that will be given in the function call and does not affect any program
 ;;; variable with the same name. For any other variable name in <expression>,
 ;;; the value of that program variable is used.
 ;;;   A DEF FN statement must be executed before the function it defines may 
 ;;; be called. If a function is called before it has been defined, an 
-;;; "Undefined user function" error occurs. DEF FN is illegal in direct mode.
+;;; "Undefined user function" error occurs. 
+;;;   Multiple user functions may be defined at once, each with a unique FN 
+;;; name. Executing a DEF with the same FN name as a previously defined user 
+;;; function replaces the previous definition with the new one. DEF FN is 
+;;; illegal in direct mode.
 ;;;
 ;;; EXAMPLES of DEF FN Statement:
 ;;;
 ;;;   10 DEF FN A(X)=X+7
+;;;
 ;;;   20 DEF FN AA(X)=Y*Z
+;;;
 ;;;   30 DEF FN A9(Q) = INT(RND(1)*Q+1)
 ;;;
 ;;;   The function is called later in the program by using the function name
@@ -39,7 +45,9 @@
 ;;; EXAMPLES of FN Use:
 ;;;
 ;;;   40 PRINT FN A(9)
+;;;
 ;;;   50 R=FN AA(9)
+;;;
 ;;;   60 G=G+FN A9(10)
 ;;;
 ;;;   In line 50 above, the number 9 inside the parentheses does not affect
@@ -144,7 +152,7 @@ GETFNM: rst     SYNCHR
 ;;;
 ;;; FORMAT: ATN ( <number> )
 ;;;
-;;;   Action: This mathematical function returns the arctangent of the
+;;; Action: This mathematical function returns the arctangent of the
 ;;; number. The result is the angle (in radians) whose tangent is the number
 ;;; given. The result is always in the range -pi/2 to +pi/2.
 ;;;
