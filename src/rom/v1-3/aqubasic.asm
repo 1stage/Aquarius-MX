@@ -1209,7 +1209,7 @@ ST_COPY:
     pop     hl              ; Restore Text Pointer
     ret
  
- .copy_down
+.copy_down
     push    de              ; Stack = <dest>, Text Pointer
     ex      (sp),hl         ; HL = <dest>, Stack = <source>, Text pointer
     add     hl,bc
@@ -1565,13 +1565,14 @@ FN_KEY
     call    FRCADR            ; DE = Timeout
     ld      a,d
     or      a,e
-    jr      nz,.fn_wait       ; Check until timed out
+    jr      nz,.fn_timeout    ; Check until timed out
 
 .fn_loop:
     call    key_check         ; Check for a key
-    jr      nz,.fn_done       ; Found a key, return it
+    jr      nz,.fn_return       ; Found a key, return it
     jr      .fn_loop
 
+.fn_timeout:
 .fn_wait
     call    key_check         ; Check for a key
     jr      nz,.fn_done       ; Found a key, return it
@@ -1582,13 +1583,13 @@ FN_KEY
     ld      a,e
     or      a
     jr      nz,.fn_wait
+.fn_done:
     push    af
     xor     a
     ld      (LSTX),a
     ld      (KCOUNT),a
     pop     af
-    
-.fn_done
+.fn_return
     jp      SNGFLT            ; and float it
 
 ;----------------------------------------------------------------------------
