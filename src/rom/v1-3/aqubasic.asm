@@ -1311,7 +1311,7 @@ clearscreen:
 ;;; 
 ;;; EXAMPLES of OUT Statement:
 ;;; 
-;;;   !!!TODO
+;;;   !!!TODOf
 ;----------------------------------------------------------------------------
 
 ST_OUT:
@@ -1928,8 +1928,8 @@ return_to_eval:
 ;;;
 ;;; Hexadecimal constants may be used in any numeric expression or anywhere
 ;;; a numeric expression is allowed. They may not be used in DATA statements,
-;;; as entries to the INPUT statement, or in string arguments to the VAL()
-;;; function.
+;;; as entries to the INPUT statement, in string arguments to the VAL()
+;;; function, or as the target of a GOTO or GOSUB statement.
 ;;;
 ;;; EXAMPLES of Hexadecimal Constants:
 ;;; 
