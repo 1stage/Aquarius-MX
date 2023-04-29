@@ -13,8 +13,11 @@
 ;      
 ;
 ; For use with the micro-expander (CH376S USB interface, 32K RAM, AY-3-8910 PSG),
-; and the Aquarius MX expander (micro expander in mini expander footprint)
-; Incudes commands from BLBasic by Martin Steenoven  
+; and the Aquarius MX expander (micro expander in mini expander footprint with
+; onboard Real Time Clock).
+;
+; Incudes commands from BLBasic by Martin Steenoven, as well as commands from
+; Aquarius Extended BASIC (MS 8K BASIC), and other BASIC derivatives.
 ;
 ; Changes:
 ; 2015-11-4  v0.0  created
@@ -58,11 +61,17 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-04-?? v1.3  Removed unimplemented PCG code
+; 2023-05-01 v1.3  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
-;                  Modified CLS to accept an optional parameter for (FG * 16 ) + BG color integer
-;                  Added SDTM command and DTM$() function for RealTime Clock access
+;                  Revise CLS to accept an optional parameter for (FG * 16 ) + BG color integer OR 2-byte word
+;                  Added SDTM command to set RealTime Clock
+;                  Added DTM$() function to get datat from RealTime Clock
+;                  Revised PEEK/POKE commands: added TO / STEP keywords, hex numbers, signed/unsigned ints
+;                  Added DEEK/DOKE commands: double peek/poke
+;                  Added COPY command to duplicate ranges of values quickly
+;                  Updated IN/OUT commands to accept hex values
+;                  Added KEY function to return
 
 VERSION  = 1
 REVISION = 3
@@ -1081,6 +1090,9 @@ ST_reserved:
 ;;; EXAMPLES of DOKE Statement:
 ;;; 
 ;;;   DOKE 14340,1382                   Set USR() function address
+;;;
+;;;   DOKE $3028,$6162                  Put the characters "ab" at the top
+;;;                                     left of the screen
 ;----------------------------------------------------------------------------
 
 ST_DOKE:   
@@ -1255,7 +1267,7 @@ ST_COPY:
 ;;; Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 
 ;;; 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).  
 
-;;; EXAMPLES of POKE Statement:
+;;; EXAMPLES of CLS Statement:
 ;;; 
 ;;;   CLS               Clear screen with default colors
 ;;;   CLS 7             Clear screen - black text on white background
@@ -1319,7 +1331,10 @@ clearscreen:
 ;;; 
 ;;; EXAMPLES of OUT Statement:
 ;;; 
-;;;   !!!TODO
+;;;     OUT 246, 12                     Send a value of 12 to the SOUND chip
+;;;
+;;;     10 X=14:OUT $FC, X              Send a value of 14 to the Cassette
+;;;                                     sound port
 ;----------------------------------------------------------------------------
 
 ST_OUT:
@@ -1414,7 +1429,9 @@ psgloop:
 ;;; 
 ;;; EXAMPLES of PEEK Function:
 ;;; 
-;;;   !!!TODO
+;;;   PRINT CHR$(PEEK(12288))       Print the current border character
+;;;
+;;;   PRINT PEEK($3400)             Print the current border color value
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
@@ -1433,11 +1450,16 @@ FN_PEEK:
 ;;; FORMAT: DEEK(<address>)
 ;;;  
 ;;; Action: Reads a word from memory location <address>. 
-;;;         
+;;;
+;;; Advanced: Due to the way Aquarius handles AND and OR operators, it is best
+;;;           to use the HEXS() function on the value returned by DEEK, as
+;;;           the returned integer value can be unpredictable.
 ;;; 
 ;;; EXAMPLES of DEEK Function:
 ;;; 
-;;;   !!!TODO
+;;;   PRINT HEX$(DEEK(14340))         Prints the address of the USR function
+;;;
+;;;   PRINT HEX$(DEEK($384B))         Print the top of BASIC memory address
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
@@ -1468,7 +1490,8 @@ FN_DEEK:
 ;;; EXAMPLES of IN Function:
 ;;; 
 ;;;   PRINT IN(252)     (Prints cassette port input status)
-;;;   S=IN(254)         (Set S to Printer Ready status)
+;;;
+;;;   S=IN($FE)         (Set variable S to Printer Ready status)
 ;----------------------------------------------------------------------------
 
 FN_IN:
@@ -1613,7 +1636,9 @@ FN_KEY
 ;;; 
 ;;; EXAMPLES of DEC Function:
 ;;;
-;;;    
+;;;    PRINT DEC("FFFF")                Prints "65535"
+;;;
+;;;    10 A$=HEX$(32):PRINT DEC(A$)     Prints "32"
 ;;;   
 ;----------------------------------------------------------------------------
 
@@ -1640,12 +1665,15 @@ FN_DEC:
 ;;; 
 ;;; Format: HEX$(<number>)
 ;;; 
-;;; Action: Returns string containing <number> in hexadecimal format.
+;;; Action: Returns string containing <number> in two-byte hexadecimal format.
 ;;;         FC Error if <number> is not in the range -32676 through 65535.
 ;;; 
 ;;; EXAMPLES of HEX Function:
 ;;; 
-;;;   PRINT HEX$(1)  !!!TODO 
+;;;   PRINT HEX$(1)                  Prints "0001"
+;;;
+;;;   10 PRINT HEX$(PEEK(12288))     Prints the HEX value of the border char
+;;;                                  (usually "0020", SPACE character)
 ;----------------------------------------------------------------------------
 
 FN_HEX:
