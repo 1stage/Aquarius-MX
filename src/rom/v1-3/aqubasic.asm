@@ -1852,17 +1852,24 @@ INIT_RTC:
 
     
 ;------------------------------------------------------------------------------
-;     DateTime Command - SET DateTime
-;------------------------------------------------------------------------------
-;
-;  The SDTM command allows users to SET the DateTime in the Dallas RTC by
-;  using the following format:
-;
-;    SDTM "230411101500" (where string is in "YYMMDDHHMMSS" format) - Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
-;
-;  - Improperly formatted string causes FC Error
-;  - DateTime is set by default to 24 hour mode, with cc (hundredths of seconds) set to 0
-;
+;;; SDTM Function - Set DateTime
+;;;
+;;; Format: SDTM <string>
+;;; 
+;;; Action: If a Real Time Clock is installed, allows user to set the time on
+;;;         the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" 
+;;;         format:
+;;;         - Improperly formatted string causes FC Error
+;;;         - DateTime is set by default to 24 hour mode, 
+;;;           with cc (hundredths of seconds) set to 0
+;;; 
+;;; EXAMPLES of SDTM Function:
+;;; 
+;;;   SDTM "230411101500"            Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
+;;;
+;;;   10 SDTM "010101000000"         Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
+;;;
+;---------------------------------------------------------------------------
 
 ST_SDTM:
     call    FRMEVL          ; Evaluate Argument
