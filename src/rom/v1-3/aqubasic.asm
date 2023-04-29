@@ -1450,16 +1450,13 @@ FN_PEEK:
 ;;; FORMAT: DEEK(<address>)
 ;;;  
 ;;; Action: Reads a word from memory location <address>. 
-;;;
-;;; Advanced: Due to the way Aquarius handles AND and OR operators, it is best
-;;;           to use the HEXS() function on the value returned by DEEK, as
-;;;           the returned integer value can be unpredictable.
 ;;; 
 ;;; EXAMPLES of DEEK Function:
 ;;; 
-;;;   PRINT HEX$(DEEK(14340))         Prints the address of the USR function
+;;;   PRINT HEX$(DEEK(14340))         Prints the HEX address of the USR function
 ;;;
-;;;   PRINT HEX$(DEEK($384B))         Print the top of BASIC memory address
+;;;   PRINT DEEK($384B)               Print the top of BASIC memory address
+;;;                                   as a signed integer
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
