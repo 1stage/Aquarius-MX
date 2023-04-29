@@ -4,18 +4,13 @@ This file is for recording upcoming changes and features that are being added to
 
 ## IN PROCESS:
 
-
-
 - Test/Tweak, document KEY() function
 
 - Test hardware behavior without RTC installed (RAM only)
 
 - Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
 
-- Create SFX("filename.pt3") function that will load a short PT3 file and play it, ideally asynchronously (allows BASIC interpreter to still process commands). SFX(0) will STOP any PT3 file currently playing and mute all channels. SFX(1) will STOP and REPLAY any already queued PT3 file.
-  - NON-STARTER???? PT3PLAY is now in a separate ROM so BASIC does not have access to any of the PT3PLAY code - You can have BASIC or PT3PLAY but not both
-
-- Stand-alone PT3 Player doesn't work on actual hardware, only in AquaLite.
+- SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
 
 
 ## COMPLETE:
@@ -51,3 +46,5 @@ This file is for recording upcoming changes and features that are being added to
 - LOAD, SAVE, etc - use FRCADR instead of FRCINT
 
 - Implement DEF FN and ATN()
+
+- Stand-alone PT3 Player works both on actual hardware and AquaLite in MX mode.

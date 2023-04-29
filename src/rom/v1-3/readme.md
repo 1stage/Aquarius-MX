@@ -8,19 +8,20 @@ Building AquBASIC from Source
 | aqubug.asm       | Aqubug debugger |
 | ch376.asm        | USB driver |
 | debug.asm        | 'lite' debugger (see notes below) |
-| dos.asm          | interface between BASIC and USB driver |
+| dos.asm          | Interface between BASIC and USB driver |
 | ds1244rtc.asm    | Interface to the Dallas DS1244 RTC (Real Time Clock) chip |
 | dtm_lib.asm      | DateTime formatting and caluculation functions |
 | edit.asm         | BASIC command line editor |
-| filerequest.asm  | select file from list  |
-| keycheck.asm     | keyboard scan |
-| load_rom.asm     | rom loader  |
+| extbasic.asm     | Extended BASIC commands  |
+| filerequest.asm  | Select file from list  |
+| keycheck.asm     | Keyboard scan |
+| load_rom.asm     | ROM loader  |
 | softclock.asm    | Virtual interface to the RTC (Real Time Clock) |
-| string.asm       | string functions |
-| windows.asm      | windowed text |
-| aquarius.i       | aquarius system defines |
-| macros.i         | structure macros etc. |
-| windows.i        | windowed text defines     |   
+| string.asm       | String functions |
+| windows.asm      | Windowed text |
+| aquarius.i       | Aquarius system defines |
+| macros.i         | Structure macros etc. |
+| windows.i        | Windowed text defines     |   
 
 27 AUG 2022 (SPH) - zmac is still the recommended method for compiling the MX ROM into a usable binary file, but the project has been turned into a Visual Studio Code project to make things simpler for most folks to work with. Here are the general steps to setting up Visual Studio Code and zmac on a Windows-based PC:
   - From the Microsoft site, download and install Visual Studio Code (not Visual Studio 2022, etc). The default install settings are fine. You should restart Windows after install is complete.
