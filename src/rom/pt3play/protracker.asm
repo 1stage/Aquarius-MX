@@ -218,6 +218,11 @@ PT3_LOAD:
        LD   (HL),DEBOUNCE-4   ; yes, debounce count to go = 4 scans (~250ms)
 .debounced:
        call Key_Check         ; Get ASCII of last key pressed
+       cp   $0d
+       jr   z,.restart        ; if RTN pressed then return to file list
+       cp   " "
+       jr   z,.next_song      ; if SPACE pressed then play next song
+
 ;
 ;  ANY IDEA WHY I CAN'T UNCOMMENT EITHER OR BOTH OF THE PAIRS OF LINES BELOW WITHOUT 
 ;  GETTING A COMPILER VALUE ERROR in line 171 (JR   NZ, .next_song) ?
@@ -229,11 +234,6 @@ PT3_LOAD:
         CP   "3"                 ; If 3 key pressed...
         JR   Z, .ss3         ; ...set to skin 3 (KelpText)
     ;                           --- Add More skins below ---
-
-       cp   $0d
-       jr   z,.restart        ; if RTN pressed then return to file list
-       cp   " "
-       jr   z,.next_song      ; if SPACE pressed then play next song
 
 
 .no_key:
@@ -1395,7 +1395,7 @@ PT3help:
 ;
 
 DrawBarChars:
-    PUSH    AF
+;    PUSH    AF
     PUSH    IX
     PUSH    HL
 
@@ -1407,7 +1407,7 @@ DrawBarChars:
 
     POP     HL
     POP     IX
-    POP     AF
+;    POP     AF
     RET
 
 BarWindow:

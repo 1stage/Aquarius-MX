@@ -48,6 +48,21 @@
             }
         },        
         {
+            "label": "MakeDOC",
+            "type": "shell",
+            // Next command merges four identical copies of the AQUBASIC binary into a single 64kb ROM file in the root of the project
+            "command": "python makedoc.py",
+            "group":  "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },        
+        {
             "label": "Make ROM",
             "type": "shell",
             "group": {
@@ -55,7 +70,7 @@
                 "isDefault": true
             },
             "dependsOrder": "sequence",
-            "dependsOn": ["CompileBASIC", "SaveToBIN", "SaveToROM"]
+            "dependsOn": ["CompileBASIC", "SaveToBIN", "SaveToROM","MakeDOC"]
         }
     ]
 }

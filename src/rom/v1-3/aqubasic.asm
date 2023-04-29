@@ -544,7 +544,7 @@ MEMSIZE:
     ld      hl,PROGST
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
-    ld      (TXTTAB), hl      ; beginning of BASIC program text
+    ld      (TXTTAB), hl       ; beginning of BASIC program text
     call    $0bbe              ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
@@ -1072,7 +1072,7 @@ ST_reserved:
     ret
 
 ;----------------------------------------------------------------------------
-;;; DOKE Statement - Write 16 bit word to Memory Location(s
+;;; DOKE Statement - Write 16 bit word to Memory Location(s)
 ;;; 
 ;;; FORMAT: DOKE <address>, <word>
 ;;;  
@@ -1231,16 +1231,23 @@ ST_COPY:
 ;;;  
 ;;; Action: Clears the screen. The optional parameter <colors> is a number 
 ;;; between 0 and 255 that specifies the new foreground and background color
-;;; combination. The default combination is black on cyan.
+;;; combination using this formula with the values below:  (FG * 16) + BG. 
+;;; The default combination is 6 (BLACK on CYAN).
+;;;
+;;;     0 BLACK      4 BLUE        8 GREY         12 LTYELLOW   
+;;;     1 RED        5 MAGENTA     9 DKCYAN       13 DKGREEN    
+;;;     2 GREEN      6 CYAN        10 DKMAGENTA   14 DKRED      
+;;;     3 YELLOW     7 WHITE       11 DKBLUE      15 DKGREY     
 ;;;
 ;;;   The colors value can be represented as a two-digit hexadecimal number 
-;;; where the left digit is the foreground color and the right digit is the
-;;; background color, using the following chart:
+;;; (preceded by a $ as a hex number designator) where the left digit is the 
+;;; foreground color and the right digit is the background color, using the 
+;;; following chart:
 ;;;
-;;;     0 black    4 blue      8 grey           C light yellow   
-;;;     1 red      5 magenta   9 dark cyan      D dark green    
-;;;     2 green    6 cyan      A dark magenta   E dark red      
-;;;     3 yellow   7 white     B dark blue      F dark grey     
+;;;     0 BLACK      4 BLUE        8 GREY        C LTYELLOW   
+;;;     1 RED        5 MAGENTA     9 DKCYAN      D DKGREEN    
+;;;     2 GREEN      6 CYAN        A DKMAGENTA   E DKRED      
+;;;     3 YELLOW     7 WHITE       B DKBLUE      F DKGREY     
 ;;;
 ;;; Warning: If the foreground and background colors are the same, typed and
 ;;; and PRINTed text will be invisible.
@@ -1254,6 +1261,7 @@ ST_COPY:
 ;;;   CLS 7             Clear screen - black text on white background
 ;;;   CLS $30           Clear screen - yellow text on black background
 ;;;   CLS F*16+B        Clear screen - text color F, background color B
+;;;                                    (using BASIC variables)
 ;----------------------------------------------------------------------------
 
 ST_CLS:
