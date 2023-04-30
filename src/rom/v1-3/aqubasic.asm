@@ -847,14 +847,14 @@ IMMEDIATE:
     SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active
     ld      hl,-1
     ld      (CURLIN),hl         ; Current BASIC line number is -1 (immediate mode)
-    ld      hl,LINBUF           ; HL = line input buffer
+    ld      hl,BUF           ; HL = line input buffer
     ld      (hl),0              ; buffer empty
-    ld      b,LINBUFLEN         ; 74 bytes including terminator
+    ld      b,BUFLEN         ; 74 bytes including terminator
     call    EDITLINE            ; Input a line from keyboard.
     ld      hl,SysFlags
     RES     SF_RETYP,(HL)       ; CTRL-R inactive
 ENTERLINE:
-    ld      hl,LINBUF-1
+    ld      hl,BUF-1
     jr      c,immediate         ; If c then discard line
     rst     $10                 ; get next char (1st character in line buffer)
     inc     a
@@ -862,7 +862,7 @@ ENTERLINE:
     jr      z,immediate         ; If nothing on line then loop back to immediate mode
     push    hl
     ld      de,ReTypBuf
-    ld      bc,LINBUFLEN        ; save line in history buffer
+    ld      bc,BUFLEN        ; save line in history buffer
     ldir
     pop     hl
     jp      $0424               ; back to system ROM
@@ -2048,7 +2048,7 @@ EVAL_HEX:
 ;;; <variable name>. A value must be assigned to <variable name> prior
 ;;; to execution of the & operatr, otherwise an FC error results. Any type 
 ;;; variable name maybe used (numeric, string, array), and the address 
-;;; returned will be an integer in the
+;;; returned will be an integer in the range of 0 and 65535.
 ;;;
 ;;; Note: Care should be taken when working with an array, because the
 ;;; addresses of arrays change whenever a new simple variable is assigned.

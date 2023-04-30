@@ -113,8 +113,7 @@ FILNAF  = $3857 ; 14423           tape read filename (6 chars)
 INSYNC  = $385D ; 14429           tape flag
 CLFLAG  = $385E ; 14430           tape flag (break key check)
 BUFMIN  = $385F ; 14431           buffer used by INPUT statement
-LINBUF  = $3860 ; 14432  BUF      line input buffer (73 bytes).
-                ;  ...
+BUF     = $3860 ; 14432 - 14504   Line Input Buffer (72 bytes).
 TMPSTK  = $38A0 ;                 Temporary Stack - Set by INIT
 ENDBUF  = $38A9 ; 14505           End of line unput buffer
 DIMFLG  = $38AA ; 14506           dimension flag 1 = array
@@ -165,7 +164,7 @@ PROGST   = $3900 ; 14592           NULL before start of BASIC program
 ;          $3901 ; 14593
 
 ; buffer lengths
-LINBUFLEN   = DIMFLG-LINBUF
+BUFLEN   = ENDBUF-BUF-1
 STRBUFLEN   = FRETOP-TEMPPT
 SYSTEMPLEN  = DATLIN-TENP3
 SAVTXTLEN  = OLDLIN-SAVTXT
@@ -193,13 +192,13 @@ PRNCHR      = $1d94  ; print character in A
 PRNCHR1     = $1d72  ; print character in A with pause/break at end of page
 PRNCRLF     = $19ea  ; print CR+LF
 PRINTSTR    = $0e9d  ; print null-terminated string
-PRINTINT    = $1675  ; print 16 bit integer in HL
+LINPRT  = $1675  ; Print line number in HL
 
 SCROLLUP    = $1dfe  ; scroll the screen up 1 line
 SVCURCOL    = $1e3e  ; save cursor position (HL = address, A = column)
 
 LINEDONE    = $19e5  ; line entered (CR pressed)
-FINDLIN     = $049f  ; find address of BASIC line (DE = line number)
+FNDLIN  = $049f  ; Find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
 ERRDIR  = $0B45   ; Issue Error if in Direct Mode
@@ -242,7 +241,7 @@ CHKTYP      = $0977  ; error if type mismatch
 
 FRCINT      = $0682  ; Convert Floating Point Accumulator to Signed Integer in DE
 FRCIN1      = $068A  ; Alternate entry point into FRCINT
-STRTOVAL    = $069c  ; DE = value of decimal number string at HL-1 (65529 max)
+SCNLIN  = $069C   ; Back up and scan line number into DE
 STR2INT     = $069d  ; DE = value of decimal number string at HL
 QINT        = $1586  ; Convert Floating Point Accumulator to Signed Integer in C,DE
 INT2STR     = $1679  ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')

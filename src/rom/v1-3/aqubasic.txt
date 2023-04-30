@@ -287,10 +287,29 @@ Action: Returns the address of the first byte of data identified with
 <variable name>. A value must be assigned to <variable name> prior
 to execution of the & operatr, otherwise an FC error results. Any type
 variable name maybe used (numeric, string, array), and the address
-returned will be an integer in the
+returned will be an integer in the range of 0 and 65535.
 
 Note: Care should be taken when working with an array, because the
 addresses of arrays change whenever a new simple variable is assigned.
+
+
+EDIT Statement - Edit BASIC Line
+
+FORMAT: EDIT <line number>
+
+Action: Displays BASIC line <line number> on screen and enters edit
+mode. While editing a line, the following control keys are available:
+
+  CTL - P   Move cursor left
+  CTL - /   Move cursor right
+    <--     Delete character to left
+  CTL - \   Delete character to right
+    RTN     Save changes and exit edit mode
+  CTL - R   Retype line, discard changes, and remain in edit mode
+  CTL - C   Discard changes and edit edit mode
+
+Note: The above control keys are also available when entering a new
+line or direct mode command.
 
 
 DEF FN Statement - Define User Function

@@ -5,33 +5,49 @@
 ; changes:-
 ; 2015-11-13 PRINTSTR after CTRL-C to ensure that cursor goes to next line.
 ;            Could not type into last char position in buffer - fixed.
-; 2015-11-14 Cursor now restores original charactcr color when removed.
+; 2015-11-14 Cursor now restores original character color when removed.
 ; 2016-02-06 Return to BABASIC immediate mode loop.
 ; 2017-04-18 CTRL-R = retype previous line entered
 ; 2017-04-29 bugfix: EDIT retreiving another line if line not found
-; 2017-05-06 using equates LINBUF and LINBUFLEN
+; 2017-05-06 using equates BUF and BUFLEN
 ;            retype clears old line before recalling history buffer
 ;
-;---------------------------------
-;      Edit a BASIC Line
-;---------------------------------
-; EDIT <line number>
-;
+
+;----------------------------------------------------------------------------
+;;; EDIT Statement - Edit BASIC Line
+;;; 
+;;; FORMAT: EDIT <line number>
+;;;
+;;; Action: Displays BASIC line <line number> on screen and enters edit 
+;;; mode. While editing a line, the following control keys are available:
+;;; 
+;;;   CTL - P   Move cursor left 
+;;;   CTL - /   Move cursor right
+;;;     <--     Delete character to left
+;;;   CTL - \   Delete character to right
+;;;     RTN     Save changes and exit edit mode
+;;;   CTL - R   Retype line, discard changes, and remain in edit mode
+;;;   CTL - C   Discard changes and edit edit mode
+;;;
+;;; Note: The above control keys are also available when entering a new
+;;; line or direct mode command.
+;----------------------------------------------------------------------------
+
 ST_EDIT:
-    call  STRTOVAL        ; DE = line number
+    call  SCNLIN          ; DE = line number
     ld    a,d
     or    e
     jr    nz,.prtline
-    ld    e,ERRMO        ; if no line number then MO error
+    ld    e,ERRMO         ; if no line number then MO error
     JP    ERROR
 .prtline:
     ex    de,hl           ; HL = line number
     push  hl
-    call  PRINTINT        ; Print line number (also puts number string in $38ea)
+    call  LINPRT          ; Print line number (also puts number string in $38ea)
     pop   de
-    call  FINDLIN         ; find line in BASIC program
+    call  FNDLIN          ; find line in BASIC program
     push  af              ; push flags (c = found line in BASIC program)
-    ld    de,LINBUF       ; DE = buffer
+    ld    de,BUF          ; DE = buffer
     ld    hl,$38ea        ; HL = floating point decimal number (line number)
     call  getinteger      ; copy decimal number string to edit buffer
     pop   af              ; pop flags
@@ -51,10 +67,10 @@ ST_EDIT:
     ld    (de),a          ; terminate string in buffer
     pop   hl              ; pop buffer pointer into HL
     ld    a,l
-    sub   low(LINBUF)
+    sub   low(BUF)
     cpl
     inc   a
-    add   LINBUFLEN       ; A = length of buffer - length of line number
+    add   BUFLEN       ; A = length of buffer - length of line number
     ld    b,a
 .editline:
     call  EDITLINE        ; edit string in buffer
@@ -136,10 +152,6 @@ expand_token:
     pop   hl
     ret
 
-; editing keys
-; cursor left  = $0f     ; CTRL-O
-; cursor right = $10     ; CTRL-P
-; delete       = $1e     ; CTRL-/
 
 ;--------------------------------------------------
 ;        Edit Line of Text in a Buffer
@@ -169,20 +181,20 @@ EDITLINE:
     call  _clr_key_wait   ; wait for keypress
     call  _hide_cursor
     ld    c,a             ; C = key
-    cp    $1c             ; <DELETE>?
-    jr    z,.delete       ; yes,
-    cp    $03             ; CTRL-C?
-    jp    z,.quit         ; yes, quit with Carry set
-    cp    $0d             ; CR?
-    jp    z,.retn         ; yes, return with typed line in buffer
-    cp    $08             ; BACKSPACE?
-    jp    z,.backspace    ; yes, do backspace
-    cp    $10             ; CURSOR LEFT?
-    jp    z,.left         ; yes, do it
-    cp    $1e             ; CURSOR RIGHT?
-    jp    z,.right        ; yes, do it
-    cp    $12             ; RETYP?
-    jp    z,.retype       ; yes, do it
+    cp    $1c             ; If CTL-LeftArrow (^\)
+    jr    z,.delete       ;   Delete character to right
+    cp    $03             ; If CTL-C (^C)
+    jp    z,.quit         ;   Quit with Carry set
+    cp    $0d             ; If RTN or CTL-M (^M)
+    jp    z,.retn         ;   Return with typed line in buffwe
+    cp    $08             ; If LeftArrow or CTL-H (^H)
+    jp    z,.backspace    ;   Delete character to left
+    cp    $10             ; If CTL-P (^P)
+    jp    z,.left         ;   Move cursor left
+    cp    $1e             ; If CTL-/ (^^)
+    jp    z,.right        ;   Move cursor right
+    cp    $12             ; If CTL-R (^R)
+    jp    z,.retype       ;   Retype Line
     cp    $0f
     jr    nz,.other
     ld    c,'~'           ; CTRL-O = '~'
@@ -298,13 +310,12 @@ EDITLINE:
     BIT   SF_RETYP,a
     JP    z,.waitkey
     inc   e
-.rt_home:
-    dec   e
-    jr    z,.gethistory
-    dec   hl
-    call  _cursor_left    ; cursor left to start of buffer
-    jr    .rt_home
-.gethistory:
+rt_home:
+   dec   e
+   jr    z,.gethistory
+   dec   hl
+   call  _cursor_left    ; cursor left to start of buffer
+   jr    .rt_home.gethistory:
     push  hl              ; push buffer address
 .clearline:
     ld    a,(hl)
@@ -333,7 +344,6 @@ EDITLINE:
     ld    e,0             ; E = start of buffer
 .rt_end:
     jp    .waitkey
-
 
 ; CTRL-C
 .quit:
