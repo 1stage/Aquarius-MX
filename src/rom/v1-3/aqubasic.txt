@@ -121,14 +121,14 @@ DEEK() Function - Read 16 bit word from Memory
 
 FORMAT: DEEK(<address>)
 
-Action: Reads a word from memory location <address>.
+Action: Reads a word from memory location <address>, returning a number
+between 0 and 65535.
 
 EXAMPLES of DEEK Function:
 
-  PRINT HEX$(DEEK(14340))         Prints the HEX address of the USR function
+  POKE DEEK(14337),PEEK(14349)    Remove cursor from screen.
 
-  PRINT DEEK($384B)               Print the top of BASIC memory address
-                                  as a signed integer
+  PRINT DEEK($384B)               Print the top of BASIC memory address.
 
 
 IN() Function - Read Z80 I/O Port
@@ -149,7 +149,7 @@ EXAMPLES of IN Function:
 
 EXPERIMENTAL!
 
-KEY() Function
+KEY() Function - Read Keyboard
 
 Format: KEY(<number>)
 
@@ -158,9 +158,6 @@ Action: Checks for a key press and returns the ASCII code of the key.
         is pressed, whichever comes first, returning 0 if no key was
         pressed. KEY(0) does not return until a key is pressed.
 
-        Note: Ctrl-C will not break out of an executing call to the
-        KEY() function, but will still break out of the BASIC program
-        if pressed between calls to KEY().
 
 EXAMPLES of KEY Function:
 
