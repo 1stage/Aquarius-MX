@@ -1449,14 +1449,14 @@ FN_PEEK:
 ;;; 
 ;;; FORMAT: DEEK(<address>)
 ;;;  
-;;; Action: Reads a word from memory location <address>. 
+;;; Action: Reads a word from memory location <address>, returning a number
+;;; between 0 and 65535. 
 ;;; 
 ;;; EXAMPLES of DEEK Function:
 ;;; 
-;;;   PRINT HEX$(DEEK(14340))         Prints the HEX address of the USR function
+;;;   POKE DEEK(14337),PEEK(14349)    Remove cursor from screen.
 ;;;
-;;;   PRINT DEEK($384B)               Print the top of BASIC memory address
-;;;                                   as a signed integer
+;;;   PRINT DEEK($384B)               Print the top of BASIC memory address.
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
@@ -1564,7 +1564,7 @@ joy05:
 ;----------------------------------------------------------------------------
 ;;; EXPERIMENTAL!
 ;;; 
-;;; KEY() Function
+;;; KEY() Function - Read Keyboard
 ;;; 
 ;;; Format: KEY(<number>)
 ;;;
@@ -1573,9 +1573,6 @@ joy05:
 ;;;         is pressed, whichever comes first, returning 0 if no key was
 ;;;         pressed. KEY(0) does not return until a key is pressed.
 ;;; 
-;;;         Note: Ctrl-C will not break out of an executing call to the 
-;;;         KEY() function, but will still break out of the BASIC program
-;;;         if pressed between calls to KEY().
 ;;; 
 ;;; EXAMPLES of KEY Function:
 ;;; 
@@ -1583,41 +1580,34 @@ joy05:
 ;;; 
 
 FN_KEY
-    pop     hl             ; Return address
+    pop     hl                ; Restore Text Pointer
     rst     CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
-    ex      (sp),hl           
+    ex      (sp),hl           ; Text Pointer on to Stack
     ld      de,LABBCK         ; return address for SNGFLT
     push    de                ; on stack
 
-    call    FRCADR            ; DE = Timeout
-    ld      a,d
-    or      a,e
-    jr      nz,.fn_timeout    ; Check until timed out
+    call    CHKNUM
+    ld      a,(FAC)           ;
+    or      a                 ; If Argument <> 0
+    jr      nz,.fnk_wait       ;   Do Timeout
 
-.fn_loop:
+.fnk_loop:
     call    key_check         ; Check for a key
-    jr      nz,.fn_return       ; Found a key, return it
-    jr      .fn_loop
+    jr      nz,.fnk_return       ; Found a key, return it
+    jr      .fnk_loop
 
-.fn_timeout:
-.fn_wait
-    call    key_check         ; Check for a key
-    jr      nz,.fn_done       ; Found a key, return it
-    dec     de                
-    ld      a,d               ; If DE<>0, return
-    or      a                 
-    jr      nz,.fn_wait       
-    ld      a,e
-    or      a
-    jr      nz,.fn_wait
-.fn_done:
-    push    af
+.fnk_wait
     xor     a
-    ld      (LSTX),a
+    ld      (LSTX),a          ; Clear debounce 
     ld      (KCOUNT),a
-    pop     af
-.fn_return
+    ld      b,8
+.fnk_next:
+    call    key_check         ; Check for a key
+    jr      nz,.fnk_return       ; Found a key, return it
+    djnz    .fnk_next
+
+.fnk_return
     jp      SNGFLT            ; and float it
 
 ;----------------------------------------------------------------------------
@@ -1683,7 +1673,7 @@ FN_HEX:
     ld      a,(FAC)
     cp      154         ; If more than 23 bits 
     jp      nc,FCERR    ;   Error Out
-    call    FRCADR        ; convert argument to 24 bit signed integer in C,DE
+    call    FRCADR        ; convert argument to 16 bit integer DE
     ld      hl,FBUFFR+1 ; hl = temp string
     ld      a,d
     call    .hexbyte   ; yes, convert byte in D to hex string
