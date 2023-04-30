@@ -63,15 +63,16 @@
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 ; 2023-05-01 v1.3  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
+;                  Added hexadecimal constants in formulas, anywhere formula can be used
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
 ;                  Revise CLS to accept an optional parameter for (FG * 16 ) + BG color integer OR 2-byte word
 ;                  Added SDTM command to set RealTime Clock
 ;                  Added DTM$() function to get datat from RealTime Clock
 ;                  Revised PEEK/POKE commands: added TO / STEP keywords, hex numbers, signed/unsigned ints
-;                  Added DEEK/DOKE commands: double peek/poke
-;                  Added COPY command to duplicate ranges of values quickly
-;                  Updated IN/OUT commands to accept hex values
-;                  Added KEY function to return
+;                  Added DEEK/DOKE (Double pEEK/pOKE): read/write 16-bit word from/to memory
+;                  Updated COPY command to copy block of bytes from one memory location to another
+;                  Updated IN/OUT commands to allow ports 0-65535
+;                  Added KEY() function to wait for/check for key press
 
 VERSION  = 1
 REVISION = 3
@@ -1562,24 +1563,50 @@ joy05:
 
 
 ;----------------------------------------------------------------------------
-;;; EXPERIMENTAL!
-;;; 
 ;;; KEY() Function - Read Keyboard
 ;;; 
 ;;; Format: KEY(<number>)
 ;;;
 ;;; Action: Checks for a key press and returns the ASCII code of the key.
-;;;         Returns after the keyboard is polled <number> times, or a key
-;;;         is pressed, whichever comes first, returning 0 if no key was
-;;;         pressed. KEY(0) does not return until a key is pressed.
+;;;
+;;; If <number> is 0, waits for a key to be pressed then returns it's 
+;;; ASCII code. 
+;;;
+;;; If <number> is positive, checks to see if a key has been pressed, 
+;;; returning the key's ASCII code (or 0 if no key was pressed). A key 
+;;; press will only be detected once, returning 0 on subsequent calls
+;;; until the key is released and pressed again.
+;;;
+;;; If <number> is negative, returns the ASCII code of the key currently
+;;; being pressed (or 0 if no keys are being pressed). Subsequent calls
+;;; will continue to return the key's ASCII code if the key remains
+;;; pressed.
+;;;
+;;; KEY() does not expand control-key combinations to keywords. Instead
+;;; CTRL-A through CTRL-Z generate ASCII 1 through 27 (^A-^Z)
+;;; The rest of the control characters are assigned as follows:
+;;;
+;;;   KEY:  ;   =   0   :   /   -  8   9   7   ,   1   .   2  <-- 
+;;; ASCII: 128  27  28  29  30  31 91  93  96 123 124 125 126 127 
+;;;  NOTE:  ^@ ESC  ^\ ^] ^^ ^_    [   ]   `  {   |   }   ~   DEL
 ;;; 
+;;;   KEY:   3    4    5    6   SPACE  RTN  Shift-SPC  Shift-RTN
+;;; ASCII:  158  143  159  142   $C6   255     160        134
+;;;  NOTE: LEFT  UP  DOWN RIGHT  dot  black   blank   checkerboard
 ;;; 
 ;;; EXAMPLES of KEY Function:
 ;;; 
-;;;   !!!TODO 
+;;; PRINT KEY(0)                Wait for a key press then print ASCII code
 ;;; 
+;;; 10 K=KEY(1)                 Check for key press and add key character
+;;; 20 IF K THEN S$=S$+CHR$(K)  to string once per key press
+;;;
+;;; 10 K=KEY(-1)                Continously decrement or increment X as 
+;;; 2O IF K=97 THEN X=X-1       long as the A or S key, respectively, is
+;;; 30 IF K=115 THEN X=X+1      depressed.
+;----------------------------------------------------------------------------
 
-FN_KEY
+FN_KEY:
     pop     hl                ; Restore Text Pointer
     rst     CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
@@ -1590,22 +1617,26 @@ FN_KEY
     call    CHKNUM
     ld      a,(FAC)           ;
     or      a                 ; If Argument <> 0
-    jr      nz,.fnk_wait       ;   Do Timeout
+    jr      nz,.fnk_notz       ;   Do Timeout
 
-.fnk_loop:
+.fnk_wait:
     call    key_check         ; Check for a key
     jr      nz,.fnk_return       ; Found a key, return it
-    jr      .fnk_loop
+    jr      .fnk_wait
 
-.fnk_wait
+.fnk_notz
+    ld      a,(FACHO)
+    rla
+    jr      nc,.fnk_plus
     xor     a
     ld      (LSTX),a          ; Clear debounce 
     ld      (KCOUNT),a
+.fnk_plus:
     ld      b,8
-.fnk_next:
+.fnk_loop:
     call    key_check         ; Check for a key
     jr      nz,.fnk_return       ; Found a key, return it
-    djnz    .fnk_next
+    djnz    .fnk_loop
 
 .fnk_return
     jp      SNGFLT            ; and float it
@@ -1671,8 +1702,6 @@ FN_HEX:
     ld      de,LABBCK  ; return address
     push    de         ; on stack
     ld      a,(FAC)
-    cp      154         ; If more than 23 bits 
-    jp      nc,FCERR    ;   Error Out
     call    FRCADR        ; convert argument to 16 bit integer DE
     ld      hl,FBUFFR+1 ; hl = temp string
     ld      a,d
