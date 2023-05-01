@@ -25,9 +25,6 @@ This folder contains Aquarius MX documentation and logo files.
    - **[Aquarius Computer - Assembling and Testing the Aqurius MX](https://youtu.be/FKW6YiFKHf0)**
    - **[Aquarius Computer - Using USB BASIC](https://youtu.be/Butym641a-0)**
 
-## To-Be Completed
-- **Aquarius MX Quick-Start Guide:** How to get up and running quickly with your new Aquarius MX.
-
 ## Logo Usage Recommendations
 - **Keep it in Proportion** - Maintain the proper proportions of the Aquarius MX logo. Don't squash or stretch the logo to fill empty space. In most design/layout applications, this means dragging to resize the logo from the CORNER points, not the sides.
 - **Colors Matter** - Don't change the colors of the logo to suit your needs. Keep the BLUE the same color blue, and don't change the COLOR version of the logo to modify the rainbow colors in the "Q".
