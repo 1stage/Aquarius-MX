@@ -310,13 +310,14 @@ EDITLINE:
     BIT   SF_RETYP,a
     JP    z,.waitkey
     inc   e
-rt_home:
+.rt_home:
    dec   e
    jr    z,.gethistory
    dec   hl
    call  _cursor_left    ; cursor left to start of buffer
-   jr    .rt_home.gethistory:
-    push  hl              ; push buffer address
+   jr    .rt_home
+.gethistory:
+   push  hl              ; push buffer address
 .clearline:
     ld    a,(hl)
     or    a
