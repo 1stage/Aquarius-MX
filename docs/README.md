@@ -2,6 +2,7 @@
 This folder contains Aquarius MX documentation and logo files.
 
 ## Folder Contents
+ - **USB BASIC v1.3.pdf** - This file details the new and updated commands in USB BASIC v1.3.
  - **MX_Bottom_Label.pdf** - This file is a PDF form (with embedded fonts) that allows makers of the Aquarius MX to create a professional-looking label for the bottom of the case. It can be printed using a laser, inkjet, or dyesub printer, or can be used for laser-engraved labels.
    - **Model Number field** - This value should match the PCB version, so the default MX0103-C is probably best. If you make any updates to the MX PCB, or add any modifications, consider changing this to something more in line with your modification.
    - **Serial Number field** - This value is the serial number for your unit. It is common to start with a unique sequence of numbers like 2001, 2002, 2003, followed by a three letter combination of the person making the unit.
@@ -23,9 +24,6 @@ This folder contains Aquarius MX documentation and logo files.
    - **[Aquarius Computer - Programming the Aquarius MX ROM and GALs](https://youtu.be/DqxqzWqVAIM)**
    - **[Aquarius Computer - Assembling and Testing the Aqurius MX](https://youtu.be/FKW6YiFKHf0)**
    - **[Aquarius Computer - Using USB BASIC](https://youtu.be/Butym641a-0)**
-
-## To-Be Completed
-- **Aquarius MX Quick-Start Guide:** How to get up and running quickly with your new Aquarius MX.
 
 ## Logo Usage Recommendations
 - **Keep it in Proportion** - Maintain the proper proportions of the Aquarius MX logo. Don't squash or stretch the logo to fill empty space. In most design/layout applications, this means dragging to resize the logo from the CORNER points, not the sides.
