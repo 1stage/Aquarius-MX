@@ -66,8 +66,8 @@
 ;                  Added hexadecimal constants in formulas, anywhere formula can be used
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
 ;                  Revise CLS to accept an optional parameter for (FG * 16 ) + BG color integer OR 2-byte word
-;                  Added SDTM command to set RealTime Clock
-;                  Added DTM$() function to get datat from RealTime Clock
+;                  Added support for DS1244 Real Time Clock including 
+;                  Added SDTM statement to set, DTM$() function to read RealTime Clock
 ;                  Revised PEEK/POKE commands: added TO / STEP keywords, hex numbers, signed/unsigned ints
 ;                  Added DEEK/DOKE (Double pEEK/pOKE): read/write 16-bit word from/to memory
 ;                  Updated COPY command to copy block of bytes from one memory location to another
@@ -276,6 +276,14 @@ WIN_INPUTLINE     jp  InputLine
 WIN_reserved1     jp  break
 WIN_reserved2     jp  break
 
+; real time clock
+RTC_INIT_RTC      jp  rtc_init
+RTC_READ_RTC      jp  rtc_read
+RTC_WRITE_RTC     jp  rtc_write
+RTC_DTM_TO_STR    jp  dtm_to_str
+RTC_DTM_TO_FMT    jp  dtm_to_fmt
+RTC_STR_TO_DTM    jp  str_to_dtm
+
 ; windowed text functions
    include "windows.asm"
 
@@ -285,6 +293,9 @@ WIN_reserved2     jp  break
  else
    include "debug.asm"
  endif
+
+C0_END:   
+C0_SIZE = C0_END - $C000
 
 ; fill with $FF to $E000
      assert !($E000 < $) ; low rom full!!!
@@ -847,9 +858,9 @@ IMMEDIATE:
     SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active
     ld      hl,-1
     ld      (CURLIN),hl         ; Current BASIC line number is -1 (immediate mode)
-    ld      hl,BUF           ; HL = line input buffer
+    ld      hl,BUF              ; HL = line input buffer
     ld      (hl),0              ; buffer empty
-    ld      b,BUFLEN         ; 74 bytes including terminator
+    ld      b,BUFLEN            ; 74 bytes including terminator
     call    EDITLINE            ; Input a line from keyboard.
     ld      hl,SysFlags
     RES     SF_RETYP,(HL)       ; CTRL-R inactive
@@ -862,7 +873,7 @@ ENTERLINE:
     jr      z,immediate         ; If nothing on line then loop back to immediate mode
     push    hl
     ld      de,ReTypBuf
-    ld      bc,BUFLEN        ; save line in history buffer
+    ld      bc,BUFLEN           ; save line in history buffer
     ldir
     pop     hl
     jp      $0424               ; back to system ROM
@@ -2109,8 +2120,8 @@ Wait_key:
 ; disk file selector
    include "filerequest.asm"
    
-CODE_END:   
-CODE_SIZE = CODE_END - RAMEND
+E0_END:   
+E0_SIZE = E0_END - $E000
 
 ; fill with $FF to end of ROM
 
