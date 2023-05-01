@@ -61,7 +61,7 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-05-01 v1.3  Removed unimplemented PCG code
+; 2023-05-12 v1.3  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added hexadecimal constants in formulas, anywhere formula can be used
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
