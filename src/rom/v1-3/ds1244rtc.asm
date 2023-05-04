@@ -25,13 +25,10 @@ ds1244addr: EQU $4000
 ;         BC, DE, HL unchanged
 rtc_init:
     push    bc
-    push    hl
-    ld      hl,DTM_BUFFER  
     xor     a
     dec     a
     ld      (bc),a
     call    rtc_read  ; since this will error out the clock if needs be
-    pop     hl
     pop     bc
     ret                 
 

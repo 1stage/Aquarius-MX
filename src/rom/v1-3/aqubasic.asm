@@ -92,7 +92,7 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ; CALL   - call machine code subroutine
 ; DEBUG  - call AquBUG Monitor/debugger
 
-; EDITEDIT   - Edit a BASIC line
+; EDIT   - Edit a BASIC line
 
 ; LOAD   - load file from USB disk
 ; SAVE   - save file to USB disk
