@@ -559,7 +559,7 @@ endif
     ld      hl,vars-1          ; top of public RAM
 MEMSIZE:
     ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
-    ld      de,-50             ; subtract 50 for strings space
+    ld      de,-1024           ; subtract 50 for strings space
     add     hl,de
     ld      (TOPMEM),hl        ; Top location to be used for stack
     ld      hl,PROGST
