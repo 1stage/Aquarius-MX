@@ -206,18 +206,21 @@ dtm_val_loop:
         inc     hl                ;
         inc     de                ;Move to Next RTC Byte
         djnz    dtm_val_loop      ;and Check It
-        xor     a                 ;No Errors - Return Success
         pop     bc                ;Restore Registers  
         pop     de                
         pop     hl
+        ld      a,$7F
+        ld      (hl),a            ;Set to Valid Conversion
+        xor     a                 ;No Errors - Return Success
         ret                       
 
 dtm_ret_err:
-        ld      a,$FF             ;Date Format Error
-        or      a                 ;Set Flags to match Return Value
         pop     bc                ;Restore Registers  
         pop     de                
         pop     hl
+        xor     a
+        ld      (hl),a            ;Set to Invalid DateTime
+        dec     a                 ;Return $FF with flags set
         ret                       ;All Done
 
 dtm_bounds:     ;seconds minutes    hour     day     month

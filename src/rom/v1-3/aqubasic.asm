@@ -129,9 +129,6 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ;   During a cold boot, an unused table is written here, then it is never used again
 RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes. 
                         ; This Address assignment will not change in the future.
-                        ; Any emulators RTC hacks should read/write this buffer.
-
-;    $3822 - $383F      ; Unassigned, 22 bytes
 
 ; Temporary USB BASIC system variables 
 DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
@@ -142,6 +139,14 @@ DTM_STRING = $38E6      ; DTM String Buffer, 19 bytes
 RTC_TEMP = $38A1        ; Software Clock Temporary Shadow Register, 10 bytes  
 ;   TMPSTK+1...DIMFLG: $38A1-$38AA. 10 bytes
   endif
+
+;; IMPLEMENTING REAL TIME CLOCK IN EMULATORS
+;; The will be a read from memory location $3821 whenever the RTC is accessed
+;; If $3821 contains $7F, the RTC is being written to and the following
+;; bytea contain the date to be written.
+;; If $3821 contains any other value, the RTC was just read and $3821 should
+;; be filled with $FF and the following bytes with the current date/time.
+;; See the RTC driver file for the date/time structure.
 
   ifdef softrom
 RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
