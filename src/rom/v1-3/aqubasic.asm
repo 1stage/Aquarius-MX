@@ -559,7 +559,7 @@ endif
     ld      hl,vars-1          ; top of public RAM
 MEMSIZE:
     ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
-    ld      de,-50             ; subtract 50 for strings space
+    ld      de,-1024           ; subtract 50 for strings space
     add     hl,de
     ld      (TOPMEM),hl        ; Top location to be used for stack
     ld      hl,PROGST
@@ -1124,7 +1124,8 @@ ST_DOKE:
 ;
 ;;; POKE Statement - Write to Memory Location(s)
 ;;; 
-;;; FORMAT: POKE <address>, <byte> [,<byte>...] [,STEP count, <byte>...]
+;;; FORMAT: POKE <address>, [<byte or string>, <byte or string>...] 
+;;;                         [,STEP count, <byte or string>...]
 ;;;         POKE <address> TO <address>, <byte>
 ;;;  
 ;;; Action: Writes <byte>s to memory starting at <address>. 
@@ -1135,6 +1136,7 @@ ST_DOKE:
 ;;;   POKE 12347,7,6                    Display double-ended arrow
 ;;;   POKE 12366,$13,STEP 39,$14        Display standing person "sprite"
 ;;;   POKE 12329,$D4,STEP 1023,$10      Display red heart on black background
+;;;   POKE $3009,T$,5,C$                Display T$, copyright, C$ on row 0
 ;;;
 ;;;   POKE $3400 TO $3427,5             Set border color to magenta.
 ;;;   POKE $3028 TO $33E7,$86           Fill screen with checkerboard character
@@ -1148,13 +1150,23 @@ ST_POKE:
     cp      TOTK            ; is TO Token 
     jr      z,.poke_fill    ;   Do Fill
     SYNCHK  ','             ; Require a Comma
+.poke_save:
+    ld      b,d             ; Save Poke Address 
+    ld      c,e             
 .poke_loop:
     cp      STEPTK          ; If STEP Token
     jr      z,.poke_step     ;   Do STEP
     push    de              ; Save Address  
-    call    GETBYT          ; Get <byte> in A
+    call    FRMEVL          ; Evaluate Poke Argument
+    ld      a,(VALTYP)      ; 
+    or      a               ; If It's a String
+    jr      nz,.poke_string ;   Go Poke It
+    call    CONINT          ; Convert to <byte> in A
     pop     de              ; Restore Address
     ld      (de),a          ; Write Byte to Memory
+    ld      b,d             ; Save Last Poke Address
+    ld      c,e             
+.poke_comma:
     ld      a,(hl)          ; If Next Character
     cp      ','             ; is Not a Comma
     ret     nz              ;   We are done
@@ -1164,15 +1176,29 @@ ST_POKE:
 
 .poke_step:
     rst     CHRGET          ; Skip STEP 
-    push    de              ; Save Poke Address
+    push    bc              ; Save Last Address
     call    GETINT          ; Get Step Amount in DE
-    ex      (sp),hl         ; HL=Poke Address, STK=Text Pointer
+    ex      (sp),hl         ; HL=Poke Address, Stack=Text Pointer
     add     hl,de           ; Add Step to Address
     ld      d,h             ; Now DE contains
     ld      e,l             ;   new Address
     pop     hl              ; Get Text Pointer back
     SYNCHK  ','             ; Require a Comma
-    jr      .poke_loop
+    jr      .poke_save
+
+.poke_string:
+    ex      (sp),hl         ; HL=Poke Address, Stack=Text Pointer
+    push    hl              ; Stack=Poke Address, Text Pointer
+    push    hl              ; Stack=Poke Address, Poke Address, Text Pointer
+    call    STRLENADR       ; Get String Length in BC, Address in HL
+    pop     de              ; Get Address Back
+    jr      z,.poke_skip    ; If Length isn't 0
+    ldir                    ; Copy String to Memory
+.poke_skip:
+    dec     de              ; Compensate for INC DE after comma check
+    pop     bc              ; Get Starting Poke Address Back
+    pop     hl              ; Get Text Pointer Back
+    jr      .poke_comma     ; and check for a Comma
 
 .poke_fill:
     rst     CHRGET          ; Skip TO Token
@@ -1191,6 +1217,19 @@ ST_POKE:
     rst     COMPAR          
     jr      c,.fill_loop    ; Loop if < DE
     pop     hl              ; Restore Text Pointer
+    ret
+
+STRLENADR:
+    call    FRESTR          ; Free up Temp String, Get Length in BC, Address in HL
+    inc     hl              ; Skip String Descriptor length byte
+    inc     hl              ; Set Address of String Text into HL
+    ld      a,(hl)          ;
+    inc     hl
+    ld      h,(hl)
+    ld      l,a
+    ld      b,0             ; BC = String Length
+    ld      a,c             ; Put length in A
+    or      a               ; and Set Flags
     ret
 
 ;----------------------------------------------------------------------------
@@ -1679,13 +1718,7 @@ FN_DEC:
     ld      de,LABBCK       ; return address for SNGFLT
     push    de              ; on stack
 
-    call    FRESTR          ; Make sure it's a String and Free up temp
-    inc     hl              ; Skip String Descriptor length byte
-    inc     hl              ; Set Address of String Text into HL
-    ld      a,(hl)          ;
-    inc     hl
-    ld      h,(hl)
-    ld      l,a
+    call    STRLENADR       ; Get String Text Address
     dec     hl              ; Back up Text Pointer
     jp      EVAL_HEX        ; Convert the Text
 

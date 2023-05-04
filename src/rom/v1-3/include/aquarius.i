@@ -213,6 +213,7 @@ GIVINT  = $0B21   ; Float Integer MSB=[A], LSB=[C] into Floating Point Accumulat
 FLOATB  = $0B22   ; Float Integer MSB=[A], LSB=[B] into Floating Point Accumulator
 FLOATD  = $0B23   ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
 SNGFLT  = $0B36   ; Float Unsigned Byte in A
+CONINT  = $0B57   ; Convert Floating Point Accumulator to Byte in A
 FLOATR  = $14FB   ; Float Signed Number in B,A,D,E
 GETINT  = $1AD0   ; Parse an Integer
 

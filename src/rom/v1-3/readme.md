@@ -18,7 +18,8 @@ EXAMPLES of DOKE Statement:
 
 POKE Statement - Write to Memory Location(s)
 
-FORMAT: POKE <address>, <byte> [,<byte>...] [,STEP count, <byte>...]
+FORMAT: POKE <address>, [<byte or string>, <byte or string>...]
+                        [,STEP count, <byte or string>...]
         POKE <address> TO <address>, <byte>
 
 Action: Writes <byte>s to memory starting at <address>.
@@ -29,6 +30,7 @@ EXAMPLES of POKE Statement:
   POKE 12347,7,6                    Display double-ended arrow
   POKE 12366,$13,STEP 39,$14        Display standing person "sprite"
   POKE 12329,$D4,STEP 1023,$10      Display red heart on black background
+  POKE $3009,T$,5,C$                Display T$, copyright, C$ on row 0
 
   POKE $3400 TO $3427,5             Set border color to magenta.
   POKE $3028 TO $33E7,$86           Fill screen with checkerboard character
