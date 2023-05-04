@@ -6,7 +6,7 @@
         {
             "label": "CompileBASIC",
             "type":"shell",
-            "command": "zmac.exe --zmac -e --oo cim -L -n -I include pt3play.asm",    
+            "command": "zmac.exe --zmac -e --oo cim --nmnv -L -n -I include pt3play.asm",    
             "group":  "build",
             "presentation": {
                 "echo": false,
