@@ -1941,7 +1941,7 @@ ST_SDTM:
     
     ld      a,c             ; If less than 12 characters long
     cp      12              ;   Return without setting date
-    jp      c,RET           ;
+    jr      c,.pop_ret
 
     inc     hl              ; Skip String Descriptor length byte
     inc     hl              ; Set DE to Address of String Text
@@ -1954,6 +1954,7 @@ ST_SDTM:
     ret     nz              ; Don't Write if invalid DateTime
     ld      bc,RTC_SHADOW
     call    rtc_write
+.pop_ret:    
     pop     hl              ; Restore text pointer
     ret
 

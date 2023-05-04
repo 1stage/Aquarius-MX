@@ -251,6 +251,7 @@ PTRGET  = $10D1   ; Get Pointer to Variable
 PTRGT2  = $10D6   ; Get Pointer to Variable after reading first char
 
 FSUBS   = $1258   ; Floating Point Subtract
+NEG     = $150B   ; Negate Value in Floating Point Accumulator
 PSHNEG  = $1770   ; Push address of NEG routine on Stack
 POLYX   = $1837   ; Polynomial Evaluator
 PI2     = $1953   ; Floating Point Constant Pi/2  

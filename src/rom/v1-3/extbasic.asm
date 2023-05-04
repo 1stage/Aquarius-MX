@@ -188,7 +188,7 @@ ATN2:   ld      hl,ATNCON       ; EVALUATE APPROXIMATION POLYNOMIAL
 ATNCON: db    9               ;DEGREE
         db    $4A,$D7,$3B,$78 ; .002866226
         db    $02,$6E,$84,$7B ; -.01616574
-        db    $FE,$C1,$2F,$2F ; .04290961
+        db    $FE,$C1,$2F,$7C ; .04290961
         db    $74,$31,$9A,$7D ; -.07528964
         db    $84,$3D,$5A,$7D ; .1065626
         db    $C8,$7F,$91,$7E ; -.142089
