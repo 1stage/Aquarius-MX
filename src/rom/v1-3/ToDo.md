@@ -8,8 +8,6 @@ This file is for recording upcoming changes and features that are being added to
 
 - Test hardware behavior without RTC installed (RAM only)
 
-- Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
-
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
 
 
@@ -48,3 +46,5 @@ This file is for recording upcoming changes and features that are being added to
 - Implement DEF FN and ATN()
 
 - Stand-alone PT3 Player works both on actual hardware and AquaLite in MX mode.
+
+- Fix issue where no result is returned from DTM$() after a successfull SDTM is made.

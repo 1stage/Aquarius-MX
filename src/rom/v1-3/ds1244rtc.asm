@@ -200,4 +200,5 @@ ds_wrDataInner:
     pop     de
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
+    call    rtc_read        ; Sets buffers up correctly
     ret                                     
