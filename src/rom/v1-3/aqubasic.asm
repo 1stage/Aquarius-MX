@@ -68,7 +68,7 @@
 ;                  Revise CLS to accept an optional parameter for (FG * 16 ) + BG color integer OR 2-byte word
 ;                  Added support for DS1244 Real Time Clock including 
 ;                  Added SDTM statement to set, DTM$() function to read RealTime Clock
-;                  Revised PEEK/POKE commands: added TO / STEP keywords, hex numbers, signed/unsigned ints
+;                  Revised PEEK/POKE commands: added TO / STEP keywords, hex numbers, signed/unsigned ints, strings
 ;                  Added DEEK/DOKE (Double pEEK/pOKE): read/write 16-bit word from/to memory
 ;                  Updated COPY command to copy block of bytes from one memory location to another
 ;                  Updated IN/OUT commands to allow ports 0-65535
