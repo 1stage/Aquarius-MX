@@ -168,7 +168,7 @@ PT3_LOAD:
        PUSH HL
        POP  IY
        BIT  ATTR_B_DIRECTORY,(IY+11) ; directory?
-       JR   NZ, .next_song     ; yes, skip file
+       JP   NZ, .next_song     ; yes, skip file
        PUSH HL                ; Save filename address to HL stack
        LD   D,13
        LD   E,1
@@ -227,10 +227,10 @@ PT3_LOAD:
 ;  ANY IDEA WHY I CAN'T UNCOMMENT EITHER OR BOTH OF THE PAIRS OF LINES BELOW WITHOUT 
 ;  GETTING A COMPILER VALUE ERROR in line 171 (JR   NZ, .next_song) ?
 ;
-        ; CP   "1"                 ; If 1 key pressed...
-        ; JR   Z, .ss1         ; ...set to skin 1 (EQText)
-        ; CP   "2"                 ; If 2 key pressed...
-        ; JR   Z, .ss2         ; ...set to skin 2 (MeterText)
+        CP   "1"                 ; If 1 key pressed...
+        JR   Z, .ss1         ; ...set to skin 1 (EQText)
+        CP   "2"                 ; If 2 key pressed...
+        JR   Z, .ss2         ; ...set to skin 2 (MeterText)
         CP   "3"                 ; If 3 key pressed...
         JR   Z, .ss3         ; ...set to skin 3 (KelpText)
     ;                           --- Add More skins below ---
