@@ -224,9 +224,6 @@ PT3_LOAD:
        jr   z,.next_song      ; if SPACE pressed then play next song
 
 ;
-;  ANY IDEA WHY I CAN'T UNCOMMENT EITHER OR BOTH OF THE PAIRS OF LINES BELOW WITHOUT 
-;  GETTING A COMPILER VALUE ERROR in line 171 (JR   NZ, .next_song) ?
-;
         CP   "1"                 ; If 1 key pressed...
         JR   Z, .ss1         ; ...set to skin 1 (EQText)
         CP   "2"                 ; If 2 key pressed...
