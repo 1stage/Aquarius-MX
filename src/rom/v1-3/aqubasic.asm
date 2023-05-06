@@ -383,7 +383,7 @@ SPLASH:
     call    OpenWindow
     ld      ix,bootwindow
     call    OpenWindow
-    ld      hl,bootmenutext
+    ld      hl,BootMenuText
     call    WinPrtStr
 
 ; set up real time clock
@@ -391,19 +391,18 @@ SPLASH:
 
     call    INIT_RTC
    
+   
+   
 ; outer loop for boot option key so date time display gets updated
 SPLLOOP:
     call    SPL_DATETIME       ; Print DateTime at the bottom of the screen
 ; wait for Boot option key
-SPLKEY:
-    ld      c,0                 ;call the clock update every 256 loops
-SPLKEYInner:
-    call    Key_Check
-    jr      nz,SPLGOTKEY        ; We got a key pressed
-    dec     c
-    jr      nz,SPLKEYInner      ; loop until c=0
-    call    SPL_DATETIME        ; Print DateTime at the bottom of the screen
-    jr      SPLKEY
+    ld      b,0                ; Call the clock update every 256 loops
+SPLKEY:                        ;
+    call    Key_Check          ;
+    jr      nz,SPLGOTKEY       ; We got a key pressed
+    djnz    SPLKEY             ; loop until c=0
+    jr      SPLLOOP
 SPLGOTKEY:
   ifndef softrom
     cp      "1"                ; '1' = load ROM
@@ -411,14 +410,14 @@ SPLGOTKEY:
   endif
     cp      "2"                ; '2' = debugger
     jr      z, DEBUG
-    cp      "a"                ; 'a' = About screen
-    jr      z, AboutSCR        
-    cp      "A"                ; 'A' = About screen
-    jr      z, AboutSCR        
     cp      $0d                ; RTN = cold boot
     jp      z, COLDBOOT
     cp      $03                ;  ^C = warm boot
     jp      z, WARMBOOT
+    
+    and     $DF                ; Convert letters to upper-case
+    cp      "A"                ; 'A' = About screen
+    jr      z, AboutSCR        
     jr      SPLLOOP
 
 DEBUG:
@@ -1475,6 +1474,21 @@ psgloop:
     inc     hl               ; next character on command line
     jr      psgloop          ; parse next register & value
 
+
+; Parse Function Argument and Put Return Address on Stack
+InitFN:
+    pop     hl                ; Pop Return Address
+    pop     de                ; Pop Text Pointer
+    ex      (sp),hl           ; Save Return Address, Discard Hook Return Address 
+    ex      de,hl             ; HL = Return Address
+    rst     CHRGET  
+    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
+    ex      (sp),hl           ; Swap Text Pointer with Return Address
+    ld      de,LABBCK         ; return address for SNGFLT
+    push    de                ; on stack
+    jp      (hl)              ; Fast Return 
+
+
 ;----------------------------------------------------------------------------
 ;;; Extended PEEK() Function - Read from Memory
 ;;; 
@@ -1491,14 +1505,11 @@ psgloop:
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
-    rst     CHRGET  
-    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
-    ex      (sp),hl           
-    ld      de,LABBCK         ; return address for SNGFLT
-    push    de                ; on stack
-    call    FRCADR            ; Convert to Integer
-    ld      a,(de)            ;[M80] GET THE VALUE TO RETURN
-    jp      SNGFLT            ;[M80] AND FLOAT ITnc
+    push    hl                ; Save Text Pointer
+    call    InitFN            ; Parse Arg and set return address
+    call    FRCADR            ; Convert to Arg to Address
+    ld      a,(de)            ; Read byte at Address
+    jp      SNGFLT            ; and Float it
 
 ;----------------------------------------------------------------------------
 ;;; DEEK() Function - Read 16 bit word from Memory
@@ -1516,12 +1527,7 @@ FN_PEEK:
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
-    POP     hl                ; Restore Text Pointer
-    rst     CHRGET            ; Skip DEEK Token
-    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
-    ex      (sp),hl           
-    ld      de,LABBCK         ; return address for SNGFLT
-    push    de                ; on stack
+    call    InitFN            ; Parse Arg and set return address
     call    FRCADR            ; Convert to Integer
     ld      h,d               ; HL = <address>
     ld      l,e
@@ -1548,12 +1554,7 @@ FN_DEEK:
 ;----------------------------------------------------------------------------
 
 FN_IN:
-    pop     hl
-    rst     CHRGET  
-    call    PARCHK           ; Read number from line - ending with a ')'
-    ex      (sp),hl
-    ld      de,LABBCK        ; return address for SNGFLT
-    push    de               ; on stack
+    call    InitFN            ; Parse Arg and set return address
     call    FRCADR            ; convert argument to 16 bit integer in DE
     ld      b,d
     ld      c,e              ; bc = port
@@ -1569,12 +1570,7 @@ FN_IN:
 ;                       - 2 will read right joystick only
 
 FN_JOY:
-    pop     hl             ; Return address
-    rst     CHRGET  
-    call    $0a37          ; Read number from line - ending with a ')'
-    ex      (sp),hl
-    ld      de,LABBCK      ; set return address
-    push    de
+    call    InitFN            ; Parse Arg and set return address
     call    FRCINT         ; convert argument to 16 bit integer in DE
 
     ld      a,e
@@ -1662,13 +1658,7 @@ joy05:
 ;----------------------------------------------------------------------------
 
 FN_KEY:
-    pop     hl                ; Restore Text Pointer
-    rst     CHRGET  
-    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
-    ex      (sp),hl           ; Text Pointer on to Stack
-    ld      de,LABBCK         ; return address for SNGFLT
-    push    de                ; on stack
-
+    call    InitFN            ; Parse Arg and set return address
     call    CHKNUM
     ld      a,(FAC)           ;
     or      a                 ; If Argument <> 0
@@ -1716,13 +1706,7 @@ FN_KEY:
 ;----------------------------------------------------------------------------
 
 FN_DEC:
-    pop     hl
-    rst     CHRGET  
-    call    PARCHK          ; Read number from line - ending with a ')'
-    ex      (sp),hl         ; 
-    ld      de,LABBCK       ; return address for SNGFLT
-    push    de              ; on stack
-
+    call    InitFN            ; Parse Arg and set return address
     call    STRLENADR       ; Get String Text Address
     dec     hl              ; Back up Text Pointer
     jp      EVAL_HEX        ; Convert the Text
@@ -1744,12 +1728,7 @@ FN_DEC:
 ;----------------------------------------------------------------------------
 
 FN_HEX:
-    pop     hl
-    rst     CHRGET  
-    call    PARCHK     ; evaluate parameter in brackets
-    ex      (sp),hl
-    ld      de,LABBCK  ; return address
-    push    de         ; on stack
+    call    InitFN            ; Parse Arg and set return address
     ld      a,(FAC)
     call    FRCADR        ; convert argument to 16 bit integer DE
     ld      hl,FBUFFR+1 ; hl = temp string
@@ -1817,12 +1796,7 @@ PRINTHEX:
 ;  Returns 16 bit variable B,A containing the USB BASIC ROM Version
 
 FN_VER:
-    pop     hl
-    rst     CHRGET  
-    call    PARCHK           ; Evaluate argument between parentheses - then ignore it
-    ex      (sp),hl
-    ld      de,LABBCK        ; return address
-    push    de               ; on stack
+    call    InitFN            ; Parse Arg and set return address
     ld      a, VERSION       ; returning (VERSION * 256) + REVISION
     ld      b, REVISION
     jp      FLOATB
@@ -1985,12 +1959,7 @@ ST_SDTM:
 
 
 FN_DTM:
-    pop     hl
-    inc     hl
-    call    PARCHK           ; Evaluate argument between parentheses into FAC 
-    ex      (sp),hl
-    ld      de,LABBCK        ; return address
-    push    de               ; on stack
+    call    InitFN            ; Parse Arg and set return address
     call    CHKNUM
     
     ld      a,(FAC)          ;  
