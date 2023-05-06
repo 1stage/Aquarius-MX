@@ -70,7 +70,7 @@ ST_CD:
 .show_path:
     LD     HL,PathName
     call   STROUT                ; print path
-    call   PRNCRLF
+    call   CRDO
     jr     .done
 .change_dir:
     pop    hl                    ; pop BASIC text pointer
@@ -387,7 +387,7 @@ _show_error:
     call    prtstr               ; print "disk error $"
     pop     af                   ; pop error code
     call    printhex
-    jp      PRNCRLF
+    jp      CRDO
 .index:
     ld      hl,_error_messages
     dec     a
@@ -402,7 +402,7 @@ _show_error:
     ld      h,(hl)               ; hl = error message
     ld      l,a
     call    prtstr               ; print error message
-    jp      PRNCRLF
+    jp      CRDO
 
 _error_messages:
     dw      no_376_msg           ; 1
@@ -694,9 +694,9 @@ st_write_sync:
 ST_CAT:
     push    hl                      ; save BASIC text pointer
     LD      A,$0D                   ; print carriage return
-    CALL    PRNCHR1
+    CALL    TTYCHR
     ld      a,23
-    ld      (CNTOFL),a             ; set initial number of lines per page
+    ld      (CNTOFL),a              ; set initial number of lines per page
 .cat_disk:
     call    usb__ready              ; check for USB disk
     jr      nz,.disk_error
@@ -707,7 +707,7 @@ ST_CAT:
     call    _show_error             ; show error code
     pop     hl
     ld      e,ERRFC
-    jp      ERROR                ; return to BASIC with FC error
+    jp      ERROR                   ; return to BASIC with FC error
 .cat_loop:
     LD      A,CH376_CMD_RD_USB_DATA
     OUT     (CH376_CONTROL_PORT),A  ; command: read USB data (directory entry)
@@ -737,24 +737,24 @@ ST_CAT:
     BIT     ATTR_B_DIRECTORY,C
     JR      Z,.cat_name
     LD      A,'<'
-    CALL    PRNCHR1                 ; print '<' in front of directory name
+    CALL    TTYCHR                  ; print '<' in front of directory name
 .cat_name:
     LD      A,(HL)
     INC     HL
-    CALL    PRNCHR1                 ; print name char
+    CALL    TTYCHR                  ; print name char
     DJNZ    .cat_name
     BIT     ATTR_B_DIRECTORY,C
     JR      NZ,.extn
     LD      A," "                   ; print ' ' between file name and extension
 .separator:
-    CALL    PRNCHR
+    CALL    TTYOUT
 .extn:
     LD      A,(HL)
     INC     HL
-    CALL    PRNCHR                  ; print 1st extn char
+    CALL    TTYOUT                  ; print 1st extn char
     LD      A,(HL)
     INC     HL
-    CALL    PRNCHR                  ; print 2nd extn char
+    CALL    TTYOUT                  ; print 2nd extn char
     LD      A,(HL)
     CP      ' '
     JR      NZ,.last                ; if 3rd extn char is SPACE
@@ -762,7 +762,7 @@ ST_CAT:
     JR      Z,.last
     LD      A,'>'                   ; replace with '>'
 .last:
-    CALL    PRNCHR                  ; print 3rd extn char
+    CALL    TTYOUT                  ; print 3rd extn char
     LD      HL,16
     ADD     HL,SP                   ; clean up stack
     LD      SP,HL
@@ -770,7 +770,7 @@ ST_CAT:
     AND     A                       ; if column = 0 then already on next line
     JR      Z,.cat_go
     LD      A," "                   ; else padding space after filename
-    CALL    PRNCHR
+    CALL    TTYOUT
 .cat_go:
     LD      A,CH376_CMD_FILE_ENUM_GO
     OUT     (CH376_CONTROL_PORT),A  ; command: read next filename
@@ -805,7 +805,7 @@ ST_DIR:
     call    usb_ready         ; check for USB disk (may reset path to root!)
     jr      nz,.error
     call    STROUT            ; print path
-    call    PRNCRLF
+    call    CRDO
     call    dos__directory    ; display directory listing
     jr      z,.st_dir_done    ; if successful listing then done
 .error:
@@ -849,7 +849,7 @@ ST_DIR:
 ;
 dos__directory:
         LD      A,$0D
-        CALL    PRNCHR                  ; print CR
+        CALL    TTYOUT                  ; print CR
         CALL    usb__open_dir           ; open '*' for all files in directory
         RET     NZ                      ; abort if error (disk not present?)
         ld      a,22
@@ -901,22 +901,22 @@ dos__prtDirInfo:
         LD      A,(HL)                  ; get next char of filename
         INC     HL
 .dir_prt_name:
-        call    PRNCHR1                 ; print filename char, with pause if end of screen
+        call    TTYCHR                  ; print filename char, with pause if end of screen
         DJNZ    .dir_name
         LD      A," "                   ; space between name and extension
-        call    PRNCHR
+        call    TTYOUT
         LD      B,3                     ; 3 characters in extension
 .dir_ext:
         LD      A,(HL)                  ; get next char of extension
         INC     HL
-        call    PRNCHR                  ; print extn char
+        call    TTYOUT                  ; print extn char
         DJNZ    .dir_ext
         LD      A,(HL)                  ; get file attribute byte
         INC     HL
         AND     ATTR_DIRECTORY          ; directory bit set?
         JR      NZ,.dir_folder
         LD      A,' '                   ; print ' '
-        CALL    PRNCHR
+        CALL    TTYOUT
         LD      BC,16                   ; DIR_FileSize-DIR_NTres
         ADD     HL,BC                   ; skip to file size
 .dir_file_size:
@@ -995,13 +995,13 @@ dos__prtDirInfo:
         LD      A,3                     ; 3 digit number with leading spaces
         CALL    print_integer           ; print HL as 16 bit number
         LD      A,B
-        CALL    PRNCHR                  ; print 'k', or 'M'
+        CALL    TTYOUT                  ; print 'k', or 'M'
         JR      .dir_tab
 .print_bytes:
         LD      A,4                     ; 4 digit number with leading spaces
         CALL    print_integer           ; print HL as 16 bit number
         LD      A,' '
-        CALL    PRNCHR                  ; print ' '
+        CALL    TTYOUT                  ; print ' '
         JR      .dir_tab
 .dir_folder:
         LD      HL,_dir_msg             ; print "<dir>"
@@ -1012,14 +1012,14 @@ dos__prtDirInfo:
         RET     Z                       ; if reached center of screen then return
         JR      NC,.tab_right           ; if on right side then fill to end of line
         LD      A,' '
-        CALL    PRNCHR                  ; print " "
+        CALL    TTYOUT                  ; print " "
         JR      .dir_tab
 .tab_right:
         LD      A,(TTYPOS)
         CP      0
         RET     Z                       ; reached end of line?
         LD      A,' '
-        CALL    PRNCHR                  ; no, print " "
+        CALL    TTYOUT                  ; no, print " "
         JR      .tab_right
 
 ;--------------------------------------------------------
@@ -1042,14 +1042,14 @@ print_integer:
        LD       B,A
 .lead_space:
        LD       A," "
-       CALL     PRNCHR        ; print leading space
+       CALL     TTYOUT        ; print leading space
        DJNZ     .lead_space
 .prtnum:
        LD       A,(HL)        ; get next digit
        INC      HL
        OR       A             ; return when NULL reached
        JR       Z,.done
-       CALL     PRNCHR        ; print digit
+       CALL     TTYOUT        ; print digit
        JR       .prtnum
 .done:
        POP      BC

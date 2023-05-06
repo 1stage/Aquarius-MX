@@ -181,7 +181,7 @@ prtstr:
    inc  hl
    or   a
    ret  z
-   call PRNCHR
+   call TTYOUT
    jr   prtstr
 
 

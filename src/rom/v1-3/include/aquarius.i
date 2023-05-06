@@ -191,16 +191,16 @@ FSIGN   = $28     ; Get sign of Floating Point Accumulator
 REDDY   = $036E   ; Text "Ok" CR,LF,NUL
 READY   = $0402   ; Display "Ok" and Enter Immediate Mode
 
-PRNCHR      = $1d94  ; print character in A
-PRNCHR1     = $1d72  ; print character in A with pause/break at end of page
-CRDONZ  = $19DE   ; Print CR/LF if not at beginning of line
-PRNCRLF     = $19ea  ; print CR+LF
 STROUT  = $0E9D   ; Print null or quote terminated string
-FINLPT  = $19BE   ; Terminate Printer Output
 LINPRT  = $1675   ; Print line number in HL
-
-SCROLLUP    = $1dfe  ; scroll the screen up 1 line
-SVCURCOL    = $1e3e  ; save cursor position (HL = address, A = column)
+CRDONZ  = $19DE   ; Print CR/LF if not at beginning of line
+CRDO    = $19EA   ; Print CR+LF
+FINLPT  = $19BE   ; Terminate Printer Output
+TTYCHR  = $1D72   ; Print character in A with pause/break at end of page
+TTYOUT  = $1D94   ; Print character in A to screen
+TTYFIS  = $1DE7   ; Save cursor position, character under cursor, and display cursor
+SCROLL  = $1DFE   ; scroll the screen up 1 line
+TTYSAV  = $1E3E   ; save cursor position (HL = address, A = column)
 
 LINEDONE    = $19e5  ; line entered (CR pressed)
 FNDLIN  = $049f  ; Find address of BASIC line (DE = line number)
@@ -230,12 +230,12 @@ MOVFR   = $1523   ; Move Number fron Registers to  Floating Point Accumulator
 MOVMF   = $153A   ; Move Number from Floating Point Accumulator to (HL)
 MOVE    = $153D   ; Move Number from (DE) TO (HL)
 
-RETSTR      = $0e2f  ; return string in HL from function  
-CRTST       = $0e5f  ; create string (HL = text ending with NULL)
+RETSTR  = $0E2F   ; Return string in HL from function  
+STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
 GETSPA  = $0EB3   ; Allocate Space for Temporary String
-QSTR        = $0e60  ; create string (HL = text starting with '"')
-GETFLNM     = $1006  ; get tape filename string (out: DE = filename, A = 1st char)
+STRLTI  = $0e60   ; Create string (HL = text starting with '"')
+ASC2    = $1006   ; Get pointer to string text (out: DE = filename, A = 1st char)
 GETVAR      = $10d1  ; get variable (out: BC = addr, DE = len)
 
 GETLEN      = $0ff7  ; get string length (in: (FACLO) = string block)

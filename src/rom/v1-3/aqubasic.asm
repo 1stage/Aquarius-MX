@@ -86,7 +86,6 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ; Commands:
 ; CLS    - Clear screen
 ; LOCATE - Position on screen
-; SCR    - Scroll screen
 ; OUT    - output data to I/O port
 ; PSG    - Program PSG register, value
 ; CALL   - call machine code subroutine
@@ -103,6 +102,7 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 
 ; functions:
 ; IN()   - get data from I/O port
+; DEC()  - convert hexadecimal string to number
 ; JOY()  - Read joystick
 ; HEX$() - convert number to hexadecimal string
 ; VER()  - Version function, returns the value of the Version and Revision of MX ROM
@@ -365,6 +365,8 @@ ROM_ENTRY:
     ld      (LSTX),a
     ld      (KCOUNT),a
 ;
+
+
 ; show splash screen (Boot menu)
 SPLASH:
     call    usb__root          ; root directory
@@ -372,7 +374,7 @@ SPLASH:
     call    clearscreen
     ld      b,40
     ld      hl,$3000
-.topline:
+.topline: 
     ld      (hl),' '
     set     2,h
     ld      (hl),WHITE*16+BLACK ; black border, white on black chars in top line
@@ -574,7 +576,7 @@ MEMSIZE:
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
   ifdef RTC_TEMP
-    ld      hl,RTC_TEMP        ; Copy Temporary RTC Registers to where they belong
+    ld      hl,RTC_TEMP        ; Copy Temporary RTC Registers to where they belongx`
     ld      de,RTC_SHADOW
     ld      bc,10
     ldir
@@ -1428,7 +1430,7 @@ ST_LOCATE:
 GOTO_HL:
     push    af
     push    hl
-    exx
+    exx                          ; save Registers for TTYFIS
     ld      hl,(CURRAM)          ; address of cursor within matrix
     ld      a,(CURCHR)           ; storage of the character behind the cursor
     ld      (hl),a               ; return the original character on screen
@@ -1450,7 +1452,7 @@ GOTO_HL:
     add     hl,de               ; added the columns
     ld      de,$3000            ; screen character-matrix (= 12288 dec)
     add     hl,de               ; putting it al together
-    jp      $1de7               ; Save cursor position and return
+    jp      TTYFIS              ; Save cursor position and return
 
 
 ;--------------------------------------------------------------------
@@ -1779,7 +1781,7 @@ PRINTHEX:
     add     7
 .hi_nib:
     add     '0'
-    call    PRNCHR
+    call    TTYOUT
     ld      a,b
     and     $0f
     cp      10
@@ -1788,7 +1790,7 @@ PRINTHEX:
 .low_nib:
     add     '0'
     pop     bc
-    jp      PRNCHR
+    jp      TTYOUT
 
 ;--------------------------------------------------------------------
 ;   VER function 

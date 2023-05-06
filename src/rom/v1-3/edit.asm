@@ -244,8 +244,8 @@ EDITLINE:
 
 ; pressed <RTN>, clean up and return with HL = buffer-1
 .retn:
-    call  STROUT        ; move screen cursor to end of string
-    call  PRNCRLF         ; print CR+LF
+    call  STROUT          ; move screen cursor to end of string
+    call  CRDO            ; print CR+LF
     xor   a               ; Carry clear = line edited
     ret
 
@@ -348,8 +348,8 @@ EDITLINE:
 
 ; CTRL-C
 .quit:
-    call  STROUT        ; move screen cursor to end of string
-    call  PRNCRLF         ; CR+LF
+    call  STROUT          ; move screen cursor to end of string
+    call  CRDO            ; CR+LF
     scf                   ; set Carry flag = edit aborted
     ret
 
@@ -406,7 +406,7 @@ _showstr:
     jr    nc,.prt_char  ;    if end of screen then...
     push  hl
     push  bc
-    call  SCROLLUP      ;       scroll screen up
+    call  SCROLL        ;       scroll screen up
     ld    bc,-40
     ld    hl,(CURRAM)
     add   hl,bc         ;       move cursor up 1 line
@@ -487,7 +487,7 @@ _cursor_right:
     rst   $20         ;    compare cursor address to end of screen
     jr    c,.scr      ;    if past end of screen then
     push  bc
-    call  SCROLLUP    ;       scroll up
+    call  SCROLL      ;       scroll up
     pop   bc
     ld    hl,$33c1    ;       set cursor address to start of bottom line
 .scr:
