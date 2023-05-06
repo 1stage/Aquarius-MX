@@ -69,7 +69,7 @@ ST_CD:
     JR     NZ,.change_dir        ; yes,
 .show_path:
     LD     HL,PathName
-    call   PRINTSTR              ; print path
+    call   STROUT                ; print path
     call   PRNCRLF
     jr     .done
 .change_dir:
@@ -804,7 +804,7 @@ ST_DIR:
 .st_dir_go:
     call    usb_ready         ; check for USB disk (may reset path to root!)
     jr      nz,.error
-    call    PRINTSTR          ; print path
+    call    STROUT            ; print path
     call    PRNCRLF
     call    dos__directory    ; display directory listing
     jr      z,.st_dir_done    ; if successful listing then done
@@ -812,7 +812,7 @@ ST_DIR:
     call    _show_error       ; else show error message (A = error code)
     ld      e,ERRFC
     pop     hl
-    jp      ERROR          ; return to BASIC with FC error
+    jp      ERROR             ; return to BASIC with FC error
 .st_dir_done:
     pop     hl                ; POP text pointer
     ret
@@ -1005,7 +1005,7 @@ dos__prtDirInfo:
         JR      .dir_tab
 .dir_folder:
         LD      HL,_dir_msg             ; print "<dir>"
-        call    PRINTSTR
+        call    STROUT
 .dir_tab:
         LD      A,(TTYPOS)
         CP      19

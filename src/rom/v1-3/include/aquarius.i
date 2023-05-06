@@ -188,11 +188,16 @@ CHRGET  = $10     ; Scan for Next Character
 COMPAR  = $20     ; Compare HL to DE
 FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
+REDDY   = $036E   ; Text "Ok" CR,LF,NUL
+READY   = $0402   ; Display "Ok" and Enter Immediate Mode
+
 PRNCHR      = $1d94  ; print character in A
 PRNCHR1     = $1d72  ; print character in A with pause/break at end of page
+CRDONZ  = $19DE   ; Print CR/LF if not at beginning of line
 PRNCRLF     = $19ea  ; print CR+LF
-PRINTSTR    = $0e9d  ; print null-terminated string
-LINPRT  = $1675  ; Print line number in HL
+STROUT  = $0E9D   ; Print null or quote terminated string
+FINLPT  = $19BE   ; Terminate Printer Output
+LINPRT  = $1675   ; Print line number in HL
 
 SCROLLUP    = $1dfe  ; scroll the screen up 1 line
 SVCURCOL    = $1e3e  ; save cursor position (HL = address, A = column)
@@ -202,6 +207,7 @@ FNDLIN  = $049f  ; Find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
 ERRDIR  = $0B45   ; Issue Error if in Direct Mode
+SCRTCH  = $0BBE   ; Execute NEW Command (without syntax check)
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEVL  = $0985   ; Evaluate Formula

@@ -3,7 +3,7 @@
 ;====================================================================
 ;
 ; changes:-
-; 2015-11-13 PRINTSTR after CTRL-C to ensure that cursor goes to next line.
+; 2015-11-13 STROUT after CTRL-C to ensure that cursor goes to next line.
 ;            Could not type into last char position in buffer - fixed.
 ; 2015-11-14 Cursor now restores original character color when removed.
 ; 2016-02-06 Return to BABASIC immediate mode loop.
@@ -244,7 +244,7 @@ EDITLINE:
 
 ; pressed <RTN>, clean up and return with HL = buffer-1
 .retn:
-    call  PRINTSTR        ; move screen cursor to end of string
+    call  STROUT        ; move screen cursor to end of string
     call  PRNCRLF         ; print CR+LF
     xor   a               ; Carry clear = line edited
     ret
@@ -348,7 +348,7 @@ EDITLINE:
 
 ; CTRL-C
 .quit:
-    call  PRINTSTR        ; move screen cursor to end of string
+    call  STROUT        ; move screen cursor to end of string
     call  PRNCRLF         ; CR+LF
     scf                   ; set Carry flag = edit aborted
     ret

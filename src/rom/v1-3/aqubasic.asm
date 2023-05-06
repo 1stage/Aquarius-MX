@@ -494,9 +494,9 @@ JUMPSTART:
 SHOWCOPYRIGHT:
     call    SHOWCOPY           ; Show system ROM copyright message
     ld      hl,STR_BASIC       ; "USB BASIC"
-    call    PRINTSTR           
+    call    STROUT           
     ld      hl, STR_VERSION    ;
-    call    PRINTSTR           
+    call    STROUT           
     ret
 
 ; Show Copyright message in system ROM
@@ -511,7 +511,7 @@ SHOWCOPY:
     dec     hl
 SHOWIT:
     dec     hl
-    call    PRINTSTR           
+    call    STROUT           
     ret
 
 STR_BASIC:
@@ -562,7 +562,7 @@ endif
     dec     hl                 ; last good RAM addresss
     ld      hl,vars-1          ; top of public RAM
 MEMSIZE:
-    ld      ($38ad),hl         ; MEMSIZ, Contains the highest RAM location
+    ld      (MEMSIZ),hl        ; Contains the highest RAM location
     ld      de,-1024           ; subtract 50 for strings space
     add     hl,de
     ld      (TOPMEM),hl        ; Top location to be used for stack
@@ -570,7 +570,7 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    call    $0bbe              ; ST_NEW2 - NEW without syntax check
+    call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
   ifdef RTC_TEMP
@@ -581,7 +581,7 @@ MEMSIZE:
   endif
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
-    jp      $0402              ; Jump to OKMAIN (BASIC command line)
+    jp      READY              ; Jump to OKMAIN (BASIC command line)
 
 
 ;---------------------------------------------------------------------
@@ -847,12 +847,12 @@ AQMAIN:
     pop     af                  ; restore AF
     pop     hl                  ; restore HL
 
-    call    $19be               ; PRNHOME if we were printing to printer, LPRINT a CR and LF
+    call    FINLPT              ; If we were printing to printer, LPRINT a CR and LF
     xor     a
     ld      (CNTOFL),a          ; Set Line Counter to 0
-    call    $19de               ; RSTCOL reset cursor to start of (next) line
-    ld      hl,$036e            ; 'Ok'+CR+LF
-    call    PRINTSTR            
+    call    CRDONZ               ; RSTCOL reset cursor to start of (next) line
+    ld      hl,REDDY            ; 'Ok'+CR+LF
+    call    STROUT            
 ;
 ; Immediate Mode Main Loop
 ;l0414:
@@ -1047,7 +1047,7 @@ _run_file:
     djnz    .instr
 .nofile:
     ld      hl,.nofile_msg
-    call    PRINTSTR
+    call    STROUT
     pop     hl                 ; restore BASIC text pointer
 .error:
     ld      e,ERRFC           ; function code error
