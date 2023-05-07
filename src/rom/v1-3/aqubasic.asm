@@ -359,16 +359,33 @@ ROM_ENTRY:
 .no_ch376:
     call    usb__root          ; root directory
 
-
 ; init keyboard vars
     xor     a
     ld      (LSTX),a
     ld      (KCOUNT),a
-;
 
+; set up real time clock
+    call    INIT_RTC
 
+; check for power on or reset
+    ld      hl,FDIVC
+    ld      de,$0194
+    ld      bc,$0900        ;B=10, C=0      
+.fdivc_loop
+    ld      a,(de)
+    cp      (hl)
+    jr      nz,.no_warm
+    inc     hl
+    inc     hl
+    inc     de 
+    inc     de 
+    djnz    .fdivc_loop
+    dec     c               ;C = $FF
+.no_warm:
+    
 ; show splash screen (Boot menu)
 SPLASH:
+    push    bc                 ; Save Ctrl-C flag
     call    usb__root          ; root directory
     ld      a,CYAN
     call    clearscreen
@@ -385,16 +402,10 @@ SPLASH:
     call    OpenWindow
     ld      ix,bootwindow
     call    OpenWindow
-    ld      hl,BootMenuText
-    call    WinPrtStr
-
-; set up real time clock
+    pop     bc                ; Get Ctrl-C Flag
+    push    bc
+    call    BootMenuPrint
     
-
-    call    INIT_RTC
-   
-   
-   
 ; outer loop for boot option key so date time display gets updated
 SPLLOOP:
     call    SPL_DATETIME       ; Print DateTime at the bottom of the screen
@@ -414,12 +425,14 @@ SPLGOTKEY:
     jr      z, DEBUG
     cp      $0d                ; RTN = cold boot
     jp      z, COLDBOOT
-    cp      $03                ;  ^C = warm boot
-    jp      z, WARMBOOT
-    
     and     $DF                ; Convert letters to upper-case
     cp      "A"                ; 'A' = About screen
     jr      z, AboutSCR        
+    pop     bc                 ; Get Ctrl-C Flag
+    push    bc
+    and     c                  ;  Make A=0 if Ctrl-C disabled
+    cp      $03                ;  ^C = warm boot
+    jp      z, WARMBOOT
     jr      SPLLOOP
 
 DEBUG:
@@ -440,7 +453,7 @@ AboutSCR:
     ld      ix,AboutWindow              ; Draw smaller inset window
     call    OpenWindow
     ld      hl,AboutText
-    call    OpenWindow
+    ;call    OpenWindow
     call    WinPrtStr
     call    Wait_key
     JP      SPLASH
@@ -496,11 +509,11 @@ JUMPSTART:
 SHOWCOPYRIGHT:
     call    SHOWCOPY           ; Show system ROM copyright message
     ld      hl,STR_BASIC       ; "USB BASIC"
-    call    STROUT           
+    call    STROUT
     ld      hl, STR_VERSION    ;
-    call    STROUT           
+    call    STROUT
     ret
-
+    
 ; Show Copyright message in system ROM
 ;
 SHOWCOPY:
@@ -662,27 +675,35 @@ BootWindow:
     dw     0
 
 BootWinTitle:
-    db     " Aquarius USB BASIC, v"
-    db     VERSION+'0','.',REVISION+'0',' ',0
+    db     " Aquarius MX "
+StrBasicVersion:
+    db     "USB BASIC "
+    db     'v',VERSION+'0','.',REVISION+'0',' ',0
 
-BootMenuText:
-    db     CR
+BootMenuPrint:
+    call    WinPrtMsg
+    db      CR
+    db      "     1. "
   ifdef softrom
-    db     "     1. (disabled)",CR
-  else
-    db     "     1. Load ROM",CR
-  endif
-    db     CR,CR
-    db     "     2. Debug",CR
-    db     CR,CR,CR,CR,CR                ; Move down a few rows
-    db     "    <RTN> USB BASIC",CR
-    db     CR
-    db     " <CTRL-C> Warm Start",CR
-    db     CR
-    db     "      <A> About...",CR
-    db     CR,0
-
-
+    db      "(disabled)"
+  else  
+    db      "Load ROM"
+  endif 
+    db      CR,CR,CR
+    db      "     2. Debug",CR
+    db      CR,CR,CR,CR,CR                ; Move down a few rows
+    db      "    <RTN> USB BASIC",CR
+    db      CR,0
+    or      c                             ; If Ctrl-C Flag is 0
+    jr      z,.about                      ;   Skip Ctrl-C Message
+    call    WinPrtMsg
+    db      "  <CTRL-C> Warm Start",0
+.about
+    call    WinPrtMsg
+    db      CR,CR
+    db      "      <A> About...",CR
+    db      CR,0
+    ret
 
 ;------------------------------------------------------
 ;             UDF Hook Service Routine
@@ -1855,7 +1876,6 @@ FRCADR: ld      a,(FAC)           ;
 ;
 
 SPL_DATETIME:
-    push    bc          ; Save BC
   ifdef RTC_TEMP
     ld      bc,RTC_TEMP       
   else
@@ -1865,12 +1885,11 @@ SPL_DATETIME:
     call    rtc_read      ;Read RTC
     ld      de,DTM_STRING
     call    dtm_to_fmt    ;Convert to Formatted String   
-    ld      d,1                
+    ld      d,2                
     ld      e,17              
     call    WinSetCursor
     ld      hl,DTM_STRING
     call    WinPrtStr
-    pop     bc          ;Restore BC
     ret    
     
 ;Starting DateTime for Software Clock

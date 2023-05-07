@@ -88,7 +88,7 @@ RESPTR  = $380B ; 14347           Address of keyword in the keyword table.
 CURCHR  = $380D ; 14349           holds character under the cursor.
 LSTX    = $380E ; 14350           SCAN CODE of last key pressed
 KCOUNT  = $380F ; 14351           number of SCANS key has been down for
-FDIV    = $3810 ; 14352 - 14365   Division routine - self modifying code
+FDIVC   = $3810 ; 14352 - 14365   Division routine - self modifying code
         ; $381E ; 14366           RND function pertubation count
 RNDCNT  = $381F ; 14367 - 14368   used by random number generator
 RNDTAB  = $3821 ; 14369 - 14400   Unused 32 byte Random Number Table 
@@ -248,6 +248,7 @@ PTRGET  = $10D1   ; Get Pointer to Variable
 PTRGT2  = $10D6   ; Get Pointer to Variable after reading first char
 
 FSUBS   = $1258   ; Floating Point Subtract
+FDIV    = $142F   ; Floating Point Divide
 NEG     = $150B   ; Negate Value in Floating Point Accumulator
 PSHNEG  = $1770   ; Push address of NEG routine on Stack
 POLYX   = $1837   ; Polynomial Evaluator
