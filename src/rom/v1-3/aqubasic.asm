@@ -1741,7 +1741,7 @@ FN_HEX:
     ld      (hl),0     ; null-terminate string
     ld      hl,FBUFFR+1
 .create_string:
-    jp      RETSTR     ; create BASIC string
+    jp      TIMSTR     ; create BASIC string
 
 .hexbyte:
     ld      b,a
@@ -1977,7 +1977,7 @@ FN_DTM:
     ld      hl,DTM_STRING
     ld      a,1              ;Set Value Type to String
     ld      (VALTYP),a
-    jp      RETSTR
+    jp      TIMSTR
 
 
 ;-------------------------------------------------------------------------

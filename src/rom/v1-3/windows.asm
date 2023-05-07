@@ -27,7 +27,7 @@
 ;
 ; - Uses alternate registers HL' and DE' to keep track of
 ;   cursor position. These registers must be preserved!
-;   Watch out for system functions such as KEYWAIT, which
+;   Watch out for system functions such as CONIN, which
 ;   uses alternate registers. If alternate registers are
 ;   corrupted you should call OpenWindow or WinSetCursor
 ;   to reset them.

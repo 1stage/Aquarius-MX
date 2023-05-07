@@ -876,7 +876,7 @@ WriteFile:
 
 ShowFileBytes:
        EX    DE,HL            ; HL = number of bytes written
-       CALL  INT2STR          ; convert 16 bit number to decimal string
+       CALL  LINOUT          ; convert 16 bit number to decimal string
        call  OpenWindow        ; refresh window
        ld    d,10
        ld    e,(IX+win_h)

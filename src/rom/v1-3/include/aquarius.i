@@ -35,13 +35,6 @@
 ;  5  string text pointer low byte
 ;  6          ''          high byte
 
-; constants:
-
-CTRLC     = $03
-BKSPC     = $08
-LF        = $0A
-CR        = $0D
-
 ; colors
 BLACK     = 0
 RED       = 1
@@ -128,7 +121,7 @@ TENP3   = $38C3 ; 14531 - 14532   temp space used by FOR etc.
 TEMP8   = $38C5 ; 14533 - 14534
 ENDFOR  = $38C7 ; 14535 - 14536
 DATLIN  = $38c9 ; 14537 - 14538   Address of current DATA line
-SUBFLG  = $38CB ; 14439           flag FOR:, GETVAR: 0=variable, 1=array
+SUBFLG  = $38CB ; 14439           flag FOR:, PTRGET: 0=variable, 1=array
 USFLG   = $38CC ; 14440           Direct Mode Flag    
 FLGINP  = $38CD ; 14441           FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
 SAVTXT  = $38CE ; 14542 - 14543   temp holder of next statement address
@@ -230,28 +223,26 @@ MOVFR   = $1523   ; Move Number fron Registers to  Floating Point Accumulator
 MOVMF   = $153A   ; Move Number from Floating Point Accumulator to (HL)
 MOVE    = $153D   ; Move Number from (DE) TO (HL)
 
-RETSTR  = $0E2F   ; Return string in HL from function  
+TIMSTR  = $0E2F   ; Return string in HL from function  
 STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
 GETSPA  = $0EB3   ; Allocate Space for Temporary String
-STRLTI  = $0e60   ; Create string (HL = text starting with '"')
+STRLTI  = $0E60   ; Create string (HL = text starting with '"')
+LEN1    = $0FF7   ; get string length (in: FACLO = string block; out: HL = string block, A = length)
 ASC2    = $1006   ; Get pointer to string text (out: DE = filename, A = 1st char)
-GETVAR      = $10d1  ; get variable (out: BC = addr, DE = len)
 
-GETLEN      = $0ff7  ; get string length (in: (FACLO) = string block)
-                     ;                   (out: HL = string block, A = length)
-FRESTR      = $0FC6  ; Free up temporary string
-FREFAC      = $0fc9
-CHKNUM      = $0975  ; Issue "TM" Error if result is not a number
-TSTSTR      = $0976  ; error if evaluated expression not string
-CHKTYP      = $0977  ; error if type mismatch
-
-FRCINT      = $0682  ; Convert Floating Point Accumulator to Signed Integer in DE
-FRCIN1      = $068A  ; Alternate entry point into FRCINT
+FRESTR  = $0FC6   ; Free up temporary string
+FREFAC  = $0FC9
+CHKNUM  = $0975   ; Issue "TM" Error if result is not a number
+CHKSTR  = $0976   ; Issue "TM" Error if evaluated expression not string
+CHKVAL  = $0977   ; Issue "TM" Error if type does not match carry flag
+  
+FRCINT  = $0682   ; Convert Floating Point Accumulator to Signed Integer in DE
+FRCIN1  = $068A   ; Alternate entry point into FRCINT
 SCNLIN  = $069C   ; Back up and scan line number into DE
-STR2INT     = $069d  ; DE = value of decimal number string at HL
-QINT        = $1586  ; Convert Floating Point Accumulator to Signed Integer in C,DE
-INT2STR     = $1679  ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
+LINGET  = $069D   ; DE = value of decimal number string at HL
+QINT    = $1586   ; Convert Floating Point Accumulator to Signed Integer in C,DE
+LINOUT  = $1679   ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
 
 PTRGET  = $10D1   ; Get Pointer to Variable
 PTRGT2  = $10D6   ; Get Pointer to Variable after reading first char
@@ -262,12 +253,12 @@ PSHNEG  = $1770   ; Push address of NEG routine on Stack
 POLYX   = $1837   ; Polynomial Evaluator
 PI2     = $1953   ; Floating Point Constant Pi/2  
 
-KEYWAIT     = $1a33  ; wait for keypress (out: A = key)
-UKEYCHK     = $1e7e  ; get current key pressed (through UDF)
-KEYCHK      = $1e80  ; get current key pressed (direct)
-CLRKEYWT    = $19da  ; flush keyboard buffer and wait for keypress
+CONIN   = $1A33   ; Wait for keypress (out: A = key)
+INCHR   = $19DA   ; Flush keyboard buffer and wait for keypress
+INCHRH  = $1E7E   ; Get current key pressed (through UDF)
+INCHRC  = $1E80   ; Get current key pressed (direct)
 
-CHKSTK      = $0ba0  ; check for stack space (in: C = number of words required)
+GETSTK  = $0BA0   ; Check for stack space (in: C = number of words required)
 
 COPY    = $1B15   ; COPY statement
 

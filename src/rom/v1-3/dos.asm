@@ -76,8 +76,8 @@ ST_CD:
     pop    hl                    ; pop BASIC text pointer
     CALL   FRMEVL                  ; evaluate expression
     PUSH   HL                    ; push BASIC text pointer
-    CALL   TSTSTR                ; type mismatch error if not string
-    CALL   GETLEN                ; get string and its length
+    CALL   CHKSTR                ; type mismatch error if not string
+    CALL   LEN1                ; get string and its length
     JR     Z,.open               ; if null string then open current directory
     inc    hl
     inc    hl                    ; skip to string text pointer
@@ -157,7 +157,7 @@ _stl_arg_array:
     inc     hl                    ; skip '*' token
     ld      a,1
     ld      (SUBFLG),a            ; set array flag
-    call    GETVAR                ; get array (out: BC = address, DE = length)
+    call    PTRGET                ; get array (out: BC = address, DE = length)
     ld      (SUBFLG),a            ; clear array flag
     jp      nz,FCERR           ; FC Error if array not found
     call    CHKNUM                ; TM error if not numeric
@@ -551,7 +551,7 @@ ST_SAVEFILE:
     inc     hl                  ; yes, skip token
     ld      a,1
     ld      (SUBFLG),a          ; flag = array
-    call    GETVAR              ; BC = array address, DE = array length
+    call    PTRGET              ; BC = array address, DE = array length
     ld      (SUBFLG),a          ; clear flag
     jp      nz,FCERR            ; report FC Error if array not found
     call    CHKNUM              ; TM error if not numeric
@@ -1031,7 +1031,7 @@ dos__prtDirInfo:
 print_integer:
        PUSH     BC
        PUSH     AF
-       CALL     INT2STR
+       CALL     LINOUT
        LD       HL,FBUFFR+2
        CALL     strlen
        POP      BC
@@ -1202,7 +1202,7 @@ dos__getfilename:
     ld      a,(VALTYP)        ; get type
     dec     a
     jr      nz,.type_mismatch
-    call    GETLEN            ; get string and its length
+    call    LEN1            ; get string and its length
     jr      z,.null_str       ; if empty string then return
     cp      12
     jr      c,.string         ; trim to 12 chars max
