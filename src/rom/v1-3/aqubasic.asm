@@ -2086,7 +2086,7 @@ EVAL_HEX:
 ;;;
 ;;; Action: Returns the address of the first byte of data identified with 
 ;;; <variable name>. A value must be assigned to <variable name> prior
-;;; to execution of the & operatr, otherwise an FC error results. Any type 
+;;; to execution of the & operator, otherwise an FC error results. Any type 
 ;;; variable name maybe used (numeric, string, array), and the address 
 ;;; returned will be an integer in the range of 0 and 65535.
 ;;;
