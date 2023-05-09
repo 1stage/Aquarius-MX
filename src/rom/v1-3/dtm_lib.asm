@@ -211,17 +211,16 @@ dtm_val_loop:
         pop     hl
         ld      a,$7F
         ld      (hl),a            ;Set to Valid Conversion
-        xor     a                 ;No Errors - Return Success
+        or      a                 ;and Return with Flags set accordingly
         ret                       
 
 dtm_ret_err:
         pop     bc                ;Restore Registers  
         pop     de                
         pop     hl
-        xor     a
-        ld      (hl),a            ;Set to Invalid DateTime
-        dec     a                 ;Return $FF with flags set
-        ret                       ;All Done
+        xor     a                 ;Set to Invalid DateTime
+        ld      (hl),a            ;and Return with Flags set accordingly
+        ret                       
 
 dtm_bounds:     ;seconds minutes    hour     day     month
         .byte   $00,$60, $00,$60, $00,$24, $01,$32, $01,$13
