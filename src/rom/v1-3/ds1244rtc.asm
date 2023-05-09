@@ -109,12 +109,13 @@ ds_checkvalues:
     or      (hl)            ; loop through checking for all zeros
     inc     hl              ; this means no RTC found
     djnz    ds_checkValues
-    jr      z,ds_noClockFound
-    pop     bc
-    push    bc
-                            ; Copying to DTM Buffer (already in DE)
-    ld      h,b             ; Copying from shadow 
-    ld      l,c
+    pop     hl
+    push    hl
+    jr      nz,ds_NoClockFound
+    dec     a
+ds_NoClockFound:    
+    ld      (hl),a          ; Copying to DTM Buffer (already in DE)
+                            ; Copying from shadow     
     ld      bc,5            ; Copying 5 Bytes (Valid + 4 bytes)
     ldir                    ; Do Copy  (HH:MM:SS.CC)
     inc     hl              ; skip DAY
@@ -125,21 +126,7 @@ ds_checkvalues:
     pop     de
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
-    xor     a
-    dec     a
-    ld      (bc),a          ;  write FF into (shadow) to indicate clock present 
-    ld      (hl),a          ; write FF into (DTM_BUFFER+0) to indicate clock present 
-    ret                 
-ds_noClockFound:
-    pop     bc              ;Restore Registers
-    pop     hl    
-    pop     de
-    pop     af
-    ld      (ds1244addr),a  ; restore original memory into control address
-    xor     a               ; Set Z flag to indicate error
-    ld      (bc),a          ; write 00 into (shadow) to indicate no clock present   
-    ld      (hl),a          ; write 00 into (DTM_BUFFER+0) to indicate no clock present 
-    ret    
+    ret                   
 rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 
 ;Write Real Time Clock
