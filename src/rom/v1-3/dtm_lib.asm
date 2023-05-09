@@ -133,7 +133,7 @@ dtm_str_loop:
 ;Args: HL = Address of DTM Buffer
 ;      DE = Address of String Buffer
 ;           Must be in format YYMMDDHHmmss (any following characters are ignored)
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;Returns: A=$7F, Z=0 if Successful, A=0, Z=1 if not
 ;         BC, DE, HL unchanged
 str_to_dtm:
         push    hl                ;Save Arguments
