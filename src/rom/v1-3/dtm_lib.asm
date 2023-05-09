@@ -184,7 +184,7 @@ str_dtm_err:
 ;Validate RTC fields 
 ;Args: HL = Address of DTM Buffer
 ;Destroys: BC
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;Returns: A=0, Z=1 if Successful, A=$7F, Z=0 if not
 ;         BC, DE, HL unchanged
 dtm_validate:
         push    hl                ;Save Arguments
