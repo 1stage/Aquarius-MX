@@ -111,8 +111,8 @@ ds_checkvalues:
     djnz    ds_checkValues
     pop     hl
     push    hl
-    jr      nz,ds_NoClockFound
-    dec     a
+    jr      z,ds_NoClockFound
+    ld      a,$ff
 ds_NoClockFound:    
     ld      (hl),a          ; Copying to DTM Buffer (already in DE)
                             ; Copying from shadow     
