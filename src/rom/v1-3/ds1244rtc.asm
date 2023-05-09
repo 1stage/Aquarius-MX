@@ -24,12 +24,10 @@ ds1244addr: EQU $4000
 ;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
 ;         BC, DE, HL unchanged
 rtc_init:
-    push    bc
     xor     a
     dec     a
     ld      (bc),a
     call    rtc_read  ; since this will error out the clock if needs be
-    pop     bc
     ret                 
 
 ;Read Real Time Clock
@@ -80,7 +78,7 @@ ds_identInner:
 ds_readTime:
     LD      D,0             ; this is the byte we are going to read
     ld      B,8             ; Have to read in 64 times, as the 8 bytes (64 bits) 
-ds_readByte:               ; all come in in D0
+ds_readByte:                ; all come in in D0
     LD      A,(ds1244addr)  ; So read a bit
     AND     $01             ; mask anything else off
     RRCA                    ; Rotate Right into D7
@@ -88,7 +86,7 @@ ds_readByte:               ; all come in in D0
     OR      D               ; Merge D in
     RRA                     ; Rotate Right (D0 ->C flag)
     LD      D,A             ; Save back into D
-    DJNZ    ds_readByte    ; Loop for the byte
+    DJNZ    ds_readByte     ; Loop for the byte
     ld      a,d             ; Need to Correct D for the last Rotate
     rla                     ; Rotate Left D0 <- C Flag
     ld      (hl),a          ; Save value in shadow
@@ -109,7 +107,7 @@ ds_checkvalues:
     or      (hl)            ; loop through checking for all zeros
     inc     hl              ; this means no RTC found
     djnz    ds_checkValues
-    pop     hl
+    pop     hl              ; copy original BC off stack
     push    hl
     jr      z,ds_NoClockFound
     ld      a,$ff
@@ -126,6 +124,8 @@ ds_NoClockFound:
     pop     de
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
+    ld      (hl),a          ; return (dtm_buffer+0)
+    or      a               
     ret                   
 rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 
@@ -140,18 +140,15 @@ rtc_write:
     push    de          
     push    hl              ; Registers saved as AF,DE,HL,BC
     push    bc
-    inc     hl          
     ld      d,b             ; DE = RTC_SHADOW
     ld      e,c
-    ld      bc,4
+    ld      bc,5
     ldir    
     ld      a,$11
-    ld      (de),a        ; Clock enable No Reset and Day 1    
+    ld      (de),a          ; Clock enable No Reset and Day 1    
     inc     de
     ld      bc,3
     ldir
-    pop     de
-    push    de
     LD      hl,rtc_Ident
     ld      c,8             ; Going to loop round 8 times here
     xor     a
@@ -168,8 +165,9 @@ ds_wrIdentInner:
     dec     c
     jr      nz,ds_wrIdent
                             ; okay we should be talking to the clock now....
-    ld      h,d             ; restore HL to = original BC passed in
-    ld      l,e
+    pop     hl              ; copy original BC off stack
+    push    hl
+    inc     hl              ; read from shadow starting at +1
     LD      c,8
 ds_wrData:
     ld      a,(hl)          ; this works by writing the pattern RTC_SHADOW 
@@ -186,5 +184,4 @@ ds_wrDataInner:
     pop     de
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
-    call    rtc_read        ; Sets buffers up correctly
-    ret                                     
+    jp      rtc_read        ; Sets buffers up correctly
