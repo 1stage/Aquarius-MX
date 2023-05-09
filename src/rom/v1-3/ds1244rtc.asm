@@ -124,7 +124,7 @@ ds_NoClockFound:
     pop     de
     pop     af
     ld      (ds1244addr),a  ; restore original memory into control address
-    ld      (hl),a          ; return (dtm_buffer+0)
+    ld      a,(hl)          ; return (dtm_buffer+0)
     or      a               
     ret                   
 rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
@@ -162,14 +162,14 @@ ds_wrIdent:
 ds_wrIdentInner:
     ld      (ds1244addr),a  ; it is all written by 64 single bit D0, so 
     rra                     ; rotating A right 8 times for each byte and writing to the control address
-    djnz    ds_wrIdentInner
-    ld      h,d             ; restore HL to = original BC passed in
-    ld      l,e    
+    djnz    ds_wrIdentInner 
     inc     hl
     dec     c
     jr      nz,ds_wrIdent
                             ; okay we should be talking to the clock now....
-    call    Break
+    ;call    Break
+    ld      h,d             ; restore HL to = original BC passed in
+    ld      l,e       
     inc     hl              ; read from shadow starting at +1
     LD      c,8
 ds_wrData:
