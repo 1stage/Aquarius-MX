@@ -132,7 +132,7 @@ rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 ;Write Real Time Clock
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
+;Returns: Output as per RTC_Read (which is called on exit)
 ;         DE and HL unchanged
 rtc_write:
     ld      a,(ds1244addr)  ; save byte at control address
