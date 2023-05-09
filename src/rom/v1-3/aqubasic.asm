@@ -1951,7 +1951,7 @@ ST_SDTM:
 
     ld      hl,DTM_BUFFER   ; 
     call    str_to_dtm      ; Convert String to DateTime
-    ret     nz              ; Don't Write if invalid DateTime
+    ret     z               ; Don't Write if invalid DateTime
     ld      bc,RTC_SHADOW
     call    rtc_write
 .pop_ret:    
