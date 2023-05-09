@@ -21,7 +21,7 @@ ds1244addr: EQU $4000
 ;  causing following reads to return RTC Not Found
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
 ;         BC, DE, HL unchanged
 rtc_init:
     push    bc
@@ -47,7 +47,7 @@ rtc_read:
 ;Read Real Time Clock
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
 ;         BC, DE, HL unchanged
 do_rtc_read:
     ld      a,(ds1244addr)  ; save byte at control address
@@ -127,7 +127,8 @@ ds_checkvalues:
     ld      (ds1244addr),a  ; restore original memory into control address
     xor     a
     dec     a
-    ld      (bc),a          ; write FF into (shadow) to indicate clock present 
+    ld      (bc),a          ;  write FF into (shadow) to indicate clock present 
+    ld      (hl),a          ; write FF into (DTM_BUFFER+0) to indicate clock present 
     ret                 
 ds_noClockFound:
     pop     bc              ;Restore Registers
@@ -137,13 +138,14 @@ ds_noClockFound:
     ld      (ds1244addr),a  ; restore original memory into control address
     xor     a               ; Set Z flag to indicate error
     ld      (bc),a          ; write 00 into (shadow) to indicate no clock present   
+    ld      (hl),a          ; write 00 into (DTM_BUFFER+0) to indicate no clock present 
     ret    
 rtc_Ident: defb $C5, $3A, $A3, $5C, $C5, $3A, $A3, $5C
 
 ;Write Real Time Clock
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
 ;         DE and HL unchanged
 rtc_write:
     ld      a,(ds1244addr)  ; save byte at control address
