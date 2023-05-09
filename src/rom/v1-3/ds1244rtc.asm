@@ -149,6 +149,8 @@ rtc_write:
     inc     de
     ld      bc,3
     ldir
+    pop     de              ; copy original BC off stack
+    push    de
     LD      hl,rtc_Ident
     ld      c,8             ; Going to loop round 8 times here
     xor     a
@@ -161,12 +163,13 @@ ds_wrIdentInner:
     ld      (ds1244addr),a  ; it is all written by 64 single bit D0, so 
     rra                     ; rotating A right 8 times for each byte and writing to the control address
     djnz    ds_wrIdentInner
+    ld      h,d             ; restore HL to = original BC passed in
+    ld      l,e    
     inc     hl
     dec     c
     jr      nz,ds_wrIdent
                             ; okay we should be talking to the clock now....
-    pop     hl              ; copy original BC off stack
-    push    hl
+    call    Break
     inc     hl              ; read from shadow starting at +1
     LD      c,8
 ds_wrData:
