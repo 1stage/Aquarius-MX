@@ -478,7 +478,7 @@ AboutBdrTitle:
 AboutText:
     db     CR,CR,CR
     db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
-    db     " Release Date - Alpha 2023-05-09a",CR,CR                       ; Can we parameterize this later?
+    db     " Release Date - Alpha 2023-05-09",CR,CR                       ; Can we parameterize this later?
     db     " ROM Dev Team - Curtis F Kaylor",CR
     db     "                Mack Wharton",CR
     db     "                Sean Harrington",CR
@@ -488,7 +488,7 @@ AboutText:
     db     "     AquaLite - Richard Chandler",CR
     db     CR
     db     "Aquarius Draw - Matt Pilz",CR
-    db     CR,CR
+    db     CR
     db     " github.com/1stage/Aquarius-MX",CR
     db     0
 
@@ -691,8 +691,8 @@ BootMenuPrint:
   endif 
     db      CR,CR,CR
     db      "     2. Debug",CR
-    db      CR,CR,CR,CR,CR                ; Move down a few rows
-    db      "    <RTN> USB BASIC",CR
+    db      CR,CR,CR,CR,CR,CR                ; Move down a few rows
+    db      "    <RTN> USB BASIC"
     db      CR,0
     or      c                             ; If Ctrl-C Flag is 0
     jr      z,.about                      ;   Skip Ctrl-C Message

@@ -133,8 +133,8 @@ VAR_size = VAREND-VARMEM
   STRUCTURE Player,VAREND
 
        WORD SKINPTR           ; Pointer to the current meter skin
-       BYTE numsongs          ; number of songs (1-36)
-       BYTE song              ; current song number (0-35)
+       BYTE NumSongs          ; number of songs (1-36)
+       BYTE Song              ; current song number (0-35)
      STRUCT pt3_files,(36*16) ; array to store 36 file infos
      STRUCT SongData,0        ; pt3 file loaded here!
   ENDSTRUCT Player
@@ -223,7 +223,6 @@ PT3_LOAD:
        cp   " "
        jr   z,.next_song      ; if SPACE pressed then play next song
 
-;
         CP   "1"                 ; If 1 key pressed...
         JR   Z, .ss1         ; ...set to skin 1 (EQText)
         CP   "2"                 ; If 2 key pressed...
