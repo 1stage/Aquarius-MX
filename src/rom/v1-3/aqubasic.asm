@@ -683,24 +683,24 @@ StrBasicVersion:
 BootMenuPrint:
     call    WinPrtMsg
     db      CR
-    db      "     1. "
+    db      "      1. "
   ifdef softrom
     db      "(disabled)"
   else  
     db      "Load ROM"
   endif 
     db      CR,CR,CR
-    db      "     2. Debug",CR
-    db      CR,CR,CR,CR,CR,CR                ; Move down a few rows
+    db      "      2. Debug",CR
+    db      CR,CR,CR,CR,CR,CR,CR,CR                ; Move down a few rows
     db      "    <RTN> USB BASIC"
     db      CR,0
     or      c                             ; If Ctrl-C Flag is 0
     jr      z,.about                      ;   Skip Ctrl-C Message
     call    WinPrtMsg
-    db      "  <CTRL-C> Warm Start",0
+    db      " <CTRL-C> Warm Start",0
 .about
     call    WinPrtMsg
-    db      CR,CR
+    db      CR
     db      "      <A> About...",CR
     db      CR,0
     ret

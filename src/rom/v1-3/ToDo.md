@@ -3,8 +3,21 @@
 This file is for recording upcoming changes and features that are being added to track them
 
 ## IN PROCESS:
+- ATN() function returning incorrect results (added 11 MAY 2023)
 
-- Test/Tweak, document KEY() function
+- LOAD for BAS and CAQ are loaded into their expected locations
+
+- LOAD for any other filetype (raw) will require a valid target address, otherwise SN Error
+
+- SAVE for CAQ and BAS will save their known headers and then the payload
+
+- SAVE for any other filetype (raw) will require a valid start address and length, otherwise SN Error; no HEADER will be added to the beginning
+
+- SAVE for Array should behave as originally designed; should behave similarly to how CSAVE for arrays works
+
+- RUN for CAQ and BAS files loads them where expected, then runs them
+
+- RUN for all other filetype suffixes gives an SN error
 
 - Test hardware behavior without RTC installed (RAM only)
 
@@ -12,6 +25,8 @@ This file is for recording upcoming changes and features that are being added to
 
 
 ## COMPLETE:
+
+- Test/Tweak, document KEY() function
 
 - Created FRCADR - FRCINT replacement that accepts -32768 through 65535
   - Replaced FRCINT with FRCADR in IN/OUT/CALL
