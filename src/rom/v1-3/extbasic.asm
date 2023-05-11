@@ -170,9 +170,9 @@ ATN1:   pop     hl
         call    m,NEG           ;    ARCTAN(X)=-ARCTAN(-X
         ld      a,(FAC)         ; SEE IF FAC .GT. 1
         cp      129            
-        jp      c,ATN2          ; GET THE CONSTANT 1
+        jp      c,ATN2         
 
-        ld      bc,129*128      ; GET THE CONSTANT 1
+        ld      bc,$8100        ; GET THE CONSTANT 1
         ld      d,c             
         ld      e,c             ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
         call    FDIV            ;   ARCTAN(X)=PI/2-ARCTAN(1/X)
