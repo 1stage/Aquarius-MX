@@ -3,8 +3,9 @@
 This file is for recording upcoming changes and features that are being added to track them
 
 ## IN PROCESS:
+- ATN() function returning incorrect results (added 11 MAY 2023)
 
-- Test/Tweak, document KEY() function
+- SAVE "filename.bin", address, length seems to get four extra garbage bytes added to the file. So a length of 120 will save the expected 120 bytes, but there will be an extra 4 bytes at the beginning. (added 11 MAY 2023)
 
 - Test hardware behavior without RTC installed (RAM only)
 
@@ -12,6 +13,8 @@ This file is for recording upcoming changes and features that are being added to
 
 
 ## COMPLETE:
+
+- Test/Tweak, document KEY() function
 
 - Created FRCADR - FRCINT replacement that accepts -32768 through 65535
   - Replaced FRCINT with FRCADR in IN/OUT/CALL
