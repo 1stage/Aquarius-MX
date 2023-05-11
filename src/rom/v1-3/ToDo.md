@@ -7,6 +7,8 @@ This file is for recording upcoming changes and features that are being added to
 
 - SAVE "filename.bin", address, length seems to get four extra garbage bytes added to the file. So a length of 120 will save the expected 120 bytes, but there will be an extra 4 bytes at the beginning. (added 11 MAY 2023)
 
+- SAVE detects file extension (added 11 MAY 2023)
+
 - Test hardware behavior without RTC installed (RAM only)
 
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
