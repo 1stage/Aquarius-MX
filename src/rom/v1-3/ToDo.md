@@ -5,7 +5,7 @@ This file is for recording upcoming changes and features that are being added to
 ## IN PROCESS:
 - ATN() function returning incorrect results (added 11 MAY 2023)
 
-- LOAD for BAS and CAQ are loaded into their expected loctions
+- LOAD for BAS and CAQ are loaded into their expected locations
 
 - LOAD for any other filetype (raw) will require a valid target address, otherwise SN Error
 
