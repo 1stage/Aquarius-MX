@@ -37,6 +37,9 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
+; 2023-05-11 v1.3  SAVE: Removed header when writing binary files, added 15 x $00 tail to CAQ container
+;                  when writing Basic program or array. Fixed SN error when SAVE array in program (CFK)
+;                  
 
 ; file types
 FT_NONE  equ $01  ; no file extension (type determined from file header)
@@ -522,13 +525,22 @@ _ibl_find_eol:
 _ibl_done:
         ret
 
-
-;--------------------------------------------------------------------
-;                SAVE "filename" (,address,length)
-;--------------------------------------------------------------------
-;  SAVE "filename"             save BASIC program
-;  SAVE "filename",addr,len    save binary data
-;
+;------------------------------------------------------------------------------
+;;; SAVE Statement - Save File to USB Drive
+;;;
+;;; Format: SAVE <filespec>
+;;;         SAVE <filespec>,*<arrayname>
+;;;         SAVE <filespec>,<address>,<size>
+;;; 
+;;; Action: Save BASIC program, array, or range of memory.
+;;;
+;;; EXAMPLES of SAVE Statement:
+;;;
+;;;   SAVE "progname.bas"               Save current program as CAQ file
+;;;   SAVE "array.caq",*A               Save contents of array A() as CAQ file
+;;;   SAVE "capture.src",12288,2048     Save Screen and Color RAM as binary file
+          
+;------------------------------------------------------------------------------
 ST_SAVE:
     xor     a
     ld      (DOSFLAGS),a        ; clear all flags
@@ -542,10 +554,10 @@ ST_SAVE:
     jp      ERROR               ; bad filename, quit to BASIC
 ; save with filename in FileName
 ST_SAVEFILE:
-    call    get_arg             ; get current char (skipping spaces)
+    call    CHRGOT              ; get current char (skipping spaces)
     cp      ','
     jr      nz,_sts_open        ; if not ',' then no args so saving BASIC program
-    call    get_next
+    rst     CHRGET
     cp      $aa                 ; '*' token?
     jr      nz,_sts_num         ; no, parse binary address & length
     inc     hl                  ; yes, skip token
@@ -555,10 +567,6 @@ ST_SAVEFILE:
     ld      (SUBFLG),a          ; clear flag
     jp      nz,FCERR            ; report FC Error if array not found
     call    CHKNUM              ; TM error if not numeric
-    call    get_next
-    cp      'A'
-    jr      c,_sts_array
-    inc     hl                  ; skip 2nd letter of array name ???
 _sts_array:
     push    hl
     ld      h,b
@@ -607,10 +615,9 @@ _sts_open:
     ld      de,6
     call    usb__write_bytes
     jr      nz,_sts_write_error
-        ld      hl,(BINSTART)
-        ld      de,(BINLEN)
-        jr      _sts_write_data 
-    ;jr      _sts_binary         ; write array
+    ld      hl,(BINSTART)
+    ld      de,(BINLEN)
+    jr      _sts_write_data 
 ; saving BASIC program
 _sts_bas:
     ld      hl,FileName
@@ -619,31 +626,26 @@ _sts_bas:
     jr      nz,_sts_write_error
     call    st_write_sync       ; write 2nd caq sync $FFx12,$00
     jr      nz,_sts_write_error
-    ld      de,(TXTTAB)        ; DE = start of BASIC program
+    ld      de,(TXTTAB)         ; DE = start of BASIC program
     ld      hl,(VARTAB)         ; HL = end of BASIC program
     or      a
     sbc     hl,de
     ex      de,hl               ; HL = start, DE = length of BASIC program
-    jr      _sts_write_data
-; saving BINARY
-_sts_binary:
-    ld      a,$c9               ; write $c9 = RET
-    call    usb__write_byte
-    jr      nz,_sts_write_error
-    ld      a,$c3               ; write $c3 = JP
-    call    usb__write_byte
-    jr      nz,_sts_write_error
-    ld      hl,(BINSTART)       ; hl = binary load address
-    ld      a,l
-    call    usb__write_byte
-    jr      nz,_sts_write_error
-    ld      a,h                 ; write binary load address
-    call    usb__write_byte
-    jr      nz,_sts_write_error
-    ld      de,(BINLEN)
-; save data (HL = address, DE = length)
 _sts_write_data:
     call    usb__write_bytes    ; write data block to file
+    ld      b,15                ; write CAQ tail $00x15
+_sts_tail
+    ld      a,0
+    call    usb__write_byte     ; write $FF
+    jr      nz,_sts_write_error
+    djnz    _sts_tail
+    jr      _sts_write_done
+; saving BINARY
+_sts_binary:
+    ld      hl,(BINSTART)       ; raw binary file - no header, no tail
+    ld      de,(BINLEN)
+    call    usb__write_bytes    ; write data block to file
+_sts_write_done:
     push    af
     call    usb__close_file     ; close file
     pop     af
