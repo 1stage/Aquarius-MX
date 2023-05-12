@@ -3,26 +3,20 @@
 This file is for recording upcoming changes and features that are being added to track them
 
 ## IN PROCESS:
-- ATN() function returning incorrect results (added 11 MAY 2023)
 
-- LOAD for BAS and CAQ are loaded into their expected locations
+- LOAD for Basic program and Array are loaded into their expected locations
+  - BASIC Program and Array Files are both CAQ format (header and tail)
+  - Can have any file suffix, including BAS or CAQ
 
 - LOAD for any other filetype (raw) will require a valid target address, otherwise SN Error
 
-- SAVE for CAQ and BAS will save their known headers and then the payload
+- RUN for Basic program file (CAQ format) loads them where expected, then runs them
 
-- SAVE for any other filetype (raw) will require a valid start address and length, otherwise SN Error; no HEADER will be added to the beginning
-
-- SAVE for Array should behave as originally designed; should behave similarly to how CSAVE for arrays works
-
-- RUN for CAQ and BAS files loads them where expected, then runs them
-
-- RUN for all other filetype suffixes gives an SN error
+- RUN for all other file types gives a ??? error
 
 - Test hardware behavior without RTC installed (RAM only)
 
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
-
 
 ## COMPLETE:
 
@@ -35,7 +29,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - DTM$() - Get DateTime from RTC
 
-- SDT("YYMMDDHHMMSS") - Set DateTime on RTC
+- SDTM "YYMMDDHHMMSS" - Set DateTime on RTC
 
 - CLS - Specify Screen Colors
 
@@ -63,3 +57,11 @@ This file is for recording upcoming changes and features that are being added to
 - Stand-alone PT3 Player works both on actual hardware and AquaLite in MX mode.
 
 - Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
+
+- ATN() function returning incorrect results (added 11 MAY 2023)
+
+- SAVE for CAQ and BAS will save their known headers and then the payload 
+  - SAVE for Array should behave as originally designed; should behave similarly to how CSAVE for arrays works
+  - added 15 bytes of $00 at end, written by CSAVE, required by CLOAD
+
+- SAVE for any other filetype (raw) will require a valid start address and length, otherwise SN Error; no HEADER will be added to the beginning

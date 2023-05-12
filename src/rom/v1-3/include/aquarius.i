@@ -178,6 +178,7 @@ FBUFFRLEN   = RESHO-FBUFFR
   
 SYNCHR  = $08     ; Syntax Check
 CHRGET  = $10     ; Scan for Next Character
+CHRGOT  = $11     ; Check Current Character, Skipping Spaces
 COMPAR  = $20     ; Compare HL to DE
 FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
