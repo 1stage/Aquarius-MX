@@ -73,6 +73,7 @@
 ;                  Updated COPY command to copy block of bytes from one memory location to another
 ;                  Updated IN/OUT commands to allow ports 0-65535
 ;                  Added KEY() function to wait for/check for key press
+;                  RUN "filename" only loads and runs BASIC program in CAQ format.
 
 VERSION  = 1
 REVISION = 3
@@ -244,7 +245,7 @@ USB_reserved2     jp  Break
 DOS_GETFILENAME   jp  dos__getfilename
 DOS_DIRECTORY     jp  dos__directory
 DOS_PRTDIRINFO    jp  dos__prtDirInfo
-DOS_GETFILETYPE   jp  dos__getfiletype
+DOS_GETFILETYPE   jp  break             ;File Type Detection Removed
 DOS_NAME          jp  dos__name
 DOS_CHAR          jp  dos__char
 DOS_SET_PATH      jp  dos__set_path
@@ -1072,9 +1073,6 @@ _run_file:
     ld      hl,.nofile_msg
     call    STROUT
     pop     hl                 ; restore BASIC text pointer
-.error:
-    ld      e,ERRFC           ; function code error
-    jp      ERROR           ; return to BASIC
 .extend:
     dec     hl
     push    hl                 ; save extn address
@@ -1086,27 +1084,18 @@ _run_file:
     jr      z,.load_run
     cp      CH376_ERR_MISS_FILE ; error = file not found?
     jp      nz,.nofile         ; no, break
-    ld      de,.bin_extn
+    ld      de,.caq_extn
     ld      (hl),0             ; remove extn
     call    strcat             ; append ".BIN"
 .load_run:
     pop     hl                 ; restore BASIC text pointer
     call    ST_LOADFILE        ; load file from disk, name in FileName
-    jp      nz,.error          ; if load failed then return to command prompt
-    cp      FT_BAS             ; filetype is BASIC?
-    jp      z,$0bcb            ; yes, run loaded BASIC program
-    cp      FT_BIN             ; BINARY?
-    jp      nz,immediate       ; no, return to command line prompt
-    ld      de,immediate
-    push    de                 ; set return address
-    ld      de,(BINSTART)
-    push    de                 ; set jump address
-    ret                        ; jump into binary
+    jp      $0bcb              ; run loaded BASIC program
 
 .bas_extn:
     db     ".BAS",0
-.bin_extn:
-    db     ".BIN",0
+.caq_extn:
+    db     ".CAQ",0
 
 .nofile_msg:
     db     "file not found",$0D,$0A,0

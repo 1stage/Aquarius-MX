@@ -343,14 +343,16 @@ UFERR    = $03D0  ;   undefined function
 ; process error code, E = code (offset to 2 char error name)
 ERROR    = $03db  ; The canonical name is ERROR - close enough!
 
-; Standard BASIC Statement Tokens
+; Standard BASIC Tokens
 COPYTK      = $92   ; COPY Token
 POKETK      = $94   ; POKE Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token
 STEPTK      = $A7   ; STEP Token
+MULTK       = $AA   ; * Token
 EQUATK      = $B0   ; = Token
 PEEKTK      = $C1   ; PEEK Token
+
 
 ;-------------------------------------------------
 ;          AquBASIC Binary File Header

@@ -39,16 +39,10 @@
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 ; 2023-05-11 v1.3  SAVE: Removed header when writing binary files, added 15 x $00 tail to CAQ container
 ;                  when writing Basic program or array. Fixed SN error when SAVE array in program (CFK)
+; 2023-05-12 v1.3  LOAD: Removed file type parsing. File type is based on arguments only. 
+;                  Removed dos_getfiletype and all related code, constants, and strings
+;                  Replaced get_next and get_arg calls with chrget and chrgot calls
 ;                  
-
-; file types
-FT_NONE  equ $01  ; no file extension (type determined from file header)
-FT_TXT   equ $20  ; .TXT ASCII text file (no header)
-FT_OTHER equ $80  ; .??? unknown file type (raw binary, no header)
-FT_BIN   equ $BF  ; .BIN binary (starts with $C9,$C3,load_addr if executable)
-FT_SCR   equ $fd  ; .SCR binary for Screen RAM storage area $3000-$3FF CHR RAM, $3400-$37FF COL RAM
-FT_BAS   equ $fe  ; .BAS tokenized BASIC (has CAQ header same as .CAQ)
-FT_CAQ   equ $ff  ; .CAQ BASIC program or numeric array
 
 ; bits in dosflags
 DF_ADDR   = 0      ; set = address specified
@@ -126,166 +120,50 @@ ST_CD:
 ; out: HL = BASIC text pointer
 ;       Z = loaded OK, A = filetype
 ;
-; file type detection
-; -------------------
-; BAS:   file starts with CAQ BASIC header (32 bytes)
-; CAQ:   file starts with CAQ ARRAY header (19 bytes)
-; BIN:   file starts with BINARY header (4 bytes $C9,$C3,nnnn = RET, JP nnnn)
-; TXT:   file starts with 7 bit ASCII character
-; SCR:   file is raw binary with no header
-; else:  unknown type (raw binary)
-;
+; E0_SIZE = 1C3A before stripping file type, bin headers
 ST_LOAD:
     call    dos__getfilename      ; filename -> FileName
-    jp      z,ST_LOADFILE         ; good filename?
+    jp      z,_stl_load           ; good filename?
     push    hl                    ; push BASIC text pointer
     ld      e,a
-    cp      ERRFC                ; if Function Call error then show DOS error
+    cp      ERRFC                 ; if Function Call error then show DOS error
     jp      nz,_stl_do_error      ; else show BASIC error code
     ld      a,ERROR_BAD_NAME
     jp      _stl_show_error       ; break with bad filename error
-; load file with filename in FileName
-ST_LOADFILE:
+_stl_load:
     xor     a
-    ld      (FILETYPE),a          ; filetype unknown
     ld      (DOSFLAGS),a          ; clear all DOS flags
 _stl_getarg:
-    call    get_arg               ; get next non-space character
+    ld      a,(hl)                ; get next non-space character
     cp      ','
     jr      nz,_stl_start         ; if not ',' then no arg
-    call    get_next
-    cp      $aa                   ; token for '*'
+    rst     CHRGET
+    cp      MULTK                 ; token for '*'
     jr      nz,_stl_addr
-_stl_arg_array:
-    inc     hl                    ; skip '*' token
-    ld      a,1
-    ld      (SUBFLG),a            ; set array flag
-    call    PTRGET                ; get array (out: BC = address, DE = length)
-    ld      (SUBFLG),a            ; clear array flag
-    jp      nz,FCERR           ; FC Error if array not found
-    call    CHKNUM                ; TM error if not numeric
-_stl_array_parms:
-    push    hl                    ; push BASIC text pointer
-    ld      h,b
-    ld      l,c                   ; HL = address
-    ld      c,(hl)
-    ld      b,0                   ; BC = index
-    add     hl,bc
-    add     hl,bc
-    inc     hl                    ; HL = array data
-    ld      (BINSTART),hl
-    dec     de
-    dec     de                    ; subtract array header to get data length
-    dec     de
-    ld      (BINLEN),de
-    ld      a,1<<DF_ARRAY
-    ld      (DOSFLAGS),a          ; set 'loading to array' flag
-    pop     hl                    ; POP text pointer
+    call    _get_array_arg        ; parse array argument
     jr      _stl_start
 _stl_addr:
-    call    GETADR                ; get address
-    ld      (BINSTART),de
-    ld      a,1<<DF_ADDR
-    ld      (DOSFLAGS),a          ; load address specified
+    call    _get_addr_arg         ; parse address argument
 _stl_start:
     push    hl                    ; >>>> push BASIC text pointer
     ld      hl,FileName
     call    usb__open_read        ; try to open file
     jp      nz,_stl_no_file
-    ld      de,1                  ; 1 byte to read
-    ld      hl,FILETYPE
-    call    usb__read_bytes       ; read 1st byte from file into FILETYPE
-    jp      nz,_stl_show_error
-    ld      de,0                  ; rewind back to start of file
-    call    usb__seek
-    call    dos__getfiletype      ; get filetype from extn  (eg. "name.BAS")
-    or      a
-    jp      nz,_stl_type
-    ld      a,ERROR_BAD_FILE      ; 0 = bad name
-    jp      _stl_show_error
-_stl_type
-    cp      FT_NONE               ; file type in extn?
-    jr      nz,_stl_parse_type
-    ld      a,(FILETYPE)          ; no, use type from file
-    cp      $80                   ; ASCII text?
-    jr      nc,_stl_parse_type
-    ld      a,FT_TXT              ; yes, type is TXT
-_stl_parse_type:
-    ld      (FILETYPE),a
-    cp      FT_TXT                ; TXT ?
-    jr      z,_stl_txt
-    cp      FT_CAQ                ; CAQ ?
-    jr      z,_stl_caq
-    cp      FT_BAS                ; BAS ?
-    jr      z,_stl_bas
-    cp      FT_BIN                ; BIN ?
-    jr      z,_stl_bin
-    cp      FT_SCR                ; SCR ?
-    jr      z,_stl_scr
 ; unknown filetype
     ld      a,(DOSFLAGS)
     bit     DF_ADDR,a             ; address specified?
-    jr      nz,_stl_load_bin
-    bit     DF_ARRAY,a            ; no, loading to array?
-    jr      nz,_stl_bas
-    jp      _stl_no_addr
-; TXT
-_stl_txt:
-    ld      a,(DOSFLAGS)
-    bit     DF_ADDR,a             ; address specified?
-    jr      nz,_stl_load_bin      ; yes, load text to address
-; view text here ???
-    jp      _stl_no_addr          ; no, error
-; BIN
-_stl_bin:
-    call    usb__read_byte        ; read 1st byte from file
-    jp      nz,_stl_read_error
-    cp      $BF                   ; CP A instruction?
-    jp      nz,_stl_raw
-    call    usb__read_byte        ; yes, read 2nd byte from file
-    jp      nz,_stl_read_error
-    cp      $DA                   ; JP C instruction?
-    jp      nz,_stl_raw
-; binary with header
-    ld      a,(DOSFLAGS)
-    bit     DF_ADDR,a             ; yes, address specified by user?
-    jr      nz,_stl_load_bin
-    ld      hl,BINSTART
-    ld      de,2
-    call    usb__read_bytes       ; no, read load address
-    jp      nz,_stl_read_error
-    dec     e
-    dec     e                     ; got 2 bytes?
-    jr      z,_stl_load_bin       ; yes,
-    jp      _stl_no_addr          ; no, error
-; raw binary (no header)
-_stl_raw:
-    ld      a,(DOSFLAGS)
-    bit     DF_ADDR,a             ; address specified by user?
-    jp      z,_stl_no_addr        ; no, error
+    jr      z,_stl_caq            ; no, load CAQ file
 ; load binary file to address
 _stl_load_bin:
-    ld      de,0
-    call    usb__seek             ; rewind to start of file
-    ld      a,FT_BIN
-    ld      (FILETYPE),a          ; force type to BIN
     ld      hl,(BINSTART)         ; HL = address
     jr      _stl_read             ; read file into RAM
-; SCR
-_stl_scr:
-    ld      de,0
-    call    usb__seek             ; rewind to start of file
-    ld      a,FT_SCR
-    ld      (FILETYPE),a          ; force type to SCR
-    ld      hl,$3000              ; HL = start of screen RAM
-    jr      _stl_read             ; read file into RAM
-
+; load BASIC Program with filename in FileName
+ST_LOADFILE:
+    push    hl                    ; save text pointer
+    xor     a
+    ld      (DOSFLAGS),a          ; clear all DOS flags
 ; BASIC program or array, has CAQ header
 _stl_caq:
-_stl_bas:
-    ld      a,(DOSFLAGS)
-    bit     DF_ADDR,a             ; address specified?
-    jr      nz,_stl_load_bin      ; yes, load as raw binary
     call    st_read_sync          ; no, read 1st CAQ sync sequence
     jr      nz,_stl_bad_file
     ld      hl,FileName
@@ -310,7 +188,7 @@ _stl_array_id:
 _stl_basprog:
     call    st_read_sync          ; read 2nd CAQ sync sequence
     jr      nz,_stl_bad_file
-    ld      hl,(TXTTAB)          ; HL = start of BASIC program
+    ld      hl,(TXTTAB)           ; HL = start of BASIC program
     ld      de,$ffff              ; DE = read to end of file
     call    usb__read_bytes       ; read BASIC program into RAM
     jr      nz,_stl_read_error
@@ -325,8 +203,6 @@ _stl_bas_end:
     inc     hl
     ld      (VARTAB),hl           ; set end of BASIC program
     call    Init_BASIC            ; clear variables etc. and update line addresses
-    ld      a,FT_BAS
-    ld      (FILETYPE),a          ; filetype is BASIC
     jr      _stl_done
 ; read file into RAM
 ; HL = load address
@@ -349,14 +225,12 @@ _stl_no_addr:
 _stl_show_error:
     call    _show_error           ; print DOS error message (A = error code)
     call    usb__close_file       ; close file (if opened)
-    ld      e,ERRFC              ; Function Call error
+    ld      e,ERRFC               ; Function Call error
 _stl_do_error:
     pop     hl                    ; restore BASIC text pointer
-    jp      ERROR              ; return to BASIC with error code in E
+    jp      ERROR                 ; return to BASIC with error code in E
 _stl_done:
     call    usb__close_file       ; close file
-    ld      a,(FILETYPE)
-    cp      a                     ; Z = OK
     pop     hl                    ; restore BASIC text pointer
     ret
 
@@ -558,40 +432,14 @@ ST_SAVEFILE:
     cp      ','
     jr      nz,_sts_open        ; if not ',' then no args so saving BASIC program
     rst     CHRGET
-    cp      $aa                 ; '*' token?
+    cp      MULTK               ; '*' token?
     jr      nz,_sts_num         ; no, parse binary address & length
-    inc     hl                  ; yes, skip token
-    ld      a,1
-    ld      (SUBFLG),a          ; flag = array
-    call    PTRGET              ; BC = array address, DE = array length
-    ld      (SUBFLG),a          ; clear flag
-    jp      nz,FCERR            ; report FC Error if array not found
-    call    CHKNUM              ; TM error if not numeric
-_sts_array:
-    push    hl
-    ld      h,b
-    ld      l,c                 ; HL = address
-    ld      c,(hl)
-    ld      b,0                 ; BC = index
-    add     hl,bc
-    add     hl,bc
-    inc     hl                  ; HL = array data
-    ld      (BINSTART),hl
-    dec     de
-    dec     de                  ; subtract array header to get data length
-    dec     de
-    ld      (BINLEN),de
-    ld      a,1<<DF_ARRAY
-    ld      (DOSFLAGS),a        ; flag saving array
-    pop     hl
+    call    _get_array_arg      ; parse array argument
     jr      _sts_open
 ; parse address, length
 _sts_num:
-    call    GETADR              ; get address
-    ld      (BINSTART),de       ; set address
-    ld      a,1<<DF_ADDR
-    ld      (DOSFLAGS),a        ; flag load address present
-    call    get_arg             ; get next char from text, skipping spaces
+    call    _get_addr_arg       ; parse address argument
+    call    CHRGOT              ; get next char from text, skipping spaces
     SYNCHK  ","                 ; skip ',' (syntax error if not ',')
     call    GETADR              ; get length
     ld      (BINLEN),de         ; store length
@@ -670,6 +518,45 @@ _sts_done:
 _array_name:
     db      "######"
 
+;----------------------------------------------------------------------------
+; Parse and Store LOAD/SAVE Address Argument
+;----------------------------------------------------------------------------
+_get_addr_arg:
+    call    GETADR              ; get address
+    ld      (BINSTART),de       ; set address
+    ld      a,1<<DF_ADDR
+    ld      (DOSFLAGS),a        ; flag load address present
+    ret
+
+;----------------------------------------------------------------------------
+; Parse LOAD/SAVE Array Argument
+;----------------------------------------------------------------------------
+_get_array_arg:
+    rst     CHRGET                ; skip '*' token
+    ld      a,1
+    ld      (SUBFLG),a            ; set array flag
+    call    PTRGET                ; get array (out: BC = address, DE = length)
+    ld      (SUBFLG),a            ; clear array flag
+    jp      nz,FCERR              ; FC Error if array not found
+    call    CHKNUM                ; TM error if not numeric
+_get_array_parms:
+    push    hl                    ; push BASIC text pointer
+    ld      h,b
+    ld      l,c                   ; HL = address
+    ld      c,(hl)
+    ld      b,0                   ; BC = index
+    add     hl,bc
+    add     hl,bc
+    inc     hl                    ; HL = array data
+    ld      (BINSTART),hl
+    dec     de
+    dec     de                    ; subtract array header to get data length
+    dec     de
+    ld      (BINLEN),de
+    ld      a,1<<DF_ARRAY
+    ld      (DOSFLAGS),a          ; set 'loading to array' flag
+    pop     hl                    ; POP text pointer
+    ret
 
 ;--------------------------------------------------------------------
 ;             Write CAQ Sync Sequence  12x$FF, $00
@@ -1199,12 +1086,12 @@ dos__set_path:
 ; uses: BC,DE
 ;
 dos__getfilename:
-    call    FRMEVL              ; evaluate expression
+    call    FRMEVL            ; evaluate expression
     push    hl                ; save BASIC text pointer
     ld      a,(VALTYP)        ; get type
     dec     a
     jr      nz,.type_mismatch
-    call    LEN1            ; get string and its length
+    call    LEN1              ; get string and its length
     jr      z,.null_str       ; if empty string then return
     cp      12
     jr      c,.string         ; trim to 12 chars max
@@ -1243,86 +1130,6 @@ dos__getfilename:
     pop     hl                ; restore BASIC text pointer
     or      a                 ; test error code
     ret
-
-
-;--------------------------------------------------------------------
-;                 Determine File Type from Extension
-;--------------------------------------------------------------------
-; Examines extension to determine filetype eg. "name.BIN" is binary
-;
-;  out: A = file type:-
-;             0       bad name
-;          FT_NONE    no extension
-;          FT_OTHER   unknown extension
-;          FT_TXT     ASCII text
-;          FT_BIN     binary code/data
-;          FT_SCR     screen RAM file
-;          FT_BAS     BASIC program
-;          FT_CAQ     tape file
-;
-dos__getfiletype:
-    push  hl
-    ld    hl,FileName
-    ld    b,-1             ; B = position of '.' in filename
-_gft_find_dot
-    inc   b
-    ld    a,b
-    cp    9                ; error if name > 8 charcters long
-    jr    nc,_gft_error
-    ld    a,(hl)           ; get next char in filename
-    inc   hl
-    cp    "."              ; is it a '.'?
-    jr    z,_gft_got_dot
-    or    a                ; end of string?
-    jr    z,_gft_no_extn
-    jr    _gft_find_dot    ; continue searching for '.'
-_gft_got_dot:
-    ld    a,b
-    or    a                ; error if no name
-    jr    z,_gft_error
-    ld    a,(hl)
-    or    a                ; if '.' is last char then no extn
-    jr    z,_gft_no_extn
-    ld    de,extn_list     ; DE = list of extension names
-    jr    _gft_search
-_gft_skip:
-    or    a
-    jr    z,_gft_next
-    ld    a,(de)
-    inc   de               ; skip extn name in list
-    jr    _gft_skip
-_gft_next:
-    inc   de               ; skip filetype in list
-_gft_search:
-    ld    a,(de)
-    or    a                ; end of filetypes list?
-    jr    z,_gft_other
-    push  hl
-    call  strcmp           ; compare extn to name in list
-    pop   hl
-    jr    nz,_gft_skip     ; if no match then keep searching
-_gft_got_extn:
-    ld    a,(de)           ; get filetype
-    jr    _gft_done
-_gft_other:
-    ld    a,FT_OTHER       ; unknown filetype
-    jr    _gft_done
-_gft_no_extn:
-    ld    a,FT_NONE        ; no extn (eg. "name", "name.")
-    jr    _gft_done
-_gft_error:
-    xor   a                ; 0 = bad name
-_gft_done:
-    pop   hl
-    ret
-
-extn_list:
-    db   "TXT",0,FT_TXT    ; ASCII text
-    db   "BIN",0,FT_BIN    ; binary code/data
-    db   "SCR",0,FT_SCR    ; screen RAM file
-    db   "BAS",0,FT_BAS    ; BASIC program
-    db   "CAQ",0,FT_CAQ    ; tape file (BASIC, Array, ???)
-    db   0
 
 ;----------------------------------------------------------
 ;      Convert FAT filename to DOS filename
