@@ -4,16 +4,6 @@ This file is for recording upcoming changes and features that are being added to
 
 ## IN PROCESS:
 
-- LOAD for Basic program and Array are loaded into their expected locations
-  - BASIC Program and Array Files are both CAQ format (header and tail)
-  - Can have any file suffix, including BAS or CAQ
-
-- LOAD for any other filetype (raw) will require a valid target address, otherwise SN Error
-
-- RUN for Basic program file (CAQ format) loads them where expected, then runs them
-
-- RUN for all other file types gives a ??? error
-
 - Test hardware behavior without RTC installed (RAM only)
 
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
@@ -65,3 +55,14 @@ This file is for recording upcoming changes and features that are being added to
   - added 15 bytes of $00 at end, written by CSAVE, required by CLOAD
 
 - SAVE for any other filetype (raw) will require a valid start address and length, otherwise SN Error; no HEADER will be added to the beginning
+
+- LOAD for Basic program and Array are loaded into their expected locations
+  - BASIC Program and Array Files are both CAQ format (header and tail)
+  - Can have any file suffix, including BAS or CAQ
+
+- LOAD for any other filetype (raw) will require a valid target address, otherwise SN Error
+
+- RUN for Basic program file (CAQ format) loads them where expected, then runs them
+
+- RUN for all other file types gives an filetype mismatch ?FC error
+
