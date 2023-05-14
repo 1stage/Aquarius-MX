@@ -105,6 +105,23 @@ EXAMPLES of OUT Statement:
                                     sound port
 
 
+PSG Command - Write to Programmable Sound Generator(s)
+
+FORMAT: PSG register, value [, ...]
+
+Action: Writes a pair of values to either PSG1 or PSG2
+    registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
+    registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
+
+EXAMPLES of PSG command:
+
+  PSG 8,15,0,148,1,1,7,56           Play a Db4 note on PSG1 channel A, continuously
+  PSG 8,0,7,0                       Turn the PSG1 sound off
+
+  PSG 24,15,16,148,17,1,23,56       Play a Db4 note on PSG2 channel A, continuously
+  PSG 24,0,23,0                     Turn the PSG2 sound off
+
+
 Extended PEEK() Function - Read from Memory
 
 FORMAT: PEEK(<address>)

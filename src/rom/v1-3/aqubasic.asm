@@ -1465,13 +1465,25 @@ GOTO_HL:
     jp      TTYFIS              ; Save cursor position and return
 
 
-;--------------------------------------------------------------------
-;   PSG statement
-;   syntax: PSG register, value [, ... ]
-;       registers  0-15 go to PSG1 at $f6 (data) and $f7 (reg num)
-;       registers 16-31 go to PSG2 at $f8 (data) and $f9 (reg num)
+;----------------------------------------------------------------------------
+;;; PSG Command - Write to Programmable Sound Generator(s)
+;;; 
+;;; FORMAT: PSG register, value [, ...]
+;;;  
+;;; Action: Writes a pair of values to either PSG1 or PSG2 
+;;;     registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
+;;;     registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
+;;;
+;;; EXAMPLES of PSG command:
+;;; 
+;;;   PSG 8,15,0,148,1,1,7,56           Play a Db4 note on PSG1 channel A, continuously
+;;;   PSG 8,0,7,0                       Turn the PSG1 sound off
+;;;
+;;;   PSG 24,15,16,148,17,1,23,56       Play a Db4 note on PSG2 channel A, continuously
+;;;   PSG 24,0,23,0                     Turn the PSG2 sound off
+;----------------------------------------------------------------------------
 ;
-; Original Single PSG Code - Restore as needed
+; Original Single PSG Code - Restore as needed (Remove after release!!!)
 ;
 ; ST_PSG:
 ;     cp      $00
@@ -1492,29 +1504,29 @@ GOTO_HL:
 ; Dual PSG Code
 ST_PSG:
     cp      $00
-    jp      z,$03d6         ; MO error if no args
+    jp      z,$03d6             ; MO error if no args
 psgloop:
-    call    GETBYT          ; Get/evaluate register
-    cp      16              ; Compare to a 16 offset
-    jr      nc, psg2        ; If >= 16 send to PSG2
-    out     ($f7),a         ; Otherwise, set the PSG1 register
-    rst     $08             ; Next character must be ','
-    db      $2c             ; ','
-    call    GETBYT          ; Get/evaluate value
-    out     ($f6),a         ; Send data to the selected PSG1 register
+    call    GETBYT              ; Get/evaluate register
+    cp      16                  ; Compare to a 16 offset
+    jr      nc, psg2            ; If >= 16 send to PSG2
+    out     (PSG1ADDR),a        ; Otherwise, set the PSG1 register
+    rst     $08                 ; Next character must be ','
+    db      COMMA               ; ','
+    call    GETBYT              ; Get/evaluate value
+    out     (PSG1DATA),a     ; Send data to the selected PSG1 register
 check_comma:
-    ld      a,(hl)          ; Get next character on command line
-    cp      $2c             ; Compare with ','
-    ret     nz              ; No comma = no more parameters -> return
-    inc     hl              ; Next character on command line
-    jr      psgloop         ; Parse next register & value
+    ld      a,(hl)              ; Get next character on command line
+    cp      COMMA               ; Compare with ','
+    ret     nz                  ; No comma = no more parameters -> return
+    inc     hl                  ; Next character on command line
+    jr      psgloop             ; Parse next register & value
 psg2:
-    sub     16              ; Reduce shifted registers into regular range for PSG2
-    out     ($f9),a         ; Set the PSG2 register
-    rst     $08             ; Next character must be ','
-    db      $2c             ; ','
-    call    GETBYT          ; Get/evaluate value
-    out     ($f8),a         ; Send data to the selected PSG2 register
+    sub     16                  ; Reduce shifted registers into regular range for PSG2
+    out     (PSG2ADDR),a        ; Set the PSG2 register
+    rst     $08                 ; Next character must be ','
+    db      COMMA               ; ','
+    call    GETBYT              ; Get/evaluate value
+    out     (PSG2DATA),a        ; Send data to the selected PSG2 register
     jr      check_comma
 
 ; Parse Function Argument and Put Return Address on Stack
