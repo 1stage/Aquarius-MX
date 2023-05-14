@@ -8,6 +8,10 @@ This file is for recording upcoming changes and features that are being added to
 
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
 
+- PSG() to accept registers in 16-31 range for a second PSG
+
+- JOY() to accept values to read inputs from second AY through parameters 3 - 4
+
 ## COMPLETE:
 
 - Test/Tweak, document KEY() function

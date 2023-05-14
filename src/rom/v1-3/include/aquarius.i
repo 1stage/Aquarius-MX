@@ -294,6 +294,14 @@ CR      = $0D   ; carriage return
 CTRLS   = $13   ; ^S = wait for key
 CTRLU   = $15   ; ^U = abandon line
 CTRLX   = $18   ; ^X = undo line
+COMMA   = $2C   ; comma
+
+; PSG IO Ports
+PSG1DATA    = $F6       ; AY-3-8910 data port 
+PSG1ADDR    = $F7       ; AY-3-8910 address port
+PSG2DATA    = $F8       ; Second AY-3-8910 data port
+PSG2ADDR    = $F9       ; Second AY-3-8910 address port
+
 
 ;----------------------------------------------------------------------------
 ;                         BASIC Error Codes

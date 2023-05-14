@@ -1492,29 +1492,29 @@ GOTO_HL:
 ; Dual PSG Code
 ST_PSG:
     cp      $00
-    jp      z,$03d6         ; MO error if no args
+    jp      z,$03d6             ; MO error if no args
 psgloop:
-    call    GETBYT          ; Get/evaluate register
-    cp      16              ; Compare to a 16 offset
-    jr      nc, psg2        ; If >= 16 send to PSG2
-    out     ($f7),a         ; Otherwise, set the PSG1 register
-    rst     $08             ; Next character must be ','
-    db      $2c             ; ','
-    call    GETBYT          ; Get/evaluate value
-    out     ($f6),a         ; Send data to the selected PSG1 register
+    call    GETBYT              ; Get/evaluate register
+    cp      16                  ; Compare to a 16 offset
+    jr      nc, psg2            ; If >= 16 send to PSG2
+    out     (PSG1ADDR),a        ; Otherwise, set the PSG1 register
+    rst     $08                 ; Next character must be ','
+    db      COMMA               ; ','
+    call    GETBYT              ; Get/evaluate value
+    out     (PSG1DATA),a     ; Send data to the selected PSG1 register
 check_comma:
-    ld      a,(hl)          ; Get next character on command line
-    cp      $2c             ; Compare with ','
-    ret     nz              ; No comma = no more parameters -> return
-    inc     hl              ; Next character on command line
-    jr      psgloop         ; Parse next register & value
+    ld      a,(hl)              ; Get next character on command line
+    cp      COMMA               ; Compare with ','
+    ret     nz                  ; No comma = no more parameters -> return
+    inc     hl                  ; Next character on command line
+    jr      psgloop             ; Parse next register & value
 psg2:
-    sub     16              ; Reduce shifted registers into regular range for PSG2
-    out     ($f9),a         ; Set the PSG2 register
-    rst     $08             ; Next character must be ','
-    db      $2c             ; ','
-    call    GETBYT          ; Get/evaluate value
-    out     ($f8),a         ; Send data to the selected PSG2 register
+    sub     16                  ; Reduce shifted registers into regular range for PSG2
+    out     (PSG2ADDR),a        ; Set the PSG2 register
+    rst     $08                 ; Next character must be ','
+    db      COMMA               ; ','
+    call    GETBYT              ; Get/evaluate value
+    out     (PSG2DATA),a        ; Send data to the selected PSG2 register
     jr      check_comma
 
 ; Parse Function Argument and Put Return Address on Stack
