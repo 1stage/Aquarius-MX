@@ -8,6 +8,8 @@ This file is for recording upcoming changes and features that are being added to
 
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
 
+- Modify dos.asm to read and write USB file timestamp
+
 ## COMPLETE:
 
 - Test/Tweak, document KEY() function
