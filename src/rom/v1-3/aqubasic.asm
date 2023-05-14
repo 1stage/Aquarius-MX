@@ -136,10 +136,6 @@ DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
 ;   FILNAM,FILNAF,INSYNC,CLFLAG: $3851-$385E. 14 bytes
 DTM_STRING = $38E6      ; DTM String Buffer, 19 bytes
 ;   FACHO,FAC,FBUFFR,RESHO,RESMO,RESLO: $38E6-$38F8, 19 bytes
-  ifdef softclock
-RTC_TEMP = $38A1        ; Software Clock Temporary Shadow Register, 10 bytes  
-;   TMPSTK+1...DIMFLG: $38A1-$38AA. 10 bytes
-  endif
 
 ;; IMPLEMENTING REAL TIME CLOCK IN EMULATORS
 ;; The will be a read from memory location $3821 whenever the RTC is accessed
@@ -289,6 +285,8 @@ RTC_WRITE_RTC     jp  rtc_write
 RTC_DTM_TO_STR    jp  dtm_to_str
 RTC_DTM_TO_FMT    jp  dtm_to_fmt
 RTC_STR_TO_DTM    jp  str_to_dtm
+RTC_DTM_TO_FTS    jp  dtm_to_fts
+RTC_FTS_TO_DTM    jp  fts_to_dtm
 
 ; windowed text functions
    include "windows.asm"
@@ -589,12 +587,7 @@ MEMSIZE:
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
-  ifdef RTC_TEMP
-    ld      hl,RTC_TEMP        ; Copy Temporary RTC Registers to where they belongx`
-    ld      de,RTC_SHADOW
-    ld      bc,10
-    ldir
-  endif
+    call    INIT_RTC           ; Init again: Cold Boot overwrites RTC_SHADOW
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
@@ -614,12 +607,7 @@ MEMSIZE:
 ;                RTC Driver for Dallas DS1244
 ;---------------------------------------------------------------------
     include "dtm_lib.asm"
-    ;Using dummy Soft Clock until driver is done
-    ifdef softclock
-        include "softclock.asm" 
-    else
-        include "ds1244rtc.asm" 
-    endif
+    include "ds1244rtc.asm" 
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -1907,13 +1895,8 @@ FRCADR: ld      a,(FAC)           ;
 ;
 
 SPL_DATETIME:
-  ifdef RTC_TEMP
-    ld      bc,RTC_TEMP       
-  else
-    ld      bc,RTC_SHADOW
-  endif
     ld      hl,DTM_BUFFER
-    call    rtc_read      ;Read RTC
+    call    READ_RTC      ;Read RTC
     ld      de,DTM_STRING
     call    dtm_to_fmt    ;Convert to Formatted String   
     ld      d,2                
@@ -1926,7 +1909,7 @@ SPL_DATETIME:
 ;Starting DateTime for Software Clock
 ;2017-06-12 11:00:00 - Date Bruce Abbott released Micro Expander (NZ is GMT+11)
 SPL_DEFAULT:
-    db      $FF,$00,$00,$00,$11,$12,$06,$17,$00,$00 
+    db      $80,$00,$00,$00,$11,$12,$06,$17,$00,$00 
             ;enl cc  ss  mm  HH  DD  MM  YY cdl cdh
  
 ;------------------------------------------------------------------------------
@@ -1934,26 +1917,48 @@ SPL_DEFAULT:
 ;------------------------------------------------------------------------------
 
 INIT_RTC:
-  ifdef RTC_TEMP
-    ld      bc,RTC_TEMP       
-  else
     ld      bc,RTC_SHADOW
-  endif
-    ld      de,SPL_DEFAULT    ;Default Default Time
-    ld      hl,DTM_BUFFER     
-    call    rtc_init          ;Initialize RTC Chip
+    ld      hl,DTM_BUFFER
+    ld      a,(bc)              ; Check RTC Enabled Flag
+    cp      CLK_SOFT            ; If Not Set to Soft Clock
+    jp      nz,rtc_init         ; Initialize RTC Chip
     ret
 
-    
+;------------------------------------------------------------------------------
+;     Read the Real Time Clock
+;     In: HL = DTM Buffer
+;     Out: A = Valid, Flags Set, HL unchanged
+;------------------------------------------------------------------------------
+
+READ_RTC:
+    ld      bc,RTC_SHADOW
+    ld      a,(bc)              ; Check RTC Enabled Flag
+    cp      CLK_SOFT            ; If Not Set to Soft Clock
+    jp      nz,rtc_read         ;   Read RTC Chip and Return
+    or      a                   ; Set Flags and Save Return Value
+    push    hl
+    ex      de,hl               ; DE=DTM_BUFFER
+    ld      h,b                 ; HL=RTC_SHADOW
+    ld      l,c
+    ld      bc,8                ; 8 bytes
+    ldir                        ; Copy RTC_SHADOW to DTM_BUFFER
+    pop     hl
+    ret
+
 ;------------------------------------------------------------------------------
 ;;; SDTM Function - Set DateTime
 ;;;
 ;;; Format: SDTM <string>
 ;;; 
-;;; Action: If a Real Time Clock is installed, allows user to set the time on
-;;;         the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" 
-;;;         format:
-;;;         - Improperly formatted string causes FC Error
+;;; Action: Set Date and Time to specified string in format "YYMMDDHHmmss". 
+;;;         If the string does not contain a valid date and time, no further 
+;;;         action is taken. otherwise:
+;;;         If a Dallas DS1244Y RTC is installed and was detected during cold boot,
+;;;         the specified time and time is written to the RTC.
+;;;         If no RTC was detected, the specified time and date are written to 
+;;;         the "soft clock" and all subsequent DTM$() calls will return that
+;;;         date and time.
+;;;
 ;;;         - DateTime is set by default to 24 hour mode, 
 ;;;           with cc (hundredths of seconds) set to 0
 ;;; 
@@ -1968,11 +1973,13 @@ INIT_RTC:
 ST_SDTM:
     call    FRMEVL          ; Evaluate Argument
     push    hl              ; Save text pointer
+    ld      hl,POPHRT       ; Make return address POPHRT
+    push    hl              ;   (POP HL and RET)
     call    FRESTR          ; Make sure it's a String and Free up tmp
-    
+
     ld      a,c             ; If less than 12 characters long
     cp      12              ;   Return without setting date
-    jr      c,.pop_ret
+    ret     c
 
     inc     hl              ; Skip String Descriptor length byte
     inc     hl              ; Set DE to Address of String Text
@@ -1983,10 +1990,16 @@ ST_SDTM:
     ld      hl,DTM_BUFFER   ; 
     call    str_to_dtm      ; Convert String to DateTime
     ret     z               ; Don't Write if invalid DateTime
+
     ld      bc,RTC_SHADOW
-    call    rtc_write
-.pop_ret:    
-    pop     hl              ; Restore text pointer
+    ld      a,(bc)          ; Check RTC Enabled Flag
+    cp      CLK_FOUND       ; If RTC Enabled
+    jp      z,rtc_write     ;   Write to RTC and Return
+    ld      (hl),CLK_SOFT   ; Turn on Soft Clock
+    ld      d,b             ; Copying to RTC_SHADOW
+    ld      e,c
+    ld      bc,8            ; 8 bytes
+    ldir                    ; Copy DTM_BUFFER to RTC_SHADOW
     ret
 
 ;------------------------------------------------------------------------------
@@ -1994,10 +2007,11 @@ ST_SDTM:
 ;;;
 ;;; Format: DTM$(<number>)
 ;;; 
-;;; Action: If a Real Time Clock is installed:
+;;; Action: If a Real Time Clock is installed and detected, or the "soft clock"
+;;;         was set via an SDTM call.
 ;;;            if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
-;;;            otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
-;;;         Returns "" if a Real Time Clock is not detected.
+;;;            if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
+;;;         Otherwise, returns ""
 ;;; 
 ;;; EXAMPLES of DTM$ Function:
 ;;; 
@@ -2011,24 +2025,21 @@ ST_SDTM:
 
 
 FN_DTM:
-    call    InitFN            ; Parse Arg and set return address
+    call    InitFN           ; Parse Arg and set return address
     call    CHKNUM
-    
     ld      a,(FAC)          ;  
-    or      a                
+    or      a
     push    af
-    ld      bc,RTC_SHADOW
-    ld      hl,DTM_BUFFER    
-    call    rtc_read         ;Read RTC
+    ld      hl,DTM_BUFFER
+    call    READ_RTC         ; Read RTC
     ld      de,DTM_STRING
-    call    dtm_to_str       ;Convert to String
+    call    dtm_to_str       ; Convert to String
     pop     af 
-    call    nz,dtm_fmt_str   ;  Format Date
+    call    nz,dtm_fmt_str   ; If arg <> 0 Format Date
     ld      hl,DTM_STRING
-    ld      a,1              ;Set Value Type to String
+    ld      a,1              ; Set Value Type to String
     ld      (VALTYP),a
     jp      TIMSTR
-
 
 ;-------------------------------------------------------------------------
 ; EVAL Extension - Hook 9

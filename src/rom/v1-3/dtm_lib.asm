@@ -2,7 +2,7 @@
 ;DateTime validation, modification and String Conversion Routines 
 
 ;DateTime Data Structure (Each 1 byte field is 2 BCD digits)
-;+0 vld Is Valid     $FF if Valid, else 0
+;+0 vld Is Valid     $FF=Read from RTC, $80=Soft, $7F=Validated
 ;+1 cc  Centiseconds
 ;+2 ss  Seconds
 ;+3 mm  Minutes

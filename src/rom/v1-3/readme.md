@@ -246,10 +246,15 @@ SDTM Function - Set DateTime
 
 Format: SDTM <string>
 
-Action: If a Real Time Clock is installed, allows user to set the time on
-        the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS"
-        format:
-        - Improperly formatted string causes FC Error
+Action: Set Date and Time to specified string in format "YYMMDDHHmmss".
+        If the string does not contain a valid date and time, no further
+        action is taken. otherwise:
+        If a Dallas DS1244Y RTC is installed and was detected during cold boot,
+        the specified time and time is written to the RTC.
+        If no RTC was detected, the specified time and date are written to
+        the "soft clock" and all subsequent DTM$() calls will return that
+        date and time.
+
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
 
@@ -265,10 +270,11 @@ DTM$ Function - Get DateTime
 
 Format: DTM$(<number>)
 
-Action: If a Real Time Clock is installed:
+Action: If a Real Time Clock is installed and detected, or the "soft clock"
+        was set via an SDTM call.
            if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
-           otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
-        Returns "" if a Real Time Clock is not detected.
+           if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
+        Otherwise, returns ""
 
 EXAMPLES of DTM$ Function:
 
