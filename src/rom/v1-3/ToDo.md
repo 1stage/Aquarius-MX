@@ -8,13 +8,15 @@ This file is for recording upcoming changes and features that are being added to
 
 - SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
-- AquaLite: Add a second virtual AY-3-8910 (8912), responding in IO ports $F8 & $F9
+- AquaLite: Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
 
 - Modify dos.asm to read and write USB file timestamp
 
+- Transition in-line documentation (;;;) to Markdown format.
+
 ## COMPLETE:
 
-- PSG() now accepts registers in the 16-31 range for a second AY-3-8910/8912.
+- PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 
 - Test/Tweak, document KEY() function
 
