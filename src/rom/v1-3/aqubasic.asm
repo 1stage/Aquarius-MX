@@ -1465,13 +1465,25 @@ GOTO_HL:
     jp      TTYFIS              ; Save cursor position and return
 
 
-;--------------------------------------------------------------------
-;   PSG statement
-;   syntax: PSG register, value [, ... ]
-;       registers  0-15 go to PSG1 at $f6 (data) and $f7 (reg num)
-;       registers 16-31 go to PSG2 at $f8 (data) and $f9 (reg num)
+;----------------------------------------------------------------------------
+;;; PSG Command - Write to Programmable Sound Generator(s)
+;;; 
+;;; FORMAT: PSG register, value [, ...]
+;;;  
+;;; Action: Writes a pair of values to either PSG1 or PSG2 
+;;;     registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
+;;;     registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
+;;;
+;;; EXAMPLES of PSG command:
+;;; 
+;;;   PSG 8,15,0,148,1,1,7,56           Play a Db4 note on PSG1 channel A, continuously
+;;;   PSG 8,0,7,0                       Turn the PSG1 sound off
+;;;
+;;;   PSG 24,15,16,148,17,1,23,56       Play a Db4 note on PSG2 channel A, continuously
+;;;   PSG 24,0,23,0                     Turn the PSG2 sound off
+;----------------------------------------------------------------------------
 ;
-; Original Single PSG Code - Restore as needed
+; Original Single PSG Code - Restore as needed (Remove after release!!!)
 ;
 ; ST_PSG:
 ;     cp      $00

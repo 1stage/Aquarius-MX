@@ -6,13 +6,13 @@ This file is for recording upcoming changes and features that are being added to
 
 - Test hardware behavior without RTC installed (RAM only)
 
-- SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
+- SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
-- PSG() to accept registers in 16-31 range for a second PSG
-
-- JOY() to accept values to read inputs from second AY through parameters 3 - 4
+- AquaLite: Add a second virtual AY-3-8910 (8912), responding in IO ports $F8 & $F9
 
 ## COMPLETE:
+
+- PSG() now accepts registers in the 16-31 range for a second AY-3-8910/8912.
 
 - Test/Tweak, document KEY() function
 
