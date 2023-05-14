@@ -295,6 +295,21 @@ Note: Care should be taken when working with an array, because the
 addresses of arrays change whenever a new simple variable is assigned.
 
 
+SAVE Statement - Save File to USB Drive
+
+Format: SAVE <filespec>
+        SAVE <filespec>,*<arrayname>
+        SAVE <filespec>,<address>,<size>
+
+Action: Save BASIC program, array, or range of memory.
+
+EXAMPLES of SAVE Statement:
+
+  SAVE "progname.bas"               Save current program as CAQ file
+  SAVE "array.caq",*A               Save contents of array A() as CAQ file
+  SAVE "capture.src",12288,2048     Save Screen and Color RAM as binary file
+
+
 EDIT Statement - Edit BASIC Line
 
 FORMAT: EDIT <line number>
