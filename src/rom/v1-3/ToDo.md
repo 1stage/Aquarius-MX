@@ -10,6 +10,8 @@ This file is for recording upcoming changes and features that are being added to
 
 - AquaLite: Add a second virtual AY-3-8910 (8912), responding in IO ports $F8 & $F9
 
+- Modify dos.asm to read and write USB file timestamp
+
 ## COMPLETE:
 
 - PSG() now accepts registers in the 16-31 range for a second AY-3-8910/8912.
