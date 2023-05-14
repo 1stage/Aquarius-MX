@@ -9,6 +9,8 @@ This file is for recording upcoming changes and features that are being added to
 - SPACE option in FP3PLAY.ROM song playback doesn't go to next song.
 
 - Modify dos.asm to read and write USB file timestamp
+  - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
+  - Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
 ## COMPLETE:
 
