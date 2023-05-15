@@ -1097,16 +1097,16 @@ ST_reserved:
     ret
 
 ;----------------------------------------------------------------------------
-;;;## DOKE Statement ##
-;;;Writes 16 bit word(s) to memory location(s), aka "Double Poke"
-;;;### FORMAT:
-;;; - DOKE < address >, < word >
-;;;   - Action: Writes < word > to memory starting at < address >.
-;;;### EXAMPLES: ###
-;;; - `DOKE 14340, 1382`
-;;;   - Set USR() function address
-;;; - `DOKE $3028, $6162`
-;;;   - Put the characters `ab` at the top left of the screen
+;;; ## DOKE Statement ##
+;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
+;;; ### FORMAT:
+;;;  - DOKE < address >, < word >
+;;;    - Action: Writes < word > to memory starting at < address >.
+;;; ### EXAMPLES: ###
+;;;  - `DOKE 14340, 1382`
+;;;    - Set USR() function address
+;;;  - `DOKE $3028, $6162`
+;;;    - Put the characters `ab` at the top left of the screen
 ;----------------------------------------------------------------------------
 
 ST_DOKE:   
