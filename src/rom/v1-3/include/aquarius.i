@@ -261,6 +261,7 @@ INCHRH  = $1E7E   ; Get current key pressed (through UDF)
 INCHRC  = $1E80   ; Get current key pressed (direct)
 
 GETSTK  = $0BA0   ; Check for stack space (in: C = number of words required)
+POPHRT  = $141A   ; Pop HL and Return
 
 COPY    = $1B15   ; COPY statement
 
@@ -302,6 +303,11 @@ PSG1ADDR    = $F7       ; AY-3-8910 address port
 PSG2DATA    = $F8       ; Second AY-3-8910 data port
 PSG2ADDR    = $F9       ; Second AY-3-8910 address port
 
+; RTC Enabled/Valid Flags
+CLK_FOUND   = $FF
+CLK_SOFT    = $80
+CLK_WRITE   = $7F
+CLK_NONE    = $00
 
 ;----------------------------------------------------------------------------
 ;                         BASIC Error Codes

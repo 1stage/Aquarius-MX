@@ -10,7 +10,15 @@ This file is for recording upcoming changes and features that are being added to
 
 - AquaLite: Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
 
+- AquaLite: Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
+
+- AquaLite: Update RTC emulation
+  - When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
+  - Add option for RTC installed or not
+
 - Modify dos.asm to read and write USB file timestamp
+  - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
+  - Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
 - Transition in-line documentation (;;;) to Markdown format.
 
