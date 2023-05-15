@@ -8,6 +8,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **32k RAM** - Removes the need for a separate RAM expansion cartridge
 - **Cartridge ROM Loading** - Quick loading/running of legacy Aquarius ROM cartridges through USB
 - **AY-3-8910 Sound Chip** - Three voice PSG (Programmable Sound Generator) with Control Pad IO
+- **AY-3-8913 Sound Chip** - Support for optional second PSG (Programmable Sound Generator) for a total of six voices
 - **Real Time Clock** - Support for optional Dallas DS1244Y Real Time Clock chip for timekeeping functions
 - **PT3 Music Player** - Built-in retro music player
 - **Aquarius Control Pad Inputs** - Standard DB9 connectors for attaching Aquarius Control Pads (internal header also available)
