@@ -1,11 +1,11 @@
 files
 =====
 
-AQ_MX_RRUT.PLD source code for use with WinCUPL http://www.atmel.com/tools/wincupl.aspx
+AQ_MX_RRU.PLD source code for use with WinCUPL http://www.atmel.com/tools/wincupl.aspx
 
-AQ_MX_RRUT.docx WinCUPL listing file (includes expanded logic terms, fuse map, chip pinouts)
+AQ_MX_RRU.docx WinCUPL listing file (includes expanded logic terms, fuse map, chip pinouts)
 
-AQ_MX_RRUT.jed JEDEC file used to program GAL
+AQ_MX_RRU.jed JEDEC file used to program GAL
 
 
 Explanation of PLD Source Code
