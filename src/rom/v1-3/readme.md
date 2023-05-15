@@ -348,7 +348,7 @@ mode. While editing a line, the following control keys are available:
   CTL - \   Delete character to right
     RTN     Save changes and exit edit mode
   CTL - R   Retype line, discard changes, and remain in edit mode
-  CTL - C   Discard changes and edit edit mode
+  CTL - C   Discard changes and exit edit mode
 
 Note: The above control keys are also available when entering a new
 line or direct mode command.
