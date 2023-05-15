@@ -12,8 +12,8 @@ This folder contains Aquarius MX documentation and logo files.
    - **aq_mx_logo_bw.eps** - This logo file is the BLACK and WHITE version of the Aquarius MX logo. Use this file for instances where the logo will be printed on standard black on white, or on a light-colored background where only BLACK ink is available.
    - **aq_mx_logo_color.eps** - This logo file is the COLOR version of the Aquarius MX logo, which includes color banding in the "Q". Use this file for full-color use of the logo.
    - **aq_mx_logo_white.eps** - This logo file is the WHITE on dark version of the Aquarius MX logo. Use this file for instances where the logo needs to be used against a dark background. *DO NOT CHANGE THE COLOR OF THE LOGO TO ANYTHING OTHER THAN WHITE.*
- - **aq_mx_v1-3-0c_BOARD.PDF** - This file documents the PCB layout for the Aquarius MX.
- - **aq_mx_v1-3-0c_SCHEMATIC.PDF** - This file documents the electronic schematic for the Aquarius MX.
+ - **aq_mx_vX-X-Xx_BOARD.PDF** - This file documents the PCB layout for the Aquarius MX.
+ - **aq_mx_vX-X-Xx_SCHEMATIC.PDF** - This file documents the electronic schematic for the Aquarius MX.
  - **usb-basic-commands.md** - A brief overview that discusses the USB BASIC commands.
  
  *Note: There are PNG versions (with transparency) of each of the logos listed above in raster format in the "img" folder at the root of the Aquarius MX GitHub repository.*
