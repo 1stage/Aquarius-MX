@@ -61,7 +61,8 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-05-17 v1.3  Removed unimplemented PCG code
+; 2023-05-15 v1.3  Unreleased v1.3 merged into v2.0, below
+; 2023-05-xx v2.0  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added hexadecimal constants in formulas, anywhere formula can be used
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
@@ -75,8 +76,8 @@
 ;                  Added KEY() function to wait for/check for key press
 ;                  RUN "filename" only loads and runs BASIC program in CAQ format.
 
-VERSION  = 1
-REVISION = 3
+VERSION  = 2
+REVISION = 0
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
@@ -186,7 +187,7 @@ ifdef debug
 endif
 
 ;system flags
-SF_NTSC  = 0       ; 1 = NTSC, 0 = PAL
+SF_NTSC  = 1       ; 1 = NTSC, 0 = PAL
 SF_RETYP = 1       ; 1 = CTRL-O is retype
 SF_DEBUG = 7       ; 1 = Debugger available
 
@@ -478,12 +479,12 @@ AboutWindow:
     dw   0                            ; title
 
 AboutBdrTitle:
-    db     " About USB BASIC ",0
+    db     " About MX BASIC ",0
 
 AboutText:
     db     CR,CR,CR
     db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
-    db     " Release Date - Alpha 2023-05-12",CR,CR                       ; Can we parameterize this later?
+    db     " Release Date - Alpha 2023-05-19",CR,CR                       ; Can we parameterize this later?
     db     " ROM Dev Team - Curtis F Kaylor",CR
     db     "                Mack Wharton",CR
     db     "                Sean Harrington",CR
@@ -535,7 +536,7 @@ SHOWIT:
     ret
 
 STR_BASIC:
-    db      $0D,"USB BASIC"
+    db      $0D,"MX BASIC"
     db      $00
 STR_VERSION:
     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
@@ -672,7 +673,7 @@ BootWindow:
 BootWinTitle:
     db     " Aquarius MX "
 StrBasicVersion:
-    db     "USB BASIC "
+    db     "BASIC "
     db     'v',VERSION+'0','.',REVISION+'0',' ',0
 
 BootMenuPrint:
