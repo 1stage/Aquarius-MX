@@ -515,7 +515,7 @@ STR_BASIC:
     db      $0D,"Aquarius MX BASIC"
     db      $00
 STR_VERSION:
-    db      " ",VERSION+'0','.',REVISION+'0',$0D,$0A,0
+    db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
 
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
@@ -650,7 +650,7 @@ BootWinTitle:
     db     " Aquarius MX "
 StrBasicVersion:
     db     "BASIC "
-    db     VERSION+'0','.',REVISION+'0',' ',0
+    db     "v",VERSION+'0','.',REVISION+'0',' ',0
 
 BootMenuPrint:
     call    WinPrtMsg
