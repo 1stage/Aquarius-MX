@@ -9,7 +9,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Cartridge ROM Loading** - Quick loading/running of legacy Aquarius ROM cartridges through USB
 - **AY-3-8910 Sound Chip** - Three voice PSG (Programmable Sound Generator) with Control Pad IO
 - **AY-3-8913 Sound Chip** - Support for optional second PSG (Programmable Sound Generator) for a total of six voices
-- **Real Time Clock** - Support for optional Dallas DS1244Y Real Time Clock chip for timekeeping functions
+- **Real Time Clock** - Support for optional Dallas DS1244Y Real Time Clock chip for TimeDate functions
 - **PT3 Music Player** - Built-in retro music player
 - **Aquarius Control Pad Inputs** - Standard DB9 connectors for attaching Aquarius Control Pads (internal header also available)
 - **USB BASIC** - Enhanced commands for USB and IO devices to improve your BASIC programs
@@ -19,7 +19,7 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
-- **15 MAY 2023** - Alpha Testing in process. Version 1-6-0a of PCB available, supporting new ROM/CART and RTC reset options; AQ_MX_RRU.JED incremented to 1.2 to support reset behavior updates.
+- **16 MAY 2023** - Alpha Testing in process. Version 1-6-0a of PCB available, supporting new ROM/CART and RTC reset options; AQ_MX_RRU.JED incremented to 1.2 to support reset behavior updates. ROM v1.3 development upgraded to v2.0 due to large list of features and updates.
 - **01 MAY 2023** - Version 1-5-0a of PCB available, supporting RTC integration.
 - **02 FEB 2023** - Published version 1-4-0c of the PCB which fixes a missing mounting hole for Controller B when using a metal DB9 port. If you ordered a 1-4-0b version, the hole can be drilled out at 1/8" / 3.25mm.
 - **21 JAN 2023** - Published version 1-4-0b of the PCB. Allows use of either **[Type A or Type B CH376S USB interface boards](https://github.com/1stage/Aquarius-MX/tree/main/pcb#ch376s-usb-interface-modules)**, and allows use of less expensive metal DB9 connectors.
