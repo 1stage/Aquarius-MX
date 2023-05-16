@@ -26,11 +26,12 @@
 ;;;     <--     Delete character to left
 ;;;   CTL - \   Delete character to right
 ;;;     RTN     Save changes and exit edit mode
-;;;   CTL - R   Retype line, discard changes, and remain in edit mode
 ;;;   CTL - C   Discard changes and exit edit mode
 ;;;
 ;;; Note: The above control keys are also available when entering a new
-;;; line or direct mode command.
+;;; line or direct mode command, along with the following:
+;;;
+;;;   CTL - R   Recall previously entered line.
 ;----------------------------------------------------------------------------
 
 ST_EDIT:
