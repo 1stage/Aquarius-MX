@@ -805,12 +805,32 @@ dos__prtDirInfo:
         DJNZ    .dir_ext
         LD      A,(HL)                  ; get file attribute byte
         INC     HL
-        AND     ATTR_DIRECTORY          ; directory bit set?
-        JR      NZ,.dir_folder
+        push    af
         LD      A,' '                   ; print ' '
         CALL    TTYOUT
-        LD      BC,16                   ; DIR_FileSize-DIR_NTres
-        ADD     HL,BC                   ; skip to file size
+        LD      BC,10                   ; DIR_WrtTime-DIR_NTres
+        ADD     HL,BC                   ; skip to write time
+.dir_time_stamp:
+        push    hl                      ; Save Pointer
+        ex      de,hl                   ; DE = DIR_WrtTime
+        ld      hl,dtm_buffer
+        call    fts_to_dtm              ; Convert TimeStamp to DateTime
+        ld      de,DTM_STRING
+        call    dtm_to_fmt              ; Convert to Formatted String
+        ld      b,16
+.dir_datetime:
+        ld      a,(de)                  ; get next char of extension
+        inc     de
+        call    TTYOUT                  ; print extn char
+        djnz    .dir_datetime
+        LD      A,' '                   ; print ' '
+        CALL    TTYOUT
+        pop     hl
+        pop     af
+        AND     ATTR_DIRECTORY          ; directory bit set?
+        JP      NZ,.dir_folder
+        ld      bc,6                    ; DIR_FileSize-DIR_WrtTime
+        add     hl,bc                   ; skip to file size
 .dir_file_size:
         LD      E,(HL)
         INC     HL                      ; DE = size 15:0
