@@ -1,6 +1,6 @@
 # TO-DO List
 
-This file is for recording upcoming changes and features that are being added to track them
+This file is for recording upcoming changes and features that are being added to track them.
 
 ## IN PROCESS:
 
@@ -8,7 +8,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
-- AquaLite: Add a second virtual AY-3-8910 (8912), responding in IO ports $F8 & $F9
+- AquaLite: Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
 
 - AquaLite: Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
 
@@ -20,9 +20,11 @@ This file is for recording upcoming changes and features that are being added to
   - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
   - Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
+- Transition in-line documentation (;;;) to Markdown format.
+
 ## COMPLETE:
 
-- PSG() now accepts registers in the 16-31 range for a second AY-3-8910/8912.
+- PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 
 - Test/Tweak, document KEY() function
 

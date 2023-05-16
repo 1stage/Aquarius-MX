@@ -13,8 +13,7 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
  - `DOKE $3028, $6162`
    - Put the characters `ab` at the top left of the screen
 
-
-## POKE Statement (Extended) ##
+## POKE Statement ##
 Writes to byte(s) to memory location(s)
 ### FORMAT: ###
  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
@@ -36,7 +35,6 @@ Writes to byte(s) to memory location(s)
    - Set border color to magenta
  - `POKE $3028 TO $33E7,$86`
    - Fill screen with checkerboard character
-
 
 COPY Statement - Copy Memory
 
@@ -248,15 +246,10 @@ SDTM Function - Set DateTime
 
 Format: SDTM <string>
 
-Action: Set Date and Time to specified string in format "YYMMDDHHmmss".
-        If the string does not contain a valid date and time, no further
-        action is taken. otherwise:
-        If a Dallas DS1244Y RTC is installed and was detected during cold boot,
-        the specified time and time is written to the RTC.
-        If no RTC was detected, the specified time and date are written to
-        the "soft clock" and all subsequent DTM$() calls will return that
-        date and time.
-
+Action: If a Real Time Clock is installed, allows user to set the time on
+        the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS"
+        format:
+        - Improperly formatted string causes FC Error
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
 
@@ -272,11 +265,10 @@ DTM$ Function - Get DateTime
 
 Format: DTM$(<number>)
 
-Action: If a Real Time Clock is installed and detected, or the "soft clock"
-        was set via an SDTM call.
+Action: If a Real Time Clock is installed:
            if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
-           if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
-        Otherwise, returns ""
+           otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
+        Returns "" if a Real Time Clock is not detected.
 
 EXAMPLES of DTM$ Function:
 
@@ -348,7 +340,7 @@ mode. While editing a line, the following control keys are available:
   CTL - \   Delete character to right
     RTN     Save changes and exit edit mode
   CTL - R   Retype line, discard changes, and remain in edit mode
-  CTL - C   Discard changes and exit edit mode
+  CTL - C   Discard changes and edit edit mode
 
 Note: The above control keys are also available when entering a new
 line or direct mode command.
