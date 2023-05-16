@@ -1,5 +1,5 @@
 ;===============================================================================
-;  MX BASIC: Extended BASIC ROM for Mattel Aquarius With Aquariue MX Expander
+;  MX BASIC: Extended BASIC ROM for Mattel Aquarius with Aquariue MX Expander
 ;===============================================================================
 ; Original code by:
 ;        Bruce Abbott                         www.bhabbott.net.nz (domain down?)
@@ -12,9 +12,7 @@
 ;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
 ;      
 ;
-; For use with the micro-expander (CH376S USB interface, 32K RAM, AY-3-8910 PSG),
-; and the Aquarius MX expander (micro expander in mini expander footprint with
-; onboard Real Time Clock).
+; For use with the Aquarius MX and Micro Expander. 
 ;
 ; Incudes commands from BLBasic by Martin Steenoven, as well as commands from
 ; Aquarius Extended BASIC (MS 8K BASIC), and other BASIC derivatives.
@@ -374,13 +372,13 @@ SPLASH:
     call    clearscreen
     ld      b,40
     ld      hl,$3000
-.topline: 
+TOPLINE: 
     ld      (hl),' '
     set     2,h
     ld      (hl),WHITE*16+BLACK ; black border, white on black chars in top line
     res     2,h
     inc     hl
-    djnz    .topline
+    djnz    TOPLINE
     ld      ix,BootbdrWindow
     call    OpenWindow
     ld      ix,bootwindow
@@ -439,7 +437,7 @@ AboutSCR:
     ;call    OpenWindow
     call    WinPrtStr
     call    Wait_key
-    JP      SPLASH
+    JP      TOPLINE
 
 AboutBdrWindow:
     db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
@@ -1095,7 +1093,7 @@ ST_reserved:
 ;----------------------------------------------------------------------------
 ;;; ## DOKE Statement ##
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
-;;; ### FORMAT:
+;;; ### FORMAT: ###
 ;;;  - DOKE < address >, < word >
 ;;;    - Action: Writes < word > to memory starting at < address >.
 ;;; ### EXAMPLES: ###
