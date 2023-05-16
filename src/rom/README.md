@@ -2,11 +2,7 @@
 This folder contains the source code files for the Aquarius MX ROM.
 
 ## Release Folders
- - **v1-3** - This is the current DEVELOPMENT version of the MX ROM.
-   - Dallas DS1244 RTC (Real Time Clock) implementation with new SDTM (SET DateTime) command and DTM$() (GET DateTime) for getting/setting RTC. The DS1244 can replace the 32kb RAM chip in the stock design
-   - CLS now takes an optional color parameter
-   - VER() function returns version and revision number
-   - More to come!
+ - **v2-0** - This is the current DEVELOPMENT version of the MX ROM. See readme.md within folder for full list of commands and functions.
  - **v1-2** - This is the current PRODUCTION version of the MX ROM.
    - Fixed error in LOAD to array function (Mack)
    - Adding filetype SCR to **LOAD** command to default to starting location 12288 ($3000) if no address is given

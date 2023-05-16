@@ -1,5 +1,5 @@
 ;===============================================================================
-;    AQUBASIC: Extended BASIC ROM for Mattel Aquarius With USB MicroExpander
+;  Aquarius MX BASIC: Extended BASIC ROM for Mattel Aquarius with MX Expander
 ;===============================================================================
 ; Original code by:
 ;        Bruce Abbott                         www.bhabbott.net.nz (domain down?)
@@ -12,9 +12,7 @@
 ;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
 ;      
 ;
-; For use with the micro-expander (CH376S USB interface, 32K RAM, AY-3-8910 PSG),
-; and the Aquarius MX expander (micro expander in mini expander footprint with
-; onboard Real Time Clock).
+; For use with the Aquarius MX and Micro Expander. 
 ;
 ; Incudes commands from BLBasic by Martin Steenoven, as well as commands from
 ; Aquarius Extended BASIC (MS 8K BASIC), and other BASIC derivatives.
@@ -61,7 +59,8 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-05-17 v1.3  Removed unimplemented PCG code
+; 2023-05-16 v1.3  Unreleased v1.3 merged into v2.0, below
+; 2023-05-xx v2.0  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added hexadecimal constants in formulas, anywhere formula can be used
 ;                  Added VER command for USB BASIC version, returned as an integer (VERSION * 256) + REVISION
@@ -75,8 +74,8 @@
 ;                  Added KEY() function to wait for/check for key press
 ;                  RUN "filename" only loads and runs BASIC program in CAQ format.
 
-VERSION  = 1
-REVISION = 3
+VERSION  = 2
+REVISION = 0
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
@@ -84,33 +83,10 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
-; Commands:
-; CLS    - Clear screen
-; LOCATE - Position on screen
-; OUT    - output data to I/O port
-; PSG    - Program PSG register, value
-; CALL   - call machine code subroutine
-; DEBUG  - call AquBUG Monitor/debugger
-
-; EDIT   - Edit a BASIC line
-
-; LOAD   - load file from USB disk
-; SAVE   - save file to USB disk
-; DIR    - display USB disk directory with wildcard
-; CAT    - display USB disk directory
-; CD     - change directory
-; DEL    - delete file
-
-; functions:
-; IN()   - get data from I/O port
-; DEC()  - convert hexadecimal string to number
-; JOY()  - Read joystick
-; HEX$() - convert number to hexadecimal string
-; VER()  - Version function, returns the value of the Version and Revision of MX ROM
-; DTM$() - DateTime function
-
+; See readme.md for full list of Commands and Functions
+;
 ; Assembled with ZMAC in 'zmac' mode.
-; command: zmac.exe --zmac -e --oo cim -L -n -I include aqubasic.asm
+; command: zmac.exe --zmac -e --oo cim --nmnv -L -n -I include aqubasic.asm
 ;
 ; symbol scope:-
 ; .label   local to current function
@@ -186,7 +162,7 @@ ifdef debug
 endif
 
 ;system flags
-SF_NTSC  = 0       ; 1 = NTSC, 0 = PAL
+SF_NTSC  = 1       ; 1 = NTSC, 0 = PAL
 SF_RETYP = 1       ; 1 = CTRL-O is retype
 SF_DEBUG = 7       ; 1 = Debugger available
 
@@ -396,13 +372,14 @@ SPLASH:
     call    clearscreen
     ld      b,40
     ld      hl,$3000
-.topline: 
+TOPLINE: 
     ld      (hl),' '
     set     2,h
     ld      (hl),WHITE*16+BLACK ; black border, white on black chars in top line
     res     2,h
     inc     hl
-    djnz    .topline
+    djnz    TOPLINE
+REDRAW:
     ld      ix,BootbdrWindow
     call    OpenWindow
     ld      ix,bootwindow
@@ -461,7 +438,7 @@ AboutSCR:
     ;call    OpenWindow
     call    WinPrtStr
     call    Wait_key
-    JP      SPLASH
+    JP      REDRAW
 
 AboutBdrWindow:
     db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
@@ -478,12 +455,12 @@ AboutWindow:
     dw   0                            ; title
 
 AboutBdrTitle:
-    db     " About USB BASIC ",0
+    db     " About Aquarius MX BASIC ",0
 
 AboutText:
     db     CR,CR,CR
     db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
-    db     " Release Date - Alpha 2023-05-12",CR,CR                       ; Can we parameterize this later?
+    db     " Release Date - Alpha 2023-05-19",CR,CR                       ; Can we parameterize this later?
     db     " ROM Dev Team - Curtis F Kaylor",CR
     db     "                Mack Wharton",CR
     db     "                Sean Harrington",CR
@@ -535,7 +512,7 @@ SHOWIT:
     ret
 
 STR_BASIC:
-    db      $0D,"USB BASIC"
+    db      $0D,"Aquarius MX BASIC"
     db      $00
 STR_VERSION:
     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
@@ -672,12 +649,12 @@ BootWindow:
 BootWinTitle:
     db     " Aquarius MX "
 StrBasicVersion:
-    db     "USB BASIC "
-    db     'v',VERSION+'0','.',REVISION+'0',' ',0
+    db     "BASIC "
+    db     "v",VERSION+'0','.',REVISION+'0',' ',0
 
 BootMenuPrint:
     call    WinPrtMsg
-    db      CR
+    db      CR,CR
     db      "      1. "
   ifdef softrom
     db      "(disabled)"
@@ -686,18 +663,18 @@ BootMenuPrint:
   endif 
     db      CR,CR,CR
     db      "      2. Debug",CR
-    db      CR,CR,CR,CR,CR,CR,CR,CR                ; Move down a few rows
+    db      CR,CR,CR,CR                      ; Move down a few rows
     db      "    <RTN> USB BASIC"
     db      CR,0
     or      c                             ; If Ctrl-C Flag is 0
     jr      z,.about                      ;   Skip Ctrl-C Message
     call    WinPrtMsg
-    db      " <CTRL-C> Warm Start",0
+    db      CR," <CTRL-C> Warm Start",CR,0
 .about
     call    WinPrtMsg
     db      CR
     db      "      <A> About...",CR
-    db      CR,0
+    db      CR,CR,0
     ret
 
 ;------------------------------------------------------
@@ -1123,7 +1100,7 @@ ST_reserved:
 ;----------------------------------------------------------------------------
 ;;; ## DOKE Statement ##
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
-;;; ### FORMAT:
+;;; ### FORMAT: ###
 ;;;  - DOKE < address >, < word >
 ;;;    - Action: Writes < word > to memory starting at < address >.
 ;;; ### EXAMPLES: ###
@@ -1926,7 +1903,7 @@ SPL_DATETIME:
     ld      de,DTM_STRING
     call    dtm_to_fmt    ;Convert to Formatted String   
     ld      d,2                
-    ld      e,17              
+    ld      e,16              
     call    WinSetCursor
     ld      hl,DTM_STRING
     call    WinPrtStr
