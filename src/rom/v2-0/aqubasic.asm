@@ -1,5 +1,5 @@
 ;===============================================================================
-;  MX BASIC: Extended BASIC ROM for Mattel Aquarius with Aquariue MX Expander
+;  Aquarius MX BASIC: Extended BASIC ROM for Mattel Aquarius with MX Expander
 ;===============================================================================
 ; Original code by:
 ;        Bruce Abbott                         www.bhabbott.net.nz (domain down?)
@@ -455,7 +455,7 @@ AboutWindow:
     dw   0                            ; title
 
 AboutBdrTitle:
-    db     " About MX BASIC ",0
+    db     " About Aquarius MX BASIC ",0
 
 AboutText:
     db     CR,CR,CR
@@ -512,7 +512,7 @@ SHOWIT:
     ret
 
 STR_BASIC:
-    db      $0D,"MX BASIC"
+    db      $0D,"Aquarius MX BASIC"
     db      $00
 STR_VERSION:
     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
