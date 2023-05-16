@@ -164,7 +164,7 @@ path.size = 37           ; length of file path buffer
     STRUCT _retypbuf,74         ; BASIC command line history
     STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
     STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
-    BYTE   _filetype            ; file type BASIC/array/binary/etc.
+    BYTE   _doserror            ; file type BASIC/array/binary/etc.
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
     BYTE   _dosflags            ; DOS flags
@@ -175,7 +175,7 @@ SysVars  = RAMEND-_sysvars.size
 ReTypBuf = sysvars+_retypbuf
 PathName = sysvars+_pathname
 FileName = sysvars+_filename
-FileType = sysvars+_filetype
+DosError = sysvars+_doserror
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags
@@ -247,7 +247,7 @@ USB_reserved2     jp  Break
 DOS_GETFILENAME   jp  dos__getfilename
 DOS_DIRECTORY     jp  dos__directory
 DOS_PRTDIRINFO    jp  dos__prtDirInfo
-DOS_GETFILETYPE   jp  break             ;File Type Detection Removed
+DOS_CLEARERROR    jp  dos__clearError
 DOS_NAME          jp  dos__name
 DOS_CHAR          jp  dos__char
 DOS_SET_PATH      jp  dos__set_path
@@ -872,6 +872,12 @@ lastf  equ firstf+FCOUNT-1        ; token number of last function in table
 ; UDF hook number $02 at OKMAIN ($0402)
 
 AQMAIN:
+    ld      hl,(OLDTXT)         ; Get CONT Text pointer
+    ld      a,h
+    or      l
+    jr      nz,.main            ; If 0
+    ld      (ONELIN),hl         ;   Clear Error Trap
+.main:    
     pop     af                  ; clean up stack
     pop     af                  ; restore AF
     pop     hl                  ; restore HL
@@ -2173,6 +2179,7 @@ FLOAT_DE:
     call    FLOATR            ; Float It
     pop     hl
     ret
+
 
 ;=====================================================================
 ;                  Miscellaneous functions

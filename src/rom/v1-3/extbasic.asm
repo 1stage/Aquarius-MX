@@ -279,18 +279,27 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
         jr      z,.errno        ;   Return Error Number
         dec     a               ; If 2
         jr      z,.errlin       ;   Return Error Line Number
+        dec     a               ; If 3
+        jr      z,.doserr       ;   Return Error Line Number
         jp      FCERR           ; Else FC Error
 .onelin:
         ld      hl,(ONELIN)     ; Get Error Line Pointer
+        ld      a,h
+        or      a,l             ; If 0
+        jr      z,.ret_a        ;   Return 0
         inc     hl              ; Point to Line Number
         inc     hl 
         jp      FLOAT_M         ; Float Word at [HL] and Return
 .errno:
         ld      a,(ERRFLG)      ; Get Error Table Offset
-        jp      SNGFLT          ; and Float it
+.ret_a  jp      SNGFLT          ; and Float it
 .errlin:
         ld      de,(ERRLIN)     ; Get Error Line Number
         jp      FLOAT_DE        ; Float It
+.doserr:
+        ld      a,(DosError)    ; Get DOS Error Number
+        jr      .ret_a
+
 
 ;CLEAR statement hook
 CLEARX: ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
@@ -309,7 +318,7 @@ SCRTCX: pop     hl              ; Get Hook Return Addres
         pop     af              ; Discard Accumulator
         ex      (sp),hl         ; Discard Text Pointer, Push Return Address
 CLNERR: ld      b,6             ; Clear ERRLIN,ERRFLG,ONEFLG,ONELIN
-CLERR:  xor     a                       
+CLERR:  call    dos__clearError ; returns A = 0                       
         ld      hl,ERRLIN               
 .zloop: ld      (hl),a                  
         inc     hl

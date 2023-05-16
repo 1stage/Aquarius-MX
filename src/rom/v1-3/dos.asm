@@ -59,6 +59,7 @@ DF_ARRAY  = 7      ; set = numeric array
 ST_CD:
     push   hl                    ; push BASIC text pointer
     ld     c,a
+    call   dos__clearError
     call   usb__ready            ; check for USB disk (may reset path to root!)
     jr     nz,.do_error
     ld     a,c
@@ -257,6 +258,7 @@ ERROR_PATH_LEN    equ  13 ; path too long
 ERROR_UNKNOWN     equ  14 ; other disk error
 
 _show_error:
+    ld      (DosError),a         ; save error number
     cp      ERROR_UNKNOWN        ; known error?
     jr      c,.index             ; yes,
     push    af                   ; no, push error code
@@ -416,7 +418,7 @@ _ibl_done:
           
 ;------------------------------------------------------------------------------
 ST_SAVE:
-    xor     a
+    call    dos__clearError     ; returns A = 0
     ld      (DOSFLAGS),a        ; clear all flags
     call    dos__getfilename    ; filename -> FileName
     jr      z,ST_SAVEFILE
@@ -587,6 +589,7 @@ ST_CAT:
     ld      a,23
     ld      (CNTOFL),a              ; set initial number of lines per page
 .cat_disk:
+    call    dos__clearError
     call    usb__ready              ; check for USB disk
     jr      nz,.disk_error
     call    usb__open_dir           ; open '*' for all files in directory
@@ -684,7 +687,7 @@ ST_CAT:
 ;
 ST_DIR:
     push    hl                ; PUSH text pointer
-    xor     a
+    call    dos__clearError   ; returns A = 0
     ld      (FileName),a      ; wildcard string = NULL
     call    chkarg            ; is wildcard argument present?
     jr      z,.st_dir_go      ; if no wildcard then show all files
@@ -1086,6 +1089,7 @@ dos__set_path:
 ; uses: BC,DE
 ;
 dos__getfilename:
+    call    dos__clearError   ; clear DOS error code
     call    FRMEVL            ; evaluate expression
     push    hl                ; save BASIC text pointer
     ld      a,(VALTYP)        ; get type
@@ -1206,6 +1210,11 @@ dos__char:
         LD      A,'~'
         RET
 
-
-
-
+;------------------------------------------------------------------------------
+;              Set DosError to 0
+;------------------------------------------------------------------------------
+; Ouput: A = 0, with flags set
+dos__clearError:
+    xor     a
+    ld      (DosError),a
+    ret
