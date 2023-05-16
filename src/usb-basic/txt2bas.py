@@ -123,6 +123,8 @@ tokens = {
     0xC9: "MID$",
     0xCA: "POINT",
     # Start of supplemental USB BASIC commands
+    0xD2: "DOKE",
+    0xD3: "SDTM",
     # 0xD4: "<reserved>",
     0xD5: "CLS",
     0xD6: "LOCATE",
@@ -141,6 +143,9 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "VER",
     0xE5: "DTM$"
+    0xE7: "KEY",
+    0xE8: "DEEK",
+    0xE9: "ERR" 
 }
 
 
