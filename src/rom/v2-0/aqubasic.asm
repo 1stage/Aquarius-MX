@@ -379,6 +379,7 @@ TOPLINE:
     res     2,h
     inc     hl
     djnz    TOPLINE
+REDRAW:
     ld      ix,BootbdrWindow
     call    OpenWindow
     ld      ix,bootwindow
@@ -437,7 +438,7 @@ AboutSCR:
     ;call    OpenWindow
     call    WinPrtStr
     call    Wait_key
-    JP      TOPLINE
+    JP      REDRAW
 
 AboutBdrWindow:
     db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
@@ -653,7 +654,7 @@ StrBasicVersion:
 
 BootMenuPrint:
     call    WinPrtMsg
-    db      CR
+    db      CR,CR
     db      "      1. "
   ifdef softrom
     db      "(disabled)"
@@ -662,18 +663,18 @@ BootMenuPrint:
   endif 
     db      CR,CR,CR
     db      "      2. Debug",CR
-    db      CR,CR,CR,CR,CR,CR,CR,CR                ; Move down a few rows
+    db      CR,CR,CR,CR                      ; Move down a few rows
     db      "    <RTN> USB BASIC"
     db      CR,0
     or      c                             ; If Ctrl-C Flag is 0
     jr      z,.about                      ;   Skip Ctrl-C Message
     call    WinPrtMsg
-    db      " <CTRL-C> Warm Start",0
+    db      CR," <CTRL-C> Warm Start",CR,0
 .about
     call    WinPrtMsg
     db      CR
     db      "      <A> About...",CR
-    db      CR,0
+    db      CR,CR,0
     ret
 
 ;------------------------------------------------------
@@ -1896,7 +1897,7 @@ SPL_DATETIME:
     ld      de,DTM_STRING
     call    dtm_to_fmt    ;Convert to Formatted String   
     ld      d,2                
-    ld      e,17              
+    ld      e,16              
     call    WinSetCursor
     ld      hl,DTM_STRING
     call    WinPrtStr
