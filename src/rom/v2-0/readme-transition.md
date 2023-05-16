@@ -8,10 +8,15 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
  - DOKE < address >, < word >
    - Action: Writes < word > to memory starting at < address >.
 ### EXAMPLES: ###
- - `DOKE 14340, 1382`
-   - Set USR() function address
- - `DOKE $3028, $6162`
-   - Put the characters `ab` at the top left of the screen
+```
+DOKE 14340, 1382
+```
+> Set USR() function address
+```
+DOKE $3028, $6162
+```
+> Put the characters `ab` at the top left of the screen
+
 
 ## POKE ##
 Writes byte(s) to memory location(s)
