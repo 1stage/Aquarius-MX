@@ -1,5 +1,5 @@
 ;===============================================================================
-;    AQUBASIC: Extended BASIC ROM for Mattel Aquarius With USB MicroExpander
+;  MX BASIC: Extended BASIC ROM for Mattel Aquarius With Aquariue MX Expander
 ;===============================================================================
 ; Original code by:
 ;        Bruce Abbott                         www.bhabbott.net.nz (domain down?)
