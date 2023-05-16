@@ -61,7 +61,7 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-05-15 v1.3  Unreleased v1.3 merged into v2.0, below
+; 2023-05-16 v1.3  Unreleased v1.3 merged into v2.0, below
 ; 2023-05-xx v2.0  Removed unimplemented PCG code
 ;                  Removed PT3 Player from Menu screen. Has to be loaded as a ROM from now on.
 ;                  Added hexadecimal constants in formulas, anywhere formula can be used
@@ -85,33 +85,10 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 ;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
-; Commands:
-; CLS    - Clear screen
-; LOCATE - Position on screen
-; OUT    - output data to I/O port
-; PSG    - Program PSG register, value
-; CALL   - call machine code subroutine
-; DEBUG  - call AquBUG Monitor/debugger
-
-; EDIT   - Edit a BASIC line
-
-; LOAD   - load file from USB disk
-; SAVE   - save file to USB disk
-; DIR    - display USB disk directory with wildcard
-; CAT    - display USB disk directory
-; CD     - change directory
-; DEL    - delete file
-
-; functions:
-; IN()   - get data from I/O port
-; DEC()  - convert hexadecimal string to number
-; JOY()  - Read joystick
-; HEX$() - convert number to hexadecimal string
-; VER()  - Version function, returns the value of the Version and Revision of MX ROM
-; DTM$() - DateTime function
-
+; See readme.md for full list of Commands and Functions
+;
 ; Assembled with ZMAC in 'zmac' mode.
-; command: zmac.exe --zmac -e --oo cim -L -n -I include aqubasic.asm
+; command: zmac.exe --zmac -e --oo cim --nmnv -L -n -I include aqubasic.asm
 ;
 ; symbol scope:-
 ; .label   local to current function
