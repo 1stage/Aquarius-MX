@@ -14,7 +14,7 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
    - Put the characters `ab` at the top left of the screen
 
 ## POKE Statement ##
-Writes to byte(s) to memory location(s)
+Writes byte(s) to memory location(s)
 ### FORMAT: ###
  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
    - Action: Writes < byte or string > to < address >, followed by < address > STEP counts away...
@@ -58,8 +58,8 @@ Clear Screen
  - CLS [ < colors > ]
   - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN).
 
-    0 BLACK      4 BLUE        8 GREY         12 LTYELLOW
-    1 RED        5 MAGENTA     9 DKCYAN       13 DKGREEN
+    0 BLACK      4 BLUE        8  GREY        12 LTYELLOW
+    1 RED        5 MAGENTA     9  DKCYAN      13 DKGREEN
     2 GREEN      6 CYAN        10 DKMAGENTA   14 DKRED
     3 YELLOW     7 WHITE       11 DKBLUE      15 DKGREY
 
