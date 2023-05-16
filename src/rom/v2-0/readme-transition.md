@@ -26,20 +26,34 @@ Writes byte(s) to memory location(s)
  - POKE < address > TO < address >, < byte >
    - Action: Writes < byte > to memory from < address > TO < address >.
 ### EXAMPLES: ###
- - `POKE $3000+500,64`
-   - Display `@` at screen center
- - `POKE 12347,7,6`
-   - Display double-ended arrow
- - `POKE 12366,$13,STEP 39,$14`
-   - Display standing person "sprite"
- - `POKE 12329,$D4,STEP 1023,$10`
-   - Display red heart on black background
- - `POKE $3009,T$,5,C$`
-   - Display T$, copyright, C$ on row 0
- - `POKE $3400 TO $3427,5`
-   - Set border color to magenta
- - `POKE $3028 TO $33E7,$86`
-   - Fill screen with checkerboard character
+```
+POKE $3000+500,64
+```
+> Display `@` at screen center
+```
+POKE 12347,7,6
+```
+> Display double-ended arrow
+```
+POKE 12366,$13,STEP 39,$14
+```
+> Display standing person "sprite"
+```
+POKE 12329,$D4,STEP 1023,$10
+```
+> Display red heart on black background
+```
+POKE $3009,T$,5,C$
+```
+> Display T$, copyright, C$ on row 0
+```
+POKE $3400 TO $3427,5
+```
+> Set border color to magenta
+```
+POKE $3028 TO $33E7,$86
+```
+> Fill screen with checkerboard character
 
 ## COPY ##
 Copy Memory (overloads legacy COPY command which lineprints screen output)
