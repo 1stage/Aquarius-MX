@@ -126,10 +126,16 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
 
 ; Standard BASIC System Variable Extensions
 ;
-; Persistent USB BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
+; Persistent MX BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
 ;   During a cold boot, an unused table is written here, then it is never used again
 RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes. 
                         ; This Address assignment will not change in the future.
+
+;MBASIC 80 System Variables 
+ERRLIN     = $383A      ; LINE NUMBER WHERE LAST ERROR OCCURED.
+ERRFLG     = $383C      ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
+ONEFLG     = $383D      ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
+ONELIN     = $383E      ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 
 ; Temporary USB BASIC system variables 
 DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
@@ -584,9 +590,9 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
+    call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     call    INIT_RTC           ; Init again: Cold Boot overwrites RTC_SHADOW
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
@@ -741,8 +747,12 @@ HOOKEND:
 ; NOTE: order is reverse of UDF jumps!
 
 UDFLIST:    ;xx     index caller    @addr  performing function:-
+    db      $00     ;15   ERROR     $03DB  Display Error and stop program
+    db      $0C     ;14   SCRTCH    $0BBE  NEW statement
+    db      $0B     ;13   CLEAR     $0CCD  CLEAR statement
+    db      $19     ;12   ONGOTO    $0780  ON statement
     db      $10     ;11   FNDOER    $0B40  FNxx() call
-    db      $0F     ;10   DEF       $0B3B  DEF Statement
+    db      $0F     ;10   DEF       $0B3B  DEF statement
     db      $0E     ; 9   ATN       $1985  ATN() function
     db      $09     ; 8   EVAL      $09FD  evaluate number or string
     db      $18     ; 7   RUN       $06be  starting BASIC program
@@ -768,6 +778,10 @@ UDF_JMP:
     dw      ATN1               ; 9 ATN() function
     dw      DEFX               ;10 DEF statement
     dw      FNDOEX             ;11 FNxx() call
+    dw      ONGOTX             ;12 ON ERROR... hook
+    dw      CLEARX             ;13 extend CLEAR statement 
+    dw      SCRTCX             ;14 Clear runtime variables
+    dw      ERRORX             ;15 Trap BASIC Error (from ON ERROR GOTO...)
 
 ; Our Commands and Functions
 ;
@@ -808,7 +822,9 @@ CDTK  =  $E0
     db      $80 + 'D', "EC"         ; $e6 - Decimal value function
     db      $80 + 'K', "EY"         ; $e7 - Key function
     db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
+    db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
     db      $80                     ; End of table marker
+ERRTK =  $E9
 
 TBLJMPS:
     dw      ST_DOKE
@@ -839,6 +855,7 @@ TBLFNJP:
     dw      FN_DEC
     dw      FN_KEY
     dw      FN_DEEK
+    dw      FN_ERR
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -1025,17 +1042,18 @@ BASTMT:
 
 ; RUN
 RUNPROG:
+    call    CLNERR             ; Clear Error Trapping Variables
     pop     af                 ; clean up stack
     pop     af                 ; restore AF
     pop     hl                 ; restore HL
-    jp      z,$0bcb            ; if no argument then RUN from 1st line
+    jp      z,RUNC             ; if no argument then RUN from 1st line
     push    hl
-    call    FRMEVL               ; get argument type
+    call    FRMEVL             ; get argument type
     pop     hl
     ld      a,(VALTYP)
     dec     a                  ; 0 = string
     jr      z,_run_file
-    call    $0bcf              ; else line number so init BASIC program and
+    call    CLEARC             ; else line number so init BASIC program and
     ld      bc,$062c
     jp      $06db              ;    GOTO line number
 _run_file:
@@ -1078,7 +1096,7 @@ _run_file:
 .load_run:
     pop     hl                 ; restore BASIC text pointer
     call    ST_LOADFILE        ; load file from disk, name in FileName
-    jp      $0bcb              ; run loaded BASIC program
+    jp      RUNC               ; run loaded BASIC program
 
 .bas_extn:
     db     ".BAS",0
@@ -1522,11 +1540,11 @@ InitFN:
     pop     hl                ; Pop Return Address
     pop     de                ; Pop Text Pointer
     ex      (sp),hl           ; Save Return Address, Discard Hook Return Address 
-    ex      de,hl             ; HL = Return Address
+    ex      de,hl             ; HL = Text Pointer
     rst     CHRGET  
     call    PARCHK            ; Evaluate Argument between parentheses into FAC   
     ex      (sp),hl           ; Swap Text Pointer with Return Address
-    ld      de,LABBCK         ; return address for SNGFLT
+    ld      de,LABBCK         ; return address for SNGFLT, etc.
     push    de                ; on stack
     jp      (hl)              ; Fast Return 
 
@@ -1573,6 +1591,7 @@ FN_DEEK:
     call    FRCADR            ; Convert to Integer
     ld      h,d               ; HL = <address>
     ld      l,e
+FLOAT_M:
     ld      e,(hl)            ; Read word at address
     inc     hl
     ld      d,(hl)
@@ -1748,7 +1767,7 @@ FN_KEY:
 ;----------------------------------------------------------------------------
 
 FN_DEC:
-    call    InitFN            ; Parse Arg and set return address
+    call    InitFN          ; Parse Arg and set return address
     call    STRLENADR       ; Get String Text Address
     dec     hl              ; Back up Text Pointer
     jp      EVAL_HEX        ; Convert the Text
@@ -1770,18 +1789,18 @@ FN_DEC:
 ;----------------------------------------------------------------------------
 
 FN_HEX:
-    call    InitFN            ; Parse Arg and set return address
+    call    InitFN          ; Parse Arg and set return address
     ld      a,(FAC)
-    call    FRCADR        ; convert argument to 16 bit integer DE
-    ld      hl,FBUFFR+1 ; hl = temp string
+    call    FRCADR          ; convert argument to 16 bit integer DE
+    ld      hl,FBUFFR+1     ; hl = temp string
     ld      a,d
-    call    .hexbyte   ; yes, convert byte in D to hex string
+    call    .hexbyte        ; yes, convert byte in D to hex string
     ld      a,e
-    call    .hexbyte   ; convert byte in E to hex string
-    ld      (hl),0     ; null-terminate string
+    call    .hexbyte        ; convert byte in E to hex string
+    ld      (hl),0          ; null-terminate string
     ld      hl,FBUFFR+1
 .create_string:
-    jp      TIMSTR     ; create BASIC string
+    jp      TIMSTR          ; create BASIC string
 
 .hexbyte:
     ld      b,a
@@ -1861,12 +1880,13 @@ ST_CALL:
 
 
 ; Parse an Address (-32676 to 65535 in 16 bit integer)  
-GETADR: call    FRMNUM
+GETADR: call    FRMEVL      ; Evaluate Formula
 ; Convert FAC to Address or Signed Integer and Return in DE
 ; Converts floats from -32676 to 65535 in 16 bit integer
-FRCADR: ld      a,(FAC)           ;
-        cp      145               ;If Float < 65536
-        jp      c,QINT            ;  Convert to Integer and Return
+FRCADR: call    CHKNUM      ; Make sure it's a number
+        ld      a,(FAC)     ;
+        cp      145         ; If Float < 65536
+        jp      c,QINT      ;   Convert to Integer and Return
         jp      FRCINT
 
 ;---------------------------------------------------------------------

@@ -195,3 +195,123 @@ ATNCON: db    9               ;DEGREE
         db    $E4,$BB,$4C,$7E ; .1999355
         db    $6C,$AA,$AA,$7F ; -.3333315
         db    $00,$00,$00,$81 ; 1.0
+
+;----------------------------------------------------------------------------
+; ON ERROR
+; Taken from CP/M MBASIC 80 - BINTRP.MAC
+;----------------------------------------------------------------------------
+
+ONGOTX: pop     hl              ; Discard Hook Return Addres
+        pop     af              ; Restore Accumulator
+        pop     hl              ; Restore Text Pointer
+        cp      ERRTK           ; "ON...ERROR"?
+        jr      nz,.noerr       ; NO. Do ON GOTO
+        inc     hl              ; Check Following Byte
+        ld      a,(hl)          ; Don't Skip Spaces
+        cp      (ORTK)          ; Cheat: ERROR = ERR + OR
+        jr      z,.onerr        ; If not ERROR
+        dec     hl              ; Back up to ERR Token
+        dec     hl              ; to process as Function
+.noerr: jp      NTOERR          ; and do ON ... GOTO
+.onerr: rst     CHRGET          ; GET NEXT THING
+        rst     SYNCHR          ; MUST HAVE ...GOTO
+        db      GOTOTK
+        call    SCNLIN          ; GET FOLLOWING LINE #
+        ld      a,d             ; IS LINE NUMBER ZERO?
+        or      e               ; SEE
+        jr      z,RESTRP        ; IF ON ERROR GOTO 0, RESET TRAP
+        push    hl              ; SAVE [H,L] ON STACK
+        call    FNDLIN          ; SEE IF LINE EXISTS
+        ld      d,b             ; GET POINTER TO LINE IN [D,E]
+        ld      e,c             ; (LINK FIELD OF LINE)
+        pop     hl              ; RESTORE [H,L]
+        jp      nc,USERR        ; ERROR IF LINE NOT FOUND
+RESTRP: ld      (ONELIN),de     ; SAVE POINTER TO LINE OR ZERO IF 0.
+        ret     c               ; YOU WOULDN'T BELIEVE IT IF I TOLD YOU
+        ld      a,(ONEFLG)      ; ARE WE IN AN "ON...ERROR" ROUTINE?
+        or      a               ; SET CONDITION CODES
+        ret     z               ; IF NOT, HAVE ALREADY DISABLED TRAPPING.
+        ld      a,(ERRFLG)      ; GET ERROR CODE
+        ld      e,a             ; INTO E.
+        jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
+
+;----------------------------------------------------------------------------
+; ERROR Hook Routine for Error Trapping
+; Taken from CP/M MBASIC 80 - BINTRP.MAC
+;----------------------------------------------------------------------------
+
+ERRORX: ;call    break 
+        ld      hl,(CURLIN)     ; GET CURRENT LINE NUMBER
+        ld      (ERRLIN),hl     ; SAVE IT FOR ERL VARIABLE
+        ld      a,e             ; Get Error Table Offset
+        ld      c,e             ; ALSO SAVE IT FOR LATER RESTORE
+        srl     a               ; Divide by 2 and add 1 so
+        inc     a               ; [A]=ERROR NUMBER
+        ld      (ERRFLG),a      ; SAVE IT SO WE KNOW WHETHER TO CALL "EDIT"
+        ld      hl,(ERRLIN)     ; GET ERROR LINE #
+        ld      a,h             ; TEST IF DIRECT LINE
+        and     l               ; SET CC'S
+        inc     a               ; SETS ZERO IF DIRECT LINE (65535)
+        ld      hl,(ONELIN)     ; SEE IF WE ARE TRAPPING ERRORS.
+        ld      a,h             ; BY CHECKING FOR LINE ZERO.
+        ORA     l               ; IS IT?
+        ex      de,hl           ; PUT LINE TO GO TO IN [D,E]
+        ld      hl,ONEFLG       ; POINT TO ERROR FLAG
+        jr      z,NOTRAP        ; SORRY, NO TRAPPING...
+        and     (hl)            ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
+        jr      nz,NOTRAP       ; IF FLAG ALREADY SET, FORCE ERROR
+        dec     (hl)            ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
+        ex      de,hl           ; GET LINE POINTER IN [H,L]
+        jp      GONE4           ; GO DIRECTLY TO NEWSTT CODE
+NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
+        ld      (hl),a          ; RESET 3
+        ld      e,c             ; GET BACK ERROR CODE
+        jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
+
+;----------------------------------------------------------------------------
+; ERR Function
+;----------------------------------------------------------------------------
+FN_ERR: call    InitFN          ; Parse Arg and set return address
+        call    CONINT          ; Convert to Byte
+        or      a               ; If 0
+        jr      z,.onelin       ;   Return Error Trap Line Number
+        dec     a               ; If 1
+        jr      z,.errno        ;   Return Error Number
+        dec     a               ; If 2
+        jr      z,.errlin       ;   Return Error Line Number
+        jp      FCERR           ; Else FC Error
+.onelin:
+        ld      hl,(ONELIN)     ; Get Error Line Pointer
+        inc     hl              ; Point to Line Number
+        inc     hl 
+        jp      FLOAT_M         ; Float Word at [HL] and Return
+.errno:
+        ld      a,(ERRFLG)      ; Get Error Table Offset
+        jp      SNGFLT          ; and Float it
+.errlin:
+        ld      de,(ERRLIN)     ; Get Error Line Number
+        jp      FLOAT_DE        ; Float It
+
+;CLEAR statement hook
+CLEARX: ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
+        call    CLERR
+        pop     hl              ; Get Hook Return Addres
+        pop     af              ; Restore Accumulator
+        ex      (sp),hl         ; Discard Text Pointer, Push Return Address
+        cp      ERRTK           ; If Not CLEAR ERR?
+        jp      nz,CHRGOT       ;   Re-Read Character and Continue CLEAR
+        pop     af              ; Discard Hook Return Address
+        rst     CHRGET          ; Skip ERR Token, Eat Spaces
+        ret
+
+;NEW statement hook
+SCRTCX: pop     hl              ; Get Hook Return Addres
+        pop     af              ; Discard Accumulator
+        ex      (sp),hl         ; Discard Text Pointer, Push Return Address
+CLNERR: ld      b,6             ; Clear ERRLIN,ERRFLG,ONEFLG,ONELIN
+CLERR:  xor     a                       
+        ld      hl,ERRLIN               
+.zloop: ld      (hl),a                  
+        inc     hl
+        djnz    .zloop
+        ret     

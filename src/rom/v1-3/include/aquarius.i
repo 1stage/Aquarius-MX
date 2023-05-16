@@ -184,6 +184,8 @@ FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
 REDDY   = $036E   ; Text "Ok" CR,LF,NUL
 READY   = $0402   ; Display "Ok" and Enter Immediate Mode
+GONE4   = $063C   ; Execute Next Statement
+NTOERR  = $0782   ; Execute ON GOTO
 
 STROUT  = $0E9D   ; Print null or quote terminated string
 LINPRT  = $1675   ; Print line number in HL
@@ -197,11 +199,14 @@ SCROLL  = $1DFE   ; scroll the screen up 1 line
 TTYSAV  = $1E3E   ; save cursor position (HL = address, A = column)
 
 LINEDONE    = $19e5  ; line entered (CR pressed)
-FNDLIN  = $049f  ; Find address of BASIC line (DE = line number)
+ERRCRD  = $03E0   ; Print Error Message and Return to Immediate Mode
+FNDLIN  = $049f   ; Find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
 ERRDIR  = $0B45   ; Issue Error if in Direct Mode
 SCRTCH  = $0BBE   ; Execute NEW Command (without syntax check)
+RUNC    = $0BCB   ; RUN Program
+CLEARC  = $0BCF   ; Initialize Variables and Arrays, Reset Stack 
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEVL  = $0985   ; Evaluate Formula
@@ -343,7 +348,7 @@ SNERR    = $03C4  ; Syntax Error
 FCERR    = $0697  ; Function Call Error
 OVERR    = $03D3  ; Overflow
 OMERR    = $0BB7  ; Out of Memory
-USERR    = $06F3  ;   undefined line number
+USERR    = $06F3  ; Undefined Line Number
 BSERR    = $11CD  ;   bad subscript
 DDERR    = $03CD  ;   re-dimensioned array
 DV0ERR   = $03C7  ;   divide by zero
@@ -358,12 +363,14 @@ UFERR    = $03D0  ;   undefined function
 ERROR    = $03db  ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Tokens
+GOTOTK      = $88   ; GOTO Token
 COPYTK      = $92   ; COPY Token
 POKETK      = $94   ; POKE Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token
 STEPTK      = $A7   ; STEP Token
 MULTK       = $AA   ; * Token
+ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
 PEEKTK      = $C1   ; PEEK Token
 

@@ -38,6 +38,10 @@ ST_EDIT:
     ld    a,d
     or    e
     jr    nz,.prtline
+    ld    de,(ERRLIN)
+    ld    a,d
+    or    e
+    jr    nz,.prtline
     ld    e,ERRMO         ; if no line number then MO error
     JP    ERROR
 .prtline:
