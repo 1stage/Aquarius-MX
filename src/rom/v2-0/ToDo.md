@@ -20,6 +20,10 @@ This file is for recording upcoming changes and features that are being added to
   - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
   - Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
+- Add MKDIR and RMDIR to dos.asm
+  - Vefiry this is feasible
+  - Add accompanying routines to CH376.asm
+
 - Transition in-line documentation (;;;) to Markdown format.
 
 ## COMPLETE:
@@ -30,6 +34,9 @@ This file is for recording upcoming changes and features that are being added to
 
 - Created FRCADR - FRCINT replacement that accepts -32768 through 65535
   - Replaced FRCINT with FRCADR in IN/OUT/CALL
+  - Override PEEK and POKE to use a 16bit unsigned integer as well a 16 Bit Signed.
+  - LOAD, SAVE, etc - use FRCADR instead of FRCINT
+  - Modified FRCADR to TM Error if argument is string
 
 - VER() - Return version and revision
 
@@ -46,8 +53,6 @@ This file is for recording upcoming changes and features that are being added to
 - Extend FRMEVL to parse unsigned hex 16 bit hex literals prefixed with dollar sign
   - not doing binary at this time, 9 to 17 character literals seem less useful than just using hex
 
-- Override PEEK and POKE to use a 16bit unsigned integer as well a 16 Bit Signed.
-
 - Multi-byte POKE addr, byte, byte, STEP count, byte, byte...
   - Does NOT work with numeric arrays, i.e. poke a()
   - DOES work with factored numeric array values, i.e. poke a(0),a(1),a(2),a(3)
@@ -55,8 +60,7 @@ This file is for recording upcoming changes and features that are being added to
 - POKE addr TO addr, byte
 
 - DEEK and DOKE -16 bit PEEK and POKE
-
-- LOAD, SAVE, etc - use FRCADR instead of FRCINT
+  -  Modified DOKE to accept list of words
 
 - Implement DEF FN and ATN()
 
