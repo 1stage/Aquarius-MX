@@ -508,7 +508,6 @@ SHOWCOPY:
     dec     hl
     jr      SHOWIT
 S1ROM:
-    ld      a,(hl)
     cp      $43                ; is the 'C' in "Copyright"?
     ret     nz
 SHOWIT:
