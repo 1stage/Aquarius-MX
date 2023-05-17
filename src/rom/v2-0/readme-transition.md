@@ -75,7 +75,7 @@ COPY < source >, < dest >, < count >
 Clear Screen
 ### FORMAT: ###
  - CLS [ < colors > ]
-  - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
+   - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
 >
     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 
