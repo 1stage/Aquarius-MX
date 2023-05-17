@@ -143,6 +143,7 @@ tokens = {
     0xE3: "HEX$",
     0xE4: "VER",
     0xE5: "DTM$"
+    0xE6: "DEC",
     0xE7: "KEY",
     0xE8: "DEEK",
     0xE9: "ERR" 
