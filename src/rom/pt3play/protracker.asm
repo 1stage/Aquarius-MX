@@ -14,10 +14,10 @@ VARMEM = $38A0      ; Top of stack at boot (before initializing BASIC)
 PLAYER_VER = 1
 PLAYER_REV = 5
 
-PSG1A       = $F6   ; PSG1 low  IO port $F6
-PSG1B       = $F7   ; PSG1 high IO port $F7
-PSG2A       = $F8   ; PSG2 low  IO port $F8
-PSG2B       = $F9   ; PSG2 high IO port $F9
+PSG1A       = $F6   ; PSG1 data     IO port $F6
+PSG1B       = $F7   ; PSG1 register IO port $F7
+PSG2A       = $F8   ; PSG2 data     IO port $F8
+PSG2B       = $F9   ; PSG2 register IO port $F9
 
 ; AY registers
 ; STRUCT AYREGS
@@ -1247,10 +1247,10 @@ PL2:
 ROUT:
     XOR  A           ; A  = register 0
 ROUT_A0:
-    LD   HL,AYREGS   ; HL = register data
+    LD   HL,AYREGS   ; HL = address of register data
     LD   C,PSG1A     ; C  = AY data port 1
 LOUT:
-    OUT  (PSG1B),A   ; select PSG1 register
+    OUT  (PSG1B),A   ; select PSG1 register number
     INC  A           ; A = next register
     OUTI             ; (HL) -> AY register, inc HL
     CP   13          ; loaded registers 0~12?
