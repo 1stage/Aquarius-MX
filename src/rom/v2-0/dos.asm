@@ -745,7 +745,8 @@ dos__directory:
         CALL    usb__open_dir           ; open '*' for all files in directory
         RET     NZ                      ; abort if error (disk not present?)
         ld      a,22
-        ld      (CNTOFL),a             ; set initial number of lines per page
+        ld      (CNTOFL),a              ; set initial number of lines per page
+      LD      DE,$8000                ; BUFFER FOR DIRECTORY STRUCTS
 .dir_loop:
         LD      A,CH376_CMD_RD_USB_DATA
         OUT     (CH376_CONTROL_PORT),A  ; command: read USB data
@@ -760,9 +761,15 @@ dos__directory:
         PUSH    HL
         INIR                            ; read directory info onto stack
         POP     HL
+      PUSH    HL
+      LD      BC,32  
+      LDIR
+      POP     HL        
+      PUSH    DE
         ld      DE,FileName             ; DE = wildcard pattern
         call    usb__wildcard           ; Z if filename matches wildcard
         call    z,dos__prtDirInfo       ; display file info (type, size)
+      POP     DE
         LD      HL,32
         ADD     HL,SP                   ; clean up stack
         LD      SP,HL
