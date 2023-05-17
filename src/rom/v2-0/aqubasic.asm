@@ -1101,25 +1101,35 @@ ST_reserved:
 ;;; ## DOKE Statement ##
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ;;; ### FORMAT: ###
-;;;  - DOKE < address >, < word >
+;;;  - DOKE < address >, < word > [, <word>...]
 ;;;    - Action: Writes < word > to memory starting at < address >.
 ;;; ### EXAMPLES: ###
 ;;;  - `DOKE 14340, 1382`
 ;;;    - Set USR() function address
 ;;;  - `DOKE $3028, $6162`
-;;;    - Put the characters `ab` at the top left of the screen
+;;;    - Put the characters `ba` at the top left of the screen
+;;;  - `DOKE $3028, $3231, $3433, $3635`
+;;;    - Put the characters `123456` at the top left of the screen
 ;----------------------------------------------------------------------------
 
 ST_DOKE:   
     call    GETADR          ; Get <address>
     SYNCHK  ','             ; Require a Comma
+.doke_loop:
     push    de              ; Stack = address  
     call    GETADR          ; Get <word> in DE
     ex      (sp),hl         ; HL = address, Stack = Text Pointer
     ld      (hl),e          ; Write word to <address> 
     inc     hl
     ld      (hl),d
+    ex      de,hl           ; DE = Address
     pop     hl
+    ld      a,(hl)          ; If Next Character
+    cp      ','             ; is Not a Comma
+    ret     nz              ;   We are done
+    rst     CHRGET          ; Skip Comma
+    inc     de              ; Bump Poke Address
+    jr      .doke_loop      ; Do the Next Word
     ret
 
 ;----------------------------------------------------------------------------
