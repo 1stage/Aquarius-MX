@@ -502,10 +502,14 @@ SHOWCOPY:
     ld      hl,$0163           ; point to copyright string in ROM
     ld      a,(hl)
     cp      $79                ; is the 'y' in "Copyright"?
-    ret     nz                 ; no, quit
+    jr      nz,S1ROM
     dec     hl
     dec     hl                 ; yes, back up to start of string
     dec     hl
+    jr      SHOWIT
+S1ROM:
+    ld      a,(hl)
+    cp      $43                ; is the 'C' in "Copyright"?
 SHOWIT:
     dec     hl
     call    STROUT           
