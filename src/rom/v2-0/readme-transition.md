@@ -224,15 +224,15 @@ Read Keyboard
      - If < number > is positive, checks to see if a key has been pressed, returning the key's ASCII code (or 0 if no key was pressed). A key press will only be detected once, returning 0 on subsequent calls until the key is released and pressed again.
      - If < number > is negative, returns the ASCII code of the key currently being pressed (or 0 if no keys are being pressed). Subsequent calls will continue to return the key's ASCII code if the key remains pressed.
      - KEY() does not expand control-key combinations to keywords. Instead CTRL-A through CTRL-Z generate ASCII 1 through 27 (^A-^Z) The rest of the control characters are assigned as follows:
->
+```
   KEY:  ;   =   0   :   /   -  8   9   7   ,   1   .   2  <--
 ASCII: 128  27  28  29  30  31 91  93  96 123 124 125 126 127
- NOTE:  ^@ ESC  ^\ ^] ^^ ^_    [   ]   `  {   |   }   ~   DEL
+ NOTE:  ^@ ESC  ^\  ^]  ^^  ^_ [   ]   `  {    |   }   ~  DEL
 
->
   KEY:   3    4    5    6   SPACE  RTN  Shift-SPC  Shift-RTN
 ASCII:  158  143  159  142   $C6   255     160        134
  NOTE: LEFT  UP  DOWN RIGHT  dot  black   blank   checkerboard
+```
 
 ### EXAMPLES: ###
 ```
@@ -366,11 +366,19 @@ Save File to USB Drive
  - SAVE < filespec >,< address >,< size >
    - Action: Save BASIC program, array, or range of memory.
 ### EXAMPLES: ###
-  SAVE "progname.bas"               Save current program as CAQ file
-  SAVE "array.caq",*A               Save contents of array A() as CAQ file
-  SAVE "capture.src",12288,2048     Save Screen and Color RAM as binary file
-
-
+```
+SAVE "progname.bas"
+```
+> Save current program as CAQ file
+```
+SAVE "array.caq",*A
+```
+> Save contents of array A() as CAQ file
+```
+SAVE "capture.src",12288,2048
+```
+> Save Screen and Color RAM as binary file
+```
 ## EDIT Statement ##
 Edit BASIC Line
 ### FORMAT: ###
