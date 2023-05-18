@@ -60,16 +60,26 @@ Copy Memory (overloads legacy COPY command which lineprints screen output)
 ### FORMAT: ###
 COPY < source >, < dest >, < count >
 ### EXAMPLES: ###
- - `COPY 12368,12328,920`
-   - Scroll Screen Up One Line
- - `COPY 12288,12328,920`
-   - Scroll Screen Down One Line
- - `COPY 12329,12328,39`
-   - Scroll Row 1 right 1 char
- - `COPY $3000,$2000,2048`
-   - Copy Screen and Colors to Low RAM
- - `COPY $2000,$3000,2048`
-   - Restore Screen and Colors
+```
+COPY 12368,12328,920
+```
+> Scroll Screen Up One Line
+```
+COPY 12288,12328,920
+```
+> Scroll Screen Down One Line
+```
+COPY 12329,12328,39
+```
+> Scroll Row 1 right 1 char
+```
+COPY $3000,$2000,2048
+```
+> Copy Screen and Colors to Low RAM
+```
+COPY $2000,$3000,2048
+```
+> Restore Screen and Colors
 
 ## CLS ##
 Clear Screen
