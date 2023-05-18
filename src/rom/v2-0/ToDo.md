@@ -16,9 +16,7 @@ This file is for recording upcoming changes and features that are being added to
   - When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
   - Add option for RTC installed or not
 
-- Modify dos.asm to read and write USB file timestamp
-  - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
-  - Modify dos.asm to call rtc_read and dtm_lib.asm routines
+- Modify dos.asm and CH376.asm to write USB file timestamp
 
 - Add MKDIR and RMDIR to dos.asm
   - Vefiry this is feasible
@@ -85,4 +83,9 @@ This file is for recording upcoming changes and features that are being added to
 - RUN for Basic program file (CAQ format) loads them where expected, then runs them
 
 - RUN for all other file types gives an filetype mismatch ?FC error
+
+- Modify dos.asm to read USB file timestamp
+  - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
+  - Modified dos__directory to convert and print last write date and time
+  - Modify dos.asm to call rtc_read and dtm_lib.asm routines
 

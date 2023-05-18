@@ -335,7 +335,10 @@ fts_to_dtm:
     pop     bc                ;Restore Registers  
     pop     de                
     pop     hl
-    jp      dtm_validate      ;Validate DateTime and return
+    call    dtm_validate      ;Validate DateTime and return
+    ret     nz                ;If Valid, Return $7F
+    or      $3F               ;Else Return $3F
+    ret
 
 fts_get_word:
     ld      c,(hl)            ;Get FTS Date/Time LSB into C
@@ -343,7 +346,7 @@ fts_get_word:
     ld      b,(hl)            ;Get FTS Date/Time MSB into B
     inc     hl                ;Bump Pointer for Next Get
     ld      a,c               ;Get LSB and Mask High Bits to
-    and     $3F               ;Return Day/Seconds
+    and     $1F               ;Return Day/Seconds
     ret                       
 
 fts_to_bcd:

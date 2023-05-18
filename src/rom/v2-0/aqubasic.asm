@@ -78,7 +78,7 @@ VERSION  = 2
 REVISION = 0
 
 ; code options
-;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
+softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 aqubug   equ 1     ; full featured debugger (else lite version without screen save etc.)
 ;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!

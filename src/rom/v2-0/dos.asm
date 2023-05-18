@@ -37,12 +37,12 @@
 ; 2022-09-21 v1.2  Fixed array saving by removing the 4 spurious bytes (Mack)
 ;                  Correct comments regarding loading of .BIN files to $C9,$C3 (was $BF,$DA)
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
-; 2023-05-11 v1.3  SAVE: Removed header when writing binary files, added 15 x $00 tail to CAQ container
+; 2023-05-11 v2.0  SAVE: Removed header when writing binary files, added 15 x $00 tail to CAQ container
 ;                  when writing Basic program or array. Fixed SN error when SAVE array in program (CFK)
-; 2023-05-12 v1.3  LOAD: Removed file type parsing. File type is based on arguments only. 
+; 2023-05-12 v2.0  LOAD: Removed file type parsing. File type is based on arguments only. 
 ;                  Removed dos_getfiletype and all related code, constants, and strings
 ;                  Replaced get_next and get_arg calls with chrget and chrgot calls
-;                  
+; 2023-05-17 v2.0  DIR: Print last write date and time. Do not show hidden or system files.                 
 
 ; bits in dosflags
 DF_ADDR   = 0      ; set = address specified
@@ -687,6 +687,8 @@ ST_CAT:
 ;
 ST_DIR:
     push    hl                ; PUSH text pointer
+    ld      a,ATTR_HIDDEN+ATTR_SYSTEM
+    ld      (DosFlags),a      ; filter out system and hidden files
     call    dos__clearError   ; returns A = 0
     ld      (FileName),a      ; wildcard string = NULL
     call    chkarg            ; is wildcard argument present?
@@ -746,7 +748,6 @@ dos__directory:
         RET     NZ                      ; abort if error (disk not present?)
         ld      a,22
         ld      (CNTOFL),a              ; set initial number of lines per page
-      LD      DE,$8000                ; BUFFER FOR DIRECTORY STRUCTS
 .dir_loop:
         LD      A,CH376_CMD_RD_USB_DATA
         OUT     (CH376_CONTROL_PORT),A  ; command: read USB data
@@ -761,15 +762,16 @@ dos__directory:
         PUSH    HL
         INIR                            ; read directory info onto stack
         POP     HL
-      PUSH    HL
-      LD      BC,32  
-      LDIR
-      POP     HL        
-      PUSH    DE
+        ld      bc,11                   
+        add     hl,bc                   ; move to attribute byte
+        ld      a,(DosFlags)            ; get attribute mask
+        and     (hl)                    ; check attribute bits
+        jr      nz,.dir_skip            ; if match, skip file
+        sbc     hl,bc                   ; move back to first byte
         ld      DE,FileName             ; DE = wildcard pattern
         call    usb__wildcard           ; Z if filename matches wildcard
         call    z,dos__prtDirInfo       ; display file info (type, size)
-      POP     DE
+.dir_skip:
         LD      HL,32
         ADD     HL,SP                   ; clean up stack
         LD      SP,HL
