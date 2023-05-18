@@ -378,7 +378,7 @@ SAVE "array.caq",*A
 SAVE "capture.src",12288,2048
 ```
 > Save Screen and Color RAM as binary file
-```
+
 ## EDIT Statement ##
 Edit BASIC Line
 ### FORMAT: ###
