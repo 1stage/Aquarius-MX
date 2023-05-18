@@ -257,10 +257,14 @@ Hexadecimal to integer conversion
  - DEC(< string >)
    - Action: Returns the DECimal value of the hexadecimal number in < string >. If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero. String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
 ### EXAMPLES: ###
- - `PRINT DEC("FFFF")`
-   - Prints "65535"
- - `10 A$=HEX$(32):PRINT DEC(A$)`
-   - Prints "32"
+```
+PRINT DEC("FFFF")
+```
+> Prints "65535"
+```
+10 A$=HEX$(32):PRINT DEC(A$)
+```
+> Prints "32"
 
 ## HEX$() ##
 Integer to hexadecimal conversion
