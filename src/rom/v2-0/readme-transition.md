@@ -133,10 +133,14 @@ Write to Z80 I/O Port
    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
    - Advanced: During the write, < address > is put on the Z80 address bus.
 ### EXAMPLES: ###
- - `OUT 246, 12`
-   - Send a value of 12 to the SOUND chip
- - `10 X=14:OUT $FC, X`
-   - Send a value of 14 to the Cassette sound port
+```
+OUT 246, 12
+```
+> Send a value of 12 to the SOUND chip
+```
+10 X=14:OUT $FC, X
+```
+> Send a value of 14 to the Cassette sound port
 
 ## PSG ##
 Write to Programmable Sound Generator(s)
@@ -146,14 +150,22 @@ Write to Programmable Sound Generator(s)
      - registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
      - registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
 ### EXAMPLES: ###
- - `PSG 8,15,0,148,1,1,7,56`
-   - Play a Db4 note on PSG1 channel A, continuously
- - `PSG 8,0,7,0`
-   - Turn the PSG1 sound off
- - `PSG 24,15,16,148,17,1,23,56`
-   - Play a Db4 note on PSG2 channel A, continuously
- - `PSG 24,0,23,0`
-   - Turn the PSG2 sound off
+```
+PSG 8,15,0,148,1,1,7,56
+```
+> Play a Db4 note on PSG1 channel A, continuously
+```
+PSG 8,0,7,0
+```
+> Turn the PSG1 sound off
+```
+PSG 24,15,16,148,17,1,23,56
+```
+> Play a Db4 note on PSG2 channel A, continuously
+```
+PSG 24,0,23,0
+```
+> Turn the PSG2 sound off
 
 ## PEEK() - **Extended Functionality** ##
 Read from Memory
