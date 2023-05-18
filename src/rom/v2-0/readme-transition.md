@@ -421,7 +421,7 @@ Define User Function
 10 DEF FN A9(Q) = INT(RND(1)*Q+1)
 20 G=G+FN A9(10)
 ```
-> In the other two functions, the value in parentheses does affect the result.
+> Increments the value of G the rounded value of a random number between 1 and 10.
 
 ## ATN Function ##
 Arctangent
