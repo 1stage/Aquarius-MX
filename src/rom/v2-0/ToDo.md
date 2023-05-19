@@ -22,6 +22,10 @@ This file is for recording upcoming changes and features that are being added to
   - Vefiry this is feasible
   - Add accompanying routines to CH376.asm
 
+- Verify & works as designed.
+  - ` A=44:PRINT &A:PRINT PEEK(&A) `
+    - Should show address and then 44, correct?
+
 - Transition in-line documentation (;;;) to Markdown format.
 
 ## COMPLETE:

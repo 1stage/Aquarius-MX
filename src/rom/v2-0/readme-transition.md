@@ -288,8 +288,10 @@ Get Variable Address
    - Action: Returns the address of the first byte of data identified with < variable name >. 
      - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
-Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
-
+     - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
+#### EXAMPLES: ####
+` A=44:PRINT &A:PRINT PEEK(&A) `
+> Assigns A a value, prints its address, and prints the value at that address.
 ## SAVE Statement ##
 Save File to USB Drive
 ### FORMAT: ###
