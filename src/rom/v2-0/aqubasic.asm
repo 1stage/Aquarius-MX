@@ -455,7 +455,7 @@ AboutWindow:
     dw   0                            ; title
 
 AboutBdrTitle:
-    db     " About Aquarius MX BASIC ",0
+    db     " About MX BASIC ",0
 
 AboutText:
     db     CR,CR,CR
