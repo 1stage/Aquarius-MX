@@ -1102,18 +1102,17 @@ ST_reserved:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## DOKE Statement ##
+;;; ## DOKE ##
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ;;; ### FORMAT: ###
-;;;  - DOKE < address >, < word > [, <word>...]
+;;;  - DOKE < address >, < word >
 ;;;    - Action: Writes < word > to memory starting at < address >.
 ;;; ### EXAMPLES: ###
-;;;  - `DOKE 14340, 1382`
-;;;    - Set USR() function address
-;;;  - `DOKE $3028, $6162`
-;;;    - Put the characters `ba` at the top left of the screen
-;;;  - `DOKE $3028, $3231, $3433, $3635`
-;;;    - Put the characters `123456` at the top left of the screen
+;;; ` DOKE 14340, 1382 `
+;;; > Set USR() function address
+;;;
+;;; ` DOKE $3028, $6162 `
+;;; > Put the characters `ab` at the top left of the screen
 ;----------------------------------------------------------------------------
 
 ST_DOKE:   
@@ -1137,28 +1136,34 @@ ST_DOKE:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## POKE Statement (Extended) ##
-;;; Writes to byte(s) to memory location(s)
+;;; ## POKE (Extended) ##
+;;; Writes byte(s) to memory location(s)
 ;;; ### FORMAT: ###
 ;;;  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
 ;;;    - Action: Writes < byte or string > to < address >, followed by < address > STEP counts away...
 ;;;  - POKE < address > TO < address >, < byte >
 ;;;    - Action: Writes < byte > to memory from < address > TO < address >.
 ;;; ### EXAMPLES: ###
-;;;  - `POKE $3000+500,64`
-;;;    - Display `@` at screen center
-;;;  - `POKE 12347,7,6`
-;;;    - Display double-ended arrow
-;;;  - `POKE 12366,$13,STEP 39,$14`
-;;;    - Display standing person "sprite"
-;;;  - `POKE 12329,$D4,STEP 1023,$10`
-;;;    - Display red heart on black background
-;;;  - `POKE $3009,T$,5,C$`
-;;;    - Display T$, copyright, C$ on row 0
-;;;  - `POKE $3400 TO $3427,5`
-;;;    - Set border color to magenta
-;;;  - `POKE $3028 TO $33E7,$86`
-;;;    - Fill screen with checkerboard character
+;;; ` POKE $3000+500,64 `
+;;; > Display `@` at screen center
+;;;
+;;; ` POKE 12347,7,6 `
+;;; > Display double-ended arrow
+;;;
+;;; ` POKE 12366,$13,STEP 39,$14 `
+;;; > Display standing person "sprite"
+;;;
+;;; ` POKE 12329,$D4,STEP 1023,$10 `
+;;; > Display red heart on black background
+;;;
+;;; ` POKE $3009,T$,5,C$ `
+;;; > Display T$, copyright, C$ on row 0
+;;;
+;;; ` POKE $3400 TO $3427,5 `
+;;; > Set border color to magenta
+;;;
+;;; ` POKE $3028 TO $33E7,$86 `
+;;; > Fill screen with checkerboard character
 ;----------------------------------------------------------------------------
 
 ST_POKE:   
@@ -1252,19 +1257,25 @@ STRLENADR:
     ret
 
 ;----------------------------------------------------------------------------
-;  Extended COPY Statement
-;;; COPY Statement - Copy Memory
-;;; 
-;;; FORMAT: COPY <source>, <dest>, <count>
+;;; ## COPY (Extended) ##
+;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
+;;; ### FORMAT: ###
+;;;  - COPY < source >, < dest >, < count >
+;;; ### EXAMPLES: ###
+;;; ` COPY 12368,12328,920 `
+;;; > Scroll Screen Up One Line
 ;;;
-;;; 
-;;; EXAMPLES of COPY Statement:
-;;; 
-;;;   COPY 12368,12328,920              Scroll Screen Up One Line
-;;;   COPY 12288,12328,920              Scroll Screen Down One Line
-;;;   COPY 12329,12328,39               Scroll Row 1 right 1 char
-;;;   COPY $3000,$2000,2048             Copy Screen and Colors to Low RAM
-;;;   COPY $2000,$3000,2048             Restore Screen and Colors 
+;;; ` COPY 12288,12328,920 `
+;;; > Scroll Screen Down One Line
+;;;
+;;; ` COPY 12329,12328,39 `
+;;; > Scroll Row 1 right 1 char
+;;;
+;;; ` COPY $3000,$2000,2048 `
+;;; > Copy Screen and Colors to Low RAM
+;;;
+;;; ` COPY $2000,$3000,2048 `
+;;; > Restore Screen and Colors
 ;----------------------------------------------------------------------------
 
 ST_COPY:   
@@ -1305,45 +1316,39 @@ ST_COPY:
     pop     hl              ; Restore Text Pointer
     ret
     
-
 ;----------------------------------------------------------------------------
-;;; CLS Statement - Clear Screen
-;;; 
-;;; FORMAT: CLS [<colors>]
-;;;  
-;;; Action: Clears the screen. The optional parameter <colors> is a number 
-;;; between 0 and 255 that specifies the new foreground and background color
-;;; combination using this formula with the values below:  (FG * 16) + BG. 
-;;; The default combination is 6 (BLACK on CYAN).
+;;; ## CLS (Extended) ##
+;;; Clear Screen
+;;; ### FORMAT: ###
+;;;  - CLS [ < colors > ]
+;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
+;;; >
+;;;     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
+;;;     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 
+;;;     2 GREEN      6 CYAN       10 DKMAGENTA   14 DKRED    
+;;;     3 YELLOW     7 WHITE      11 DKBLUE      15 DKGREY   
 ;;;
-;;;     0 BLACK      4 BLUE        8 GREY         12 LTYELLOW   
-;;;     1 RED        5 MAGENTA     9 DKCYAN       13 DKGREEN    
-;;;     2 GREEN      6 CYAN        10 DKMAGENTA   14 DKRED      
-;;;     3 YELLOW     7 WHITE       11 DKBLUE      15 DKGREY     
+;;;    - The colors value can be represented as a two-digit hexadecimal number (preceded by a $ as a hex number designator) where the left digit is the foreground color and the right digit is the background color, using the following chart:
+;;; >
+;;;     0 BLACK      4 BLUE        8 GREY        C LTYELLOW
+;;;     1 RED        5 MAGENTA     9 DKCYAN      D DKGREEN
+;;;     2 GREEN      6 CYAN        A DKMAGENTA   E DKRED
+;;;     3 YELLOW     7 WHITE       B DKBLUE      F DKGREY
 ;;;
-;;;   The colors value can be represented as a two-digit hexadecimal number 
-;;; (preceded by a $ as a hex number designator) where the left digit is the 
-;;; foreground color and the right digit is the background color, using the 
-;;; following chart:
+;;;    - Warning: If the foreground and background colors are the same, typed and and PRINTed text will be invisible.
+;;;    - Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
+;;; ### EXAMPLES: ###
+;;; ` CLS `
+;;; > Clear screen with default colors
 ;;;
-;;;     0 BLACK      4 BLUE        8 GREY        C LTYELLOW   
-;;;     1 RED        5 MAGENTA     9 DKCYAN      D DKGREEN    
-;;;     2 GREEN      6 CYAN        A DKMAGENTA   E DKRED      
-;;;     3 YELLOW     7 WHITE       B DKBLUE      F DKGREY     
+;;; ` CLS 7 `
+;;; > Clear screen - black text on white background
 ;;;
-;;; Warning: If the foreground and background colors are the same, typed and
-;;; and PRINTed text will be invisible.
+;;; ` CLS $30 `
+;;; > Clear screen - yellow text on black background
 ;;;
-;;; Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 
-;;; 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).  
-
-;;; EXAMPLES of CLS Statement:
-;;; 
-;;;   CLS               Clear screen with default colors
-;;;   CLS 7             Clear screen - black text on white background
-;;;   CLS $30           Clear screen - yellow text on black background
-;;;   CLS F*16+B        Clear screen - text color F, background color B
-;;;                                    (using BASIC variables)
+;;; ` CLS F*16+B `
+;;; > Clear screen - text color F, background color B (using BASIC variables)
 ;----------------------------------------------------------------------------
 
 ST_CLS:
@@ -1360,15 +1365,6 @@ do_cls:
     ld      a,' '
     ld      (CURCHR),a   ; SPACE under cursor
     ret
-
-;-----------------------------------
-;       Clear Screen, Updated
-;-----------------------------------
-; - user-defined colors
-; - doesn't clear last 24 bytes
-; - doesn't show cursor
-;
-; in: A = color attribute (FG * 16) + BG
 
 clearscreen:
     push    hl
@@ -1388,23 +1384,19 @@ clearscreen:
     pop     hl
     ret
 
-
 ;----------------------------------------------------------------------------
-;;; OUT Statement - Write to Z80 I/O Port
-;;; 
-;;; FORMAT: OUT <address>,<byte>
-;;;  
-;;; Action: Writes <byte> to the I/O port specified by LSB of <address>. 
-;;;         
-;;; Advanced: During the write, <address> is put on the Z80 address bus.
-;;;         .
-;;; 
-;;; EXAMPLES of OUT Statement:
-;;; 
-;;;     OUT 246, 12                     Send a value of 12 to the SOUND chip
+;;; ## OUT ##
+;;; Write to Z80 I/O Port
+;;; ### FORMAT: ###
+;;;  - OUT < address >,< byte >
+;;;    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
+;;;    - Advanced: During the write, < address > is put on the Z80 address bus.
+;;; ### EXAMPLES: ###
+;;; ` OUT 246, 12 `
+;;; > Send a value of 12 to the SOUND chip
 ;;;
-;;;     10 X=14:OUT $FC, X              Send a value of 14 to the Cassette
-;;;                                     sound port
+;;; ` 10 X=14:OUT $FC, X `
+;;; > Send a value of 14 to the Cassette sound port
 ;----------------------------------------------------------------------------
 
 ST_OUT:
@@ -1469,21 +1461,25 @@ GOTO_HL:
 
 
 ;----------------------------------------------------------------------------
-;;; PSG Command - Write to Programmable Sound Generator(s)
-;;; 
-;;; FORMAT: PSG register, value [, ...]
-;;;  
-;;; Action: Writes a pair of values to either PSG1 or PSG2 
-;;;     registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
-;;;     registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
+;;; ## PSG ##
+;;; Write to Programmable Sound Generator(s)
+;;; ### FORMAT: ###
+;;;  - PSG register, value [, ...]
+;;;    - Action: Writes a pair of values to either PSG1 or PSG2
+;;;      - registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
+;;;      - registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
+;;; ### EXAMPLES: ###
+;;; ` PSG 8,15,0,148,1,1,7,56 `
+;;; > Play a Db4 note on PSG1 channel A, continuously
 ;;;
-;;; EXAMPLES of PSG command:
-;;; 
-;;;   PSG 8,15,0,148,1,1,7,56           Play a Db4 note on PSG1 channel A, continuously
-;;;   PSG 8,0,7,0                       Turn the PSG1 sound off
+;;; ` PSG 8,0,7,0 `
+;;; > Turn the PSG1 sound off
 ;;;
-;;;   PSG 24,15,16,148,17,1,23,56       Play a Db4 note on PSG2 channel A, continuously
-;;;   PSG 24,0,23,0                     Turn the PSG2 sound off
+;;; ` PSG 24,15,16,148,17,1,23,56 `
+;;; > Play a Db4 note on PSG2 channel A, continuously
+;;;
+;;; ` PSG 24,0,23,0 `
+;;; > Turn the PSG2 sound off
 ;----------------------------------------------------------------------------
 ;
 ; Original Single PSG Code - Restore as needed (Remove after release!!!)
@@ -1545,20 +1541,18 @@ InitFN:
     push    de                ; on stack
     jp      (hl)              ; Fast Return 
 
-
 ;----------------------------------------------------------------------------
-;;; Extended PEEK() Function - Read from Memory
-;;; 
-;;; FORMAT: PEEK(<address>)
-;;;  
-;;; Action: Reads a byte from memory location <address>. 
-;;;         
-;;; 
-;;; EXAMPLES of PEEK Function:
-;;; 
-;;;   PRINT CHR$(PEEK(12288))       Print the current border character
+;;; ## PEEK (Extended) ##
+;;; Read from Memory
+;;; ### FORMAT: ###
+;;;  - PEEK(< address >)
+;;;    - Action: Reads a byte from memory location < address >.
+;;; ### EXAMPLES: ###
+;;; ` PRINT CHR$(PEEK(12288)) `
+;;; > Print the current border character
 ;;;
-;;;   PRINT PEEK($3400)             Print the current border color value
+;;; ` PRINT PEEK($3400) `
+;;; > Print the current border color value
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
@@ -1569,18 +1563,19 @@ FN_PEEK:
     jp      SNGFLT            ; and Float it
 
 ;----------------------------------------------------------------------------
-;;; DEEK() Function - Read 16 bit word from Memory
-;;; 
-;;; FORMAT: DEEK(<address>)
-;;;  
-;;; Action: Reads a word from memory location <address>, returning a number
-;;; between 0 and 65535. 
-;;; 
-;;; EXAMPLES of DEEK Function:
-;;; 
-;;;   POKE DEEK(14337),PEEK(14349)    Remove cursor from screen.
+;;; ## DEEK ##
+;;; Read 16 bit word from Memory
+;;; ### FORMAT: ###
+;;; - DEEK(< address >)
+;;;   - Action: Reads a word from memory location < address >, returning a number
+;;; between 0 and 65535.
 ;;;
-;;;   PRINT DEEK($384B)               Print the top of BASIC memory address.
+;;; ### EXAMPLES: ###
+;;; ` POKE DEEK(14337),PEEK(14349) `
+;;; > Remove cursor from screen.
+;;;
+;;; ` PRINT DEEK($384B) `
+;;; > Print the top of BASIC memory address.
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
@@ -1595,20 +1590,18 @@ FLOAT_M:
     jp      FLOAT_DE          ; Float and Return
     
 ;----------------------------------------------------------------------------
-;;; IN() Function - Read Z80 I/O Port
-;;; 
-;;; FORMAT: IN(<address>)
-;;;  
-;;; Action: Reads a byte from the I/O port specified by LSB of <address>. 
-;;;         
-;;; Advanced: During the read, <address> is put on the Z80 address bus.
-;;;         .
-;;; 
-;;; EXAMPLES of IN Function:
-;;; 
-;;;   PRINT IN(252)     (Prints cassette port input status)
+;;; ## IN ##
+;;; Read Z80 I/O Port
+;;; ### FORMAT: ###
+;;;  - IN(< address >)
+;;;    - Action: Reads a byte from the I/O port specified by LSB of < address >.
+;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;; ### EXAMPLES: ###
+;;; ` PRINT IN(252) `
+;;; > Prints cassette port input status
 ;;;
-;;;   S=IN($FE)         (Set variable S to Printer Ready status)
+;;; ` S=IN($FE) `
+;;; > Set variable S to Printer Ready status
 ;----------------------------------------------------------------------------
 
 FN_IN:
@@ -1619,13 +1612,24 @@ FN_IN:
     in      a,(c)            ; a = in(port)
     jp      SNGFLT          ; return with 8 bit input value in variable var
 
-
-;--------------------------------------------------------------------
-;   Entry point for JOY() function
-;   syntax: var = JOY( stick )
-;                 stick - 0 will read left or right
-;                       - 1 will read left joystick only
-;                       - 2 will read right joystick only
+;----------------------------------------------------------------------------
+;;; ## JOY ##
+;;; Read AY-3-8910 Control Pad Inputs
+;;; ### FORMAT: ###
+;;;  - JOY(< stick >)
+;;;    - Action: Reads integer input value from < stick >, where:
+;;;      - `0` will read left or right contrl pad
+;;;      - `1` will read left control pad only
+;;;      - `2` will read right control pad only
+;;; ### EXAMPLES: ###
+;;; ` PRINT JOY(0) `
+;;; > Prints input value of either/both control pads (not effective in immediate mode).
+;;;
+;;; ` 10 PRINT JOY(1) `
+;;;
+;;; ` 20 GOTO 10 `
+;;; > Continuously reads and prints the input value from only the left control pad.
+;----------------------------------------------------------------------------
 
 FN_JOY:
     call    InitFN            ; Parse Arg and set return address
@@ -1672,47 +1676,40 @@ joy05:
 
 
 ;----------------------------------------------------------------------------
-;;; KEY() Function - Read Keyboard
-;;; 
-;;; Format: KEY(<number>)
+;;; ## KEY #
+;;; Read Keyboard
+;;; ### FORMAT: ###
+;;;  - KEY(< number >)
+;;;    - Action: Checks for a key press and returns the ASCII code of the key.
+;;;      - If < number > is 0, waits for a key to be pressed then returns it's ASCII code.
+;;;      - If < number > is positive, checks to see if a key has been pressed, returning the key's ASCII code (or 0 if no key was pressed). A key press will only be detected once, returning 0 on subsequent calls until the key is released and pressed again.
+;;;      - If < number > is negative, returns the ASCII code of the key currently being pressed (or 0 if no keys are being pressed). Subsequent calls will continue to return the key's ASCII code if the key remains pressed.
+;;;      - KEY() does not expand control-key combinations to keywords. Instead CTRL-A through CTRL-Z generate ASCII 1 through 27 (^A-^Z) The rest of the control characters are assigned as follows:
+;;; ```
+;;;   KEY:  ;   =   0   :   /   -  8   9   7   ,   1   .   2  <--
+;;; ASCII: 128  27  28  29  30  31 91  93  96 123 124 125 126 127
+;;;  NOTE:  ^@ ESC  ^\  ^]  ^^  ^_ [   ]   `  {    |   }   ~  DEL
 ;;;
-;;; Action: Checks for a key press and returns the ASCII code of the key.
-;;;
-;;; If <number> is 0, waits for a key to be pressed then returns it's 
-;;; ASCII code. 
-;;;
-;;; If <number> is positive, checks to see if a key has been pressed, 
-;;; returning the key's ASCII code (or 0 if no key was pressed). A key 
-;;; press will only be detected once, returning 0 on subsequent calls
-;;; until the key is released and pressed again.
-;;;
-;;; If <number> is negative, returns the ASCII code of the key currently
-;;; being pressed (or 0 if no keys are being pressed). Subsequent calls
-;;; will continue to return the key's ASCII code if the key remains
-;;; pressed.
-;;;
-;;; KEY() does not expand control-key combinations to keywords. Instead
-;;; CTRL-A through CTRL-Z generate ASCII 1 through 27 (^A-^Z)
-;;; The rest of the control characters are assigned as follows:
-;;;
-;;;   KEY:  ;   =   0   :   /   -  8   9   7   ,   1   .   2  <-- 
-;;; ASCII: 128  27  28  29  30  31 91  93  96 123 124 125 126 127 
-;;;  NOTE:  ^@ ESC  ^\ ^] ^^ ^_    [   ]   `  {   |   }   ~   DEL
-;;; 
 ;;;   KEY:   3    4    5    6   SPACE  RTN  Shift-SPC  Shift-RTN
 ;;; ASCII:  158  143  159  142   $C6   255     160        134
 ;;;  NOTE: LEFT  UP  DOWN RIGHT  dot  black   blank   checkerboard
-;;; 
-;;; EXAMPLES of KEY Function:
-;;; 
-;;; PRINT KEY(0)                Wait for a key press then print ASCII code
-;;; 
-;;; 10 K=KEY(1)                 Check for key press and add key character
-;;; 20 IF K THEN S$=S$+CHR$(K)  to string once per key press
+;;; ```
 ;;;
-;;; 10 K=KEY(-1)                Continously decrement or increment X as 
-;;; 2O IF K=97 THEN X=X-1       long as the A or S key, respectively, is
-;;; 30 IF K=115 THEN X=X+1      depressed.
+;;; ### EXAMPLES: ###
+;;; ` PRINT KEY(0) `
+;;; > Wait for a key press then print ASCII code
+;;;
+;;; ` 10 K=KEY(1) `
+;;;
+;;; ` 20 IF K THEN S$=S$+CHR$(K) `
+;;; > Check for key press and add key character to string once per key press
+;;;
+;;; ` 10 K=KEY(-1) `
+;;;
+;;; ` 2O IF K=97 THEN X=X-1 `
+;;;
+;;; ` 30 IF K=115 THEN X=X+1 `
+;;; > Continously decrement or increment X as long as the A or S key, respectively, is pressed.
 ;----------------------------------------------------------------------------
 
 FN_KEY:
@@ -1745,22 +1742,17 @@ FN_KEY:
     jp      SNGFLT            ; and float it
 
 ;----------------------------------------------------------------------------
-;;; DEC() Function
-;;; 
-;;; Format: DEC(<string>)
-;;; 
-;;; Action: Returns the DECimal value of the hexadecimal number in <string>.
-;;;         If the first non-blank character of the string is not a decimal
-;;;         digit or the letters A through F, the value returned is zero. 
-;;;         String conversion is finished when the end of the string or any
-;;;         character that is not a hexadecimal digit is found.
-;;; 
-;;; EXAMPLES of DEC Function:
+;;; ## DEC ##
+;;; Hexadecimal to integer conversion
+;;; ### FORMAT: ###
+;;;  - DEC(< string >)
+;;;    - Action: Returns the DECimal value of the hexadecimal number in < string >. If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero. String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
+;;; ### EXAMPLES: ###
+;;; ` PRINT DEC("FFFF") `
+;;; > Prints "65535"
 ;;;
-;;;    PRINT DEC("FFFF")                Prints "65535"
-;;;
-;;;    10 A$=HEX$(32):PRINT DEC(A$)     Prints "32"
-;;;   
+;;; ` 10 A$=HEX$(32):PRINT DEC(A$) `
+;;; > Prints "32"
 ;----------------------------------------------------------------------------
 
 FN_DEC:
@@ -1770,19 +1762,17 @@ FN_DEC:
     jp      EVAL_HEX        ; Convert the Text
 
 ;----------------------------------------------------------------------------
-;;; HEX$() Function
-;;; 
-;;; Format: HEX$(<number>)
-;;; 
-;;; Action: Returns string containing <number> in two-byte hexadecimal format.
-;;;         FC Error if <number> is not in the range -32676 through 65535.
-;;; 
-;;; EXAMPLES of HEX Function:
-;;; 
-;;;   PRINT HEX$(1)                  Prints "0001"
+;;; ## HEX$ ##
+;;; Integer to hexadecimal conversion
+;;; ### FORMAT: ###
+;;;  - HEX$(< number >)
+;;;    - Action: Returns string containing < number > in two-byte hexadecimal format. FC Error if < number > is not in the range -32676 through 65535.
+;;; ### EXAMPLES: ###
+;;; ` PRINT HEX$(1) `
+;;; > Prints "0001"
 ;;;
-;;;   10 PRINT HEX$(PEEK(12288))     Prints the HEX value of the border char
-;;;                                  (usually "0020", SPACE character)
+;;; ` 10 PRINT HEX$(PEEK(12288)) `
+;;; > Prints the HEX value of the border char (usually "0020", SPACE character)
 ;----------------------------------------------------------------------------
 
 FN_HEX:

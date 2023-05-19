@@ -14,7 +14,7 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ` DOKE $3028, $6162 `
 > Put the characters `ab` at the top left of the screen
 
-## POKE ##
+## POKE (Extended) ##
 Writes byte(s) to memory location(s)
 ### FORMAT: ###
  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
@@ -43,7 +43,7 @@ Writes byte(s) to memory location(s)
 ` POKE $3028 TO $33E7,$86 `
 > Fill screen with checkerboard character
 
-## COPY ##
+## COPY (Extended) ##
 Copy Memory (overloads legacy COPY command which lineprints screen output)
 ### FORMAT: ###
  - COPY < source >, < dest >, < count >
@@ -63,7 +63,7 @@ Copy Memory (overloads legacy COPY command which lineprints screen output)
 ` COPY $2000,$3000,2048 `
 > Restore Screen and Colors
 
-## CLS ##
+## CLS (Extended) ##
 Clear Screen
 ### FORMAT: ###
  - CLS [ < colors > ]
@@ -129,7 +129,7 @@ Write to Programmable Sound Generator(s)
 ` PSG 24,0,23,0 `
 > Turn the PSG2 sound off
 
-## PEEK() - **Extended Functionality** ##
+## PEEK (Extended) ##
 Read from Memory
 ### FORMAT: ###
  - PEEK(< address >)
@@ -141,7 +141,7 @@ Read from Memory
 ` PRINT PEEK($3400) `
 > Print the current border color value
 
-## DEEK() ##
+## DEEK ##
 Read 16 bit word from Memory
 ### FORMAT: ###
 - DEEK(< address >)
@@ -155,7 +155,7 @@ between 0 and 65535.
 ` PRINT DEEK($384B) `
 > Print the top of BASIC memory address.
 
-## IN() ##
+## IN ##
 Read Z80 I/O Port
 ### FORMAT: ###
  - IN(< address >)
@@ -168,7 +168,24 @@ Read Z80 I/O Port
 ` S=IN($FE) `
 > Set variable S to Printer Ready status
 
-## KEY() #
+## JOY ##
+Read AY-3-8910 Control Pad Inputs
+### FORMAT: ###
+ - JOY(< stick >)
+   - Action: Reads integer input value from < stick >, where:
+     - `0` will read left or right contrl pad
+     - `1` will read left control pad only
+     - `2` will read right control pad only
+### EXAMPLES: ###
+` PRINT JOY(0) `
+> Prints input value of either/both control pads (not effective in immediate mode).
+
+` 10 PRINT JOY(1) `
+
+ ` 20 GOTO 10 `
+> Continuously reads and prints the input value from only the left control pad.
+
+## KEY #
 Read Keyboard
 ### FORMAT: ###
  - KEY(< number >)
@@ -203,7 +220,7 @@ ASCII:  158  143  159  142   $C6   255     160        134
 ` 30 IF K=115 THEN X=X+1 `
 > Continously decrement or increment X as long as the A or S key, respectively, is pressed.
 
-## DEC() ##
+## DEC ##
 Hexadecimal to integer conversion
 ### FORMAT: ###
  - DEC(< string >)
@@ -215,7 +232,7 @@ Hexadecimal to integer conversion
 ` 10 A$=HEX$(32):PRINT DEC(A$) `
 > Prints "32"
 
-## HEX$() ##
+## HEX$ ##
 Integer to hexadecimal conversion
 ### FORMAT: ###
  - HEX$(< number >)
@@ -227,7 +244,23 @@ Integer to hexadecimal conversion
 ` 10 PRINT HEX$(PEEK(12288)) `
 > Prints the HEX value of the border char (usually "0020", SPACE character)
 
-## SDTM Function ##
+## VER ##
+Display the current MX BASIC version number
+### FORMAT: ###
+ - VER(< number >)
+   - Action: Returns integer value of the version number.
+### EXAMPLES: ###
+` PRINT HEX$(VER(1)) `
+> Prints "0200"
+
+` 10 VE$=LEFT$(HEX$(VER(1)),2) `
+
+` 20 RE$=RIGHT$(HEX$(VER(1)),2) `
+
+` 30 PRINT "v"+VE$+"."+RE$ `
+> Prints the HEX value of the border char (usually "0020", SPACE character)
+
+## SDTM ##
 Set DateTime
 ### FORMAT: ###
  - SDTM < string >
@@ -235,7 +268,6 @@ Set DateTime
         - Improperly formatted string causes FC Error
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
-
 ### EXAMPLES: ###
 ` SDTM "230411101500" `
 > Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
@@ -243,7 +275,9 @@ Set DateTime
 ` 10 SDTM "010101000000" `
 > Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
 
-## DTM$ Function ##
+## CALL
+
+## DTM$ ##
 Get DateTime
 ### FORMAT: ###
  - DTM$(< number >)
@@ -281,7 +315,7 @@ Get DateTime
 ` P = $3000+40*R+C `
 > Sets P to screen row 1, column 1 address
 
-## & Operator ##
+## & (Address) ##
 Get Variable Address
 ### FORMAT: ###
  - &< variable name >
@@ -292,6 +326,7 @@ Get Variable Address
 #### EXAMPLES: ####
 ` A=44:PRINT &A:PRINT PEEK(&A) `
 > Assigns A a value, prints its address, and prints the value at that address.
+
 ## SAVE Statement ##
 Save File to USB Drive
 ### FORMAT: ###
