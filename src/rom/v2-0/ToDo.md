@@ -22,14 +22,7 @@ This file is for recording upcoming changes and features that are being added to
   - Vefiry this is feasible
   - Add accompanying routines to CH376.asm
 
-- Verify & works as designed.
-  - ` A=44:PRINT &A:PRINT PEEK(&A) `
-    - ** use this **
-    - ` A=44:COPY &A,&B,4:PRINT B
-
 - CLEAR: use GETADR from memory size, limit to below system variables
-
-- Transition in-line documentation (;;;) to Markdown format.
 
 ## COMPLETE: ##
 
@@ -96,3 +89,4 @@ This file is for recording upcoming changes and features that are being added to
   - Modified dos__directory to convert and print last write date and time
   - Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
+- Transition in-line documentation (;;;) to Markdown format.
