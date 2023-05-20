@@ -373,7 +373,7 @@ Get Variable Address
 ` A=44:COPY &A,&B,4:PRINT B `
 
 
-## SAVE Statement ##
+## SAVE ##
 Save File to USB Drive
 ### FORMAT: ###
  - SAVE < filespec >
@@ -389,6 +389,24 @@ Save File to USB Drive
 
 ` SAVE "capture.src",12288,2048 `
 > Save Screen and Color RAM as raw binary file
+
+
+## DIR ##
+Get a listing of the files on the current USB directory
+### FORMAT: ###
+ - DIR [ < wildcard > ]
+   - Action: Show files in current directory with size, with an optional wildcard on filename
+ - DIR SDTM [ < wildcard > ]
+   - Action: Show files in current directory with size, date, and time, with optional wildcard on filename
+### EXAMPLES: ###
+` DIR `
+> Show all files in current directory
+
+` DIR "*.BAS" `
+> Show BASIC program files in current directory
+
+` DIR SDTM "*A*" `
+> Show any files with a letter A in the name, along with their last DateTime stamp
 
 
 ## EDIT Statement ##
@@ -409,7 +427,7 @@ Edit BASIC Line
    - Note: The above control keys are also available when entering a new line or direct mode command.
 
 
-## DEF FN Statement ##
+## DEF FN ##
 Define User Function
 ### FORMAT: ###
  - DEF FN < name > ( < variable > ) = < expression >
@@ -436,7 +454,7 @@ Define User Function
 > Increments the value of G the rounded value of a random number between 1 and 10.
 
 
-## ATN Function ##
+## ATN ##
 Arctangent
 ### FORMAT: ###
  - ATN ( < number > )
@@ -447,6 +465,26 @@ Arctangent
 
 ` X = ATN(J)*180/ {pi} `
 > Defines variable X as the arctangent of another variable, J, divided by pi.
+
+
+## ON ERROR / ERROR ##
+BASIC error handling function and codes
+### FORMAT: ###
+ - ON ERROR GOTO < line number >
+   - Action: details
+### EXAMPLE: ###
+` 10 ON ERROR GOTO 900 `
+
+` 20 NEXT `
+
+` 30 REM I get skipped `
+
+` 100 PRINT ERROR (0) `
+
+` 110 PRINT ERROR (1) `
+
+` 120 PRINT ERROR (2) `
+> Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 
 
 ## CLEAR Statement ##
@@ -464,5 +502,9 @@ Clear Variables and/or Error Code
    - Action: Clears last error number and line.
      - Leaves variables and arrays intact.
 ### EXAMPLES: ###
--
+` CLEAR xxx, yyy `
+> Details of this example
+
+` CLEAR bbb
+> Details of this example
 

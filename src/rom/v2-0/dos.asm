@@ -402,7 +402,7 @@ _ibl_done:
         ret
 
 ;------------------------------------------------------------------------------
-;;; ## SAVE Statement ##
+;;; ## SAVE ##
 ;;; Save File to USB Drive
 ;;; ### FORMAT: ###
 ;;;  - SAVE < filespec >
@@ -677,16 +677,24 @@ ST_CAT:
     RET
 
 ;--------------------------------------------------------------------
-;                   Disk Directory Listing
-;--------------------------------------------------------------------
-; Display directory listing of all files, or only those which match
-; the wildcard pattern.
-;
-; Listing includes details such as file size, volume label etc.
-;
-; DIR "wildcard"   selective directory listing
-; DIR              listing all files
-;
+;;; ## DIR ##
+;;; Get a listing of the files on the current USB directory
+;;; ### FORMAT: ###
+;;;  - DIR [ < wildcard > ]
+;;;    - Action: Show files in current directory with size, with an optional wildcard on filename
+;;;  - DIR SDTM [ < wildcard > ]
+;;;    - Action: Show files in current directory with size, date, and time, with optional wildcard on filename
+;;; ### EXAMPLES: ###
+;;; ` DIR `
+;;; > Show all files in current directory
+;;;
+;;; ` DIR "*.BAS" `
+;;; > Show BASIC program files in current directory
+;;;
+;;; ` DIR SDTM "*A*" `
+;;; > Show any files with a letter A in the name, along with their last DateTime stamp
+;------------------------------------------------------------------------------
+
 ST_DIR:
     ld      a,ATTR_HIDDEN+ATTR_SYSTEM
     ld      (DosFlags),a      ; filter out system and hidden files
