@@ -8,17 +8,13 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
  - DOKE < address >, < word >
    - Action: Writes < word > to memory starting at < address >.
 ### EXAMPLES: ###
-```
-DOKE 14340, 1382
-```
+` DOKE 14340, 1382 `
 > Set USR() function address
-```
-DOKE $3028, $6162
-```
+
+` DOKE $3028, $6162 `
 > Put the characters `ab` at the top left of the screen
 
-
-## POKE ##
+## POKE (Extended) ##
 Writes byte(s) to memory location(s)
 ### FORMAT: ###
  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
@@ -26,52 +22,48 @@ Writes byte(s) to memory location(s)
  - POKE < address > TO < address >, < byte >
    - Action: Writes < byte > to memory from < address > TO < address >.
 ### EXAMPLES: ###
-```
-POKE $3000+500,64
-```
+` POKE $3000+500,64 `
 > Display `@` at screen center
-```
-POKE 12347,7,6
-```
+
+` POKE 12347,7,6 `
 > Display double-ended arrow
-```
-POKE 12366,$13,STEP 39,$14
-```
+
+` POKE 12366,$13,STEP 39,$14 `
 > Display standing person "sprite"
-```
-POKE 12329,$D4,STEP 1023,$10
-```
+
+` POKE 12329,$D4,STEP 1023,$10 `
 > Display red heart on black background
-```
-POKE $3009,T$,5,C$
-```
+
+` POKE $3009,T$,5,C$ `
 > Display T$, copyright, C$ on row 0
-```
-POKE $3400 TO $3427,5
-```
+
+` POKE $3400 TO $3427,5 `
 > Set border color to magenta
-```
-POKE $3028 TO $33E7,$86
-```
+
+` POKE $3028 TO $33E7,$86 `
 > Fill screen with checkerboard character
 
-## COPY ##
+## COPY (Extended) ##
 Copy Memory (overloads legacy COPY command which lineprints screen output)
 ### FORMAT: ###
-COPY < source >, < dest >, < count >
+ - COPY < source >, < dest >, < count >
 ### EXAMPLES: ###
- - `COPY 12368,12328,920`
-   - Scroll Screen Up One Line
- - `COPY 12288,12328,920`
-   - Scroll Screen Down One Line
- - `COPY 12329,12328,39`
-   - Scroll Row 1 right 1 char
- - `COPY $3000,$2000,2048`
-   - Copy Screen and Colors to Low RAM
- - `COPY $2000,$3000,2048`
-   - Restore Screen and Colors
+` COPY 12368,12328,920 `
+> Scroll Screen Up One Line
 
-## CLS ##
+` COPY 12288,12328,920 `
+> Scroll Screen Down One Line
+
+` COPY 12329,12328,39 `
+> Scroll Row 1 right 1 char
+
+` COPY $3000,$2000,2048 `
+> Copy Screen and Colors to Low RAM
+
+` COPY $2000,$3000,2048 `
+> Restore Screen and Colors
+
+## CLS (Extended) ##
 Clear Screen
 ### FORMAT: ###
  - CLS [ < colors > ]
@@ -82,31 +74,27 @@ Clear Screen
     2 GREEN      6 CYAN       10 DKMAGENTA   14 DKRED    
     3 YELLOW     7 WHITE      11 DKBLUE      15 DKGREY   
 
-The colors value can be represented as a two-digit hexadecimal number
-(preceded by a $ as a hex number designator) where the left digit is the
-foreground color and the right digit is the background color, using the
-following chart:
+   - The colors value can be represented as a two-digit hexadecimal number (preceded by a $ as a hex number designator) where the left digit is the foreground color and the right digit is the background color, using the following chart:
 >
     0 BLACK      4 BLUE        8 GREY        C LTYELLOW
     1 RED        5 MAGENTA     9 DKCYAN      D DKGREEN
     2 GREEN      6 CYAN        A DKMAGENTA   E DKRED
     3 YELLOW     7 WHITE       B DKBLUE      F DKGREY
 
-Warning: If the foreground and background colors are the same, typed and
-and PRINTed text will be invisible.
-
-Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations
-13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
-
+   - Warning: If the foreground and background colors are the same, typed and and PRINTed text will be invisible.
+   - Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
 ### EXAMPLES: ###
- - `CLS`
-   - Clear screen with default colors
- - `CLS 7`
-   - Clear screen - black text on white background
- - `CLS $30`
-   - Clear screen - yellow text on black background
- - `CLS F*16+B`
-   - Clear screen - text color F, background color B (using BASIC variables)
+` CLS `
+> Clear screen with default colors
+
+` CLS 7 `
+> Clear screen - black text on white background
+
+` CLS $30 `
+> Clear screen - yellow text on black background
+
+` CLS F*16+B `
+> Clear screen - text color F, background color B (using BASIC variables)
 
 ## OUT ##
 Write to Z80 I/O Port
@@ -115,10 +103,11 @@ Write to Z80 I/O Port
    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
    - Advanced: During the write, < address > is put on the Z80 address bus.
 ### EXAMPLES: ###
- - `OUT 246, 12`
-   - Send a value of 12 to the SOUND chip
- - `10 X=14:OUT $FC, X`
-   - Send a value of 14 to the Cassette sound port
+` OUT 246, 12 `
+> Send a value of 12 to the SOUND chip
+
+` 10 X=14:OUT $FC, X `
+> Send a value of 14 to the Cassette sound port
 
 ## PSG ##
 Write to Programmable Sound Generator(s)
@@ -128,59 +117,75 @@ Write to Programmable Sound Generator(s)
      - registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
      - registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
 ### EXAMPLES: ###
- - `PSG 8,15,0,148,1,1,7,56`
-   - Play a Db4 note on PSG1 channel A, continuously
- - `PSG 8,0,7,0`
-   - Turn the PSG1 sound off
- - `PSG 24,15,16,148,17,1,23,56`
-   - Play a Db4 note on PSG2 channel A, continuously
- - `PSG 24,0,23,0`
-   - Turn the PSG2 sound off
+` PSG 8,15,0,148,1,1,7,56 `
+> Play a Db4 note on PSG1 channel A, continuously
 
-## PEEK() - **Extended Functionality** ##
+` PSG 8,0,7,0 `
+> Turn the PSG1 sound off
+
+` PSG 24,15,16,148,17,1,23,56 `
+> Play a Db4 note on PSG2 channel A, continuously
+
+` PSG 24,0,23,0 `
+> Turn the PSG2 sound off
+
+## PEEK (Extended) ##
 Read from Memory
 ### FORMAT: ###
  - PEEK(< address >)
    - Action: Reads a byte from memory location < address >.
 ### EXAMPLES: ###
- - `PRINT CHR$(PEEK(12288))`
-   - Print the current border character
- - `PRINT PEEK($3400)`
-   - Print the current border color value
+` PRINT CHR$(PEEK(12288)) `
+> Print the current border character
 
-## DEEK() ##
+` PRINT PEEK($3400) `
+> Print the current border color value
+
+## DEEK ##
 Read 16 bit word from Memory
-
 ### FORMAT: ###
-DEEK(< address >)
-
-Action: Reads a word from memory location < address >, returning a number
+- DEEK(< address >)
+  - Action: Reads a word from memory location < address >, returning a number
 between 0 and 65535.
 
 ### EXAMPLES: ###
-  POKE DEEK(14337),PEEK(14349)    Remove cursor from screen.
+` POKE DEEK(14337),PEEK(14349) `
+> Remove cursor from screen.
 
-  PRINT DEEK($384B)               Print the top of BASIC memory address.
+` PRINT DEEK($384B) `
+> Print the top of BASIC memory address.
 
-
-## IN() ##
+## IN ##
 Read Z80 I/O Port
-
 ### FORMAT: ###
-IN(< address >)
-
-Action: Reads a byte from the I/O port specified by LSB of < address >.
-
-Advanced: During the read, < address > is put on the Z80 address bus.
-        .
-
+ - IN(< address >)
+   - Action: Reads a byte from the I/O port specified by LSB of < address >.
+   - Advanced: During the read, < address > is put on the Z80 address bus.
 ### EXAMPLES: ###
-  PRINT IN(252)     (Prints cassette port input status)
+` PRINT IN(252) `
+> Prints cassette port input status
 
-  S=IN($FE)         (Set variable S to Printer Ready status)
+` S=IN($FE) `
+> Set variable S to Printer Ready status
 
+## JOY ##
+Read AY-3-8910 Control Pad Inputs
+### FORMAT: ###
+ - JOY(< stick >)
+   - Action: Reads integer input value from < stick >, where:
+     - `0` will read left or right contrl pad
+     - `1` will read left control pad only
+     - `2` will read right control pad only
+### EXAMPLES: ###
+` PRINT JOY(0) `
+> Prints input value of either/both control pads (not effective in immediate mode).
 
-## KEY() #
+` 10 PRINT JOY(1) `
+
+ ` 20 GOTO 10 `
+> Continuously reads and prints the input value from only the left control pad.
+
+## KEY #
 Read Keyboard
 ### FORMAT: ###
  - KEY(< number >)
@@ -189,222 +194,207 @@ Read Keyboard
      - If < number > is positive, checks to see if a key has been pressed, returning the key's ASCII code (or 0 if no key was pressed). A key press will only be detected once, returning 0 on subsequent calls until the key is released and pressed again.
      - If < number > is negative, returns the ASCII code of the key currently being pressed (or 0 if no keys are being pressed). Subsequent calls will continue to return the key's ASCII code if the key remains pressed.
      - KEY() does not expand control-key combinations to keywords. Instead CTRL-A through CTRL-Z generate ASCII 1 through 27 (^A-^Z) The rest of the control characters are assigned as follows:
->
+```
   KEY:  ;   =   0   :   /   -  8   9   7   ,   1   .   2  <--
 ASCII: 128  27  28  29  30  31 91  93  96 123 124 125 126 127
- NOTE:  ^@ ESC  ^\ ^] ^^ ^_    [   ]   `  {   |   }   ~   DEL
+ NOTE:  ^@ ESC  ^\  ^]  ^^  ^_ [   ]   `  {    |   }   ~  DEL
 
->
   KEY:   3    4    5    6   SPACE  RTN  Shift-SPC  Shift-RTN
 ASCII:  158  143  159  142   $C6   255     160        134
  NOTE: LEFT  UP  DOWN RIGHT  dot  black   blank   checkerboard
+```
 
 ### EXAMPLES: ###
- - `PRINT KEY(0)`
-   - Wait for a key press then print ASCII code
- - `10 K=KEY(1)`
- - `20 IF K THEN S$=S$+CHR$(K)`
-   - Check for key press and add key character to string once per key press
- - `10 K=KEY(-1)`
- - `2O IF K=97 THEN X=X-1 `
- - `30 IF K=115 THEN X=X+1`
-   - Continously decrement or increment X as long as the A or S key, respectively, is pressed.
+` PRINT KEY(0) `
+> Wait for a key press then print ASCII code
 
-## DEC() ##
+` 10 K=KEY(1) `
+
+` 20 IF K THEN S$=S$+CHR$(K) `
+> Check for key press and add key character to string once per key press
+
+` 10 K=KEY(-1) `
+
+` 2O IF K=97 THEN X=X-1 `
+
+` 30 IF K=115 THEN X=X+1 `
+> Continously decrement or increment X as long as the A or S key, respectively, is pressed.
+
+## DEC ##
 Hexadecimal to integer conversion
 ### FORMAT: ###
  - DEC(< string >)
    - Action: Returns the DECimal value of the hexadecimal number in < string >. If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero. String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
 ### EXAMPLES: ###
- - `PRINT DEC("FFFF")`
-   - Prints "65535"
- - `10 A$=HEX$(32):PRINT DEC(A$)`
-   - Prints "32"
+` PRINT DEC("FFFF") `
+> Prints "65535"
 
-## HEX$() ##
+` 10 A$=HEX$(32):PRINT DEC(A$) `
+> Prints "32"
+
+## HEX$ ##
 Integer to hexadecimal conversion
 ### FORMAT: ###
  - HEX$(< number >)
    - Action: Returns string containing < number > in two-byte hexadecimal format. FC Error if < number > is not in the range -32676 through 65535.
 ### EXAMPLES: ###
-  PRINT HEX$(1)                  Prints "0001"
+` PRINT HEX$(1) `
+> Prints "0001"
 
-  10 PRINT HEX$(PEEK(12288))     Prints the HEX value of the border char
-                                 (usually "0020", SPACE character)
+` 10 PRINT HEX$(PEEK(12288)) `
+> Prints the HEX value of the border char (usually "0020", SPACE character)
 
-
-## SDTM Function ##
-Set DateTime
-
+## VER ##
+Display the current MX BASIC version number
 ### FORMAT: ###
-SDTM < string >
+ - VER(< number >)
+   - Action: Returns integer value of the version number.
+### EXAMPLES: ###
+` PRINT HEX$(VER(1)) `
+> Prints "0200"
 
-Action: If a Real Time Clock is installed, allows user to set the time on
-        the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS"
-        format:
+` 10 VE$=LEFT$(HEX$(VER(1)),2) `
+
+` 20 RE$=RIGHT$(HEX$(VER(1)),2) `
+
+` 30 PRINT "v"+VE$+"."+RE$ `
+> Prints the HEX value of the border char (usually "0020", SPACE character)
+
+## SDTM ##
+Set DateTime
+### FORMAT: ###
+ - SDTM < string >
+   - Action: If a Real Time Clock is installed, allows user to set the time on the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" format:
         - Improperly formatted string causes FC Error
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
-
 ### EXAMPLES: ###
-  SDTM "230411101500"            Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
+` SDTM "230411101500" `
+> Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
 
-  10 SDTM "010101000000"         Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
+` 10 SDTM "010101000000" `
+> Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
 
+## CALL
 
-
-## DTM$ Function ##
+## DTM$ ##
 Get DateTime
-
 ### FORMAT: ###
-DTM$(< number >)
-
-Action: If a Real Time Clock is installed:
-           if < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
-           otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
-        Returns "" if a Real Time Clock is not detected.
-
+ - DTM$(< number >)
+   - Action: If a Real Time Clock is installed:
+     - If < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
+     - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
+     - Returns "" if a Real Time Clock is not detected.
 ### EXAMPLES: ###
-  PRINT DTM$(0)                    38011903140700
-  PRINT DTM$(1)                    2038-01-19 03:14:07
+` PRINT DTM$(0) `
+> 38011903140700
 
-  PRINT LEFT$(DTM$(1),10)          2038-01-19
-  PRINT RIGHT$(DTM$(1),8)          03:14:07
-  PRINT MID$(DTM$(1),6,11)         01-19 03:14
+` PRINT DTM$(1) `
+> 2038-01-19 03:14:07
 
+` PRINT LEFT$(DTM$(1),10) `
+> 2038-01-19
 
-## HEXADECIMAL CONSTANTS ##
+` PRINT RIGHT$(DTM$(1),8) `
+> 03:14:07
 
-A hexadecimal constant is an value between 0 and 65535, inclusive. It
-consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+` PRINT MID$(DTM$(1),6,11) `
+> 01-19 03:14
 
-Hexadecimal constants may be used in any numeric expression or anywhere
-a numeric expression is allowed. They may not be used in DATA statements,
-as entries to the INPUT statement, in string arguments to the VAL()
-function, or as the target of a GOTO or GOSUB statement.
-
+## Hexadecimal Constants ##
+ - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+   - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
+   - They may not be used in DATA statements, as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
 ### EXAMPLES: ###
-  PRINT $FFFF              Prints 65535
-  A = $101                 Sets A to 257
-  P = $3000+40*R+C         Sets P to screen row 1, column 1 address
+` PRINT $FFFF `
+> Prints 65535
 
+` A = $101 `
+> Sets A to 257
 
+` P = $3000+40*R+C `
+> Sets P to screen row 1, column 1 address
 
-## & Operator ##
+## & (Address) ##
 Get Variable Address
-
 ### FORMAT: ###
-&< variable name >
-
-Action: Returns the address of the first byte of data identified with
-< variable name >. A value must be assigned to < variable name > prior
-to execution of the & operator, otherwise an FC error results. Any type
-variable name maybe used (numeric, string, array), and the address
-returned will be an integer in the range of 0 and 65535.
-
-Note: Care should be taken when working with an array, because the
-addresses of arrays change whenever a new simple variable is assigned.
-
+ - &< variable name >
+   - Action: Returns the address of the first byte of data identified with < variable name >. 
+     - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
+     - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
+     - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
+#### EXAMPLES: ####
+` A=44:PRINT &A:PRINT PEEK(&A) `
+> Assigns A a value, prints its address, and prints the value at that address.
 
 ## SAVE Statement ##
 Save File to USB Drive
-
 ### FORMAT: ###
-SAVE < filespec >
-        SAVE < filespec >,*< arrayname >
-        SAVE < filespec >,< address >,< size >
-
-Action: Save BASIC program, array, or range of memory.
-
+ - SAVE < filespec >
+ - SAVE < filespec >,*< arrayname >
+ - SAVE < filespec >,< address >,< size >
+   - Action: Save BASIC program, array, or range of memory.
 ### EXAMPLES: ###
-  SAVE "progname.bas"               Save current program as CAQ file
-  SAVE "array.caq",*A               Save contents of array A() as CAQ file
-  SAVE "capture.src",12288,2048     Save Screen and Color RAM as binary file
+` SAVE "progname.bas" `
+> Save current program as BASIC file
 
+` SAVE "array.caq",*A `
+> Save contents of array A() as CAQ file
+
+` SAVE "capture.src",12288,2048 `
+> Save Screen and Color RAM as raw binary file
 
 ## EDIT Statement ##
 Edit BASIC Line
-
 ### FORMAT: ###
-EDIT < line number >
-
-Action: Displays BASIC line < line number > on screen and enters edit
-mode. While editing a line, the following control keys are available:
-
+ - EDIT < line number >
+   - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
+```
   CTL - P   Move cursor left
   CTL - /   Move cursor right
     <--     Delete character to left
   CTL - \   Delete character to right
     RTN     Save changes and exit edit mode
-  CTL - R   Retype line, discard changes, and remain in edit mode
   CTL - C   Discard changes and edit edit mode
+  CTL - R   Retype previously entered IMMEDIATE MODE command
+```
 
-Note: The above control keys are also available when entering a new
-line or direct mode command.
+   - Note: The above control keys are also available when entering a new line or direct mode command.
 
 ## DEF FN Statement ##
 Define User Function
-
 ### FORMAT: ###
-DEF FN < name > ( < variable > ) = < expression >
-
-Action: This sets up a user-defined function that can be used later in
-the program. The function can consist of any mathematical formula.
-User-defined functions save space in programs where a long formula is
-used in several places. The formula need only be specified once, in the
-definition statement, and then it is abbreviated as a function name. It
-must be executed once, but any subsequent executions are ignored.
-  The function name is the letters FN followed by any variable name.
-This can be 1 or 2 characters, the first being a letter and the second a
-letter or digit.
-  The parametern < variable > represents the argument variable or value
-that will be given in the function call and does not affect any program
-variable with the same name. For any other variable name in < expression >,
-the value of that program variable is used.
-  A DEF FN statement must be executed before the function it defines may
-be called. If a function is called before it has been defined, an
-"Undefined user function" error occurs.
-  Multiple user functions may be defined at once, each with a unique FN
-name. Executing a DEF with the same FN name as a previously defined user
-function replaces the previous definition with the new one. DEF FN is
-illegal in direct mode.
-
+ - DEF FN < name > ( < variable > ) = < expression >
+   - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
+     - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
+     - The parametern < variable > represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in < expression >, the value of that program variable is used.
+     - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
+     - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
+     - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
 ### EXAMPLES: ###
-  10 DEF FN A(X)=X+7
+` 10 DEF FN A(X)=X+7 `
 
-  20 DEF FN AA(X)=Y*Z
+` 20 PRINT FN A(9) `
+> Prints the value 16 (9 + 7)
 
-  30 DEF FN A9(Q) = INT(RND(1)*Q+1)
+` 10 DEF FN AA(X)=Y*Z `
 
-  The function is called later in the program by using the function name
-with a variable in parentheses. This function name is used like any other
-variable, and its value is automatically calculated,
+` 20 R=FN AA(9) `
+> Assigns R the value of X * Y, and the number 9 inside the parentheses does not affect the outcome of the function, because the function definition in line 10 doesn't use the variable in the parentheses. 
 
-### EXAMPLES: ###
-  40 PRINT FN A(9)
+` 10 DEF FN A9(Q) = INT(RND(1)*Q+1) `
 
-  50 R=FN AA(9)
-
-  60 G=G+FN A9(10)
-
-  In line 50 above, the number 9 inside the parentheses does not affect
-the outcome of the function, because the function definition in line 20
-doesn't use the variable in the parentheses. The result is Y times Z,
-regardless of the value of X. In the other two functions, the value in
-parentheses does affect the result.
-
+` 20 G=G+FN A9(10) `
+> Increments the value of G the rounded value of a random number between 1 and 10.
 
 ## ATN Function ##
 Arctangent
-
 ### FORMAT: ###
-ATN ( < number > )
-
-Action: This mathematical function returns the arctangent of the
-number. The result is the angle (in radians) whose tangent is the number
-given. The result is always in the range -pi/2 to +pi/2.
-
+ - ATN ( < number > )
+   - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ### EXAMPLES: ###
-  10 PRINT ATN(0)
-  20 X = ATN(J)*180/ {pi} : REM CONVERT TO DEGREES
+` PRINT ATN(1) `
+> Prints the arctangent of 1, a value of `0.785398`
 
+` X = ATN(J)*180/ {pi} `
+> Defines variable X as the arctangent of another variable, J, divided by pi.
