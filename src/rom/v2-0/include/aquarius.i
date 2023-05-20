@@ -207,6 +207,7 @@ ERRDIR  = $0B45   ; Issue Error if in Direct Mode
 SCRTCH  = $0BBE   ; Execute NEW Command (without syntax check)
 RUNC    = $0BCB   ; RUN Program
 CLEARC  = $0BCF   ; Initialize Variables and Arrays, Reset Stack 
+CLEARS  = $0CEB   ; Set VARTAB, TOPMEM, and MEMSIZ
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEVL  = $0985   ; Evaluate Formula
@@ -243,6 +244,7 @@ CHKNUM  = $0975   ; Issue "TM" Error if result is not a number
 CHKSTR  = $0976   ; Issue "TM" Error if evaluated expression not string
 CHKVAL  = $0977   ; Issue "TM" Error if type does not match carry flag
   
+INTID2  = $067B   ; Get Integer between 0 and 32767 into DE
 FRCINT  = $0682   ; Convert Floating Point Accumulator to Signed Integer in DE
 FRCIN1  = $068A   ; Alternate entry point into FRCINT
 SCNLIN  = $069C   ; Back up and scan line number into DE

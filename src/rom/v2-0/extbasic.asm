@@ -283,6 +283,9 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;;;      - If <number> is specified allocates string space.
 ;;;        - BASIC starts with 1024 bytes of string space allocated.
 ;;;      - If <address> is specified, sets top of BASIC memory.
+;;;        - If 0, set to start of system variables minus one
+;;;        - FC Error if less than end of BASIC program plus 40 bytes
+;;;        - FC Error if greater than or equal to start of system variables
 ;;;  - CLEAR ERR
 ;;;    - Action: Clears last error number and line.
 ;;;      - Leaves variables and arrays intact.
@@ -292,23 +295,50 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;CLEAR statement hook
 CLEARX: ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
         call    CLERR
-        pop     hl              ; Get Hook Return Addres
+        pop     af              ; Discard Hook Return Addres
         pop     af              ; Restore Accumulator
-        ex      (sp),hl         ; Discard Text Pointer, Push Return Address
-        cp      ERRTK           ; If Not CLEAR ERR?
-        jp      nz,CHRGOT       ;   Re-Read Character and Continue CLEAR
-        pop     af              ; Discard Hook Return Address
-        rst     CHRGET          ; Skip ERR Token, Eat Spaces
-        ret
+        pop     hl              ; Get Text Pointer
+        jp      z,CLEARC        ; IF NO arguments JUST CLEAR
+        cp      ERRTK           ; If CLEAR ERR?
+        jp      nz,.args        ;   
+        rst     CHRGET          ;   Skip ERR Token, Eat Spaces
+        ret                     ;   and Return
+.args:  call    INTID2          ; GET AN INTEGER INTO [D,E] 
+        dec     hl              ;
+        rst     CHRGET          ; SEE IF ITS THE END 
+        push    hl              ;
+        ld      hl,(MEMSIZ)     ; GET HIGHEST ADDRESS
+        jp      z,CLEARS        ; SHOULD FINISH THERE
+        pop     hl              ;
+        SYNCHK  ','             ;
+        push    de              ; Save String Size
+        call    GETADR          ; Get Top of Memory
+        dec     hl              ;
+        rst     CHRGET          ;
+        jp      nz,SNERR        ; IF NOT TERMINATOR, GOOD BYE  
+        ex      (sp),hl         ; Get String Size, Save Text Pointer
+        push    hl              ; Put String Size back on Stack
+        ex      de,hl           ; HL = Top of Memory
+        ld      de,vars         ; DE = Start of Protected Memory
+        ld      a,h             ; 
+        or      l               ; 
+        jp      nz,.check       ; If HL = 0
+        ex      de,hl           ;   Set Top of Memory
+        dec     hl              ;   to One Less Start of Protected
+        jr      .clear          ; Else
+.check: rst     COMPAR          ;   If Top >= Protected
+.fcerr: jp      nc,FCERR        ;     FC Error
+.clear: pop     de              ; Get String Space into DE
+        jp      CLEARS          ; Set VARTAB, TOPMEM, and MEMSIZ then return
 
 ;NEW statement hook
 SCRTCX: pop     hl              ; Get Hook Return Addres
         pop     af              ; Discard Accumulator
         ex      (sp),hl         ; Discard Text Pointer, Push Return Address
 CLNERR: ld      b,6             ; Clear ERRLIN,ERRFLG,ONEFLG,ONELIN
-CLERR:  call    dos__clearError ; returns A = 0                       
-        ld      hl,ERRLIN               
-.zloop: ld      (hl),a                  
+CLERR:  call    dos__clearError ; returns A = 0
+        ld      hl,ERRLIN
+.zloop: ld      (hl),a
         inc     hl
         djnz    .zloop
-        ret     
+        ret
