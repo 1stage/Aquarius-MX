@@ -46,6 +46,7 @@
 
 ; bits in dosflags
 DF_ADDR   = 0      ; set = address specified
+DF_SDTM   = 6      ; set = show file date/time
 DF_ARRAY  = 7      ; set = numeric array
 
 ;--------------------------------------------------------------------
@@ -121,7 +122,6 @@ ST_CD:
 ; out: HL = BASIC text pointer
 ;       Z = loaded OK, A = filetype
 ;
-; E0_SIZE = 1C3A before stripping file type, bin headers
 ST_LOAD:
     call    dos__getfilename      ; filename -> FileName
     jp      z,_stl_load           ; good filename?
@@ -661,8 +661,7 @@ ST_CAT:
     LD      A,(TTYPOS)
     AND     A                       ; if column = 0 then already on next line
     JR      Z,.cat_go
-    LD      A," "                   ; else padding space after filename
-    CALL    TTYOUT
+    CALL    prtspace                ; else padding space after filename
 .cat_go:
     LD      A,CH376_CMD_FILE_ENUM_GO
     OUT     (CH376_CONTROL_PORT),A  ; command: read next filename
@@ -680,22 +679,29 @@ ST_CAT:
 ; Display directory listing of all files, or only those which match
 ; the wildcard pattern.
 ;
-; Listing includes details such as file size, volume label etc.
+; Listing includes file size and optional time stamp
 ;
-; DIR "wildcard"   selective directory listing
-; DIR              listing all files
+; DIR                   listing all files in directory
+; DIR "wildcard"        list files matching wildcard
+; DIR SDTM              list files and show time stamps
+; DIR SDTM "wildcard"   list matching files and show time stamps
 ;
 ST_DIR:
-    push    hl                ; PUSH text pointer
-    ld      a,ATTR_HIDDEN+ATTR_SYSTEM
-    ld      (DosFlags),a      ; filter out system and hidden files
     call    dos__clearError   ; returns A = 0
+    ld      (DosFlags),a      ; clear dos flags
     ld      (FileName),a      ; wildcard string = NULL
-    call    chkarg            ; is wildcard argument present?
+    call    CHRGOT            ; check for arguments
+    jr      z,.st_dir_go      ; if no arguments, show all files
+    cp      SDTMTK            ; 
+    jr      nz,.st_dir_wc     ; if SDTM Token
+    ld      a,1<<DF_SDTM
+    ld      (DosFlags),a      ; set 'show DateTime' flag    
+    rst     chrget            ; skip SDTM Token
+.st_dir_wc
     jr      z,.st_dir_go      ; if no wildcard then show all files
     call    dos__getfilename  ; wildcard -> FileName
-    ex      (sp),hl           ; update text pointer on stack
 .st_dir_go:
+    push    hl                ; PUSH text pointer
     call    usb_ready         ; check for USB disk (may reset path to root!)
     jr      nz,.error
     call    STROUT            ; print path
@@ -764,8 +770,8 @@ dos__directory:
         POP     HL
         ld      bc,11                   
         add     hl,bc                   ; move to attribute byte
-        ld      a,(DosFlags)            ; get attribute mask
-        and     (hl)                    ; check attribute bits
+        ld      a,(hl)                  ; get attribute mask
+        and     ATTR_HIDDEN|ATTR_SYSTEM ; check attribute bits
         jr      nz,.dir_skip            ; if match, skip file
         sbc     hl,bc                   ; move back to first byte
         ld      DE,FileName             ; DE = wildcard pattern
@@ -798,27 +804,19 @@ _dir_msg:
 ;
 dos__prtDirInfo:
         LD      B,8                     ; 8 characters in filename
-.dir_name:
-        LD      A,(HL)                  ; get next char of filename
-        INC     HL
-.dir_prt_name:
-        call    TTYCHR                  ; print filename char, with pause if end of screen
-        DJNZ    .dir_name
-        LD      A," "                   ; space between name and extension
-        call    TTYOUT
+        call    prtstrl                 ; print filename
+        CALL    prtspace                ; space between name and extension
         LD      B,3                     ; 3 characters in extension
-.dir_ext:
-        LD      A,(HL)                  ; get next char of extension
-        INC     HL
-        call    TTYOUT                  ; print extn char
-        DJNZ    .dir_ext
+        call    prtstrl                 ; print extension
         LD      A,(HL)                  ; get file attribute byte
         INC     HL
         push    af
-        LD      A,' '                   ; print ' '
-        CALL    TTYOUT
+        CALL    prtspace                ; print ' '
         LD      BC,10                   ; DIR_WrtTime-DIR_NTres
         ADD     HL,BC                   ; skip to write time
+        ld      a,(DosFlags)
+        bit     DF_SDTM,a
+        jr      z,.dir_skip_datetime
 .dir_time_stamp:
         push    hl                      ; Save Pointer
         ex      de,hl                   ; DE = DIR_WrtTime
@@ -826,15 +824,14 @@ dos__prtDirInfo:
         call    fts_to_dtm              ; Convert TimeStamp to DateTime
         ld      de,DTM_STRING
         call    dtm_to_fmt              ; Convert to Formatted String
+        call    prtspace                ; print ' '
         ld      b,16
-.dir_datetime:
-        ld      a,(de)                  ; get next char of extension
-        inc     de
-        call    TTYOUT                  ; print extn char
-        djnz    .dir_datetime
-        LD      A,' '                   ; print ' '
-        CALL    TTYOUT
+        ex      de,hl
+        call    prtstrl
+        call    prtspace                ; print ' '
+        call    prtspace                ; print ' '
         pop     hl
+.dir_skip_datetime:
         pop     af
         AND     ATTR_DIRECTORY          ; directory bit set?
         JP      NZ,.dir_folder
@@ -921,8 +918,7 @@ dos__prtDirInfo:
 .print_bytes:
         LD      A,4                     ; 4 digit number with leading spaces
         CALL    print_integer           ; print HL as 16 bit number
-        LD      A,' '
-        CALL    TTYOUT                  ; print ' '
+        CALL    prtspace                ; print ' '
         JR      .dir_tab
 .dir_folder:
         LD      HL,_dir_msg             ; print "<dir>"
@@ -932,15 +928,13 @@ dos__prtDirInfo:
         CP      19
         RET     Z                       ; if reached center of screen then return
         JR      NC,.tab_right           ; if on right side then fill to end of line
-        LD      A,' '
-        CALL    TTYOUT                  ; print " "
+        CALL    prtspace                ; print ' '
         JR      .dir_tab
 .tab_right:
         LD      A,(TTYPOS)
         CP      0
         RET     Z                       ; reached end of line?
-        LD      A,' '
-        CALL    TTYOUT                  ; no, print " "
+        CALL    prtspace                ; print ' '
         JR      .tab_right
 
 ;--------------------------------------------------------
@@ -962,8 +956,7 @@ print_integer:
        JR       Z,.prtnum
        LD       B,A
 .lead_space:
-       LD       A," "
-       CALL     TTYOUT        ; print leading space
+       CALL     prtspace       ; print leading space
        DJNZ     .lead_space
 .prtnum:
        LD       A,(HL)        ; get next digit

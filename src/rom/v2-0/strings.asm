@@ -129,48 +129,6 @@ cmp_mem:
     djnz .skip
     ret
 
-
-;--------------------------------------------------------------------
-;            get next character, skipping spaces
-;--------------------------------------------------------------------
-;  in:    HL = text pointer
-;
-; out: NZ, A = next non-space char, HL = address of char in text
-;      Z,  A = 0, HL = end of text
-;
-get_next:                       ; starting at next location
-    inc     hl
-get_arg:                        ; starting at current location
-    ld      a,(hl)
-    or      a
-    ret     z                   ; return Z if NULL
-    cp      ' '
-    ret     nz                  ; return NZ if not SPACE
-    jr      get_next
-
-;-----------------------------------------------------------------
-;          check for argument in current statement
-;-----------------------------------------------------------------
-;  in: HL = text pointer
-;
-; out: NZ = argument present
-;       Z = end of statement
-;
-chkarg:
-    push hl                   ; save BASIC text pointer
-_chkarg_next_char:
-    ld   a,(hl)               ; get char
-    inc  hl
-    cp   ' '                  ; skip spaces
-    jr   z,_chkarg_next_char
-    cp   ':'                  ; Z if end of statement
-    jr   z,_chkarg_done       ; return Z if end of statement
-    or   a                    ; Z if end of line
-_chkarg_done:
-    pop  hl                   ; restore BASIC text pointer
-    ret
-
-
 ;-----------------------------------------------------------------
 ;               Print Null-terminated String
 ;-----------------------------------------------------------------
@@ -184,4 +142,23 @@ prtstr:
    call TTYOUT
    jr   prtstr
 
+;-----------------------------------------------------------------
+;               Print Fixed Length String
+;-----------------------------------------------------------------
+;  in: HL = pointer to text
+;       B = length
+;
+prtstrl:
+    ld      a,(hl)                  ; get next char of extension
+    inc     hl
+    call    TTYOUT                  ; print extn char
+    djnz    prtstrl
+    ret
+
+;-----------------------------------------------------------------
+;               Print Space
+;-----------------------------------------------------------------
+prtspace:
+    ld      a,' '
+    jp    TTYOUT
 
