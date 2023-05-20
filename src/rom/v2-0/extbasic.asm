@@ -274,7 +274,21 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
         ld      a,(DosError)    ; Get DOS Error Number
         jr      .ret_a
 
-
+;----------------------------------------------------------------------------
+;;; ## CLEAR Statement ##
+;;; Clear Variables and/or Error Code
+;;; ### FORMAT: ###
+;;;  - CLEAR [ < number >, [ < address > ] ]
+;;;    - Action: Clears all variables and arrays, last arror number and line. 
+;;;      - If <number> is specified allocates string space.
+;;;        - BASIC starts with 1024 bytes of string space allocated.
+;;;      - If <address> is specified, sets top of BASIC memory.
+;;;  - CLEAR ERR
+;;;    - Action: Clears last error number and line.
+;;;      - Leaves variables and arrays intact.
+;;; ### EXAMPLES: ###
+;;; - 
+;----------------------------------------------------------------------------
 ;CLEAR statement hook
 CLEARX: ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
         call    CLERR

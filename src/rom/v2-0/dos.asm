@@ -122,7 +122,6 @@ ST_CD:
 ; out: HL = BASIC text pointer
 ;       Z = loaded OK, A = filetype
 ;
-; E0_SIZE = 1C3A before stripping file type, bin headers
 ST_LOAD:
     call    dos__getfilename      ; filename -> FileName
     jp      z,_stl_load           ; good filename?
