@@ -71,7 +71,7 @@ COLRAM   = $3400 ; 13312           Start of colour RAM
                  ;                 24 unused bytes
 
 ;-------------------------------------------------------------------
-;                 Standard BASIC System Variables
+;                       System Variables
 ;-------------------------------------------------------------------
 ;Name    location Decimal Description
 TTYPOS  = $3800 ; 14336           Current cursor column
@@ -150,43 +150,11 @@ RESMO   = $38F7 ; 14583
 RESLO   = $38F8 ; 14584
 
 SAVSTK   = $38F9 ; 14585           used by keybord routine
+                 ;  ...
+PROGST   = $3900 ; 14592           NULL before start of BASIC program
 
-;-------------------------------------------------------------------
-;                 Extended BASIC System Variables
-;-------------------------------------------------------------------
-ERRLIN      = $38FA     ; LINE NUMBER WHERE LAST ERROR OCCURED.
-ERRFLG      = $38FC     ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
-ONEFLG      = $38FD     ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
-ONELIN      = $38FE     ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
-;     $3900 - $3947       RESERVED - Aquarius Extended BASIC System variables
-
-;-------------------------------------------------------------------
-;                     MX BASIC System Variables
-;-------------------------------------------------------------------
-SysFlags    = $3948     ; system flags
-DosFlags    = $3949     ; DOS Load/Save flags
-BinStart    = $394A     ; binary file load/save address
-BinLen      = $394C     ; binary file length
-DosError    = $394E     ; DOS Error Number
-;             $394F       unused
-FileName    = $3950     ; USB file name 1-11 chars + '.', NULL
-;     $385E - $395F       unused
-PathName    = $3960     ; file path eg. "/root/subdir1/subdir2",0
-path.size   = 37        ; length of file path buffer
-;     $3986 - $39AF       unused
-DirBuffer   = $39B0     ; Directory Entry Buffer
-DTM_STRING  = $39D0     ; DTM String Buffer, 19 bytes
-;     $39E2 - $39EF       RESERVED
-DTM_BUFFER  = $39E8     ; RTC & DTM DateTime Buffer, 8 bytes
-                        ; AquaLite emulator expects RTC Shadow Registers to be at this address - DO NOT CHANGE
-RTC_SHADOW  = $39F0     ; Real Time Clock Shadow Registers, 10 bytes. 
-
-EditBuf     = $3A00     ; For Future Use
-ReTypBuf    = $3B00     ; BASIC command line history
-DebugVars   = $3C00     ; Debugger system variables
-UserVars    = $3E00     ; For used by BASIC Programs and M/L Routines
-BASTXT      = $4000     ; Start of BASIC Text
-
+; end of system variables = start of BASIC program in stock Aquarius
+;          $3901 ; 14593
 
 ; buffer lengths
 BUFLEN   = ENDBUF-BUF-1
@@ -214,8 +182,6 @@ CHRGOT  = $11     ; Check Current Character, Skipping Spaces
 COMPAR  = $20     ; Compare HL to DE
 FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
-
-DEFALT  = $0187   ; System Variable Default Values -81 bytes
 REDDY   = $036E   ; Text "Ok" CR,LF,NUL
 READY   = $0402   ; Display "Ok" and Enter Immediate Mode
 GONE4   = $063C   ; Execute Next Statement
@@ -387,7 +353,6 @@ BSERR    = $11CD  ;   bad subscript
 DDERR    = $03CD  ;   re-dimensioned array
 DV0ERR   = $03C7  ;   divide by zero
 IDERR    = $0B4E  ;   illegal direct
-MOERR    = $03D6  ; Missing Operand
 TMERR    = $03D9  ;   type mismatch
 OSERR    = $0CEF  ;   out of string space
 STERR    = $0E97  ;   string formula too complex

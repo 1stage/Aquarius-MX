@@ -38,7 +38,13 @@ ST_EDIT:
     call  SCNLIN          ; DE = line number
     ld    a,d
     or    e
-    jp    z,MOERR         ; if no line number then MO error
+    jr    nz,.prtline
+    ld    de,(ERRLIN)
+    ld    a,d
+    or    e
+    jr    nz,.prtline
+    ld    e,ERRMO         ; if no line number then MO error
+    JP    ERROR
 .prtline:
     ex    de,hl           ; HL = line number
     push  hl
@@ -198,11 +204,6 @@ EDITLINE:
     jr    nz,.other
     ld    c,'~'           ; CTRL-O = '~'
     jr    .ascii
-   
-    ;      ^Q  ^X
-    ;db    $11,$18,$07,
-    ;Map unused keys         
-    ; Q, Y, U, I, G, X
 .other:
     cp    $20             ; some other ctrl code?
     jr    c,.waitkey      ; yes, ignore other control codes

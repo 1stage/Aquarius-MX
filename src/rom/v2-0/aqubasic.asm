@@ -73,13 +73,13 @@
 ;                  Updated IN/OUT commands to allow ports 0-65535
 ;                  Added KEY() function to wait for/check for key press
 ;                  RUN "filename" only loads and runs BASIC program in CAQ format.
-;                  Removed option for AquaBug full debugger. Small debugger makes more room for BASIC ROM
 
 VERSION  = 2
 REVISION = 0
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
+aqubug   equ 1     ; full featured debugger (else lite version without screen save etc.)
 ;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
@@ -102,11 +102,21 @@ REVISION = 0
 
 ; Standard BASIC System Variable Extensions
 ;
+; Persistent MX BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
+;   During a cold boot, an unused table is written here, then it is never used again
+RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes. 
+                        ; This Address assignment will not change in the future.
+
+;MBASIC 80 System Variables 
+ERRLIN     = $383A      ; LINE NUMBER WHERE LAST ERROR OCCURED.
+ERRFLG     = $383C      ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
+ONEFLG     = $383D      ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
+ONELIN     = $383E      ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
 
 ; Temporary USB BASIC system variables 
-DTM_BUFFER = $3851      
+DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
 ;   FILNAM,FILNAF,INSYNC,CLFLAG: $3851-$385E. 14 bytes
-DTM_STRING = $38E6      
+DTM_STRING = $38E6      ; DTM String Buffer, 19 bytes
 ;   FACHO,FAC,FBUFFR,RESHO,RESMO,RESLO: $38E6-$38F8, 19 bytes
 
 ;; IMPLEMENTING REAL TIME CLOCK IN EMULATORS
@@ -122,6 +132,30 @@ RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
   else
 RAMEND = $C000           ; we are in ROM, 32k expansion RAM available
   endif
+
+path.size = 37           ; length of file path buffer
+
+; high RAM usage
+ STRUCTURE _sysvars,0
+    STRUCT _retypbuf,74         ; BASIC command line history
+    STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
+    STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
+    BYTE   _doserror            ; file type BASIC/array/binary/etc.
+    WORD   _binstart            ; binary file load/save address
+    WORD   _binlen              ; binary file length
+    BYTE   _dosflags            ; DOS flags
+    BYTE   _sysflags            ; system flags
+ ENDSTRUCT _sysvars
+
+SysVars  = RAMEND-_sysvars.size
+ReTypBuf = sysvars+_retypbuf
+PathName = sysvars+_pathname
+FileName = sysvars+_filename
+DosError = sysvars+_doserror
+BinStart = sysvars+_binstart
+BinLen   = sysvars+_binlen
+DosFlags = sysvars+_dosflags
+SysFlags = sysvars+_sysflags
 
 ifdef debug
   pathname = $3006  ; store path in top line of screen
@@ -236,54 +270,15 @@ RTC_STR_TO_DTM    jp  str_to_dtm
 RTC_DTM_TO_FTS    jp  dtm_to_fts
 RTC_FTS_TO_DTM    jp  fts_to_dtm
 
-
-;-----------------------------------------------
-;          Wait for Key Press
-;-----------------------------------------------
-; Wait for next key to be pressed.
-;
-;   out A = char
-
-Wait_key:
-    CALL    key_check    ; check for key pressed
-    JR      Z,Wait_Key   ; loop until key pressed
-.key_click:
-    push    af
-    ld      a,$FF        ; speaker ON
-    out     ($fc),a
-    ld      a,128
-.click_wait:
-    dec     a
-    jr      nz,.click_wait
-    out     ($fc),a      ; speaker OFF
-    pop     af
-    RET
-
-
-;---------------------------------------------------------------------
-;                         ROM loader
-;---------------------------------------------------------------------
-    include "load_rom.asm"
-
-;---------------------------------------------------------------------
-;                      USB Disk Driver
-;---------------------------------------------------------------------
-    include "ch376.asm"
-
-
 ; windowed text functions
    include "windows.asm"
 
-; string functions
-    include "strings.asm"
-
-; keyboard scan
-    include "keycheck.asm"
-
-
-include "debug.asm"
-
-
+; debugger
+ ifdef aqubug
+   include "aqubug.asm"
+ else
+   include "debug.asm"
+ endif
 
 C0_END:   
 C0_SIZE = C0_END - $C000
@@ -528,8 +523,8 @@ STR_VERSION:
 
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
-    ld      hl,$DEFALT         ; default values in system ROM
-    ld      bc,79              ; copying everything except TXTTAB
+    ld      hl,$0187           ; default values in system ROM
+    ld      bc,$0051           ; 81 bytes to copy
     ld      de,$3803           ; system variables
     ldir                       ; copy default values
     xor     a
@@ -566,12 +561,13 @@ else
 endif
     jp      c,$0bb7            ; OM error if expansion RAM missing
     dec     hl                 ; last good RAM addresss
+    ld      hl,vars-1          ; top of public RAM
 MEMSIZE:
     ld      (MEMSIZ),hl        ; Contains the highest RAM location
     ld      de,-1024           ; subtract 50 for strings space
     add     hl,de
     ld      (TOPMEM),hl        ; Top location to be used for stack
-    ld      hl,BASTXT
+    ld      hl,PROGST
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
@@ -583,6 +579,22 @@ MEMSIZE:
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
 
+
+;---------------------------------------------------------------------
+;                         ROM loader
+;---------------------------------------------------------------------
+    include "load_rom.asm"
+
+;---------------------------------------------------------------------
+;                      USB Disk Driver
+;---------------------------------------------------------------------
+    include "ch376.asm"
+
+;---------------------------------------------------------------------
+;                RTC Driver for Dallas DS1244
+;---------------------------------------------------------------------
+    include "dtm_lib.asm"
+    include "ds1244rtc.asm" 
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -776,7 +788,6 @@ TBLCMDS:
     db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
     db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
     db      $80 + 'C', "D"          ; $e0 - Change directory
-SDTMTK = $D3
 CDTK  =  $E0
 
 ; - New functions get added to the END of the functions list.
@@ -833,6 +844,7 @@ FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
 firstf equ BTOKEN+BCOUNT          ; token number of first function in table
 lastf  equ firstf+FCOUNT-1        ; token number of last function in table
 
+
 ;--------------------------------------------------------------------
 ;                          Command Line
 ;--------------------------------------------------------------------
@@ -854,7 +866,7 @@ AQMAIN:
     call    FINLPT              ; If we were printing to printer, LPRINT a CR and LF
     xor     a
     ld      (CNTOFL),a          ; Set Line Counter to 0
-    call    CRDONZ              ; reset cursor to start of (next) line
+    call    CRDONZ               ; RSTCOL reset cursor to start of (next) line
     ld      hl,REDDY            ; 'Ok'+CR+LF
     call    STROUT            
 ;
@@ -1912,7 +1924,6 @@ SPL_DEFAULT:
 ;------------------------------------------------------------------------------
 
 INIT_RTC:
-    ret
     ld      bc,RTC_SHADOW
     ld      hl,DTM_BUFFER
     ld      a,(bc)              ; Check RTC Enabled Flag
@@ -1927,7 +1938,6 @@ INIT_RTC:
 ;------------------------------------------------------------------------------
 
 READ_RTC:
-    ret
     ld      bc,RTC_SHADOW
     ld      a,(bc)              ; Check RTC Enabled Flag
     cp      CLK_SOFT            ; If Not Set to Soft Clock
@@ -2152,18 +2162,39 @@ FLOAT_DE:
     ret
 
 
-
-;---------------------------------------------------------------------
-;                RTC Driver for Dallas DS1244
-;---------------------------------------------------------------------
-    include "dtm_lib.asm"
-    include "ds1244rtc.asm" 
-
 ;=====================================================================
 ;                  Miscellaneous functions
 
 ; routines from Extended BASIC
     include "extbasic.asm"
+
+; string functions
+    include "strings.asm"
+
+; keyboard scan
+    include "keycheck.asm"
+
+;-----------------------------------------------
+;          Wait for Key Press
+;-----------------------------------------------
+; Wait for next key to be pressed.
+;
+;   out A = char
+
+Wait_key:
+    CALL    key_check    ; check for key pressed
+    JR      Z,Wait_Key   ; loop until key pressed
+.key_click:
+    push    af
+    ld      a,$FF        ; speaker ON
+    out     ($fc),a
+    ld      a,128
+.click_wait:
+    dec     a
+    jr      nz,.click_wait
+    out     ($fc),a      ; speaker OFF
+    pop     af
+    RET
 
 ; disk file selector
    include "filerequest.asm"

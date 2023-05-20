@@ -11,7 +11,7 @@
 ;
 NUMBRKS    = 4         ; number of breakpoints
 LINESIZE   = 28        ; length of line input buffer
-UNASMLINES = 8         ; number of lines to show in UnASM window
+UNASMLINES = 8         ; number of lies to show in UnASM window
 DUMPLINES  = 8         ; number of lines to show in DumpMem window
 
 
@@ -67,12 +67,13 @@ STRING    = 3         ;   flag: entering mixed case string (toggled with ")
      BYTE _TraceBrk  ; RST $38 at end of sandbox
    STRUCT _Breakpoints,brk.size*NUMBRKS ;breakpoint array
    STRUCT _LineBuffer,LINESIZE ; user input line buffer
+   STRUCT _dbg_stack,64        ; our private stack
    ENDSTRUCT v
 
 ;-------------------------------------------------------------
 ;               absolute RAM addresses
 ;
-vars = DebugVars           ; 256 byte block allocated by aqubasic.asm
+vars = sysvars-v.size           ; in private RAM below sysvars
 
 Number      = vars+_number
 BrkAddr     = vars+_BrkAddr
@@ -97,7 +98,7 @@ TraceBrk    = vars+_TraceBrk
 Breakpoints = vars+_Breakpoints
 LineBuffer  = vars+_linebuffer  ; line input buffer
 SearchStr   = LineBuffer        ; using line input buffer
-stack_top   = vars+255          ; stack grows downwards from here
+stack_top   = vars+v.size       ; stack grows downwards from here
 
 ;----------------------------------------------------------
 ;                      - Debug -
