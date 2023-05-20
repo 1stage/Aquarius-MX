@@ -1409,10 +1409,21 @@ ST_OUT:
     out     (c),a               ; out data to port
     ret
 
-;--------------------------------------------------------------------
-; LOCATE statement
-; Syntax: LOCATE col, row
-
+;----------------------------------------------------------------------------
+;;; ## LOCATE ##
+;;; Move the cursor to a specific column and row on the screen
+;;; ### FORMAT: ###
+;;;  - LOCATE < column >,< row >
+;;;    - Action: Moves the cursor to the specified spot on the screen
+;;;      - Column can be 1-38
+;;;      - row can be 1-23
+;;; ### EXAMPLES: ###
+;;; ` LOCATE 1, 1:print"Hello" `
+;;; > Prints `Hello` at top left of screen
+;;;
+;;; ` CLS:LOCATE 19,11:PRINT"&" `
+;;; > Clears the screen and prints `&` in the middle
+;----------------------------------------------------------------------------
 ST_LOCATE:
     call    GETBYT              ; read number from command line (column). Stored in A and E
     push    af                  ; column store on stack for later use
@@ -1838,10 +1849,19 @@ PRINTHEX:
     pop     bc
     jp      TTYOUT
 
-;--------------------------------------------------------------------
-;   VER function 
-;
-;  Returns 16 bit variable B,A containing the USB BASIC ROM Version
+;----------------------------------------------------------------------------
+;;; ## VER ##
+;;; Returns 16 bit integer value of MX BASIC ROM version
+;;; ### FORMAT: ###
+;;;  - VER(0)
+;;;    - Action: Returns integer of current MX BASIC ROM version
+;;; ### EXAMPLES: ###
+;;; ` PRINT VER(0) `
+;;; > Prints `512`
+;;;
+;;; ` PRINT HEX$(VER(0)) `
+;;; > Prints `0200`, the HEX value of version 2, rev 0
+;----------------------------------------------------------------------------
 
 FN_VER:
     call    InitFN            ; Parse Arg and set return address
@@ -1851,15 +1871,28 @@ FN_VER:
 
 
 ;--------------------------------------------------------------------
-;                            CALL
-;--------------------------------------------------------------------
-; syntax: CALL address
-; address is signed integer, 0 to 32767   = $0000-$7FFF
-;                            -32768 to -1 = $8000-$FFFF
+; CALL
 ;
 ; on entry to user code, HL = text after address
 ; on exit from user code, HL should point to end of statement
 ;
+;----------------------------------------------------------------------------
+;;; ## CALL ##
+;;; Run to machine code at specified address
+;;; ### FORMAT: ###
+;;;  - CALL(< address >)
+;;;    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
+;;;    - < address > can be a 16 bit signed or unsigned integer or hex value 
+;;; ### EXAMPLES: ###
+;;; ` CALL($A000) `
+;;; > Begin executing machine code stored at upper half of middle 32k expansion RAM
+;;;
+;;; ` 10 LOAD "PRG.BIN",$A000 `
+;;;
+;;; ` 20 CALL $A000 `
+;;; > Loads raw binary code into upper 16k of 32k expansion, and then begins executing it.
+;----------------------------------------------------------------------------
+
 ST_CALL:
     call    GETADR           ; get <address>
     push    de
@@ -1887,12 +1920,6 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
 ; ST_DEL
     include "dos.asm"
 
-
-;---------------------------------------------------------------------
-;                     BASIC Line Editor
-;---------------------------------------------------------------------
-; EDIT (line number)
-;
 ;ST_EDIT
     include "edit.asm"
 
@@ -1915,25 +1942,20 @@ SPL_DATETIME:
     ret    
     
 ;------------------------------------------------------------------------------
-;;; SDTM Function - Set DateTime
-;;;
-;;; Format: SDTM <string>
-;;; 
-;;; Action: Set Date and Time to specified string in format "YYMMDDHHmmss". 
-;;;         If the string does not contain a valid date and time, no further 
-;;;         action is taken. otherwise:
-;;;         If a Dallas DS1244Y RTC is installed and was detected during cold boot,
-;;;         the specified time and time is written to the RTC.
-;;;
-;;;         - DateTime is set by default to 24 hour mode, 
+;;; ## SDTM ##
+;;; Set DateTime
+;;; ### FORMAT: ###
+;;;  - SDTM < string >
+;;;    - Action: If a Real Time Clock is installed, allows user to set the time on the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" format:
+;;;         - Improperly formatted string causes FC Error
+;;;         - DateTime is set by default to 24 hour mode,
 ;;;           with cc (hundredths of seconds) set to 0
-;;; 
-;;; EXAMPLES of SDTM Function:
-;;; 
-;;;   SDTM "230411101500"            Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
+;;; ### EXAMPLES: ###
+;;; ` SDTM "230411101500" `
+;;; > Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
 ;;;
-;;;   10 SDTM "010101000000"         Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
-;;;
+;;; ` 10 SDTM "010101000000" `
+;;; > Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
 ;---------------------------------------------------------------------------
 
 ST_SDTM:
@@ -1961,25 +1983,30 @@ ST_SDTM:
     jp      rtc_write       ; Write to RTC and Return
 
 ;------------------------------------------------------------------------------
-;;; DTM$ Function - Get DateTime
+;;; ## DTM$ ##
+;;; Get DateTime
+;;; ### FORMAT: ###
+;;;  - DTM$(< number >)
+;;;    - Action: If a Real Time Clock is installed:
+;;;      - If < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
+;;;      - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
+;;;      - Returns "" if a Real Time Clock is not detected.
+;;; ### EXAMPLES: ###
+;;; ` PRINT DTM$(0) `
+;;; > 38011903140700
 ;;;
-;;; Format: DTM$(<number>)
-;;; 
-;;; Action: If a Real Time Clock is installed and detected:
-;;;            if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
-;;;            if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
-;;;         Otherwise, returns ""
-;;; 
-;;; EXAMPLES of DTM$ Function:
-;;; 
-;;;   PRINT DTM$(0)                    38011903140700            
-;;;   PRINT DTM$(1)                    2038-01-19 03:14:07      
-;;;                                    
-;;;   PRINT LEFT$(DTM$(1),10)          2038-01-19
-;;;   PRINT RIGHT$(DTM$(1),8)          03:14:07
-;;;   PRINT MID$(DTM$(1),6,11)         01-19 03:14
+;;; ` PRINT DTM$(1) `
+;;; > 2038-01-19 03:14:07
+;;;
+;;; ` PRINT LEFT$(DTM$(1),10) `
+;;; > 2038-01-19
+;;;
+;;; ` PRINT RIGHT$(DTM$(1),8) `
+;;; > 03:14:07
+;;;
+;;; ` PRINT MID$(DTM$(1),6,11) `
+;;; > 01-19 03:14
 ;---------------------------------------------------------------------------
-
 
 FN_DTM:
     call    InitFN           ; Parse Arg and set return address
@@ -2020,22 +2047,19 @@ return_to_eval:
 
 
 ;------------------------------------------------------------------------------
-;;; HEXADECIMAL CONSTANTS
+;;; ## Hexadecimal Constants ##
+;;;  - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+;;;    - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
+;;;    - They may not be used in DATA statements, as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
+;;; ### EXAMPLES: ###
+;;; ` PRINT $FFFF `
+;;; > Prints 65535
 ;;;
-;;; A hexadecimal constant is an value between 0 and 65535, inclusive. It 
-;;; consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+;;; ` A = $101 `
+;;; > Sets A to 257
 ;;;
-;;; Hexadecimal constants may be used in any numeric expression or anywhere
-;;; a numeric expression is allowed. They may not be used in DATA statements,
-;;; as entries to the INPUT statement, in string arguments to the VAL()
-;;; function, or as the target of a GOTO or GOSUB statement.
-;;;
-;;; EXAMPLES of Hexadecimal Constants:
-;;; 
-;;;   PRINT $FFFF              Prints 65535
-;;;   A = $101                 Sets A to 257
-;;;   P = $3000+40*R+C         Sets P to screen row 1, column 1 address
-;;;
+;;; ` P = $3000+40*R+C `
+;;; > Sets P to screen row 1, column 1 address
 ;------------------------------------------------------------------------------
 ; Parse Hexadecimal Literal into Floating Point Accumulator
 ; On Entry, HL points to first Hex Digit
@@ -2080,18 +2104,17 @@ EVAL_HEX:
 
 
 ;------------------------------------------------------------------------------
-;;; & Operator - Get Variable Address
-;;;
-;;; Format: &<variable name>
-;;;
-;;; Action: Returns the address of the first byte of data identified with 
-;;; <variable name>. A value must be assigned to <variable name> prior
-;;; to execution of the & operator, otherwise an FC error results. Any type 
-;;; variable name maybe used (numeric, string, array), and the address 
-;;; returned will be an integer in the range of 0 and 65535.
-;;;
-;;; Note: Care should be taken when working with an array, because the
-;;; addresses of arrays change whenever a new simple variable is assigned.
+;;; ## & Operator ##
+;;; Get Variable Address
+;;; ### FORMAT: ###
+;;;  - &< variable name >
+;;;    - Action: Returns the address of the first byte of data identified with < variable name >. 
+;;;      - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
+;;;      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
+;;;      - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
+;;; #### EXAMPLES: ####
+;;; ` A=44:PRINT &A:PRINT PEEK(&A) `
+;; > Assigns A a value, prints its address, and prints the value at that address.
 ;-------------------------------------------------------------------------
 ; Get Variable Pointer
 ; On Entry, HL points to first character of Variable Name

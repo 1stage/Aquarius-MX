@@ -115,6 +115,21 @@ Write to Z80 I/O Port
 > Send a value of 14 to the Cassette sound port
 
 
+## LOCATE ##
+Move the cursor to a specific column and row on the screen
+### FORMAT: ###
+ - LOCATE < column >,< row >
+   - Action: Moves the cursor to the specified spot on the screen
+     - Column can be 1-38
+     - row can be 1-23
+### EXAMPLES: ###
+` LOCATE 1, 1:print"Hello" `
+> Prints `Hello` at top left of screen
+
+` CLS:LOCATE 19,11:PRINT"&" `
+> Clears the screen and prints `&` in the middle
+
+
 ## PSG ##
 Write to Programmable Sound Generator(s)
 ### FORMAT: ###
@@ -258,179 +273,175 @@ Integer to hexadecimal conversion
 > Prints the HEX value of the border char (usually "0020", SPACE character)
 
 
-SDTM Function - Set DateTime
+## VER ##
+Returns 16 bit integer value of MX BASIC ROM version
+### FORMAT: ###
+ - VER(0)
+   - Action: Returns integer of current MX BASIC ROM version
+### EXAMPLES: ###
+` PRINT VER(0) `
+> Prints `512`
 
-Format: SDTM <string>
+` PRINT HEX$(VER(0)) `
+> Prints `0200`, the HEX value of version 2, rev 0
 
-Action: Set Date and Time to specified string in format "YYMMDDHHmmss".
-        If the string does not contain a valid date and time, no further
-        action is taken. otherwise:
-        If a Dallas DS1244Y RTC is installed and was detected during cold boot,
-        the specified time and time is written to the RTC.
-        If no RTC was detected, the specified time and date are written to
-        the "soft clock" and all subsequent DTM$() calls will return that
-        date and time.
 
+## CALL ##
+Run to machine code at specified address
+### FORMAT: ###
+ - CALL(< address >)
+   - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
+   - < address > can be a 16 bit signed or unsigned integer or hex value
+### EXAMPLES: ###
+` CALL($A000) `
+> Begin executing machine code stored at upper half of middle 32k expansion RAM
+
+` 10 LOAD "PRG.BIN",$A000 `
+
+` 20 CALL $A000 `
+> Loads raw binary code into upper 16k of 32k expansion, and then begins executing it.
+
+
+## SDTM ##
+Set DateTime
+### FORMAT: ###
+ - SDTM < string >
+   - Action: If a Real Time Clock is installed, allows user to set the time on the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" format:
+        - Improperly formatted string causes FC Error
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
+### EXAMPLES: ###
+` SDTM "230411101500" `
+> Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
 
-EXAMPLES of SDTM Function:
-
-  SDTM "230411101500"            Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
-
-  10 SDTM "010101000000"         Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
-
-
-
-DTM$ Function - Get DateTime
-
-Format: DTM$(<number>)
-
-Action: If a Real Time Clock is installed and detected, or the "soft clock"
-        was set via an SDTM call.
-           if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
-           if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
-        Otherwise, returns ""
-
-EXAMPLES of DTM$ Function:
-
-  PRINT DTM$(0)                    38011903140700
-  PRINT DTM$(1)                    2038-01-19 03:14:07
-
-  PRINT LEFT$(DTM$(1),10)          2038-01-19
-  PRINT RIGHT$(DTM$(1),8)          03:14:07
-  PRINT MID$(DTM$(1),6,11)         01-19 03:14
+` 10 SDTM "010101000000" `
+> Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
 
 
-HEXADECIMAL CONSTANTS
+## DTM$ ##
+Get DateTime
+### FORMAT: ###
+ - DTM$(< number >)
+   - Action: If a Real Time Clock is installed:
+     - If < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
+     - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
+     - Returns "" if a Real Time Clock is not detected.
+### EXAMPLES: ###
+` PRINT DTM$(0) `
+> 38011903140700
 
-A hexadecimal constant is an value between 0 and 65535, inclusive. It
-consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+` PRINT DTM$(1) `
+> 2038-01-19 03:14:07
 
-Hexadecimal constants may be used in any numeric expression or anywhere
-a numeric expression is allowed. They may not be used in DATA statements,
-as entries to the INPUT statement, in string arguments to the VAL()
-function, or as the target of a GOTO or GOSUB statement.
+` PRINT LEFT$(DTM$(1),10) `
+> 2038-01-19
 
-EXAMPLES of Hexadecimal Constants:
+` PRINT RIGHT$(DTM$(1),8) `
+> 03:14:07
 
-  PRINT $FFFF              Prints 65535
-  A = $101                 Sets A to 257
-  P = $3000+40*R+C         Sets P to screen row 1, column 1 address
-
-
-
-& Operator - Get Variable Address
-
-Format: &<variable name>
-
-Action: Returns the address of the first byte of data identified with
-<variable name>. A value must be assigned to <variable name> prior
-to execution of the & operator, otherwise an FC error results. Any type
-variable name maybe used (numeric, string, array), and the address
-returned will be an integer in the range of 0 and 65535.
-
-Note: Care should be taken when working with an array, because the
-addresses of arrays change whenever a new simple variable is assigned.
+` PRINT MID$(DTM$(1),6,11) `
+> 01-19 03:14
 
 
-SAVE Statement - Save File to USB Drive
+## Hexadecimal Constants ##
+ - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+   - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
+   - They may not be used in DATA statements, as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
+### EXAMPLES: ###
+` PRINT $FFFF `
+> Prints 65535
 
-Format: SAVE <filespec>
-        SAVE <filespec>,*<arrayname>
-        SAVE <filespec>,<address>,<size>
+` A = $101 `
+> Sets A to 257
 
-Action: Save BASIC program, array, or range of memory.
-
-EXAMPLES of SAVE Statement:
-
-  SAVE "progname.bas"               Save current program as CAQ file
-  SAVE "array.caq",*A               Save contents of array A() as CAQ file
-  SAVE "capture.src",12288,2048     Save Screen and Color RAM as binary file
+` P = $3000+40*R+C `
+> Sets P to screen row 1, column 1 address
 
 
-EDIT Statement - Edit BASIC Line
+## & Operator ##
+Get Variable Address
+### FORMAT: ###
+ - &< variable name >
+   - Action: Returns the address of the first byte of data identified with < variable name >.
+     - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
+     - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
+     - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
+#### EXAMPLES: ####
+` A=44:PRINT &A:PRINT PEEK(&A) `
 
-FORMAT: EDIT <line number>
 
-Action: Displays BASIC line <line number> on screen and enters edit
-mode. While editing a line, the following control keys are available:
+## SAVE Statement ##
+Save File to USB Drive
+### FORMAT: ###
+ - SAVE < filespec >
+ - SAVE < filespec >,*< arrayname >
+ - SAVE < filespec >,< address >,< size >
+   - Action: Save BASIC program, array, or range of memory.
+### EXAMPLES: ###
+` SAVE "progname.bas" `
+> Save current program as BASIC file
 
+` SAVE "array.caq",*A `
+> Save contents of array A() as CAQ file
+
+` SAVE "capture.src",12288,2048 `
+> Save Screen and Color RAM as raw binary file
+
+
+## EDIT Statement ##
+Edit BASIC Line
+### FORMAT: ###
+ - EDIT < line number >
+   - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
+```
   CTL - P   Move cursor left
   CTL - /   Move cursor right
     <--     Delete character to left
   CTL - \   Delete character to right
     RTN     Save changes and exit edit mode
-  CTL - C   Discard changes and exit edit mode
+  CTL - C   Discard changes and edit edit mode
+  CTL - R   Retype previously entered IMMEDIATE MODE command
+```
 
-Note: The above control keys are also available when entering a new
-line or direct mode command, along with the following:
-
-  CTL - R   Recall previously entered line.
-
-
-DEF FN Statement - Define User Function
-
-FORMAT: DEF FN <name> ( <variable> ) = <expression>
-
-Action: This sets up a user-defined function that can be used later in
-the program. The function can consist of any mathematical formula.
-User-defined functions save space in programs where a long formula is
-used in several places. The formula need only be specified once, in the
-definition statement, and then it is abbreviated as a function name. It
-must be executed once, but any subsequent executions are ignored.
-  The function name is the letters FN followed by any variable name.
-This can be 1 or 2 characters, the first being a letter and the second a
-letter or digit.
-  The parametern <variable> represents the argument variable or value
-that will be given in the function call and does not affect any program
-variable with the same name. For any other variable name in <expression>,
-the value of that program variable is used.
-  A DEF FN statement must be executed before the function it defines may
-be called. If a function is called before it has been defined, an
-"Undefined user function" error occurs.
-  Multiple user functions may be defined at once, each with a unique FN
-name. Executing a DEF with the same FN name as a previously defined user
-function replaces the previous definition with the new one. DEF FN is
-illegal in direct mode.
-
-EXAMPLES of DEF FN Statement:
-
-  10 DEF FN A(X)=X+7
-
-  20 DEF FN AA(X)=Y*Z
-
-  30 DEF FN A9(Q) = INT(RND(1)*Q+1)
-
-  The function is called later in the program by using the function name
-with a variable in parentheses. This function name is used like any other
-variable, and its value is automatically calculated,
-
-EXAMPLES of FN Use:
-
-  40 PRINT FN A(9)
-
-  50 R=FN AA(9)
-
-  60 G=G+FN A9(10)
-
-  In line 50 above, the number 9 inside the parentheses does not affect
-the outcome of the function, because the function definition in line 20
-doesn't use the variable in the parentheses. The result is Y times Z,
-regardless of the value of X. In the other two functions, the value in
-parentheses does affect the result.
+   - Note: The above control keys are also available when entering a new line or direct mode command.
 
 
-ATN Function - Arctangent
+## DEF FN Statement ##
+Define User Function
+### FORMAT: ###
+ - DEF FN < name > ( < variable > ) = < expression >
+   - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
+     - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
+     - The parametern < variable > represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in < expression >, the value of that program variable is used.
+     - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
+     - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
+     - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
+### EXAMPLES: ###
+` 10 DEF FN A(X)=X+7 `
 
-FORMAT: ATN ( <number> )
+` 20 PRINT FN A(9) `
+> Prints the value 16 (9 + 7)
 
-Action: This mathematical function returns the arctangent of the
-number. The result is the angle (in radians) whose tangent is the number
-given. The result is always in the range -pi/2 to +pi/2.
+` 10 DEF FN AA(X)=Y*Z `
 
-EXAMPLES of ATN Function:
+` 20 R=FN AA(9) `
+> Assigns R the value of X * Y, and the number 9 inside the parentheses does not affect the outcome of the function, because the function definition in line 10 doesn't use the variable in the parentheses.
 
-  10 PRINT ATN(0)
-  20 X = ATN(J)*180/ {pi} : REM CONVERT TO DEGREES
+` 10 DEF FN A9(Q) = INT(RND(1)*Q+1) `
+
+` 20 G=G+FN A9(10) `
+> Increments the value of G the rounded value of a random number between 1 and 10.
+
+
+## ATN Function ##
+Arctangent
+### FORMAT: ###
+ - ATN ( < number > )
+   - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
+### EXAMPLES: ###
+` PRINT ATN(1) `
+> Prints the arctangent of 1, a value of `0.785398`
+
+` X = ATN(J)*180/ {pi} `
+> Defines variable X as the arctangent of another variable, J, divided by pi.
 
