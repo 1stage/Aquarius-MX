@@ -1,8 +1,8 @@
-# TO-DO List
+# TO-DO List ##
 
 This file is for recording upcoming changes and features that are being added to track them.
 
-## IN PROCESS:
+## IN PROCESS: ##
 
 - Test hardware behavior without RTC installed (RAM only)
 
@@ -28,7 +28,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - Transition in-line documentation (;;;) to Markdown format.
 
-## COMPLETE:
+## COMPLETE: ##
 
 - PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 

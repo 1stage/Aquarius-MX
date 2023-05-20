@@ -115,6 +115,21 @@ Write to Z80 I/O Port
 > Send a value of 14 to the Cassette sound port
 
 
+## LOCATE ##
+Move the cursor to a specific column and row on the screen
+### FORMAT: ###
+ - LOCATE < column >,< row >
+   - Action: Moves the cursor to the specified spot on the screen
+     - Column can be 1-38
+     - row can be 1-23
+### EXAMPLES: ###
+` LOCATE 1, 1:print"Hello" `
+> Prints `Hello` at top left of screen
+
+` CLS:LOCATE 19,11:PRINT"&" `
+> Clears the screen and prints `&` in the middle
+
+
 ## PSG ##
 Write to Programmable Sound Generator(s)
 ### FORMAT: ###
@@ -258,44 +273,74 @@ Integer to hexadecimal conversion
 > Prints the HEX value of the border char (usually "0020", SPACE character)
 
 
-SDTM Function - Set DateTime
+## VER ##
+Returns 16 bit integer value of MX BASIC ROM version
+### FORMAT: ###
+ - VER(0)
+   - Action: Returns integer of current MX BASIC ROM version
+### EXAMPLES: ###
+` PRINT VER(0) `
+> Prints `512`
 
-Format: SDTM <string>
+` PRINT HEX$(VER(0)) `
+> Prints `0200`, the HEX value of version 2, rev 0
 
-Action: Set Date and Time to specified string in format "YYMMDDHHmmss".
-        If the string does not contain a valid date and time, no further
-        action is taken. otherwise:
-        If a Dallas DS1244Y RTC is installed and was detected during cold boot,
-        the specified time and time is written to the RTC.
 
+## CALL ##
+Run to machine code at specified address
+### FORMAT: ###
+ - CALL(< address >)
+   - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
+   - < address > can be a 16 bit signed or unsigned integer or hex value
+### EXAMPLES: ###
+` CALL($A000) `
+> Begin executing machine code stored at upper half of middle 32k expansion RAM
+
+` 10 LOAD "PRG.BIN",$A000 `
+
+` 20 CALL $A000 `
+> Loads raw binary code into upper 16k of 32k expansion, and then begins executing it.
+
+
+## SDTM ##
+Set DateTime
+### FORMAT: ###
+ - SDTM < string >
+   - Action: If a Real Time Clock is installed, allows user to set the time on the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" format:
+        - Improperly formatted string causes FC Error
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
+### EXAMPLES: ###
+` SDTM "230411101500" `
+> Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
 
-EXAMPLES of SDTM Function:
-
-  SDTM "230411101500"            Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
-
-  10 SDTM "010101000000"         Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
+` 10 SDTM "010101000000" `
+> Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
 
 
+## DTM$ ##
+Get DateTime
+### FORMAT: ###
+ - DTM$(< number >)
+   - Action: If a Real Time Clock is installed:
+     - If < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
+     - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
+     - Returns "" if a Real Time Clock is not detected.
+### EXAMPLES: ###
+` PRINT DTM$(0) `
+> 38011903140700
 
-DTM$ Function - Get DateTime
+` PRINT DTM$(1) `
+> 2038-01-19 03:14:07
 
-Format: DTM$(<number>)
+` PRINT LEFT$(DTM$(1),10) `
+> 2038-01-19
 
-Action: If a Real Time Clock is installed and detected:
-           if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
-           if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
-        Otherwise, returns ""
+` PRINT RIGHT$(DTM$(1),8) `
+> 03:14:07
 
-EXAMPLES of DTM$ Function:
-
-  PRINT DTM$(0)                    38011903140700
-  PRINT DTM$(1)                    2038-01-19 03:14:07
-
-  PRINT LEFT$(DTM$(1),10)          2038-01-19
-  PRINT RIGHT$(DTM$(1),8)          03:14:07
-  PRINT MID$(DTM$(1),6,11)         01-19 03:14
+` PRINT MID$(DTM$(1),6,11) `
+> 01-19 03:14
 
 
 HEXADECIMAL CONSTANTS
