@@ -1919,26 +1919,6 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
 ; ST_DEL
     include "dos.asm"
 
-
-;---------------------------------------------------------------------
-;;; ## EDIT Statement ##
-;;; Edit BASIC Line
-;;; ### FORMAT: ###
-;;;  - EDIT < line number >
-;;;    - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
-;;; ```
-;;;   CTL - P   Move cursor left
-;;;   CTL - /   Move cursor right
-;;;     <--     Delete character to left
-;;;   CTL - \   Delete character to right
-;;;     RTN     Save changes and exit edit mode
-;;;   CTL - C   Discard changes and edit edit mode
-;;;   CTL - R   Retype previously entered IMMEDIATE MODE command
-;;; ```
-;;;
-;;;    - Note: The above control keys are also available when entering a new line or direct mode command.
-;------------------------------------------------------------------------------
-
 ;ST_EDIT
     include "edit.asm"
 

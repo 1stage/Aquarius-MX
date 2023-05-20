@@ -302,24 +302,6 @@ Run to machine code at specified address
 > Loads raw binary code into upper 16k of 32k expansion, and then begins executing it.
 
 
-## EDIT Statement ##
-Edit BASIC Line
-### FORMAT: ###
- - EDIT < line number >
-   - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
-```
-  CTL - P   Move cursor left
-  CTL - /   Move cursor right
-    <--     Delete character to left
-  CTL - \   Delete character to right
-    RTN     Save changes and exit edit mode
-  CTL - C   Discard changes and edit edit mode
-  CTL - R   Retype previously entered IMMEDIATE MODE command
-```
-
-   - Note: The above control keys are also available when entering a new line or direct mode command.
-
-
 ## SDTM ##
 Set DateTime
 ### FORMAT: ###
@@ -406,24 +388,22 @@ Save File to USB Drive
 > Save Screen and Color RAM as raw binary file
 
 
-EDIT Statement - Edit BASIC Line
-
-FORMAT: EDIT <line number>
-
-Action: Displays BASIC line <line number> on screen and enters edit
-mode. While editing a line, the following control keys are available:
-
+## EDIT Statement ##
+Edit BASIC Line
+### FORMAT: ###
+ - EDIT < line number >
+   - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
+```
   CTL - P   Move cursor left
   CTL - /   Move cursor right
     <--     Delete character to left
   CTL - \   Delete character to right
     RTN     Save changes and exit edit mode
-  CTL - C   Discard changes and exit edit mode
+  CTL - C   Discard changes and edit edit mode
+  CTL - R   Retype previously entered IMMEDIATE MODE command
+```
 
-Note: The above control keys are also available when entering a new
-line or direct mode command, along with the following:
-
-  CTL - R   Recall previously entered line.
+   - Note: The above control keys are also available when entering a new line or direct mode command.
 
 
 ## DEF FN Statement ##
