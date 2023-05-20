@@ -1,7 +1,7 @@
 ;******************************************************************************
 ;                      CH376 USB Driver for Z80 CPU
 ;******************************************************************************
-; Based on code for the MZ800 by Michal Hucík http://www.8bit.8u.cz
+; Based on code for the MZ800 by Michal Hucï¿½k http://www.8bit.8u.cz
 ;
 ;   Date      Ver                     Changes                         Author
 ; 2015-10-4  V0.00 started                                         Bruce Abbott
@@ -138,6 +138,7 @@ CH376_CMD_FILE_ENUM_GO  equ     $33     ; get next file info
 CH376_CMD_FILE_CREATE   equ     $34     ; create new file
 CH376_CMD_FILE_ERASE    equ     $35     ; delete file
 CH376_CMD_FILE_CLOSE    equ     $36     ; close opened file
+CH376_CMD_DIR_INFO_SAVE equ     $38     ; Save file directory info
 CH376_CMD_BYTE_LOCATE   equ     $39     ; seek into file
 CH376_CMD_BYTE_READ     equ     $3A     ; start reading bytes
 CH376_CMD_BYTE_RD_GO    equ     $3B     ; continue reading bytes
