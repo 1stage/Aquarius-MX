@@ -100,19 +100,10 @@ aqubug   equ 1     ; full featured debugger (else lite version without screen sa
     include  "macros.i"   ; structure macros
     include  "windows.i"  ; fast windowed text functions
 
-; Standard BASIC System Variable Extensions
-;
-; Persistent MX BASIC system variables (RAMTAB: $3821-$3840, 32 bytes)
-;   During a cold boot, an unused table is written here, then it is never used again
-RTC_SHADOW = $3821      ; Real Time Clock Shadow Registers, 10 bytes. 
-                        ; This Address assignment will not change in the future.
 
-;MBASIC 80 System Variables 
-ERRLIN     = $383A      ; LINE NUMBER WHERE LAST ERROR OCCURED.
-ERRFLG     = $383C      ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
-ONEFLG     = $383D      ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
-ONELIN     = $383E      ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
-
+; This will eventually be a Fixed Address Assignment
+RTC_SHADOW = $37F0        ; Real Time Clock Shadow Registers, 10 bytes. 
+                        
 ; Temporary USB BASIC system variables 
 DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
 ;   FILNAM,FILNAF,INSYNC,CLFLAG: $3851-$385E. 14 bytes
@@ -145,6 +136,11 @@ path.size = 37           ; length of file path buffer
     WORD   _binlen              ; binary file length
     BYTE   _dosflags            ; DOS flags
     BYTE   _sysflags            ; system flags
+    WORD   _errlin              ; LINE NUMBER WHERE LAST ERROR OCCURED.
+    BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
+    BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
+    WORD   _onelin              ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
+
  ENDSTRUCT _sysvars
 
 SysVars  = RAMEND-_sysvars.size
@@ -156,6 +152,10 @@ BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags
 SysFlags = sysvars+_sysflags
+ERRLIN   = sysvars+_errlin
+ERRFLG   = sysvars+_errflg
+ONEFLG   = sysvars+_oneflg
+ONELIN   = sysvars+_onelin
 
 ifdef debug
   pathname = $3006  ; store path in top line of screen
@@ -346,7 +346,7 @@ ROM_ENTRY:
     ld      (KCOUNT),a
 
 ; set up real time clock
-    call    INIT_RTC
+    call    rtc_init
 
 ; check for power on or reset
     ld      hl,FDIVC
@@ -574,7 +574,6 @@ MEMSIZE:
     ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
-    call    INIT_RTC           ; Init again: Cold Boot overwrites RTC_SHADOW
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
@@ -1902,8 +1901,9 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
 ;
 
 SPL_DATETIME:
+    ld      bc,RTC_SHADOW
     ld      hl,DTM_BUFFER
-    call    READ_RTC      ;Read RTC
+    call    rtc_read
     ld      de,DTM_STRING
     call    dtm_to_fmt    ;Convert to Formatted String   
     ld      d,2                
@@ -1913,45 +1913,6 @@ SPL_DATETIME:
     call    WinPrtStr
     ret    
     
-;Starting DateTime for Software Clock
-;2017-06-12 11:00:00 - Date Bruce Abbott released Micro Expander (NZ is GMT+11)
-SPL_DEFAULT:
-    db      $80,$00,$00,$00,$11,$12,$06,$17,$00,$00 
-            ;enl cc  ss  mm  HH  DD  MM  YY cdl cdh
- 
-;------------------------------------------------------------------------------
-;     Initialize the Real Time Clock
-;------------------------------------------------------------------------------
-
-INIT_RTC:
-    ld      bc,RTC_SHADOW
-    ld      hl,DTM_BUFFER
-    ld      a,(bc)              ; Check RTC Enabled Flag
-    cp      CLK_SOFT            ; If Not Set to Soft Clock
-    jp      nz,rtc_init         ; Initialize RTC Chip
-    ret
-
-;------------------------------------------------------------------------------
-;     Read the Real Time Clock
-;     In: HL = DTM Buffer
-;     Out: A = Valid, Flags Set, HL unchanged
-;------------------------------------------------------------------------------
-
-READ_RTC:
-    ld      bc,RTC_SHADOW
-    ld      a,(bc)              ; Check RTC Enabled Flag
-    cp      CLK_SOFT            ; If Not Set to Soft Clock
-    jp      nz,rtc_read         ;   Read RTC Chip and Return
-    or      a                   ; Set Flags and Save Return Value
-    push    hl
-    ex      de,hl               ; DE=DTM_BUFFER
-    ld      h,b                 ; HL=RTC_SHADOW
-    ld      l,c
-    ld      bc,8                ; 8 bytes
-    ldir                        ; Copy RTC_SHADOW to DTM_BUFFER
-    pop     hl
-    ret
-
 ;------------------------------------------------------------------------------
 ;;; SDTM Function - Set DateTime
 ;;;
@@ -1999,15 +1960,7 @@ ST_SDTM:
     ret     z               ; Don't Write if invalid DateTime
 
     ld      bc,RTC_SHADOW
-    ld      a,(bc)          ; Check RTC Enabled Flag
-    cp      CLK_FOUND       ; If RTC Enabled
-    jp      z,rtc_write     ;   Write to RTC and Return
-    ld      (hl),CLK_SOFT   ; Turn on Soft Clock
-    ld      d,b             ; Copying to RTC_SHADOW
-    ld      e,c
-    ld      bc,8            ; 8 bytes
-    ldir                    ; Copy DTM_BUFFER to RTC_SHADOW
-    ret
+    jp      rtc_write       ; Write to RTC and Return
 
 ;------------------------------------------------------------------------------
 ;;; DTM$ Function - Get DateTime
@@ -2037,8 +1990,9 @@ FN_DTM:
     ld      a,(FAC)          ;  
     or      a
     push    af
+    ld      bc,RTC_SHADOW
     ld      hl,DTM_BUFFER
-    call    READ_RTC         ; Read RTC
+    call    rtc_read
     ld      de,DTM_STRING
     call    dtm_to_str       ; Convert to String
     pop     af 
