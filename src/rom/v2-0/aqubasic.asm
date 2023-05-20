@@ -787,7 +787,8 @@ TBLCMDS:
     db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
     db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
     db      $80 + 'C', "D"          ; $e0 - Change directory
-CDTK  =  $E0
+SDTMTK  = $D3
+CDTK    = $E0
 
 ; - New functions get added to the END of the functions list.
 ;   They also get added at the END of the TBLFNJP list.

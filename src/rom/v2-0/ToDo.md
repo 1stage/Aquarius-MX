@@ -24,7 +24,10 @@ This file is for recording upcoming changes and features that are being added to
 
 - Verify & works as designed.
   - ` A=44:PRINT &A:PRINT PEEK(&A) `
-    - Should show address and then 44, correct?
+    - ** use this **
+    - ` A=44:COPY &A,&B,4:PRINT B
+
+- CLEAR: use GETADR from memory size, limit to below system variables
 
 - Transition in-line documentation (;;;) to Markdown format.
 

@@ -39,13 +39,14 @@
 ;                  Added SCR logic for binary load to Screen RAM without ADDR parameter (Harrington)
 ; 2023-05-11 v2.0  SAVE: Removed header when writing binary files, added 15 x $00 tail to CAQ container
 ;                  when writing Basic program or array. Fixed SN error when SAVE array in program (CFK)
-; 2023-05-12 v2.0  LOAD: Removed file type parsing. File type is based on arguments only. 
+; 2023-05-12 v2.0  LOAD: Removed file ST_DIRtype parsing. File type is based on arguments only. 
 ;                  Removed dos_getfiletype and all related code, constants, and strings
 ;                  Replaced get_next and get_arg calls with chrget and chrgot calls
 ; 2023-05-17 v2.0  DIR: Print last write date and time. Do not show hidden or system files.                 
 
 ; bits in dosflags
 DF_ADDR   = 0      ; set = address specified
+DF_SDTM   = 6      ; set = show file date/time
 DF_ARRAY  = 7      ; set = numeric array
 
 ;--------------------------------------------------------------------
@@ -686,16 +687,22 @@ ST_CAT:
 ; DIR              listing all files
 ;
 ST_DIR:
-    push    hl                ; PUSH text pointer
     ld      a,ATTR_HIDDEN+ATTR_SYSTEM
     ld      (DosFlags),a      ; filter out system and hidden files
     call    dos__clearError   ; returns A = 0
     ld      (FileName),a      ; wildcard string = NULL
-    call    chkarg            ; is wildcard argument present?
+    call    CHRGOT            ; check for arguments
+    jp      p,.st_dir_wc      ; if token
+    cp      SDTMTK            ;   check for SDTM
+    jp      nz,FCERR          ;   if not, FC error
+    ld      a,1<<DF_SDTM      ;   
+    ld      (DosFlags),a      ;   set 'show DateTime' flag    
+    rst     chrget            ;   skip SDTM Token
+.st_dir_wc:
     jr      z,.st_dir_go      ; if no wildcard then show all files
     call    dos__getfilename  ; wildcard -> FileName
-    ex      (sp),hl           ; update text pointer on stack
 .st_dir_go:
+    push    hl                ; PUSH text pointer
     call    usb_ready         ; check for USB disk (may reset path to root!)
     jr      nz,.error
     call    STROUT            ; print path
@@ -819,6 +826,9 @@ dos__prtDirInfo:
         CALL    TTYOUT
         LD      BC,10                   ; DIR_WrtTime-DIR_NTres
         ADD     HL,BC                   ; skip to write time
+        ld      a,(DosFlags)
+        bit     DF_SDTM,a
+        jr      z,.dir_skip_datetime
 .dir_time_stamp:
         push    hl                      ; Save Pointer
         ex      de,hl                   ; DE = DIR_WrtTime
@@ -835,6 +845,7 @@ dos__prtDirInfo:
         LD      A,' '                   ; print ' '
         CALL    TTYOUT
         pop     hl
+.dir_skip_datetime:
         pop     af
         AND     ATTR_DIRECTORY          ; directory bit set?
         JP      NZ,.dir_folder
