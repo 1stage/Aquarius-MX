@@ -367,7 +367,7 @@ Get Variable Address
      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
      - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
 #### EXAMPLES: ####
-` A=44:PRINT &A:PRINT PEEK(&A) `
+` A=44:COPY &A,&B,4:PRINT B `
 
 
 ## SAVE Statement ##
