@@ -267,9 +267,6 @@ Action: Set Date and Time to specified string in format "YYMMDDHHmmss".
         action is taken. otherwise:
         If a Dallas DS1244Y RTC is installed and was detected during cold boot,
         the specified time and time is written to the RTC.
-        If no RTC was detected, the specified time and date are written to
-        the "soft clock" and all subsequent DTM$() calls will return that
-        date and time.
 
         - DateTime is set by default to 24 hour mode,
           with cc (hundredths of seconds) set to 0
@@ -286,8 +283,7 @@ DTM$ Function - Get DateTime
 
 Format: DTM$(<number>)
 
-Action: If a Real Time Clock is installed and detected, or the "soft clock"
-        was set via an SDTM call.
+Action: If a Real Time Clock is installed and detected:
            if <number> is 0, returns a DateTime string "YYMMDDHHmmsscc"
            if <number> is 1, returns formatted string "YYYY-MM-DD HH:mm:ss"
         Otherwise, returns ""
