@@ -351,7 +351,7 @@ ROM_ENTRY:
 ; check for power on or reset
     ld      hl,FDIVC
     ld      de,$0194
-    ld      bc,$0900        ;B=10, C=0      
+    ld      bc,$0600        ;B=10, C=0      
 .fdivc_loop
     ld      a,(de)
     cp      (hl)
