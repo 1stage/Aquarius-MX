@@ -1921,10 +1921,24 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
 
 
 ;---------------------------------------------------------------------
-;                     BASIC Line Editor
-;---------------------------------------------------------------------
-; EDIT (line number)
-;
+;;; ## EDIT Statement ##
+;;; Edit BASIC Line
+;;; ### FORMAT: ###
+;;;  - EDIT < line number >
+;;;    - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
+;;; ```
+;;;   CTL - P   Move cursor left
+;;;   CTL - /   Move cursor right
+;;;     <--     Delete character to left
+;;;   CTL - \   Delete character to right
+;;;     RTN     Save changes and exit edit mode
+;;;   CTL - C   Discard changes and edit edit mode
+;;;   CTL - R   Retype previously entered IMMEDIATE MODE command
+;;; ```
+;;;
+;;;    - Note: The above control keys are also available when entering a new line or direct mode command.
+;------------------------------------------------------------------------------
+
 ;ST_EDIT
     include "edit.asm"
 
@@ -2052,22 +2066,19 @@ return_to_eval:
 
 
 ;------------------------------------------------------------------------------
-;;; HEXADECIMAL CONSTANTS
+;;; ## Hexadecimal Constants ##
+;;;  - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+;;;    - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
+;;;    - They may not be used in DATA statements, as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
+;;; ### EXAMPLES: ###
+;;; ` PRINT $FFFF `
+;;; > Prints 65535
 ;;;
-;;; A hexadecimal constant is an value between 0 and 65535, inclusive. It 
-;;; consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+;;; ` A = $101 `
+;;; > Sets A to 257
 ;;;
-;;; Hexadecimal constants may be used in any numeric expression or anywhere
-;;; a numeric expression is allowed. They may not be used in DATA statements,
-;;; as entries to the INPUT statement, in string arguments to the VAL()
-;;; function, or as the target of a GOTO or GOSUB statement.
-;;;
-;;; EXAMPLES of Hexadecimal Constants:
-;;; 
-;;;   PRINT $FFFF              Prints 65535
-;;;   A = $101                 Sets A to 257
-;;;   P = $3000+40*R+C         Sets P to screen row 1, column 1 address
-;;;
+;;; ` P = $3000+40*R+C `
+;;; > Sets P to screen row 1, column 1 address
 ;------------------------------------------------------------------------------
 ; Parse Hexadecimal Literal into Floating Point Accumulator
 ; On Entry, HL points to first Hex Digit
@@ -2112,18 +2123,17 @@ EVAL_HEX:
 
 
 ;------------------------------------------------------------------------------
-;;; & Operator - Get Variable Address
-;;;
-;;; Format: &<variable name>
-;;;
-;;; Action: Returns the address of the first byte of data identified with 
-;;; <variable name>. A value must be assigned to <variable name> prior
-;;; to execution of the & operator, otherwise an FC error results. Any type 
-;;; variable name maybe used (numeric, string, array), and the address 
-;;; returned will be an integer in the range of 0 and 65535.
-;;;
-;;; Note: Care should be taken when working with an array, because the
-;;; addresses of arrays change whenever a new simple variable is assigned.
+;;; ## & Operator ##
+;;; Get Variable Address
+;;; ### FORMAT: ###
+;;;  - &< variable name >
+;;;    - Action: Returns the address of the first byte of data identified with < variable name >. 
+;;;      - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
+;;;      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
+;;;      - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
+;;; #### EXAMPLES: ####
+;;; ` A=44:PRINT &A:PRINT PEEK(&A) `
+;; > Assigns A a value, prints its address, and prints the value at that address.
 ;-------------------------------------------------------------------------
 ; Get Variable Pointer
 ; On Entry, HL points to first character of Variable Name
