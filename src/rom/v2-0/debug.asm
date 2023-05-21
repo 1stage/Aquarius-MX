@@ -11,6 +11,7 @@
 ;
 ; 2023-05-20 V2.0   screen save can be enables at compile time - CFK
 
+; C0_END with scrn_save $D9AA, without $D924
 
 NUMBRKS    = 4         ; number of breakpoints
 LINESIZE   = 28        ; length of line input buffer

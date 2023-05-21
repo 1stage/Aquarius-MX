@@ -79,8 +79,7 @@ REVISION = 0
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
-;aqubug   equ 1     ; full featured debugger (else lite version without screen save etc.)
-scrn_flag equ 1    ; enable screen save in lite debugger
+;scrn_flag equ 1    ; enable screen save in lite debugger
 ;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
@@ -271,15 +270,64 @@ RTC_STR_TO_DTM    jp  str_to_dtm
 RTC_DTM_TO_FTS    jp  dtm_to_fts
 RTC_FTS_TO_DTM    jp  fts_to_dtm
 
-; windowed text functions
+
+;---------------------------------------------------------------------
+;                     windowed text functions
+;---------------------------------------------------------------------
    include "windows.asm"
 
-; debugger
- ifdef aqubug
-   include "aqubug.asm"
- else
+;---------------------------------------------------------------------
+;                          debugger
+;---------------------------------------------------------------------
    include "debug.asm"
- endif
+
+;---------------------------------------------------------------------
+;                         ROM loader
+;---------------------------------------------------------------------
+   include "load_rom.asm"
+
+;---------------------------------------------------------------------
+;                     disk file selector
+;---------------------------------------------------------------------
+   include "filerequest.asm"
+   
+;---------------------------------------------------------------------
+;                RTC Driver for Dallas DS1244
+;---------------------------------------------------------------------
+    include "dtm_lib.asm"
+    include "ds1244rtc.asm" 
+
+;---------------------------------------------------------------------
+;                       string functions
+;---------------------------------------------------------------------
+    include "strings.asm"
+
+;---------------------------------------------------------------------
+;                       keyboard scan
+;---------------------------------------------------------------------
+    include "keycheck.asm"
+
+;-----------------------------------------------
+;          Wait for Key Press
+;-----------------------------------------------
+; Wait for next key to be pressed.
+;
+;   out A = char
+
+Wait_key:
+    CALL    key_check    ; check for key pressed
+    JR      Z,Wait_Key   ; loop until key pressed
+.key_click:
+    push    af
+    ld      a,$FF        ; speaker ON
+    out     ($fc),a
+    ld      a,128
+.click_wait:
+    dec     a
+    jr      nz,.click_wait
+    out     ($fc),a      ; speaker OFF
+    pop     af
+    RET
 
 C0_END:   
 C0_SIZE = C0_END - $C000
@@ -327,12 +375,6 @@ ROM_ENTRY:
     ld      (USRPOK),a
     ld      HL,0
     ld      (USRADD),HL       ; set system RST $38 vector
-  ifdef aqubug
-    ld      de,MemWindows
-    ld      hl,dflt_winaddrs
-    ld      bc,2*4             ; initialize default memory window addresses
-    ldir
-  endif
 ;
 ; init CH376
     call    usb__check_exists  ; CH376 present?
@@ -581,20 +623,9 @@ MEMSIZE:
 
 
 ;---------------------------------------------------------------------
-;                         ROM loader
-;---------------------------------------------------------------------
-    include "load_rom.asm"
-
-;---------------------------------------------------------------------
 ;                      USB Disk Driver
 ;---------------------------------------------------------------------
     include "ch376.asm"
-
-;---------------------------------------------------------------------
-;                RTC Driver for Dallas DS1244
-;---------------------------------------------------------------------
-    include "dtm_lib.asm"
-    include "ds1244rtc.asm" 
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -2146,37 +2177,7 @@ FLOAT_DE:
 ; routines from Extended BASIC
     include "extbasic.asm"
 
-; string functions
-    include "strings.asm"
 
-; keyboard scan
-    include "keycheck.asm"
-
-;-----------------------------------------------
-;          Wait for Key Press
-;-----------------------------------------------
-; Wait for next key to be pressed.
-;
-;   out A = char
-
-Wait_key:
-    CALL    key_check    ; check for key pressed
-    JR      Z,Wait_Key   ; loop until key pressed
-.key_click:
-    push    af
-    ld      a,$FF        ; speaker ON
-    out     ($fc),a
-    ld      a,128
-.click_wait:
-    dec     a
-    jr      nz,.click_wait
-    out     ($fc),a      ; speaker OFF
-    pop     af
-    RET
-
-; disk file selector
-   include "filerequest.asm"
-   
 E0_END:   
 E0_SIZE = E0_END - $E000
 

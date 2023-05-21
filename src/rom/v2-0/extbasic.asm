@@ -240,7 +240,7 @@ ERRORX: ;call    break
         ld      c,e             ; ALSO SAVE IT FOR LATER RESTORE
         srl     a               ; Divide by 2 and add 1 so
         inc     a               ; [A]=ERROR NUMBER
-        ld      (ERRFLG),a      ; SAVE IT SO WE KNOW WHETHER TO CALL "EDIT"
+        ld      (ERRFLG),a      ; Save it for ERR() Function
         ld      hl,(ERRLIN)     ; GET ERROR LINE #
         ld      a,h             ; TEST IF DIRECT LINE
         and     l               ; SET CC'S
