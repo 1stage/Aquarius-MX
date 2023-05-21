@@ -5,7 +5,7 @@
 ; 2023-04-22 - Extracted from Aquarius Extended BASIC Disassembly
 
 ;----------------------------------------------------------------------------
-;;; ## DEF FN Statement ##
+;;; ## DEF FN / FN ##
 ;;; Define User Function
 ;;; ### FORMAT: ###
 ;;;  - DEF FN < name > ( < variable > ) = < expression >
@@ -123,7 +123,7 @@ GETFNM: rst     SYNCHR
 
 
 ;----------------------------------------------------------------------------
-;;; ## ATN Function ##
+;;; ## ATN ##
 ;;; Arctangent
 ;;; ### FORMAT: ###
 ;;;  - ATN ( < number > )
@@ -173,6 +173,25 @@ ATNCON: db    9               ;DEGREE
 ;----------------------------------------------------------------------------
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
+;----------------------------------------------------------------------------
+;;; ## ON ERROR / ERROR ##
+;;; BASIC error handling function and codes
+;;; ### FORMAT: ###
+;;;  - ON ERROR GOTO < line number >
+;;;    - Action: details
+;;; ### EXAMPLE: ###
+;;; ` 10 ON ERROR GOTO 900 `
+;;;
+;;; ` 20 NEXT `
+;;;
+;;; ` 30 REM I get skipped `
+;;;
+;;; ` 100 PRINT ERROR (0) `
+;;;
+;;; ` 110 PRINT ERROR (1) `
+;;;
+;;; ` 120 PRINT ERROR (2) `
+;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 ;----------------------------------------------------------------------------
 
 ONGOTX: pop     hl              ; Discard Hook Return Addres
@@ -290,9 +309,14 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;;;    - Action: Clears last error number and line.
 ;;;      - Leaves variables and arrays intact.
 ;;; ### EXAMPLES: ###
-;;; - 
+;;; ` CLEAR xxx, yyy `
+;;; > Details of this example
+;;;
+;;; ` CLEAR bbb
+;;; > Details of this example
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
+
 CLEARX: ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
         call    CLERR
         pop     af              ; Discard Hook Return Addres

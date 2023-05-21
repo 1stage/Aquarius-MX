@@ -1,28 +1,28 @@
-Building AquBASIC from Source 
+Building MX BASIC from Source 
 =============================
 
 NEEDS UPDATING BEFORE 2.0 LAUNCH! - SPH
 
 | file         |    purpose   |
 |------------------|-----------------------------------------------------------|
-| aqubasic.asm     | ROM initialisation, boot menu, extended BASIC commands |
-| aqubug.asm       | Aqubug debugger |
-| ch376.asm        | USB driver |
-| debug.asm        | 'lite' debugger (see notes below) |
-| dos.asm          | Interface between BASIC and USB driver |
-| ds1244rtc.asm    | Interface to the Dallas DS1244 RTC (Real Time Clock) chip |
-| dtm_lib.asm      | DateTime formatting and caluculation functions |
-| edit.asm         | BASIC command line editor |
-| extbasic.asm     | Extended BASIC commands  |
-| filerequest.asm  | Select file from list  |
-| keycheck.asm     | Keyboard scan |
-| load_rom.asm     | ROM loader  |
-| softclock.asm    | Virtual interface to the RTC (Real Time Clock) |
-| strings.asm       | String functions |
-| windows.asm      | Windowed text |
-| include/aquarius.i       | Aquarius system defines |
-| include/macros.i         | Structure macros etc. |
-| include/windows.i        | Windowed text defines     |   
+| aqubasic.asm        | ROM initialisation, boot menu, extended BASIC commands |
+| aqubug.asm          | Aqubug debugger |
+| ch376.asm           | USB driver |
+| debug.asm           | 'lite' debugger (see notes below) |
+| dos.asm             | Interface between BASIC and USB driver |
+| ds1244rtc.asm       | Interface to the Dallas DS1244 RTC (Real Time Clock) chip |
+| dtm_lib.asm         | DateTime formatting and caluculation functions |
+| edit.asm            | BASIC command line editor |
+| extbasic.asm        | Extended BASIC commands  |
+| filerequest.asm     | Select file from list  |
+| keycheck.asm        | Keyboard scan |
+| load_rom.asm        | ROM loader  |
+| softclock.asm       | Virtual interface to the RTC (Real Time Clock) |
+| strings.asm         | String functions |
+| windows.asm         | Windowed text |
+| include/aquarius.i  | Aquarius system defines |
+| include/macros.i    | Structure macros etc. |
+| include/windows.i   | Windowed text defines     |   
 
 20 MAY 2023 (SPH) - zmac is still the recommended method for compiling the MX ROM into a usable binary file, but the project has been turned into a Visual Studio Code project to make things simpler for most folks to work with. Here are the general steps to setting up Visual Studio Code and zmac on a Windows-based PC:
   - From the Microsoft site, download and install Visual Studio Code (not Visual Studio 2022, etc). The default install settings are fine. You should restart Windows after install is complete.

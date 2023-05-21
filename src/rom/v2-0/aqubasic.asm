@@ -1114,6 +1114,7 @@ ST_reserved:
 ;;;
 ;;; ` DOKE $3028, $6162 `
 ;;; > Put the characters `ba` at the top left of the screen
+;;;
 ;;; ` DOKE $3028, $3130, $3332 `
 ;;; > Put the characters `0123` at the top left of the screen
 ;----------------------------------------------------------------------------
