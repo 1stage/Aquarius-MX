@@ -9,6 +9,9 @@
 ;                   line input toggles CAPS lock off/on with ".
 ; 2017-06-12 V1.0   bumped to release version
 ;
+; 2023-05-20 V2.0   screen save can be enables at compile time - CFK
+
+
 NUMBRKS    = 4         ; number of breakpoints
 LINESIZE   = 28        ; length of line input buffer
 UNASMLINES = 8         ; number of lies to show in UnASM window
@@ -66,6 +69,9 @@ STRING    = 3         ;   flag: entering mixed case string (toggled with ")
    STRUCT _TraceOp,4 ; 'sandbox' for instruction being traced
      BYTE _TraceBrk  ; RST $38 at end of sandbox
    STRUCT _Breakpoints,brk.size*NUMBRKS ;breakpoint array
+ifdef scrn_flag
+   STRUCT _scrn_save,$40*10*2  ; buffer to hold screen under window
+endif
    STRUCT _LineBuffer,LINESIZE ; user input line buffer
    STRUCT _dbg_stack,64        ; our private stack
    ENDSTRUCT v
@@ -97,6 +103,9 @@ TraceOp     = vars+_TraceOp
 TraceBrk    = vars+_TraceBrk
 Breakpoints = vars+_Breakpoints
 LineBuffer  = vars+_linebuffer  ; line input buffer
+ifdef scrn_flag
+scrn_save   = vars+_scrn_save
+endif
 SearchStr   = LineBuffer        ; using line input buffer
 stack_top   = vars+v.size       ; stack grows downwards from here
 
@@ -110,6 +119,9 @@ ST_DEBUG:
        LD    (SP_SAVE),SP       ; save system stack pointer
        LD    (SP_reg),SP        ; copy to SP_reg
        LD    SP,stack_top       ; SP = our private stack
+ifdef scrn_save
+       call  save_screen        ; save system screen
+endif
        LD    HL,(CURRAM)
        LD    DE,$3000+(40*11)
        CMPHLDE
@@ -131,7 +143,11 @@ DebugMenu:
 ; exit to caller
 _quit: LD    IX,BlankWindow
        LD    A,CYAN
+ifdef scrn_flag
+       CALL  restore_screen     ; restore system screen
+else
        CALL  ColorWindow        ; remove debug window colors
+endif
        LD    HL,(HL_reg)        ; update BASIC text pointer
        LD    SP,(SP_SAVE)       ; restore system stack pointer
        RET                      ; return to system
@@ -261,8 +277,11 @@ trace_cmds:
        dw    SearchMem
        db    '?'
        dw    TraceHelp
+ifdef scrn_flag
+       db " "
+       dw ToggleScreen
+endif
 trace_cmd_end:
-
 
 TraceHelp:
        LD    IX,TraceHelpWindow
@@ -281,6 +300,13 @@ InputPC:
        LD    IX,JumpWindow
        CALL  OpenWindow
        JP    InputAddress
+
+
+ifdef scrn_flag
+ToggleScreen:
+       call  restore_screen   ; show BASIC screen
+       jp    WAIT_KEY         ; wait for any key
+endif
 
 ; skip over current instruction
 _Skip:
@@ -311,6 +337,9 @@ _trace_back:
 ; run away (eg. JR, JP, CALL) are emulated.
 ;
 _trace_next:
+ifdef scrn_flag
+       CALL  restore_screen     ; restore system screen
+endif
        LD    HL,TraceCode
        LD    DE,TraceOp
        LD    BC,5             ; initialize trace code buffer to NOP*4+BREAK
@@ -394,6 +423,9 @@ Go:    ld    ix,GoWindow
 _goHL: LD    (PC_reg),HL     ; set PC
 ; from PC_reg
 _trace_go:
+ifdef scrn_flag
+       CALL  restore_screen     ; restore system screen
+endif
        CALL  SetBreakpoints  ; set all breakpoints
        CALL  InitBreak       ; redirect RST $38 to Break
 ; continue tracing
@@ -476,6 +508,9 @@ Break:
        LD    (SP_reg),HL
        ex    DE,HL           ; tracing from return address
 .in_sandbox:
+ifdef scrn_save
+       call  save_screen        ; save system screen
+endif
        JP    TraceAddr
 ; may get here from:-
 ; - RST $38    replacing user code, address in breakpoint array
@@ -502,6 +537,9 @@ Break:
        JR    NZ,.nobrk
        LD    (PC_reg),DE     ; yes, PC = breakpoint addreess
 .nobrk:
+ifdef scrn_save
+       call  save_screen        ; save system screen
+endif
        CALL  RemoveBreaks    ; restore original code at all breakpoints
        JP    Trace           ; tracing from breakpoint
 
@@ -522,6 +560,9 @@ fillmem:
        POP   HL                  ; HL = end
        POP   DE                  ; DE = start
        RET   Z                   ; return if no fill byte
+ifdef scrn_flag
+       CALL  restore_screen     ; restore system screen
+endif
        CP    A                   ; reset Carry flag
        SBC   HL,DE               ; HL = length
        RET   C                   ; quit if end < start
@@ -534,6 +575,9 @@ fillmem:
        INC   DE                  ; DE = start +1
        LDIR                      ; copy fillbyte to other locations
 .done:
+ifdef scrn_save
+       call  save_screen        ; save system screen
+endif
        RET
 
 ;-------------------------------------------------------
@@ -557,6 +601,9 @@ movemem:
        POP   HL                  ; HL = start
        POP   BC                  ; BC = length
        RET   Z                   ; quit if no dest
+ifdef scrn_flag
+       CALL  restore_screen     ; restore system screen
+endif
        OR    A
        SBC   HL,DE
        ADD   HL,DE
@@ -573,6 +620,9 @@ mm_lddr:
        INC   BC
        LDDR
 mm_done:
+ifdef scrn_save
+       call  save_screen        ; save system screen
+endif
        RET
 
 ;-------------------------------------------------------
@@ -614,9 +664,15 @@ LoadFile:
 .loadfile:
        CALL  InputAddress      ; input load address
        RET   Z
+ifdef scrn_flag
+       CALL  restore_screen     ; restore system screen
+endif
        LD    DE,-1
        CALL  usb__read_bytes   ; read file into memory
        CALL  usb__close_file
+ifdef scrn_save
+       call  save_screen        ; save system screen
+endif
        CALL  ShowFileBytes     ; print number of bytes read
        ld    hl,.bytesloaded_msg
        call  WinPrtStr
@@ -671,6 +727,11 @@ WriteFile:
        CALL  usb__open_write  ; open file for writing
        pop   hl
        JR    NZ,_file_error   ; error if can't open file
+ifdef scrn_flag
+       LD    A,H
+       CP    $38              ; saving screen RAM?
+       call  c,restore_screen ; yes, switch to system screen
+endif
 .write:
        CALL  usb__write_bytes ; write data to disk
        CALL  usb__close_file
@@ -1186,7 +1247,14 @@ _dmp_waitkey:
        JR    Z,_dmp_back
        CP    $03
        JP    Z,_quit           ; if ^C then exit debugger
+ifdef scrn_flag
+       CP    " "               ; SPACE = show system screen
+       JR    NZ,_dmp_waitkey
+       CALL  ToggleScreen
+       JR    _dmp_again
+else
        JR    _dmp_waitkey
+endif
 _dmp_back:
        LD    BC,-(DUMPLINES*16)
        ADD   HL,BC             ; rewind to previous page
@@ -3206,6 +3274,38 @@ TraceCode:
     DB    0,0,0,0       ; target instruction
     RST   $38           ; break
 
+
+ifdef scrn_flag 
+save_screen:
+       push  hl
+       push  de
+       push  bc
+       LD    HL,$3000+40
+       LD    DE,scrn_save
+       LD    BC,40*10
+       LDIR                       ; save chars
+       LD    HL,$3400+40
+       LD    DE,scrn_save+(40*10)
+       LD    BC,40*10
+       jr    ld40
+restore_screen:
+       push  hl
+       push  de
+       push  bc
+       LD    HL,scrn_save
+       LD    DE,$3000+40
+       LD    BC,40*10
+       LDIR                       ; restore chars
+       LD    HL,scrn_save+(40*10)
+       LD    DE,$3400+40
+ld40:  LD    BC,40*10
+       LDIR                       ; restore colors
+       pop   bc
+       pop   de
+       pop   hl
+       RET
+endif
+
 edit_msg:
        db    CR
        db    "  RTN     = next address",CR
@@ -3222,8 +3322,13 @@ TraceHelpMsg:
       db  " P call proc   G go @addr   R register",CR
       db  " D dump mem    E edit mem   F fill mem",CR
       db  " M move mem    CTRL-F find  B brkpoint",CR
+ifdef scrn_flag
+      db  " T trace addr  U unassemble   SPACE   ",CR
+      db  " S/Z/H/V/N/C toggle flag   show screen",CR
+else
       db  " T trace addr  U unassemble",CR
       db  " S/Z/H/V/N/C toggle flag",CR
+endif
       db  " L load file   W write file     Q Quit",0
 
 BlankWindow:
