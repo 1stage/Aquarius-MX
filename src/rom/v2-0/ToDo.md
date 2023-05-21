@@ -1,4 +1,5 @@
-# TO-DO List ##
+TO-DO List
+==============
 
 This file is for recording upcoming changes and features that are being added to track them.
 
