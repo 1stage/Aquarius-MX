@@ -2171,10 +2171,17 @@ FLOAT_DE:
     ret
 
 
-;=====================================================================
-;                  Miscellaneous functions
-
-; routines from Extended BASIC
+;---------------------------------------------------------------------
+;                 Extended BASIC Commands and Functions 
+;---------------------------------------------------------------------
+; DEFX
+; FNDOEX
+; ATN1
+; ONGOTX
+; ERRORX
+; FN_ERR
+; CLEARX
+; SCRTCX
     include "extbasic.asm"
 
 
