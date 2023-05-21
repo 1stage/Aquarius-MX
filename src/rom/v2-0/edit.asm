@@ -32,6 +32,7 @@
 ;;;    - Note: The above control keys are also available when entering a new line or direct mode command.
 ;------------------------------------------------------------------------------
 
+
 ST_EDIT:
     call  SCNLIN          ; DE = line number
     ld    a,d
@@ -356,6 +357,11 @@ EDITLINE:
     scf                   ; set Carry flag = edit aborted
     ret
 
+keymap:
+    db 'Q'-64,'X'-64,'G'-64,'Y'-64,'U'-64,'I'-64,'O'-64
+keychr: 
+    db  '`',  '~',   '|',   '{',   '}',   '[',   ']' 
+maplen = keychr-keymap
 
 ;--------------------------------------------------------------------
 ;         Clear Keyboard Buffer and Wait for Key

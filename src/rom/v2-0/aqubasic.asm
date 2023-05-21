@@ -1312,7 +1312,6 @@ STRLENADR:
 ;;; ` COPY $2000,$3000,2048 `
 ;;; > Restore Screen and Colors
 ;----------------------------------------------------------------------------
-
 ST_COPY:   
     pop     af              ; Discard Saved Token, Flags
     rst     CHRGET          ; Skip COPY Token
