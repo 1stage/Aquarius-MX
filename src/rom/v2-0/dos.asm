@@ -65,16 +65,16 @@ DF_ARRAY  = 7      ; set = numeric array
 ;;;  - CD < dirname >
 ;;;    - Move into directory indicated by < dirname >
 ;;; ### EXAMPLES: ###
-;;; ` DIR "songs3" `
+;;; ` CD "songs3" `
 ;;; > Move into `songs3` (add `songs3` to current path)
 ;;;
-;;; ` DIR ".." `
+;;; ` CD ".." `
 ;;; > Move to root of the path
 ;;;
-;;; ` DIR "\" `
+;;; ` CD "\" `
 ;;; > Back up one level to folder containing this one
 ;;;
-;;; ` DIR `
+;;; ` CD `
 ;;; > Show the current path
 ;------------------------------------------------------------------------------
 
