@@ -3,29 +3,32 @@
 This file is for recording upcoming changes and features that are being added to track them.
 
 ## IN PROCESS: ##
-
+### ROM ###
 - Test hardware behavior without RTC installed (RAM only)
-
-- SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
-
-- AquaLite: Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
-
-- AquaLite: Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
-
-- AquaLite: Update RTC emulation
-  - When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
-  - Add option for RTC installed or not
 
 - Modify dos.asm and CH376.asm to write USB file timestamp
 
 - Add MKDIR and RMDIR to dos.asm
-  - Vefiry this is feasible
+  - Verify this is feasible
   - Add accompanying routines to CH376.asm
 
 - CLEAR: use GETADR from memory size, limit to below system variables
 
-## COMPLETE: ##
+### AquaLite ###
+- Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
 
+- Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
+
+- Update RTC emulation
+  - When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
+  - Add option for RTC installed or not
+
+- Fix LOAD/RUN of *.ROM files... shouldn't behave differently than hardware.
+
+### Other ###
+- SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
+
+## COMPLETE: ##
 - PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 
 - Test/Tweak, document KEY() function
@@ -62,7 +65,7 @@ This file is for recording upcoming changes and features that are being added to
 
 - Implement DEF FN and ATN()
 
-- Stand-alone PT3 Player works both on actual hardware and AquaLite in MX mode.
+- Stand-alone PT3 Player runs both on actual hardware and AquaLite in MX mode.
 
 - Fix issue where no result is returned from DTM$() after a successfull SDTM is made.
 
