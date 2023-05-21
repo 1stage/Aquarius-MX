@@ -430,7 +430,7 @@ Get a listing of the files on the current USB directory
 > Show any files with a letter A in the name, along with their last DateTime stamp
 
 
-## EDIT Statement ##
+## EDIT ##
 Edit BASIC Line
 ### FORMAT: ###
  - EDIT < line number >
