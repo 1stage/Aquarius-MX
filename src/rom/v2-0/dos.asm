@@ -56,7 +56,28 @@ DF_ARRAY  = 7      ; set = numeric array
 ; CD "/path"    = set path to '/path'
 ; CD ""         = no operation
 ; CD            = show path
-;
+;------------------------------------------------------------------------------
+;;; ## CD ##
+;;; Change directory / current path
+;;; ### FORMAT: ###
+;;;  - CD
+;;;    - Action: show current path
+;;;  - CD < dirname >
+;;;    - Move into directory indicated by < dirname >
+;;; ### EXAMPLES: ###
+;;; ` DIR "songs3" `
+;;; > Move into `songs3` (add `songs3` to current path)
+;;;
+;;; ` DIR ".." `
+;;; > Move to root of the path
+;;;
+;;; ` DIR "\" `
+;;; > Back up one level to folder containing this one
+;;;
+;;; ` DIR `
+;;; > Show the current path
+;------------------------------------------------------------------------------
+
 ST_CD:
     push   hl                    ; push BASIC text pointer
     ld     c,a
@@ -419,6 +440,7 @@ _ibl_done:
 ;;; ` SAVE "capture.src",12288,2048 `
 ;;; > Save Screen and Color RAM as raw binary file
 ;------------------------------------------------------------------------------
+
 ST_SAVE:
     call    dos__clearError     ; returns A = 0
     ld      (DOSFLAGS),a        ; clear all flags
