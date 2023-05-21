@@ -371,7 +371,7 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;;; ` CLEAR 500, 0 `
 ;;; > Reserves 500 bytes for strings and sets to the maximum allowed
 ;;;
-;;; ` CLEAR ERR
+;;; ` CLEAR ERR `
 ;;; > Sets last error number and line as returned by ERR(1) and ERR(2) to 0.
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
