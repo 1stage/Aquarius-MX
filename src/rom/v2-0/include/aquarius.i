@@ -322,25 +322,25 @@ CLK_NONE    = $00
 ; code is offset to error name (2 characters)
 ;
 ;name       code            description
-ERRNF  =    $00             ; NEXT without FOR
-ERRSN  =    $02             ; Syntax error
-ERRRG  =    $04             ; RETURN without GOSUB
-ERROD  =    $06             ; Out of DATA
-ERRFC  =    $08             ; Function Call error
-ERROV  =    $0A             ; Overflow
-ERROM  =    $0C             ; Out of memory
-ERRUS  =    $0E             ; Undefined Line Number (Undefined Statement)
-ERRBS  =    $10             ; Bad subscript
-ERRDD  =    $12             ; Re-DIMensioned array
-ERRDZ  =    $14             ; Division by zero (/0)
-ERRID  =    $16             ; Illegal direct
-ERRTM  =    $18             ; Type mismatch
-ERROS  =    $1A             ; out of string space
-ERRLS  =    $1C             ; String too long
-ERRST  =    $1E             ; String formula too complex
-ERRCN  =    $20             ; Cant CONTinue
-ERRUF  =    $22             ; UnDEFined FN function
-ERRMO  =    $24             ; Missing operand
+ERRNF  =    $00             ; NF NEXT without FOR
+ERRSN  =    $02             ; SN Syntax error
+ERRRG  =    $04             ; RG RETURN without GOSUB
+ERROD  =    $06             ; OD Out of DATA
+ERRFC  =    $08             ; FC Function Call error
+ERROV  =    $0A             ; OV Overflow
+ERROM  =    $0C             ; OM Out of Memory
+ERRUS  =    $0E             ; UL Undefined Line number (Undefined Statement)
+ERRBS  =    $10             ; BS Bad Subscript
+ERRDD  =    $12             ; DD Re-DIMensioned array (Duplicate Definition)
+ERRDZ  =    $14             ; /0 Division by Zero 
+ERRID  =    $16             ; ID Illegal direct
+ERRTM  =    $18             ; TM Type mismatch
+ERROS  =    $1A             ; OS Out of String space
+ERRLS  =    $1C             ; LS String too Long
+ERRST  =    $1E             ; WT String formula too complex
+ERRCN  =    $20             ; CN Cant CONTinue
+ERRUF  =    $22             ; UF UnDEFined FN function
+ERRMO  =    $24             ; MO Missing operand
 
 
 ;----------------------------------------------------------------------------

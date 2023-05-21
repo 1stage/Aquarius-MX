@@ -262,7 +262,60 @@ NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
         jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
 
 ;----------------------------------------------------------------------------
-; ERR Function
+;;; ## ERR ##
+;;; Error Status
+;;; ### FORMAT: ###
+;;;  - ERROR ( < number > )
+;;;    - Action: Returns error status values.
+;;;      - If <number> is 0, returns the line number to GOTO when an error occures.
+;;;        - Returns 0 if no error trapping is disabled.
+;;;      - If <number> is 1, returns the number corresponding to the last error.
+;;;        - - Returns 0 if no error has occured.
+;;;      - If <number> is 2, returns the line number the last error occured on.
+;;;        - Returns 0 if no error has occured.
+;;;        - Returns 65535 if the error occured in immediate mode.
+;;;      - If <number> is 3, returns the number corresponding to the last DOS error.
+;;;        - Returns 0 if the last DOS command completed successfully.
+;;;
+;;; ### Basic Error Numbers ###
+;;; | Err# | Code | Description                  |
+;;; |------|------|------------------------------|  
+;;; |   1  |  NF  | NEXT without FOR             |
+;;; |   2  |  SN  | Syntax error                 |
+;;; |   3  |  RG  | RETURN without GOSUB         |
+;;; |   4  |  OD  | Out of DATA                  |
+;;; |   5  |  FC  | Function Call error          |
+;;; |   6  |  OV  | Overflow                     |
+;;; |   7  |  OM  | Out of Memory                |
+;;; |   8  |  UL  | Undefined Line number        |
+;;; |   9  |  BS  | Bad Subscript                |
+;;; |  10  |  DD  | Re-DIMensioned array         |
+;;; |  11  |  /0  | Division by Zero             |
+;;; |  12  |  ID  | Illegal direct               |
+;;; |  13  |  TM  | Type mismatch                |
+;;; |  14  |  OS  | Out of String space          |
+;;; |  15  |  LS  | String too Long              |
+;;; |  16  |  WT  | String formula too complex   |
+;;; |  17  |  CN  | Cant CONTinue                |
+;;; |  18  |  UF  | UnDEFined FN function        |
+;;; |  19  |  MO  | Missing operand              |
+;;; ### DOS Error Numbers ###
+;;; | Err# | Error Message       | Description                    |
+;;; |------|---------------------|--------------------------------|
+;;; |   1  | no CH376            | CH376 not responding           | 
+;;; |   2  | no USB              | Not in USB mode                |
+;;; |   3  | no disk             | USB Drive mount failed         |
+;;; |   4  | invalid name        | Invalid DOS file name          |
+;;; |   5  | file not found      | File does not exist            |
+;;; |   6  | file empty          | File does not contain data     |
+;;; |   7  | filetype mismatch   | File is not in CAQ format      |
+;;; |   8  | remove dir error    | Unable to remove directory     |
+;;; |   9  | read error          | Error while reading USB drive  |
+;;; |  10  | write error         | Error while writing USB drive  |
+;;; |  11  | file create error   | Unable to create file          |
+;;; |  12  | directory not found | Unable to open directory       |
+;;; |  13  | path too long       | Path is too long               |
+;;; |  14  | disk error #xx      | Other disk error               |
 ;----------------------------------------------------------------------------
 FN_ERR: call    InitFN          ; Parse Arg and set return address
         call    CONINT          ; Convert to Byte
@@ -309,11 +362,17 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;;;    - Action: Clears last error number and line.
 ;;;      - Leaves variables and arrays intact.
 ;;; ### EXAMPLES: ###
-;;; ` CLEAR xxx, yyy `
-;;; > Details of this example
+;;; ` CLEAR 2000 `
+;;; > Reserves 2000 bytes of space for strings.
 ;;;
-;;; ` CLEAR bbb
-;;; > Details of this example
+;;; ` CLEAR 100, $A000 `
+;;; > Reserves 100 bytes for strings and sets top of BASIC memory to 40960
+;;;
+;;; ` CLEAR 500, 0 `
+;;; > Reserves 500 bytes for strings and sets to the maximum allowed
+;;;
+;;; ` CLEAR ERR
+;;; > Sets last error number and line as returned by ERR(1) and ERR(2) to 0.
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
 

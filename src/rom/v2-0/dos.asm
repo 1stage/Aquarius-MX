@@ -221,8 +221,8 @@ _stl_no_file:
 _stl_bad_file:
     ld      a,ERROR_BAD_FILE      ; file type incompatible with load method
     jr      _stl_show_error
-_stl_no_addr:
-    ld      a,ERROR_NO_ADDR       ; no load address specified
+_stl_rmdir_err:
+    ld      a,ERROR_RMDIR_FAIL    ; no load address specified
 _stl_show_error:
     call    _show_error           ; print DOS error message (A = error code)
     call    usb__close_file       ; close file (if opened)
@@ -248,7 +248,7 @@ ERROR_BAD_NAME    equ   4 ; bad name
 ERROR_NO_FILE     equ   5 ; no file
 ERROR_FILE_EMPTY  equ   6 ; file empty
 ERROR_BAD_FILE    equ   7 ; file header mismatch
-ERROR_NO_ADDR     equ   8 ; no load address in binary file
+ERROR_RMDIR_FAIL  equ   8 ; can't remove directory
 ERROR_READ_FAIL   equ   9 ; read error
 ERROR_WRITE_FAIL  equ  10 ; write error
 ERROR_CREATE_FAIL equ  11 ; can't create file
@@ -291,7 +291,7 @@ _error_messages:
     dw      no_file_msg          ; 5
     dw      file_empty_msg       ; 6
     dw      bad_file_msg         ; 7
-    dw      no_addr_msg          ; 8
+    dw      rmdir_error          ; 8
     dw      read_error_msg       ; 9
     dw      write_error_msg      ;10
     dw      create_error_msg     ;11
@@ -312,8 +312,8 @@ file_empty_msg
     db      "file empty",0
 bad_file_msg:
     db      "filetype mismatch",0
-no_addr_msg:
-    db      "no load address",0
+rmdir_error:
+    db      "remover dir error",0
 read_error_msg:
     db      "read error",0
 write_error_msg:
