@@ -78,6 +78,15 @@ Change directory / current path
 > Show the current path
 
 ---
+## CD$
+Get Current Directory
+### FORMAT:
+ - CD$
+   - Action: Returns the current directory as displayed by the CD command with no arguments
+### EXAMPLE:
+` PRINT CD$ `
+
+---
 ## CLEAR
 Clear Variables and/or Error Code
 ### FORMAT:

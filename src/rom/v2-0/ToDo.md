@@ -107,3 +107,6 @@ This file is for recording upcoming changes and features that are being added, a
 - [x] CLEAR: use GETADR from memory size, limit to below system variables
 
 - [x] Transition in-line documentation (;;;) to Markdown format.
+
+- [x] Create CD$ pseudo-variable for PATH to string value
+  
