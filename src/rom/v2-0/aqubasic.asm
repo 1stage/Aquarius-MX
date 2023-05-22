@@ -1059,7 +1059,25 @@ BASTMT:
     ld      hl,TBLJMPS          ; HL = our command jump table
     jp      $0665               ; Continue with NEXTSTMT
 
-; RUN
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## RUN
+;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
+;;; ### FORMAT:
+;;;  - RUN < filename >
+;;;    - Action: Loads program into memory and runs it.
+;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
+;;;      - Wildcards and paths cannot be used.
+;;; ### EXAMPLES:
+;;; ` RUN "RUN-ME.BAS" `
+;;; > Loads and runs the file named `RUN-ME.BAS`. Note the program must exist within the current folder path.
+;;;
+;;; ` 10 PRINT "Loading Program..." `
+;;;
+;;; ` 20 RUN "NEXTPRG.CAQ" `
+;;; > Displays "Loading Program..." on screen and then immediately loads and runs the `NEXTPRG.CAQ` program.
+;----------------------------------------------------------------------------
+
 RUNPROG:
     call    CLNERR             ; Clear Error Trapping Variables
     pop     af                 ; clean up stack
@@ -1134,12 +1152,13 @@ ST_reserved:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## DOKE ##
+;;; ---
+;;; ## DOKE
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - DOKE < address >, < word >, [, <word> ...]
 ;;;    - Action: Writes < word > to memory starting at < address >.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` DOKE 14340, 1382 `
 ;;; > Set USR() function address
 ;;;
@@ -1171,14 +1190,15 @@ ST_DOKE:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## POKE (Extended) ##
+;;; ---
+;;; ## POKE (Extended)
 ;;; Writes byte(s) to memory location(s)
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
 ;;;    - Action: Writes < byte or string > to < address >, followed by < address > STEP counts away...
 ;;;  - POKE < address > TO < address >, < byte >
 ;;;    - Action: Writes < byte > to memory from < address > TO < address >.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` POKE $3000+500,64 `
 ;;; > Display `@` at screen center
 ;;;
@@ -1292,9 +1312,10 @@ STRLENADR:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## CLS (Extended) ##
+;;; ---
+;;; ## CLS (Extended)
 ;;; Clear Screen
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - CLS [ < colors > ]
 ;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
 ;;; >
@@ -1312,7 +1333,7 @@ STRLENADR:
 ;;;
 ;;;    - Warning: If the foreground and background colors are the same, typed and and PRINTed text will be invisible.
 ;;;    - Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` CLS `
 ;;; > Clear screen with default colors
 ;;;
@@ -1360,13 +1381,14 @@ clearscreen:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## OUT ##
+;;; ---
+;;; ## OUT
 ;;; Write to Z80 I/O Port
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - OUT < address >,< byte >
 ;;;    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
 ;;;    - Advanced: During the write, < address > is put on the Z80 address bus.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` OUT 246, 12 `
 ;;; > Send a value of 12 to the SOUND chip
 ;;;
@@ -1385,14 +1407,15 @@ ST_OUT:
     ret
 
 ;----------------------------------------------------------------------------
-;;; ## LOCATE ##
+;;; ---
+;;; ## LOCATE
 ;;; Move the cursor to a specific column and row on the screen
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - LOCATE < column >,< row >
 ;;;    - Action: Moves the cursor to the specified spot on the screen
-;;;      - Column can be 1-38
-;;;      - row can be 1-23
-;;; ### EXAMPLES: ###
+;;;      - Column can be 1-38 (leftmost and rightmost columns cannot be used)
+;;;      - Row can be 1-23 (topmost and bottommost rows cannot be used)
+;;; ### EXAMPLES:
 ;;; ` LOCATE 1, 1:print"Hello" `
 ;;; > Prints `Hello` at top left of screen
 ;;;
@@ -1447,14 +1470,15 @@ GOTO_HL:
 
 
 ;----------------------------------------------------------------------------
-;;; ## PSG ##
+;;; ---
+;;; ## PSG
 ;;; Write to Programmable Sound Generator(s)
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - PSG register, value [, ...]
 ;;;    - Action: Writes a pair of values to either PSG1 or PSG2
 ;;;      - registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
 ;;;      - registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PSG 8,15,0,148,1,1,7,56 `
 ;;; > Play a Db4 note on PSG1 channel A, continuously
 ;;;
@@ -1528,12 +1552,13 @@ InitFN:
     jp      (hl)              ; Fast Return 
 
 ;----------------------------------------------------------------------------
-;;; ## PEEK (Extended) ##
+;;; ---
+;;; ## PEEK (Extended)
 ;;; Read from Memory
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - PEEK(< address >)
 ;;;    - Action: Reads a byte from memory location < address >.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT CHR$(PEEK(12288)) `
 ;;; > Print the current border character
 ;;;
@@ -1549,14 +1574,15 @@ FN_PEEK:
     jp      SNGFLT            ; and Float it
 
 ;----------------------------------------------------------------------------
-;;; ## DEEK ##
+;;; ---
+;;; ## DEEK
 ;;; Read 16 bit word from Memory
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;; - DEEK(< address >)
 ;;;   - Action: Reads a word from memory location < address >, returning a number
 ;;; between 0 and 65535.
 ;;;
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` POKE DEEK(14337),PEEK(14349) `
 ;;; > Remove cursor from screen.
 ;;;
@@ -1576,13 +1602,14 @@ FLOAT_M:
     jp      FLOAT_DE          ; Float and Return
     
 ;----------------------------------------------------------------------------
-;;; ## IN ##
+;;; ---
+;;; ## IN
 ;;; Read Z80 I/O Port
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - IN(< address >)
 ;;;    - Action: Reads a byte from the I/O port specified by LSB of < address >.
 ;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT IN(252) `
 ;;; > Prints cassette port input status
 ;;;
@@ -1599,15 +1626,16 @@ FN_IN:
     jp      SNGFLT          ; return with 8 bit input value in variable var
 
 ;----------------------------------------------------------------------------
-;;; ## JOY ##
+;;; ---
+;;; ## JOY
 ;;; Read AY-3-8910 Control Pad Inputs
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - JOY(< stick >)
 ;;;    - Action: Reads integer input value from < stick >, where:
-;;;      - `0` will read left or right contrl pad
+;;;      - `0` will read left or right control pad
 ;;;      - `1` will read left control pad only
 ;;;      - `2` will read right control pad only
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT JOY(0) `
 ;;; > Prints input value of either/both control pads (not effective in immediate mode).
 ;;;
@@ -1662,9 +1690,10 @@ joy05:
 
 
 ;----------------------------------------------------------------------------
-;;; ## KEY #
+;;; ---
+;;; ## KEY
 ;;; Read Keyboard
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - KEY(< number >)
 ;;;    - Action: Checks for a key press and returns the ASCII code of the key.
 ;;;      - If < number > is 0, waits for a key to be pressed then returns it's ASCII code.
@@ -1681,7 +1710,7 @@ joy05:
 ;;;  NOTE: LEFT  UP  DOWN RIGHT  dot  black   blank   checkerboard
 ;;; ```
 ;;;
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT KEY(0) `
 ;;; > Wait for a key press then print ASCII code
 ;;;
@@ -1728,12 +1757,15 @@ FN_KEY:
     jp      SNGFLT            ; and float it
 
 ;----------------------------------------------------------------------------
-;;; ## DEC ##
+;;; ---
+;;; ## DEC
 ;;; Hexadecimal to integer conversion
-;;; ### FORMAT: ###
-;;;  - DEC(< string >)
-;;;    - Action: Returns the DECimal value of the hexadecimal number in < string >. If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero. String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
-;;; ### EXAMPLES: ###
+;;; ### FORMAT:
+;;;  - DEC(< hexadecimal string >)
+;;;    - Action: Returns the DECimal value of the hexadecimal number in < hexadecimal string >.
+;;;      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
+;;;      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
+;;; ### EXAMPLES:
 ;;; ` PRINT DEC("FFFF") `
 ;;; > Prints "65535"
 ;;;
@@ -1748,12 +1780,13 @@ FN_DEC:
     jp      EVAL_HEX        ; Convert the Text
 
 ;----------------------------------------------------------------------------
-;;; ## HEX$ ##
+;;; ---
+;;; ## HEX$
 ;;; Integer to hexadecimal conversion
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - HEX$(< number >)
 ;;;    - Action: Returns string containing < number > in two-byte hexadecimal format. FC Error if < number > is not in the range -32676 through 65535.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(1) `
 ;;; > Prints "0001"
 ;;;
@@ -1825,12 +1858,13 @@ PRINTHEX:
     jp      TTYOUT
 
 ;----------------------------------------------------------------------------
-;;; ## VER ##
+;;; ---
+;;; ## VER
 ;;; Returns 16 bit integer value of MX BASIC ROM version
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - VER(0)
 ;;;    - Action: Returns integer of current MX BASIC ROM version
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT VER(0) `
 ;;; > Prints `512`
 ;;;
@@ -1852,13 +1886,14 @@ FN_VER:
 ; on exit from user code, HL should point to end of statement
 ;
 ;----------------------------------------------------------------------------
-;;; ## CALL ##
-;;; Run to machine code at specified address
-;;; ### FORMAT: ###
+;;; ---
+;;; ## CALL
+;;; Jump to and run machine code at specified address
+;;; ### FORMAT:
 ;;;  - CALL(< address >)
 ;;;    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
 ;;;    - < address > can be a 16 bit signed or unsigned integer or hex value 
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` CALL($A000) `
 ;;; > Begin executing machine code stored at upper half of middle 32k expansion RAM
 ;;;
@@ -1917,15 +1952,16 @@ SPL_DATETIME:
     ret    
     
 ;------------------------------------------------------------------------------
-;;; ## SDTM ##
+;;; ---
+;;; ## SDTM
 ;;; Set DateTime
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - SDTM < string >
 ;;;    - Action: If a Real Time Clock is installed, allows user to set the time on the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" format:
 ;;;         - Improperly formatted string causes FC Error
 ;;;         - DateTime is set by default to 24 hour mode,
 ;;;           with cc (hundredths of seconds) set to 0
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` SDTM "230411101500" `
 ;;; > Sets DateTime to 11 APR 2023 10:15:00 (24 hour format)
 ;;;
@@ -1958,15 +1994,16 @@ ST_SDTM:
     jp      rtc_write       ; Write to RTC and Return
 
 ;------------------------------------------------------------------------------
-;;; ## DTM$ ##
+;;; ---
+;;; ## DTM$
 ;;; Get DateTime
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - DTM$(< number >)
 ;;;    - Action: If a Real Time Clock is installed:
 ;;;      - If < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
 ;;;      - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
 ;;;      - Returns "" if a Real Time Clock is not detected.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT DTM$(0) `
 ;;; > 38011903140700
 ;;;
@@ -2022,11 +2059,12 @@ return_to_eval:
 
 
 ;------------------------------------------------------------------------------
-;;; ## Hexadecimal Constants ##
+;;; ---
+;;; ## Hexadecimal Constants
 ;;;  - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
 ;;;    - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
 ;;;    - They may not be used in DATA statements, as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT $FFFF `
 ;;; > Prints 65535
 ;;;
@@ -2079,15 +2117,16 @@ EVAL_HEX:
 
 
 ;------------------------------------------------------------------------------
-;;; ## & Operator ##
+;;; ---
+;;; ## & Operator
 ;;; Get Variable Address
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - &< variable name >
 ;;;    - Action: Returns the address of the first byte of data identified with < variable name >. 
 ;;;      - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
 ;;;      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
 ;;;      - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
-;;; #### EXAMPLES: ####
+;;; #### EXAMPLE:
 ;;; ` A=44:COPY &A,&B,4:PRINT B `
 ;; > Assigns A a value, it's contents from the address of A to a new address for B, and prints the value at that address.
 ;-------------------------------------------------------------------------

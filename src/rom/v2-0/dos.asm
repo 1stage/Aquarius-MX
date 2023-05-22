@@ -57,14 +57,15 @@ DF_ARRAY  = 7      ; set = numeric array
 ; CD ""         = no operation
 ; CD            = show path
 ;------------------------------------------------------------------------------
-;;; ## CD ##
+;;; ---
+;;; ## CD
 ;;; Change directory / current path
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - CD
 ;;;    - Action: show current path
 ;;;  - CD < dirname >
 ;;;    - Move into directory indicated by < dirname >
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` CD "songs3" `
 ;;; > Move into `songs3` (add `songs3` to current path)
 ;;;
@@ -423,14 +424,15 @@ _ibl_done:
         ret
 
 ;------------------------------------------------------------------------------
-;;; ## SAVE ##
+;;; ---
+;;; ## SAVE
 ;;; Save File to USB Drive
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - SAVE < filespec >
 ;;;  - SAVE < filespec >,*< arrayname >
 ;;;  - SAVE < filespec >,< address >,< size >
 ;;;    - Action: Save BASIC program, array, or range of memory.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` SAVE "progname.bas" `
 ;;; > Save current program as BASIC file
 ;;;
@@ -599,13 +601,20 @@ st_write_sync:
     ld      a,$00
     jp      usb__write_byte     ; write $00
 
+;--------------------------------------------------------------------
+;;; ---
+;;; ## CAT
+;;; Catalog disk (quick DIR listing)
+;;; ### FORMAT:
+;;;  - CAT
+;;;    - Action: Show a brief listing of all files and folders in the current directory.
+;;;      - File size, date, and time are not shown.
+;;;      - Directory names are shown in < >.
+;;; ### EXAMPLES:
+;;; ` CAT `
+;;; > List all files and folders in current directory in a 3-across format
+;------------------------------------------------------------------------------
 
-;--------------------------------------------------------------------
-;                      Catalog Disk
-;--------------------------------------------------------------------
-;
-; Minimalist directory listing (shows all filenames)
-;
 ST_CAT:
     push    hl                      ; save BASIC text pointer
     LD      A,$0D                   ; print carriage return
@@ -699,19 +708,23 @@ ST_CAT:
     RET
 
 ;--------------------------------------------------------------------
-;;; ## DIR ##
+;;; ---
+;;; ## DIR
 ;;; Get a listing of the files on the current USB directory
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - DIR [ < wildcard > ]
 ;;;    - Action: Show files in current directory with size, with an optional wildcard on filename
 ;;;  - DIR SDTM [ < wildcard > ]
 ;;;    - Action: Show files in current directory with size, date, and time, with optional wildcard on filename
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` DIR `
 ;;; > Show all files in current directory
 ;;;
 ;;; ` DIR "*.BAS" `
 ;;; > Show BASIC program files in current directory
+;;;
+;;; ` DIR "*." `
+;;; > List all folder (or files without an extension) in current directory
 ;;;
 ;;; ` DIR SDTM "*A*" `
 ;;; > Show any files with a letter A in the name, along with their last DateTime stamp
@@ -1019,8 +1032,21 @@ print_integer:
        RET
 
 ;--------------------------------------------------------------------
-;                        Delete File
-;--------------------------------------------------------------------
+;;; ---
+;;; ## DEL
+;;; Delete a file
+;;; ### FORMAT:
+;;;  - DEL < filename >
+;;;    - Action: Deletes the file named <filename> from the current directory.
+;;;      - No warnings are given.
+;;;      - Wildcards and paths cannot be used.
+;;; ### EXAMPLES:
+;;; ` DEL "THISFILE.BAS" `
+;;; > Deletes the file named `THISFILE.BAS` from the current directory.
+;;;
+;;; ` 10 DEL "SAVEGAME.DAT" `
+;;; > Deletes the file named `SAVEGAME.DAT` from the current folder from within a program.
+;------------------------------------------------------------------------------
 ;
 ST_DEL:
     call   dos__getfilename  ; filename -> FileName

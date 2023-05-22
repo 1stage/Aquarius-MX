@@ -5,9 +5,10 @@
 ; 2023-04-22 - Extracted from Aquarius Extended BASIC Disassembly
 
 ;----------------------------------------------------------------------------
-;;; ## DEF FN / FN ##
+;;; ---
+;;; ## DEF FN / FN
 ;;; Define User Function
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - DEF FN < name > ( < variable > ) = < expression >
 ;;;    - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
 ;;;      - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
@@ -15,7 +16,7 @@
 ;;;      - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
 ;;;      - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
 ;;;      - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` 10 DEF FN A(X)=X+7 `
 ;;;
 ;;; ` 20 PRINT FN A(9) `
@@ -123,12 +124,13 @@ GETFNM: rst     SYNCHR
 
 
 ;----------------------------------------------------------------------------
-;;; ## ATN ##
+;;; ---
+;;; ## ATN
 ;;; Arctangent
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - ATN ( < number > )
 ;;;    - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` PRINT ATN(1) `
 ;;; > Prints the arctangent of 1, a value of `0.785398`
 ;;;
@@ -174,12 +176,13 @@ ATNCON: db    9               ;DEGREE
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
 ;----------------------------------------------------------------------------
-;;; ## ON ERROR ##
+;;; ---
+;;; ## ON ERROR
 ;;; BASIC error handling function and codes
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - ON ERROR GOTO < line number >
 ;;;    - Action: details
-;;; ### EXAMPLE: ###
+;;; ### EXAMPLE:
 ;;; ` 10 ON ERROR GOTO 100 `
 ;;;
 ;;; ` 20 NEXT `
@@ -262,9 +265,10 @@ NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
         jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
 
 ;----------------------------------------------------------------------------
-;;; ## ERR ##
+;;; ---
+;;; ## ERR
 ;;; Error Status
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - ERROR ( < number > )
 ;;;    - Action: Returns error status values.
 ;;;      - If <number> is 0, returns the line number to GOTO when an error occures.
@@ -277,7 +281,7 @@ NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
 ;;;      - If <number> is 3, returns the number corresponding to the last DOS error.
 ;;;        - Returns 0 if the last DOS command completed successfully.
 ;;;
-;;; ### Basic Error Numbers ###
+;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
 ;;; |------|------|------------------------------|  
 ;;; |   1  |  NF  | NEXT without FOR             |
@@ -299,7 +303,8 @@ NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
 ;;; |  17  |  CN  | Cant CONTinue                |
 ;;; |  18  |  UF  | UnDEFined FN function        |
 ;;; |  19  |  MO  | Missing operand              |
-;;; ### DOS Error Numbers ###
+;;;
+;;; ### DOS Error Numbers
 ;;; | Err# | Error Message       | Description                    |
 ;;; |------|---------------------|--------------------------------|
 ;;; |   1  | no CH376            | CH376 not responding           | 
@@ -316,6 +321,7 @@ NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
 ;;; |  12  | directory not found | Unable to open directory       |
 ;;; |  13  | path too long       | Path is too long               |
 ;;; |  14  | disk error #xx      | Other disk error               |
+;;;
 ;----------------------------------------------------------------------------
 FN_ERR: call    InitFN          ; Parse Arg and set return address
         call    CONINT          ; Convert to Byte
@@ -347,9 +353,10 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
         jr      .ret_a
 
 ;----------------------------------------------------------------------------
-;;; ## CLEAR ##
+;;; ---
+;;; ## CLEAR
 ;;; Clear Variables and/or Error Code
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - CLEAR [ < number >, [ < address > ] ]
 ;;;    - Action: Clears all variables and arrays, last arror number and line. 
 ;;;      - If <number> is specified allocates string space.
@@ -361,7 +368,7 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;;;  - CLEAR ERR
 ;;;    - Action: Clears last error number and line.
 ;;;      - Leaves variables and arrays intact.
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` CLEAR 2000 `
 ;;; > Reserves 2000 bytes of space for strings.
 ;;;
@@ -427,11 +434,12 @@ CLERR:  call    dos__clearError ; returns A = 0
         ret
 
 ;----------------------------------------------------------------------------
-;;; ## COPY (Extended) ##
+;;; ---
+;;; ## COPY (Extended)
 ;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
-;;; ### FORMAT: ###
+;;; ### FORMAT:
 ;;;  - COPY < source >, < dest >, < count >
-;;; ### EXAMPLES: ###
+;;; ### EXAMPLES:
 ;;; ` COPY 12368,12328,920 `
 ;;; > Scroll Screen Up One Line
 ;;;
