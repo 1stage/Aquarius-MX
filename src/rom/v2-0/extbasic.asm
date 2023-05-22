@@ -174,23 +174,23 @@ ATNCON: db    9               ;DEGREE
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
 ;----------------------------------------------------------------------------
-;;; ## ON ERROR / ERROR ##
+;;; ## ON ERROR ##
 ;;; BASIC error handling function and codes
 ;;; ### FORMAT: ###
 ;;;  - ON ERROR GOTO < line number >
 ;;;    - Action: details
 ;;; ### EXAMPLE: ###
-;;; ` 10 ON ERROR GOTO 900 `
+;;; ` 10 ON ERROR GOTO 100 `
 ;;;
 ;;; ` 20 NEXT `
 ;;;
 ;;; ` 30 REM I get skipped `
 ;;;
-;;; ` 100 PRINT ERROR (0) `
+;;; ` 100 PRINT ERR(0) `
 ;;;
-;;; ` 110 PRINT ERROR (1) `
+;;; ` 110 PRINT ERR(1) `
 ;;;
-;;; ` 120 PRINT ERROR (2) `
+;;; ` 120 PRINT ERR(2) `
 ;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 ;----------------------------------------------------------------------------
 
@@ -347,7 +347,7 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
         jr      .ret_a
 
 ;----------------------------------------------------------------------------
-;;; ## CLEAR Statement ##
+;;; ## CLEAR ##
 ;;; Clear Variables and/or Error Code
 ;;; ### FORMAT: ###
 ;;;  - CLEAR [ < number >, [ < address > ] ]
@@ -371,7 +371,7 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;;; ` CLEAR 500, 0 `
 ;;; > Reserves 500 bytes for strings and sets to the maximum allowed
 ;;;
-;;; ` CLEAR ERR
+;;; ` CLEAR ERR `
 ;;; > Sets last error number and line as returned by ERR(1) and ERR(2) to 0.
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
