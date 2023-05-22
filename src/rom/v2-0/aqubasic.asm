@@ -1407,8 +1407,8 @@ ST_OUT:
 ;;; ### FORMAT: ###
 ;;;  - LOCATE < column >,< row >
 ;;;    - Action: Moves the cursor to the specified spot on the screen
-;;;      - Column can be 1-38
-;;;      - row can be 1-23
+;;;      - Column can be 1-38 (leftmost and rightmost columns cannot be used)
+;;;      - Row can be 1-23 (topmost and bottommost rows cannot be used)
 ;;; ### EXAMPLES: ###
 ;;; ` LOCATE 1, 1:print"Hello" `
 ;;; > Prints `Hello` at top left of screen
