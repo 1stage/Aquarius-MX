@@ -13,7 +13,9 @@ This file is for recording upcoming changes and features that are being added, a
   - Verify this is feasible
   - Add accompanying routines to CH376.asm
 
-- CLEAR: use GETADR from memory size, limit to below system variables
+- EDIT and Immediate Mode
+  - remap unused control keys to ASCII characters not on keyboard
+  - possibly increase line buffer length
 
 ### AquaLite ###
 - Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -28,6 +30,11 @@ This file is for recording upcoming changes and features that are being added, a
 
 ### Other ###
 - SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
+
+## UNDER CONSIDERATION ##
+- Screen copy from MSX BASIC
+  - COPY (X1,Y1) - (X2,Y2) TO <array variable name>
+  - COPY <array variable name> TO (X1,Y1) - (X2,Y2)  
 
 ## COMPLETE: ##
 - PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
@@ -92,5 +99,7 @@ This file is for recording upcoming changes and features that are being added, a
   - Added dtm_to_fts and fts_to_dtm routines to dtm_lib.asm
   - Modified dos__directory to convert and print last write date and time
   - Modify dos.asm to call rtc_read and dtm_lib.asm routines
+
+- CLEAR: use GETADR from memory size, limit to below system variables
 
 - Transition in-line documentation (;;;) to Markdown format.
