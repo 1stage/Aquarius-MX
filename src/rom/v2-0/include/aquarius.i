@@ -184,7 +184,9 @@ FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
 REDDY   = $036E   ; Text "Ok" CR,LF,NUL
 READY   = $0402   ; Display "Ok" and Enter Immediate Mode
+KLOOP   = $04C5   ; CRUNCH Main Loop Entry Point
 GONE4   = $063C   ; Execute Next Statement
+GONE    = $064B   ; Execute Statement
 NTOERR  = $0782   ; Execute ON GOTO
 
 STROUT  = $0E9D   ; Print null or quote terminated string
@@ -204,6 +206,7 @@ FNDLIN  = $049f   ; Find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
 ERRDIR  = $0B45   ; Issue Error if in Direct Mode
+BLTU    = $0B92   ; Block Transfer Routine
 SCRTCH  = $0BBE   ; Execute NEW Command (without syntax check)
 RUNC    = $0BCB   ; RUN Program
 CLEARC  = $0BCF   ; Initialize Variables and Arrays, Reset Stack 

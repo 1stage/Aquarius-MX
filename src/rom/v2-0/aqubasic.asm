@@ -126,9 +126,10 @@ RAMEND = $C000           ; we are in ROM, 32k expansion RAM available
 
 path.size = 37           ; length of file path buffer
 
+LineBufLen = 128
+
 ; high RAM usage
  STRUCTURE _sysvars,0
-    STRUCT _retypbuf,74         ; BASIC command line history
     STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
     STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
     BYTE   _doserror            ; file type BASIC/array/binary/etc.
@@ -140,11 +141,11 @@ path.size = 37           ; length of file path buffer
     BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
     BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
     WORD   _onelin              ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
-
+    STRUCT _linebuf,128         ; Line Input/Edit Buffer
+    STRUCT _retypbuf,128        ; BASIC command line history
  ENDSTRUCT _sysvars
 
 SysVars  = RAMEND-_sysvars.size
-ReTypBuf = sysvars+_retypbuf
 PathName = sysvars+_pathname
 FileName = sysvars+_filename
 DosError = sysvars+_doserror
@@ -152,10 +153,12 @@ BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags
 SysFlags = sysvars+_sysflags
-ERRLIN   = sysvars+_errlin
+ERRLIN   = sysvars+_errlin          ;These must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRFLG   = sysvars+_errflg
 ONEFLG   = sysvars+_oneflg
 ONELIN   = sysvars+_onelin
+LineBuf =  sysvars+_linebuf         ;Keep LineBuf, ReTypBuf at the top so they dont cross a 256 byte boundary
+ReTypBuf = sysvars+_retypbuf
 
 ifdef debug
   pathname = $3006  ; store path in top line of screen
@@ -910,56 +913,123 @@ IMMEDIATE:
     SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active
     ld      hl,-1
     ld      (CURLIN),hl         ; Current BASIC line number is -1 (immediate mode)
-    ld      hl,BUF              ; HL = line input buffer
+    ld      hl,LineBuf          ; HL = line input buffer
     ld      (hl),0              ; buffer empty
-    ld      b,BUFLEN            ; 74 bytes including terminator
+    ld      b,LineBufLen        ; 
     call    EDITLINE            ; Input a line from keyboard.
     ld      hl,SysFlags
     RES     SF_RETYP,(HL)       ; CTRL-R inactive
 ENTERLINE:
-    ld      hl,BUF-1
+    ld      hl,LineBuf-1
     jr      c,immediate         ; If c then discard line
-    rst     $10                 ; get next char (1st character in line buffer)
+    rst     CHRGET              ; get next char (1st character in line buffer)
     inc     a
     dec     a                   ; set z flag if A = 0
     jr      z,immediate         ; If nothing on line then loop back to immediate mode
     push    hl
     ld      de,ReTypBuf
-    ld      bc,BUFLEN           ; save line in history buffer
+    ld      bc,LineBufLen       ; save line in history buffer
     ldir
     pop     hl
-    jp      $0424               ; back to system ROM
-
-; --- linking BASIC lines ---
-; Redirected here so we can regain control of immediate mode
-; Comes from $0485 via CALLUDF $05
+    push    af                  ; SAVE STATUS INDICATOR FOR 1ST CHARACTER
+    call    SCNLIN              ; READ IN A LINE #
+    push    de                  ; SAVE LINE #
+    ld      de,LineBuf
+    xor     a                   ; SAY EXPECTING FLOATING NUMBERS
+    ld      (DORES),a           ; ALLOW CRUNCHING
+    ld      c,5                 ; LENGTH OF KRUNCH BUFFER
+    call    KLOOP               ; CRUNCH THE LINE DOWN
+    ld      hl,LineBuf-1
+    ld      b,a                 ; RETAIN CHARACTER COUNT.
+    pop     de                  ; RESTORE LINE #
+    pop     af                  ; WAS THERE A LINE #?
+    jp      nc,GONE             ;
+    push    de                  ;
+    push    bc                  ; SAVE LINE # AND CHARACTER COUNT
+    xor     a                   ;
+    ld      (USFLG),a           ; RESET THE FLAG
+    rst     CHRGET              ; REMEMBER IF THIS LINE IS
+    or      a                   ; SET THE ZERO FLAG ON ZERO
+    push    af                  ; BLANK SO WE DON'T INSERT IT
+    call    FNDLIN              ; GET A POINTER TO THE LINE
+    jr      c,.lexist           ; LINE EXISTS, DELETE IT
+    pop     af                  ; GET FLAG SAYS WHETHER LINE BLANK
+    push    af                  ; SAVE BACK
+    jp      z,USERR             ; SAVE BACK
+    or      a                   ; TRYING TO DELETE NON-EXISTANT LINE, ERROR
+.lexist:  
+    push    bc                  ; SAVE THE POINTER
+    jr      nc,.NODEL           ;
+    ex      de,hl               ; [D,E] NOW HAVE THE POINTER TO NEXT LINE
+    ld      hl,(VARTAB)         ; COMPACTIFYING TO VARTAB
+.mloop:  
+    ld      a,(de)              ;
+    ld      (bc),a              ; SHOVING DOWN TO ELIMINATE A LINE
+    inc     bc                  ;
+    inc     de                  ;
+    rst     COMPAR              ;
+    jr      nz,.mloop           ; DONE COMPACTIFYING?
+    ld      h,b                 ;
+    ld      l,c                 ;;HL = new end of program
+    ld      (VARTAB),hl         ; SETUP [VARTAB]
+.nodel:  
+    pop     de                  ; POP POINTER AT PLACE TO INSERT
+    pop     af                  ; SEE IF THIS LINE HAD ANYTHING ON IT
+    jr      z,.fini             ; IF NOT DON'T INSERT
+    ld      hl,(VARTAB)         ; CURRENT END
+    ex      (sp),hl             ; [H,L]=CHARACTER COUNT. VARTAB ONTO STACK
+    pop     bc                  ; [B,C]=OLD VARTAB
+    add     hl,bc               ;
+    push    hl                  ; SAVE NEW VARTAB
+    call    BLTU                ;;Create space for new line
+    pop     hl                  ; POP OFF VARTAB
+    ld      (VARTAB),hl         ; UPDATE VARTAB
+    ex      de,hl               ;
+    ld      (hl),h              ; FOOL CHEAD WITH NON-ZERO LINK
+    pop     de                  ; GET LINE # OFF STACK
+    inc     hl                  ; SO IT DOESN'T THINK THIS LINK
+    inc     hl                  ; IS THE END OF THE PROGRAM
+    ld      (hl),e              ;
+    inc     hl                  ; PUT DOWN LINE #
+    ld      (hl),d              ;
+    inc     hl                  ;
+    ld      de,LineBuf          ; MOVE LINE FRM BUF TO PROGRAM AREA
+.mloopr:  
+    ld      a,(de)              ; NOW TRANSFERING LINE IN FROM BUF
+    ld      (hl),a              ;
+    inc     hl                  ;
+    inc     de                  ;
+    or      a                   ; If not line terminator, keep going
+    jr      nz,.mloopr          ;
+.fini:
+    call    RUNC                ; DO CLEAR & SET UP STACK 
+    jr      link_lines
 
 LINKLINES:
-    pop     af                 ; clean up stack
-    pop     af                 ; restore AF
-    pop     hl                 ; restore HL
+    Call    Break ;THIS HOOK SHOULD NEVER GET HIT!!!
+link_lines
     inc     hl
     ex      de,hl              ; DE = start of BASIC program
-l0489:
+.chead:
     ld      h,d
     ld      l,e                ; HL = DE
     ld      a,(hl)
     inc     hl                 ; get address of next line
     or      (hl)
-    jr      z,immediate        ; if next line = 0 then done so return to immediate mode
+    jp      z,immediate        ; if next line = 0 then done so return to immediate mode
     inc     hl
     inc     hl                 ; skip line number
     inc     hl
     xor     a
-l0495:
+.czloop:
     cp      (hl)               ; search for next null byte (end of line)
     inc     hl
-    jr      nz,l0495
+    jr      nz,.czloop
     ex      de,hl              ; HL = current line, DE = next line
     ld      (hl),e
     inc     hl                 ; update address of next line
     ld      (hl),d
-    jr      l0489              ; next line
+    jr      .chead              ; next line
 
 
 ;-------------------------------------

@@ -11,7 +11,7 @@
 ; 2017-04-29 bugfix: EDIT retreiving another line if line not found
 ; 2017-05-06 using equates BUF and BUFLEN
 ;            retype clears old line before recalling history buffer
-;
+; 2023-05-22 Changed to use new 127 character line buffer LineBuf
 
 ;---------------------------------------------------------------------
 ;;; ---
@@ -52,8 +52,8 @@ ST_EDIT:
     pop   de
     call  FNDLIN          ; find line in BASIC program
     push  af              ; push flags (c = found line in BASIC program)
-    ld    de,BUF          ; DE = buffer
-    ld    hl,$38ea        ; HL = floating point decimal number (line number)
+    ld    de,LineBuf      ; DE = buffer
+    ld    hl,FBUFFR+2     ; HL = floating point decimal number (line number)
     call  getinteger      ; copy decimal number string to edit buffer
     pop   af              ; pop flags
     push  de              ; push buffer pointer
@@ -72,10 +72,10 @@ ST_EDIT:
     ld    (de),a          ; terminate string in buffer
     pop   hl              ; pop buffer pointer into HL
     ld    a,l
-    sub   low(BUF)
+    sub   low(LineBuf)
     cpl
     inc   a
-    add   BUFLEN       ; A = length of buffer - length of line number
+    add   LineBufLen      ; A = length of buffer - length of line number
     ld    b,a
 .editline:
     call  EDITLINE        ; edit string in buffer
