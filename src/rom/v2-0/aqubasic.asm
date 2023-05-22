@@ -1059,7 +1059,24 @@ BASTMT:
     ld      hl,TBLJMPS          ; HL = our command jump table
     jp      $0665               ; Continue with NEXTSTMT
 
-; RUN
+;----------------------------------------------------------------------------
+;;; ## RUN ##
+;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
+;;; ### FORMAT: ###
+;;;  - RUN < filename >
+;;;    - Action: Loads program into memory and runs it.
+;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
+;;;      - Wildcards and paths cannot be used.
+;;; ### EXAMPLES: ###
+;;; ` RUN "RUN-ME.BAS" `
+;;; > Loads and runs the file named `RUN-ME.BAS`. Note the program must exist within the current folder path.
+;;;
+;;; ` 10 PRINT "Loading Program..." `
+;;;
+;;; ` 20 RUN "NEXTPRG.CAQ" `
+;;; > Displays "Loading Program..." on screen and then immediately loads and runs the `NEXTPRG.CAQ` program.
+;----------------------------------------------------------------------------
+
 RUNPROG:
     call    CLNERR             ; Clear Error Trapping Variables
     pop     af                 ; clean up stack

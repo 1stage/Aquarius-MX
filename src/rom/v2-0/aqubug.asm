@@ -134,9 +134,26 @@ LineBuffer  = vars+_linebuffer  ; line input buffer
 SearchStr   = LineBuffer        ; using line input buffer
 stack_top   = vars+v.size       ; stack grows downwards from here
 
-;----------------------------------------------------------
-;                      - Debug -
-;
+;--------------------------------------------------------------------
+;;; ## DEBUG ##
+;;; Enable the built-in Aquarius MX debugger
+;;; ### FORMAT: ###
+;;;  - DEBUG
+;;;    - Action: Pauses current program and activates the debugger.
+;;;      - Debugger has a full onscreen menu within the debugger to aid in navigation.
+;;;      - While DEBUG can be called from within a BASIC program, it is geared towards Z80 machine code.
+;;; ### EXAMPLES: ###
+;;; ` DEBUG `
+;;; > Activates the Aquarius MX debugger from immediate mode.
+;;;
+;;; ` 10 ON ERROR GOTO 50 `
+;;;
+;;; ` 20 NEXT `
+;;;
+;;; ` 50 DEBUG `
+;;; > Set error trap line number to 50, cause a Next without For error, go into DEBUG mode.
+;------------------------------------------------------------------------------
+
 ST_DEBUG:
        LD    A,6                ; cancel pending key down
        LD    (KCOUNT),A

@@ -599,13 +599,19 @@ st_write_sync:
     ld      a,$00
     jp      usb__write_byte     ; write $00
 
+;--------------------------------------------------------------------
+;;; ## CAT ##
+;;; Catalog disk (quick DIR listing)
+;;; ### FORMAT: ###
+;;;  - CAT
+;;;    - Action: Show a brief listing of all files and folders in the current directory.
+;;;      - File size, date, and time are not shown.
+;;;      - Directory names are shown in < >.
+;;; ### EXAMPLES: ###
+;;; ` CAT `
+;;; > List all files and folders in current directory in a 3-across format
+;------------------------------------------------------------------------------
 
-;--------------------------------------------------------------------
-;                      Catalog Disk
-;--------------------------------------------------------------------
-;
-; Minimalist directory listing (shows all filenames)
-;
 ST_CAT:
     push    hl                      ; save BASIC text pointer
     LD      A,$0D                   ; print carriage return
@@ -1019,8 +1025,20 @@ print_integer:
        RET
 
 ;--------------------------------------------------------------------
-;                        Delete File
-;--------------------------------------------------------------------
+;;; ## DEL ##
+;;; Delete a file
+;;; ### FORMAT: ###
+;;;  - DEL < filename >
+;;;    - Action: Deletes the file named <filename> from the current directory.
+;;;      - No warnings are given.
+;;;      - Wildcards and paths cannot be used.
+;;; ### EXAMPLES: ###
+;;; ` DEL "THISFILE.BAS" `
+;;; > Deletes the file named `THISFILE.BAS` from the current directory.
+;;;
+;;; ` 10 DEL "SAVEGAME.DAT" `
+;;; > Deletes the file named `SAVEGAME.DAT` from the current folder from within a program.
+;------------------------------------------------------------------------------
 ;
 ST_DEL:
     call   dos__getfilename  ; filename -> FileName
