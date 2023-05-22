@@ -68,10 +68,10 @@ DF_ARRAY  = 7      ; set = numeric array
 ;;; ` CD "songs3" `
 ;;; > Move into `songs3` (add `songs3` to current path)
 ;;;
-;;; ` CD ".." `
-;;; > Move to root of the path
+;;; ` CD "/" `
+;;; > Move to root of the USB drive
 ;;;
-;;; ` CD "\" `
+;;; ` CD ".." `
 ;;; > Back up one level to folder containing this one
 ;;;
 ;;; ` CD `
