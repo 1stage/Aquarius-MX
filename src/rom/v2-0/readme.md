@@ -288,7 +288,7 @@ Returns 16 bit integer value of MX BASIC ROM version
 
 
 ## CALL ##
-Run to machine code at specified address
+Jump to and run machine code at specified address
 ### FORMAT: ###
  - CALL(< address >)
    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
