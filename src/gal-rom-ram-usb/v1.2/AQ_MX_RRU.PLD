@@ -1,0 +1,39 @@
+Name     AQ_MX_RRU ;
+PartNo   0 ;
+Date     05/22/2023 ;
+Revision 02 ;
+Designer Sean Harrington, Mack Wharton, Bruce Abbott ;
+Company  ;
+Assembly ;
+Location ;
+Device   g16v8 ;
+
+/* ***************** INPUT PINS ************************/
+PIN  1   = A6      ; /* Z80 A6                         */          
+PIN  2   = A7      ; /* Z80 A7                         */              
+PIN  3   = A14     ; /* Z80 A14                        */              
+PIN  4   = A15     ; /* Z80 A15                        */
+PIN  5   = MREQ    ; /* Z80 /MREQ                      */
+PIN  6   = RD      ; /* Z80 /RD                        */
+PIN  7   = WR      ; /* Z80 /WR                        */
+PIN  8   = IORQ    ; /* Z80 /IORQ                      */
+PIN  9   = RESET   ; /* Z80 /RESET                     */ 
+
+PIN  15  = LATR    ; /* Latch reset                    */  
+PIN  16  = A5      ; /* Z80 A5                         */
+
+/* ***************** OUTPUT PINS ***********************/
+PIN  19  = RA14    ; /* RAM A14                        */ 
+PIN  18  = LATCH   ; /* Map upper RAM over ROM         */
+PIN  17  = !RAME   ; /* 32k static RAM /CS             */ 
+
+PIN  14  = !ROME   ; /* 16k ROM /CS                    */
+PIN  13  = PRST    ; /* Peripheral RESET (active high) */
+PIN  12  = !CH376  ; /* CH376 /CS                      */
+ 
+RAME   = !MREQ&(!RD#!WR)&(((A15&!A14&!LATCH)#(!A15&A14))#(A15&A14&LATCH&!RD));
+ROME   = !MREQ&(!RD#!WR)&A15&A14&!LATCH; 
+CH376  = !IORQ&(!RD#!WR)&!A7&A6;   
+RA14   = A14&!(A15&LATCH);
+LATCH  = LATR&((!IORQ&!WR&!A7&!A6)#LATCH);
+PRST   = !RESET;
