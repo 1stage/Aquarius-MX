@@ -15,7 +15,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] Add accompanying routines to CH376.asm
 
 - [ ]EDIT and Immediate Mode
-  - [ ] remap unused control keys to ASCII characters not on keyboard
+  - [x] remap unused control keys to ASCII characters not on keyboard
   - [ ] possibly increase line buffer length
 
 - [ ] CLEAR: use GETADR from memory size, limit to below system variables

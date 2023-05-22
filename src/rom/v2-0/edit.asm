@@ -186,8 +186,10 @@ EDITLINE:
     call  _clr_key_wait   ; wait for keypress
     call  _hide_cursor
     ld    c,a             ; C = key
+    cp    ' '             ; If not a Control Key
+    jr    nc,.ascii       ;   Type it
     cp    $1c             ; If CTL-LeftArrow (^\)
-    jr    z,.delete       ;   Delete character to right
+    jp    z,.delete       ;   Delete character to right
     cp    $03             ; If CTL-C (^C)
     jp    z,.quit         ;   Quit with Carry set
     cp    $0d             ; If RTN or CTL-M (^M)
@@ -200,13 +202,33 @@ EDITLINE:
     jp    z,.right        ;   Move cursor right
     cp    $12             ; If CTL-R (^R)
     jp    z,.retype       ;   Retype Line
-    cp    $0f
-    jr    nz,.other
-    ld    c,'~'           ; CTRL-O = '~'
-    jr    .ascii
-.other:
-    cp    $20             ; some other ctrl code?
-    jr    c,.waitkey      ; yes, ignore other control codes
+    cp    $09             ; If CTL-I (^I)
+    jr    z,.cntli         ;   Remap to '['
+    cp    $0f             ; If CTL-I (^O)
+    jr    z,.cntlo         ;   Remap to ']'    
+    cp    $11             ; If CTL-Q (^Q)
+    jp    z,.cntlq         ;   Remap to '`'
+    cp    $19             ; If CTL-Y (^Y)
+    jp    z,.cntly        ;   Remap to '`'
+    cp    $07             ; If CTL-G (^G)
+    jp    z,.cntlg        ;   Remap to '|'
+    cp    $15             ; If CTL-U (^U)
+    jp    z,.cntlu        ;   Remap to '}'
+.cntlx:                    ; Must be Ctrl-X
+    sub   a,'X'-'U'-1
+.cntlu:
+    sub   a,'U'-'G'-1
+.cntlg:
+    add   a,'Y'-'G'+1
+.cntly:
+    sub   a,'Y'-'Q'-27
+.cntlq:
+    sub   a,'Q'-'O'-3
+.cntlo:
+    sub   a,'O'-'I'-2
+.cntli:
+    add   '['-$09
+    ld    c,a             ; Copy into c
 ; insert key into line
 .ascii:
     ld    a,d             ; A = string length (not including null terminator)
@@ -243,9 +265,9 @@ EDITLINE:
     ld    a,d
     inc   a
     cp    b               ; if not at end of buffer
-    jr    nc,.waitkey
+    jp    nc,.waitkey
     inc   d               ;    then end of string + 1
-    jr    .waitkey
+    jp    .waitkey
 
 ; pressed <RTN>, clean up and return with HL = buffer-1
 .retn:
@@ -258,7 +280,7 @@ EDITLINE:
 .backspace:
     dec   e
     inc   e
-    jr    z,.waitkey      ; if already at start of buffer then done
+    jp    z,.waitkey      ; if already at start of buffer then done
     dec   hl
     dec   e               ; move cursor left
     call  _cursor_left
@@ -358,11 +380,6 @@ EDITLINE:
     scf                   ; set Carry flag = edit aborted
     ret
 
-keymap:
-    db 'Q'-64,'X'-64,'G'-64,'Y'-64,'U'-64,'I'-64,'O'-64
-keychr: 
-    db  '`',  '~',   '|',   '{',   '}',   '[',   ']' 
-maplen = keychr-keymap
 
 ;--------------------------------------------------------------------
 ;         Clear Keyboard Buffer and Wait for Key
