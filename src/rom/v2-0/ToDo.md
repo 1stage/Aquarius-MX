@@ -10,15 +10,9 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [ ] Modify dos.asm and CH376.asm to write USB file timestamp
 
-- [ ] Add MKDIR and RMDIR to dos.asm
+- [ ] Add MKDIR. RMDIR, and RENAME to dos.asm
   - [ ] Verify this is feasible
   - [ ] Add accompanying routines to CH376.asm
-
-- [ ]EDIT and Immediate Mode
-  - [x] remap unused control keys to ASCII characters not on keyboard
-  - [ ] possibly increase line buffer length
-
-- [ ] CLEAR: use GETADR from memory size, limit to below system variables
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -109,10 +103,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Modified dos__directory to convert and print last write date and time
   - [x] Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
-<<<<<<< HEAD
-- CLEAR: use GETADR from memory size, limit to below system variables
+- [ ]EDIT and Immediate Mode
+  - [x] remap unused control keys to ASCII characters not on keyboard
+  - [x] increase line buffer length to 127
 
-- Transition in-line documentation (;;;) to Markdown format.
-=======
+- [x] CLEAR: use GETADR from memory size, limit to below system variables
+
 - [x] Transition in-line documentation (;;;) to Markdown format.
->>>>>>> f67813cd57ccb06fb8c3c4ee9e253598a1d76398
