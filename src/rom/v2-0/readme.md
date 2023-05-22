@@ -79,7 +79,7 @@ Change directory / current path
 
 ---
 ## CD$
-Get Current Directory
+Get Current Directory as a string
 ### FORMAT:
  - CD$
    - Action: Returns the current directory as displayed by the CD command with no arguments
