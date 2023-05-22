@@ -773,7 +773,7 @@ UDFLIST:    ;xx     index caller    @addr  performing function:-
     db      $0a     ; 4   REPLCMD   $0536  converting keyword to token
     db      $1b     ; 3   FUNCTIONS $0a5f  executing a function
     db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
-    db      $02     ; 1   OKMAIN    $0402  BASIC command line (immediate mode)
+    db      $02     ; 1   READY     $0402  BASIC command line (immediate mode)
 
 ; UDF parameter Jump table
 
@@ -1291,65 +1291,6 @@ STRLENADR:
     or      a               ; and Set Flags
     ret
 
-;----------------------------------------------------------------------------
-;;; ## COPY (Extended) ##
-;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
-;;; ### FORMAT: ###
-;;;  - COPY < source >, < dest >, < count >
-;;; ### EXAMPLES: ###
-;;; ` COPY 12368,12328,920 `
-;;; > Scroll Screen Up One Line
-;;;
-;;; ` COPY 12288,12328,920 `
-;;; > Scroll Screen Down One Line
-;;;
-;;; ` COPY 12329,12328,39 `
-;;; > Scroll Row 1 right 1 char
-;;;
-;;; ` COPY $3000,$2000,2048 `
-;;; > Copy Screen and Colors to Low RAM
-;;;
-;;; ` COPY $2000,$3000,2048 `
-;;; > Restore Screen and Colors
-;----------------------------------------------------------------------------
-ST_COPY:   
-    pop     af              ; Discard Saved Token, Flags
-    rst     CHRGET          ; Skip COPY Token
-    jp      z,COPY          ; No Parameters? Do Standard COPY
-    call    GETADR          ; 
-    push    de              ; Stack = <source>
-    SYNCHK  ','             ; 
-    call    GETADR          ; 
-    push    de              ; Stack = <dest>, <source>
-    SYNCHK  ','             ; 
-    call    GETADR          ; Get <count> 
-    ld      b,d             ; BC = <count>
-    ld      c,e
-    ld      a,b             ; FC Error if <count> = 0
-    or      c
-    jp      z,FCERR
-    pop     de              ; DE = <dest>, Stack = <source>
-    ex      (sp),hl         ; HL = <source>, Stack = Text Pointer
-    rst     COMPAR          ; If <source> < <dest>
-    jr      c,.copy_down    ;   Do Reverse Copy Instead
-    ldir                    ; Do the Copy
-    pop     hl              ; Restore Text Pointer
-    ret
- 
-.copy_down
-    push    de              ; Stack = <dest>, Text Pointer
-    ex      (sp),hl         ; HL = <dest>, Stack = <source>, Text pointer
-    add     hl,bc
-    dec     hl              
-    ld      d,h
-    ld      e,l             ; DE = <dest> + <count> - 1
-    pop     hl              ; HL = <source>, Stack = Text Pointer
-    add     hl,bc
-    dec     hl              ; HL = <source> + <count> - 1
-    lddr                    ; Do the Copy
-    pop     hl              ; Restore Text Pointer
-    ret
-    
 ;----------------------------------------------------------------------------
 ;;; ## CLS (Extended) ##
 ;;; Clear Screen
@@ -2181,6 +2122,7 @@ FLOAT_DE:
 ; FN_ERR
 ; CLEARX
 ; SCRTCX
+; ST_COPY
     include "extbasic.asm"
 
 
