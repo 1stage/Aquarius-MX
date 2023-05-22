@@ -2104,6 +2104,7 @@ FN_DTM:
     pop     af 
     call    nz,dtm_fmt_str   ; If arg <> 0 Format Date
     ld      hl,DTM_STRING
+return_string:
     ld      a,1              ; Set Value Type to String
     ld      (VALTYP),a
     jp      TIMSTR
@@ -2121,6 +2122,8 @@ EVAL_EXT:
     jr      z,EVAL_HEX
     cp      '&'                 
     jr      z,GET_VARPTR
+    cp      CDTK
+    jr      z,GET_PATH
  
 return_to_eval:
     push    bc                  ; Put HOOK Return Address back on stack
@@ -2218,6 +2221,26 @@ FLOAT_DE:
     pop     hl
     ret
 
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## CD$
+;;; Get Current Directory
+;;; ### FORMAT:
+;;;  - CD$
+;;;    - Action: Returns the current directory as displayed by the CD command with no arguments
+;;; ### EXAMPLE:
+;;; ` PRINT CD$ `
+;; > Prints the current directory to the screen
+;------------------------------------------------------------------------------
+GET_PATH:
+    inc     hl                ; Skip CD Token
+    SYNCHK  '$'               ; Require $
+    push    hl                ; Text Pointer on Stack
+    ex      (sp),hl           ; Swap Text Pointer with Return Address
+    ld      de,LABBCK         ; return address for SNGFLT, etc.
+    push    de                ; on stack
+    ld      hl,PathName
+    jp      TIMSTR
 
 ;---------------------------------------------------------------------
 ;                 Extended BASIC Commands and Functions 
