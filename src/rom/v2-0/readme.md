@@ -197,7 +197,7 @@ Read AY-3-8910 Control Pad Inputs
 ### FORMAT: ###
  - JOY(< stick >)
    - Action: Reads integer input value from < stick >, where:
-     - `0` will read left or right contrl pad
+     - `0` will read left or right control pad
      - `1` will read left control pad only
      - `2` will read right control pad only
 ### EXAMPLES: ###
@@ -249,8 +249,10 @@ ASCII:  158  143  159  142   $C6   255     160        134
 ## DEC ##
 Hexadecimal to integer conversion
 ### FORMAT: ###
- - DEC(< string >)
-   - Action: Returns the DECimal value of the hexadecimal number in < string >. If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero. String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
+ - DEC(< hexadecimal string >)
+   - Action: Returns the DECimal value of the hexadecimal number in < hexadecimal string >.
+     - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
+     - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
 ### EXAMPLES: ###
 ` PRINT DEC("FFFF") `
 > Prints "65535"
