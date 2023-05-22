@@ -28,7 +28,6 @@ This file is for recording upcoming changes and features that are being added, a
 ### Other
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
-<<<<<<< HEAD
 ## UNDER CONSIDERATION ##
 - Screen copy from MSX BASIC
   - COPY (X1,Y1) - (X2,Y2) TO <array variable name>
@@ -36,11 +35,9 @@ This file is for recording upcoming changes and features that are being added, a
 
 ## COMPLETE: ##
 - PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
-=======
 ---
 ## COMPLETE:
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
->>>>>>> f67813cd57ccb06fb8c3c4ee9e253598a1d76398
 
 - [x] Test/Tweak, document KEY() function
 
@@ -103,7 +100,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Modified dos__directory to convert and print last write date and time
   - [x] Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
-- [ ]EDIT and Immediate Mode
+- [x]EDIT and Immediate Mode
   - [x] remap unused control keys to ASCII characters not on keyboard
   - [x] increase line buffer length to 127
 
