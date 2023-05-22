@@ -719,6 +719,9 @@ ST_CAT:
 ;;; ` DIR "*.BAS" `
 ;;; > Show BASIC program files in current directory
 ;;;
+;;; ` DIR "*." `
+;;; > List all folder (or files without an extension) in current directory
+;;;
 ;;; ` DIR SDTM "*A*" `
 ;;; > Show any files with a letter A in the name, along with their last DateTime stamp
 ;------------------------------------------------------------------------------

@@ -367,7 +367,7 @@ Get Variable Address
      - A value must be assigned to < variable name > prior to execution of the & operator, otherwise an FC error results.
      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
      - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
-#### EXAMPLES: ####
+#### EXAMPLE: ####
 ` A=44:COPY &A,&B,4:PRINT B `
 
 
@@ -454,6 +454,9 @@ Get a listing of the files on the current USB directory
 
 ` DIR "*.BAS" `
 > Show BASIC program files in current directory
+
+` DIR "*." `
+> List all folder (or files without an extension) in current directory
 
 ` DIR SDTM "*A*" `
 > Show any files with a letter A in the name, along with their last DateTime stamp
