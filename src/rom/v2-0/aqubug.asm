@@ -135,6 +135,7 @@ SearchStr   = LineBuffer        ; using line input buffer
 stack_top   = vars+v.size       ; stack grows downwards from here
 
 ;--------------------------------------------------------------------
+;;; ---
 ;;; ## DEBUG
 ;;; Enable the built-in Aquarius MX debugger
 ;;; ### FORMAT:

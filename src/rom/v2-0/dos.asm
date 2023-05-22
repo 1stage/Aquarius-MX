@@ -57,6 +57,7 @@ DF_ARRAY  = 7      ; set = numeric array
 ; CD ""         = no operation
 ; CD            = show path
 ;------------------------------------------------------------------------------
+;;; ---
 ;;; ## CD
 ;;; Change directory / current path
 ;;; ### FORMAT:
@@ -423,6 +424,7 @@ _ibl_done:
         ret
 
 ;------------------------------------------------------------------------------
+;;; ---
 ;;; ## SAVE
 ;;; Save File to USB Drive
 ;;; ### FORMAT:
@@ -600,6 +602,7 @@ st_write_sync:
     jp      usb__write_byte     ; write $00
 
 ;--------------------------------------------------------------------
+;;; ---
 ;;; ## CAT
 ;;; Catalog disk (quick DIR listing)
 ;;; ### FORMAT:
@@ -705,6 +708,7 @@ ST_CAT:
     RET
 
 ;--------------------------------------------------------------------
+;;; ---
 ;;; ## DIR
 ;;; Get a listing of the files on the current USB directory
 ;;; ### FORMAT:
@@ -1028,6 +1032,7 @@ print_integer:
        RET
 
 ;--------------------------------------------------------------------
+;;; ---
 ;;; ## DEL
 ;;; Delete a file
 ;;; ### FORMAT:

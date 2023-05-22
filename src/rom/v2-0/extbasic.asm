@@ -5,6 +5,7 @@
 ; 2023-04-22 - Extracted from Aquarius Extended BASIC Disassembly
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## DEF FN / FN
 ;;; Define User Function
 ;;; ### FORMAT:
@@ -123,6 +124,7 @@ GETFNM: rst     SYNCHR
 
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## ATN
 ;;; Arctangent
 ;;; ### FORMAT:
@@ -174,6 +176,7 @@ ATNCON: db    9               ;DEGREE
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## ON ERROR
 ;;; BASIC error handling function and codes
 ;;; ### FORMAT:
@@ -262,6 +265,7 @@ NOTRAP: xor     a               ; A MUST BE ZERO FOR CONTRO
         jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## ERR
 ;;; Error Status
 ;;; ### FORMAT:
@@ -349,6 +353,7 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
         jr      .ret_a
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## CLEAR
 ;;; Clear Variables and/or Error Code
 ;;; ### FORMAT:
@@ -429,6 +434,7 @@ CLERR:  call    dos__clearError ; returns A = 0
         ret
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## COPY (Extended)
 ;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
 ;;; ### FORMAT:

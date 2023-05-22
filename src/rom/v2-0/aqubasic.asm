@@ -1060,6 +1060,7 @@ BASTMT:
     jp      $0665               ; Continue with NEXTSTMT
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## RUN
 ;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
 ;;; ### FORMAT:
@@ -1151,6 +1152,7 @@ ST_reserved:
     ret
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## DOKE
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ;;; ### FORMAT:
@@ -1188,6 +1190,7 @@ ST_DOKE:
     ret
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## POKE (Extended)
 ;;; Writes byte(s) to memory location(s)
 ;;; ### FORMAT:
@@ -1309,6 +1312,7 @@ STRLENADR:
     ret
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## CLS (Extended)
 ;;; Clear Screen
 ;;; ### FORMAT:
@@ -1377,6 +1381,7 @@ clearscreen:
     ret
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## OUT
 ;;; Write to Z80 I/O Port
 ;;; ### FORMAT:
@@ -1402,6 +1407,7 @@ ST_OUT:
     ret
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## LOCATE
 ;;; Move the cursor to a specific column and row on the screen
 ;;; ### FORMAT:
@@ -1464,6 +1470,7 @@ GOTO_HL:
 
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## PSG
 ;;; Write to Programmable Sound Generator(s)
 ;;; ### FORMAT:
@@ -1545,6 +1552,7 @@ InitFN:
     jp      (hl)              ; Fast Return 
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## PEEK (Extended)
 ;;; Read from Memory
 ;;; ### FORMAT:
@@ -1566,6 +1574,7 @@ FN_PEEK:
     jp      SNGFLT            ; and Float it
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## DEEK
 ;;; Read 16 bit word from Memory
 ;;; ### FORMAT:
@@ -1593,6 +1602,7 @@ FLOAT_M:
     jp      FLOAT_DE          ; Float and Return
     
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## IN
 ;;; Read Z80 I/O Port
 ;;; ### FORMAT:
@@ -1616,6 +1626,7 @@ FN_IN:
     jp      SNGFLT          ; return with 8 bit input value in variable var
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## JOY
 ;;; Read AY-3-8910 Control Pad Inputs
 ;;; ### FORMAT:
@@ -1679,6 +1690,7 @@ joy05:
 
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## KEY
 ;;; Read Keyboard
 ;;; ### FORMAT:
@@ -1745,6 +1757,7 @@ FN_KEY:
     jp      SNGFLT            ; and float it
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## DEC
 ;;; Hexadecimal to integer conversion
 ;;; ### FORMAT:
@@ -1767,6 +1780,7 @@ FN_DEC:
     jp      EVAL_HEX        ; Convert the Text
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## HEX$
 ;;; Integer to hexadecimal conversion
 ;;; ### FORMAT:
@@ -1844,6 +1858,7 @@ PRINTHEX:
     jp      TTYOUT
 
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## VER
 ;;; Returns 16 bit integer value of MX BASIC ROM version
 ;;; ### FORMAT:
@@ -1871,6 +1886,7 @@ FN_VER:
 ; on exit from user code, HL should point to end of statement
 ;
 ;----------------------------------------------------------------------------
+;;; ---
 ;;; ## CALL
 ;;; Jump to and run machine code at specified address
 ;;; ### FORMAT:
@@ -1936,6 +1952,7 @@ SPL_DATETIME:
     ret    
     
 ;------------------------------------------------------------------------------
+;;; ---
 ;;; ## SDTM
 ;;; Set DateTime
 ;;; ### FORMAT:
@@ -1977,6 +1994,7 @@ ST_SDTM:
     jp      rtc_write       ; Write to RTC and Return
 
 ;------------------------------------------------------------------------------
+;;; ---
 ;;; ## DTM$
 ;;; Get DateTime
 ;;; ### FORMAT:
@@ -2041,6 +2059,7 @@ return_to_eval:
 
 
 ;------------------------------------------------------------------------------
+;;; ---
 ;;; ## Hexadecimal Constants
 ;;;  - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
 ;;;    - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
@@ -2098,6 +2117,7 @@ EVAL_HEX:
 
 
 ;------------------------------------------------------------------------------
+;;; ---
 ;;; ## & Operator
 ;;; Get Variable Address
 ;;; ### FORMAT:
