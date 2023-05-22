@@ -42,6 +42,9 @@ for filename in glob.glob(source):
             
 docfile = open(docname,"w")
 print("Writing %s" % docname)
+for i in top:
+    docfile.write(i)
+    docfile.write("\n")
 keys = list(doc.keys())
 keys.sort()
 for key in keys:
