@@ -19,8 +19,8 @@ Get Variable Address
 ## ATN
 Arctangent
 ### FORMAT:
- - ATN ( < number > )
-   - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
+  - ATN ( < number > )
+    - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ### EXAMPLES:
 ` PRINT ATN(1) `
 > Prints the arctangent of 1, a value of `0.785398`
@@ -78,20 +78,29 @@ Change directory / current path
 > Show the current path
 
 ---
+## CD$
+Get Current Directory
+### FORMAT:
+ - CD$
+   - Action: Returns the current directory as displayed by the CD command with no arguments
+### EXAMPLE:
+` PRINT CD$ `
+
+---
 ## CLEAR
 Clear Variables and/or Error Code
 ### FORMAT:
- - CLEAR [ < number >, [ < address > ] ]
-   - Action: Clears all variables and arrays, last arror number and line.
-     - If <number> is specified allocates string space.
-       - BASIC starts with 1024 bytes of string space allocated.
-     - If <address> is specified, sets top of BASIC memory.
-       - If 0, set to start of system variables minus one
-       - FC Error if less than end of BASIC program plus 40 bytes
-       - FC Error if greater than or equal to start of system variables
- - CLEAR ERR
-   - Action: Clears last error number and line.
-     - Leaves variables and arrays intact.
+  - CLEAR [ < number >, [ < address > ] ]
+    - Action: Clears all variables and arrays, last arror number and line.
+      - If <number> is specified allocates string space.
+        - BASIC starts with 1024 bytes of string space allocated.
+      - If <address> is specified, sets top of BASIC memory.
+        - If 0, set to start of system variables minus one
+        - FC Error if less than end of BASIC program plus 40 bytes
+        - FC Error if greater than or equal to start of system variables
+  - CLEAR ERR
+    - Action: Clears last error number and line.
+      - Leaves variables and arrays intact.
 ### EXAMPLES:
 ` CLEAR 2000 `
 > Reserves 2000 bytes of space for strings.
@@ -143,7 +152,7 @@ Clear Screen
 ## COPY (Extended)
 Copy Memory (overloads legacy COPY command which lineprints screen output)
 ### FORMAT:
- - COPY < source >, < dest >, < count >
+  - COPY < source >, < dest >, < count >
 ### EXAMPLES:
 ` COPY 12368,12328,920 `
 > Scroll Screen Up One Line
@@ -213,13 +222,13 @@ between 0 and 65535.
 ## DEF FN / FN
 Define User Function
 ### FORMAT:
- - DEF FN < name > ( < variable > ) = < expression >
-   - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
-     - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
-     - The parametern < variable > represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in < expression >, the value of that program variable is used.
-     - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
-     - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
-     - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
+  - DEF FN < name > ( < variable > ) = < expression >
+    - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
+      - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
+      - The parametern < variable > represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in < expression >, the value of that program variable is used.
+      - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
+      - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
+      - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
 ### EXAMPLES:
 ` 10 DEF FN A(X)=X+7 `
 
@@ -332,61 +341,73 @@ Edit BASIC Line
    - Note: The above control keys are also available when entering a new line or direct mode command.
 
 ---
+## ERASE
+
+### FORMAT:
+ - ERASE < array > [, < array > ...]
+   - Action: Eliminates array from program.
+     - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes.
+     - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
+### EXAMPLES:
+` ERASE A `
+> Removes array A() from memory.
+
+---
 ## ERR
 Error Status
 ### FORMAT:
- - ERROR ( < number > )
-   - Action: Returns error status values.
-     - If <number> is 0, returns the line number to GOTO when an error occures.
-       - Returns 0 if no error trapping is disabled.
-     - If <number> is 1, returns the number corresponding to the last error.
-       - - Returns 0 if no error has occured.
-     - If <number> is 2, returns the line number the last error occured on.
-       - Returns 0 if no error has occured.
-       - Returns 65535 if the error occured in immediate mode.
-     - If <number> is 3, returns the number corresponding to the last DOS error.
-       - Returns 0 if the last DOS command completed successfully.
+  - ERROR ( < number > )
+    - Action: Returns error status values.
+      - If <number> is 0, returns the line number to GOTO when an error occures.
+        - Returns 0 if no error trapping is disabled.
+      - If <number> is 1, returns the number corresponding to the last error.
+        - - Returns 0 if no error has occured.
+      - If <number> is 2, returns the line number the last error occured on.
+        - Returns 0 if no error has occured.
+        - Returns 65535 if the error occured in immediate mode.
+      - If <number> is 3, returns the number corresponding to the last DOS error.
+        - Returns 0 if the last DOS command completed successfully.
 
 ### Basic Error Numbers
-| Err# | Code | Description                  |
+| Err# | Code | Description                   |
 |------|------|------------------------------|
-|   1  |  NF  | NEXT without FOR             |
-|   2  |  SN  | Syntax error                 |
-|   3  |  RG  | RETURN without GOSUB         |
-|   4  |  OD  | Out of DATA                  |
-|   5  |  FC  | Function Call error          |
-|   6  |  OV  | Overflow                     |
-|   7  |  OM  | Out of Memory                |
-|   8  |  UL  | Undefined Line number        |
-|   9  |  BS  | Bad Subscript                |
-|  10  |  DD  | Re-DIMensioned array         |
-|  11  |  /0  | Division by Zero             |
-|  12  |  ID  | Illegal direct               |
-|  13  |  TM  | Type mismatch                |
-|  14  |  OS  | Out of String space          |
-|  15  |  LS  | String too Long              |
-|  16  |  WT  | String formula too complex   |
-|  17  |  CN  | Cant CONTinue                |
-|  18  |  UF  | UnDEFined FN function        |
-|  19  |  MO  | Missing operand              |
+|    1   |  NF  | NEXT without FOR             |
+|    2   |  SN  | Syntax error                 |
+|    3   |  RG  | RETURN without GOSUB         |
+|    4   |  OD  | Out of DATA                   |
+|    5   |  FC  | Function Call error           |
+|    6   |  OV  | Overflow                     |
+|    7   |  OM  | Out of Memory                 |
+|    8   |  UL  | Undefined Line number         |
+|    9   |  BS  | Bad Subscript                 |
+|   10   |  DD  | Re-DIMensioned array         |
+|   11   |  /0  | Division by Zero             |
+|   12   |  ID  | Illegal direct               |
+|   13   |  TM  | Type mismatch                 |
+|   14   |  OS  | Out of String space           |
+|   15   |  LS  | String too Long               |
+|   16   |  WT  | String formula too complex   |
+|   17   |  CN  | Cant CONTinue                 |
+|   18   |  UF  | UnDEFined FN function         |
+|   19   |  MO  | Missing operand               |
 
 ### DOS Error Numbers
 | Err# | Error Message       | Description                    |
 |------|---------------------|--------------------------------|
-|   1  | no CH376            | CH376 not responding           |
-|   2  | no USB              | Not in USB mode                |
-|   3  | no disk             | USB Drive mount failed         |
-|   4  | invalid name        | Invalid DOS file name          |
-|   5  | file not found      | File does not exist            |
-|   6  | file empty          | File does not contain data     |
-|   7  | filetype mismatch   | File is not in CAQ format      |
-|   8  | remove dir error    | Unable to remove directory     |
-|   9  | read error          | Error while reading USB drive  |
-|  10  | write error         | Error while writing USB drive  |
-|  11  | file create error   | Unable to create file          |
-|  12  | directory not found | Unable to open directory       |
-|  13  | path too long       | Path is too long               |
-|  14  | disk error #xx      | Other disk error               |
+|    1   | no CH376             | CH376 not responding            |
+|    2   | no USB               | Not in USB mode                |
+|    3   | no disk             | USB Drive mount failed          |
+|    4   | invalid name         | Invalid DOS file name          |
+|    5   | file not found       | File does not exist            |
+|    6   | file empty           | File does not contain data      |
+|    7   | filetype mismatch   | File is not in CAQ format      |
+|    8   | remove dir error     | Unable to remove directory      |
+|    9   | read error           | Error while reading USB drive  |
+|   10   | write error         | Error while writing USB drive  |
+|   11   | file create error   | Unable to create file          |
+|   12   | directory not found | Unable to open directory        |
+|   13   | path too long       | Path is too long                |
+|   14   | disk error #xx       | Other disk error                |
 
 
 ---
@@ -504,8 +525,8 @@ Move the cursor to a specific column and row on the screen
 ## ON ERROR
 BASIC error handling function and codes
 ### FORMAT:
- - ON ERROR GOTO < line number >
-   - Action: details
+  - ON ERROR GOTO < line number >
+    - Action: details
 ### EXAMPLE:
 ` 10 ON ERROR GOTO 100 `
 
@@ -648,6 +669,24 @@ Set DateTime
 
 ` 10 SDTM "010101000000" `
 > Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
+
+---
+## SWAP
+
+### FORMAT:
+ - SWAP < variable >, < variable >
+   - Action: Exchanges the values of two variables.
+     - The variables must be of the same type or a TM error results.
+### EXAMPLES:
+```
+  10 A$=" ONE " : B$=" ALL ": C$="FOR"
+  20 PRINT A$ C$ B$
+  30 SWAP A$, B$
+  40 PRINT A$ C$ B$
+  RUN
+  ONE FOR ALL
+  ALL FOR ONE
+```
 
 ---
 ## VER

@@ -107,3 +107,7 @@ This file is for recording upcoming changes and features that are being added, a
 - [x] CLEAR: use GETADR from memory size, limit to below system variables
 
 - [x] Transition in-line documentation (;;;) to Markdown format.
+
+- [x] Add CD$ pseudovariable. 
+
+- [x] Add SWAP, ERASE statements

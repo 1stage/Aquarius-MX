@@ -141,6 +141,7 @@ LineBufLen = 128
     BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
     BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
     WORD   _onelin              ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
+    LONG   _swptmp              ; Holds value of the first SWAP variable
     STRUCT _linebuf,128         ; Line Input/Edit Buffer
     STRUCT _retypbuf,128        ; BASIC command line history
  ENDSTRUCT _sysvars
@@ -157,6 +158,7 @@ ERRLIN   = sysvars+_errlin          ;These must be in in consecutive order: ERRL
 ERRFLG   = sysvars+_errflg
 ONEFLG   = sysvars+_oneflg
 ONELIN   = sysvars+_onelin
+SWPTMP   = sysvars+_swptmp
 LineBuf =  sysvars+_linebuf         ;Keep LineBuf, ReTypBuf at the top so they dont cross a 256 byte boundary
 ReTypBuf = sysvars+_retypbuf
 
@@ -804,9 +806,11 @@ UDF_JMP:
 ;   and the BTOKEN value DECREMENTS as commands are added.
 ;   They also get added at the TOP of the TBLJMPS list.
 ;
-BTOKEN       equ $d2                ; our first token number
+BTOKEN       equ $d0                ; our first token number
 TBLCMDS:
 ; Commands list
+    db      $80 + 'E', "RASE"       ; $d0 - Double Poke
+    db      $80 + 'S', "WAP"        ; $d1 - Double Poke
     db      $80 + 'D', "OKE"        ; $d2 - Double Poke
     db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
     db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line (advanced editor)
@@ -843,6 +847,8 @@ CDTK    = $E0
 ERRTK =  $E9
 
 TBLJMPS:
+    dw      ST_ERASE
+    dw      ST_SWAP
     dw      ST_DOKE
     dw      ST_SDTM
     dw      ST_EDIT
