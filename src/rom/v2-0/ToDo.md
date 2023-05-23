@@ -108,6 +108,7 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [x] Transition in-line documentation (;;;) to Markdown format.
 
-- [x] Add CD$ pseudovariable. 
-
 - [x] Add SWAP, ERASE statements
+
+- [x] Create CD$ pseudo-variable for PATH to string value
+  

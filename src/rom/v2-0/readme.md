@@ -79,12 +79,24 @@ Change directory / current path
 
 ---
 ## CD$
+<<<<<<< HEAD
 Get Current Directory
 ### FORMAT:
  - CD$
    - Action: Returns the current directory as displayed by the CD command with no arguments
 ### EXAMPLE:
 ` PRINT CD$ `
+=======
+Get Current Directory path as a string
+### FORMAT:
+ - CD$
+   - Action: Returns the current directory path as displayed by the CD command with no arguments
+### EXAMPLES:
+` PRINT CD$ `
+> Prints the current directory path to the screen
+
+` 10 A$=CD$:PRINT A$ `
+> Assigns the current path string to A$, then prints it.
 
 ---
 ## CLEAR
