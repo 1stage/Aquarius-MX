@@ -11,8 +11,6 @@
 ;
 ; 2023-05-20 V2.0   screen save can be enables at compile time - CFK
 
-; C0_END with scrn_save $D9AA, without $D924
-
 NUMBRKS    = 4         ; number of breakpoints
 LINESIZE   = 28        ; length of line input buffer
 UNASMLINES = 8         ; number of lies to show in UnASM window
@@ -71,7 +69,7 @@ STRING    = 3         ;   flag: entering mixed case string (toggled with ")
      BYTE _TraceBrk  ; RST $38 at end of sandbox
    STRUCT _Breakpoints,brk.size*NUMBRKS ;breakpoint array
 ifdef scrn_flag
-   STRUCT _scrn_save,$40*10*2  ; buffer to hold screen under window
+   STRUCT _scrn_save,40*10*2   ; buffer to hold screen under window
 endif
    STRUCT _LineBuffer,LINESIZE ; user input line buffer
    STRUCT _dbg_stack,64        ; our private stack
@@ -142,11 +140,12 @@ DebugMenu:
        JR    TraceAddr
 
 ; exit to caller
-_quit: LD    IX,BlankWindow
-       LD    A,CYAN
+_quit: 
 ifdef scrn_flag
        CALL  restore_screen     ; restore system screen
 else
+       LD    IX,BlankWindow
+       LD    A,CYAN
        CALL  ColorWindow        ; remove debug window colors
 endif
        LD    HL,(HL_reg)        ; update BASIC text pointer
@@ -577,9 +576,10 @@ endif
        LDIR                      ; copy fillbyte to other locations
 .done:
 ifdef scrn_save
-       call  save_screen        ; save system screen
-endif
+       jp   save_screen        ; save system screen and return
+else
        RET
+endif
 
 ;-------------------------------------------------------
 ;   M - Move Memory -
@@ -622,9 +622,10 @@ mm_lddr:
        LDDR
 mm_done:
 ifdef scrn_save
-       call  save_screen        ; save system screen
-endif
+       jp    save_screen        ; save system screen
+else
        RET
+endif
 
 ;-------------------------------------------------------
 ;   L - load file into RAM
@@ -677,8 +678,7 @@ endif
        CALL  ShowFileBytes     ; print number of bytes read
        ld    hl,.bytesloaded_msg
        call  WinPrtStr
-       call  Wait_Key
-       ret
+       jp    Wait_Key
 
 .bytesloaded_msg:
        DB    " Bytes loaded",0
@@ -1098,7 +1098,7 @@ _em_line:
        LD    A,(IX+win_w)
        SUB   11                  ; A = line input buffer size
        CALL  InputLine           ; type in hex byte(s) or string
-       JR    Z,_em_done          ; ^C or Q so quit
+       ret   z                   ; ^C or Q so quit
 .get_next:
        LD    A,(DE)
        CP    " "                 ; get 1st non-space char in buffer
@@ -1144,8 +1144,6 @@ _em_cmd:
        CALL  Z,Hex2binHL         ; yes, convert hex address to binary
 _em_poked:
        JR    _em_line            ; do next input line
-_em_done:
-       RET
 
 
 ;------------------------------------------------

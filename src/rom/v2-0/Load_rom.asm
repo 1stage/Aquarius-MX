@@ -98,30 +98,6 @@ _readerr_msg:
 _badfile_msg:
     db CR,CR,"Invalid ROM size (not 8k/16k)",0
 
-;-------------------------------------------
-;  Convert 11 char filename to name - extn
-;-------------------------------------------
-;
-;  in: hl-> filename+space+extn 11 chars
-; out: hl-> filename+null 1-8 chars + null
-;
-TrimName:
-    push   bc
-    push   hl
-    ld     b,8
-_tn_getchr:
-    ld     a,(hl)
-    cp     " "        ; " " = end of name
-    jr     z,_tn_done
-    inc    hl
-_tn_next:
-    djnz   _tn_getchr ; 8 chars = end of name
-_tn_done:
-    ld     (hl),0     ; null end of name
-    pop    hl
-    pop    bc
-    ret
-
 RomWindow:
       db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
       db   WHITE*16+BLACK               ; text colors

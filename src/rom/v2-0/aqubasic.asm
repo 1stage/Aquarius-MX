@@ -79,7 +79,7 @@ REVISION = 0
 
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
-;scrn_flag equ 1    ; enable screen save in lite debugger
+scrn_flag equ 1    ; enable screen save in lite debugger
 ;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
