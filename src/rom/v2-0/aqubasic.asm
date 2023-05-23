@@ -1375,14 +1375,15 @@ ST_POKE:
     ret
 
 STRLENADR:
-    call    FRESTR          ; Free up Temp String, Get Length in BC, Address in HL
+    call    FRESTR          ; Free up Temp String
+    ld      c,(hl)          ; Get length in BC
+    ld      b,0
     inc     hl              ; Skip String Descriptor length byte
     inc     hl              ; Set Address of String Text into HL
     ld      a,(hl)          ;
     inc     hl
     ld      h,(hl)
     ld      l,a
-    ld      b,0             ; BC = String Length
     ld      a,c             ; Put length in A
     or      a               ; and Set Flags
     ret
