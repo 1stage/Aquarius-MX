@@ -357,7 +357,6 @@ RECOGNIZATION:
     db      80, 168, 128, 112
 
 ROM_ENTRY:
-
 ; set flag for NTSC or PAL
     call    PAL__NTSC     ; measure video frame period: nc = PAL, c = NTSC
     ld      a,0
@@ -412,6 +411,66 @@ ROM_ENTRY:
     dec     c               ;C = $FF
 .no_warm:
     
+    jp      SPLASH
+
+; Hook Benchmarks (AquaLite)
+; 10 FORA=0TO20000:NEXT
+;
+; S2        18sec
+; USB v1.2  22sec
+; MX  v2.0  23sec
+
+FASTHOOK:   
+    ex      (sp), hl            ; save HL and get address of byte after RST $30
+    push    af                  ; save AF
+    ld      a,(hl)              ; A = byte (RST $30 parameter)
+    inc     hl                  ; skip over byte after RST $30
+    push    hl                  ; push return address (code after RST $30,xx)
+    add     a,a                 ; A * 2 to index WORD size vectors
+    ld      l,a
+    ld      h,$E1
+    ld      a,(hl)
+    inc     hl
+    ld      h,(hl)
+    ld      l,a
+    jp      (hl)
+
+; fill with NOP to $E100
+     assert !($E100 < $) ; Overran Hook Table!!!
+     dc  $E100-$,$00
+
+HOOKTABLE:                    ; ## caller   addr  performing function
+    dw      ERRORX            ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
+    dw      HOOKEND           ;  1 ERRCRD   03E0 
+    dw      AQMAIN            ;  2 READY    0402  BASIC command line (immediate mode)
+    dw      HOOKEND           ;  3 EDENT    0428  Tokenize Entered Line  
+    dw      HOOKEND           ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
+    dw      LINKLINES         ;  5 LINKER   0485  Update BASIC Program Line Links
+    dw      HOOKEND           ;  6 PRINT    07BC  Execute PRINT Statement
+    dw      HOOKEND           ;  7 FINPRT   0866  End of PRINT Statement
+    dw      HOOKEND           ;  8 TRMNOK
+    dw      EVAL_EXT          ;  9 EVAL     09FD  Evaluate Number or String
+    dw      REPLCMD           ; 10 NOTGOS   0536  Converting Keyword to Token
+    dw      CLEARX            ; 11 CLEAR    0CCD  Execute CLEAR Statement
+    dw      SCRTCX            ; 12 SCRTCH   0BBE  Execute NEW Statement
+    dw      HOOKEND           ; 13 OUTDO
+    dw      ATN1              ; 14 ATN      1985  ATN() function
+    dw      DEFX              ; 15 DEF      0B3B  DEF statement
+    dw      FNDOEX            ; 16 FNDOER   0B40  FNxx() call
+    dw      HOOKEND           ; 17
+    dw      HOOKEND           ; 18
+    dw      HOOKEND           ; 19
+    dw      HOOKEND           ; 20
+    dw      HOOKEND           ; 21
+    dw      PEXPAND           ; 22 LISPRT   0598  expanding a token
+    dw      NEXTSTMT          ; 23 GONE2    064B  interpreting next BASIC statement
+    dw      RUNPROG           ; 24 RUN      06BE  starting BASIC program
+    dw      ONGOTX            ; 25 ONGOTO   0780  ON statement
+    dw      HOOKEND           ; 26 INPUT    0893  Execute INPUT Statement 
+    dw      AQFUNCTION        ; 27 ISFUN    0A5F  Executing a Function
+    dw      HOOKEND           ; 28 DATBK    08F1
+
+
 ; show splash screen (Boot menu)
 SPLASH:
     push    bc                 ; Save Ctrl-C flag
@@ -619,7 +678,7 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    ld      hl,HOOK            ; RST $30 Vector (our UDF service routine)
+    ld      hl,FASTHOOK            ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     call    SHOWCOPYRIGHT      ; Show our copyright message
@@ -717,13 +776,13 @@ BootMenuPrint:
     db      CR,CR,0
     ret
 
+
 ;------------------------------------------------------
 ;             UDF Hook Service Routine
 ;------------------------------------------------------
 ; This address is stored at $3806-7, and is called by
 ; every RST $30. It allows us to hook into the system
 ; ROM in several places (anywhere a RST $30 is located).
-
 HOOK: 
     ex      (sp), hl            ; save HL and get address of byte after RST $30
     push    af                  ; save AF
@@ -773,10 +832,10 @@ UDFLIST:    ;xx     index caller    @addr  performing function:-
     db      $0E     ; 9   ATN       $1985  ATN() function
     db      $09     ; 8   EVAL      $09FD  evaluate number or string
     db      $18     ; 7   RUN       $06be  starting BASIC program
-    db      $17     ; 6   NEXTSTMT  $064b  interpreting next BASIC statement
-    db      $16     ; 5   PEXPAND   $0598  expanding a token
-    db      $0a     ; 4   REPLCMD   $0536  converting keyword to token
-    db      $1b     ; 3   FUNCTIONS $0a5f  executing a function
+    db      $17     ; 6   GONE2     $064b  interpreting next BASIC statement
+    db      $16     ; 5   LISPRT    $0598  expanding a token
+    db      $0a     ; 4   NOTGOS    $0536  converting keyword to token
+    db      $1b     ; 3   ISFUN     $0a5f  executing a function
     db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
     db      $02     ; 1   READY     $0402  BASIC command line (immediate mode)
 
