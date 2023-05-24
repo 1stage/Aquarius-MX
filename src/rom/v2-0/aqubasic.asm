@@ -413,13 +413,8 @@ ROM_ENTRY:
     
     jp      SPLASH
 
-; Hook Benchmarks (AquaLite)
-; 10 FORA=0TO20000:NEXT
-;
-; S2        18sec
-; USB v1.2  22sec
-; MX  v2.0  23sec
-
+;New Hook Dispatch Routine using single table executes in 97 cycles
+;Old routine took 180 cycles + 20 for every table entry checked
 FASTHOOK:   
     ex      (sp), hl            ; save HL and get address of byte after RST $30
     push    af                  ; save AF
@@ -434,6 +429,29 @@ FASTHOOK:
     ld      h,(hl)
     ld      l,a
     jp      (hl)
+
+;This Hook Dispatch Routine takes 109 cycles to execute, but leaves all
+;registers except IY intact. This means that the HOOK code won't need to 
+;pop HL or AF off the stack, which will save at least 20 cycles.
+;TO US THIS, ALL THE HOOK ROUTINES WILL NEED TO BE MODIFIED.
+ALTHOOK:
+    ex      af,af'              ; save AF
+    exx                         ; save BC,DE,HL
+    pop     hl                  ;
+    ld      a,(hl)              ; A = byte (RST $30 parameter)
+    inc     hl                  ; skip over byte after RST $30
+    push    hl                  ; push return address (code after RST $30,xx)
+    add     a,a                 ; A * 2 to index WORD size vectors
+    ld      l,a
+    ld      h,$E1
+    ld      a,(hl)
+    ld      IYL,a
+    inc     hl
+    ld      a,(hl)
+    ld      IYH,a
+    exx                         ; Restore BC,DE,HL
+    ex      af,af'              ; Restore AF
+    jp      (IY)
 
 ; fill with NOP to $E100
      assert !($E100 < $) ; Overran Hook Table!!!
