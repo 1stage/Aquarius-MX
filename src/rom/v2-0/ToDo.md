@@ -28,15 +28,19 @@ This file is for recording upcoming changes and features that are being added, a
 ### Other
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
-## UNDER CONSIDERATION ##
-- Screen copy from MSX BASIC
-  - COPY (X1,Y1) - (X2,Y2) TO <array variable name>
-  - COPY <array variable name> TO (X1,Y1) - (X2,Y2)  
+## UNDER CONSIDERATION / WISH LIST
+- Remove debugger and turn into separate ROM option
+- Screen copy from MSX BASIC (this is preferred over GET/PUT commands from ExtBASIC)
+  - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
+  - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
+- Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
+- MOD(dividend, divisor) function for modulus/remainder
+- XOR and NOT logical functions/operators
+- RPL$(source string, match string, replacement string) replace string function
 
-## COMPLETE: ##
-- PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
----
 ## COMPLETE:
+- [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
+
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 
 - [x] Test/Tweak, document KEY() function
