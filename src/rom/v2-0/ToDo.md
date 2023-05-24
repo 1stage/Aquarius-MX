@@ -37,8 +37,6 @@ This file is for recording upcoming changes and features that are being added, a
 ## COMPLETE:
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 
-- [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
-
 - [x] Test/Tweak, document KEY() function
 
 - [x] Created FRCADR - FRCINT replacement that accepts -32768 through 65535
