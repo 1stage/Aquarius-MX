@@ -14,14 +14,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] Verify this is feasible
   - [ ] Add accompanying routines to CH376.asm
 
+- [ ] Rewrite hook dispatch routine fo faster execution of BASIC Programs.
+
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
-
-- [ ] Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
-
-- [ ] Update RTC emulation
-  - [ ] When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
-  - [ ] Add option for RTC installed or not
 
 - [ ] Fix LOAD/RUN of *.ROM files... shouldn't behave differently than hardware.
 
@@ -116,3 +112,11 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [x] Create CD$ pseudo-variable for PATH to string value
   
+### AquaLite
+
+- [x] Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
+
+- [x] Update RTC emulation
+  - [x] When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
+  - [x] Add option for RTC installed or not
+
