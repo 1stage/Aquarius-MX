@@ -356,6 +356,14 @@ Edit BASIC Line
 ` ERASE A `
 > Removes array A() from memory.
 
+` 10 DIM B$(20) `
+
+` 20 ERASE B$ `
+
+` 30 DIM B$(10) `
+
+> Dimensions B$ as a 20 unit string array, then ERASES it, then redimensions it as a 10 unit array.
+
 ---
 ## ERR
 Error Status
@@ -681,7 +689,7 @@ Set DateTime
  - SWAP < variable >, < variable >
    - Action: Exchanges the values of two variables.
      - The variables must be of the same type or a TM error results.
-### EXAMPLES:
+### EXAMPLE:
 ```
   10 A$=" ONE " : B$=" ALL ": C$="FOR"
   20 PRINT A$ C$ B$
