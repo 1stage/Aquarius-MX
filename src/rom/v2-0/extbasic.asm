@@ -561,9 +561,9 @@ ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ;;; ### FORMAT: 
 ;;;  - STRING$ (< length >)
 ;;;    - Action: Returns a string of length < length > whose characters all spaces (ASCII code 32).
-;;;  - STRING$ (< length >, <byte> )
+;;;  - STRING$ (< length >, < byte > )
 ;;;    - Action: Returns a string of length < length > whose characters all have ASCII code < byte >.
-;;;  - STRING$ (< length >, <string> )
+;;;  - STRING$ (< length >, < string > )
 ;;;    - Action: Returns a string of length < length > whose characters are all r the first character of < string >.
 ;;; ### EXAMPLES:
 ;;; ```
