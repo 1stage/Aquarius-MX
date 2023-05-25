@@ -146,7 +146,7 @@ tokens = {
     0xE7: "KEY",
     0xE8: "DEEK",
     0xE9: "ERR",
-    0xEA: "STRING$"    
+    0xEA: "STRING"    
 }
 
 with open(args.input, "rb") as f:
