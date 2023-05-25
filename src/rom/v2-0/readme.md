@@ -16,6 +16,23 @@ Get Variable Address
 > Assigns A a value, copies its contents from the address of A to a new address for B, and prints the value at that address.
 
 ---
+## ASC (Extended)
+Read from Memory
+### FORMAT:
+ - ASC (< string >)
+   - Action: Returns a numerical value that is the ASCII code of the first character of < string >. If < string > is null, an FC error is returned.
+     - See the CHR$ function for ASCII-to-string conversion.
+ - ASC$ (< string >)
+   - Action: Returns string who's characters ASCII values match the series of two digit hexadecimal numbers in < string >.
+     - See the HEX$ function for string-to-hex conversion.
+### EXAMPLES:
+` PRINT ASC("TEST") `
+> Prints the number 84.
+
+` PRINT ASC$("414243") `
+> Prints the string "ABC".
+
+---
 ## ATN
 Arctangent
 ### FORMAT:
@@ -200,6 +217,7 @@ Hexadecimal to integer conversion
    - Action: Returns the DECimal value of the hexadecimal number in < hexadecimal string >.
      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
+     - See the HEX function for number-to-hex conversion.
 ### EXAMPLES:
 ` PRINT DEC("FFFF") `
 > Prints "65535"
@@ -346,7 +364,7 @@ Edit BASIC Line
 
 ---
 ## ERASE
-
+Erase array.
 ### FORMAT:
  - ERASE < array > [, < array > ...]
    - Action: Eliminates array from program.
@@ -427,7 +445,14 @@ Error Status
 Integer to hexadecimal conversion
 ### FORMAT:
  - HEX$(< number >)
-   - Action: Returns string containing < number > in two-byte hexadecimal format. FC Error if < number > is not in the range -32676 through 65535.
+   - Action: Returns string containing < number > in two-byte hexadecimal format.
+     - FC Error if < number > is not in the range -32676 through 65535.
+     - See the DEC function for hex-to-number conversion.
+ - HEX$(< string >)
+   - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in < string >.
+     - Length of returned string is twice that < string >.
+     - LS Error results if length of < string > is greater than 127.
+     - See the ASC$ function for hex-to-string conversion.
 ### EXAMPLES:
 ` PRINT HEX$(1) `
 > Prints "0001"
@@ -683,8 +708,27 @@ Set DateTime
 > Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
 
 ---
-## SWAP
+## STRING$
+Create string of repeating characters.
+### FORMAT:
+ - STRING$ (< length >)
+   - Action: Returns a string of length < length > whose characters all spaces (ASCII code 32).
+ - STRING$ (< length >, < byte > )
+   - Action: Returns a string of length < length > whose characters all have ASCII code < byte >.
+ - STRING$ (< length >, < string > )
+   - Action: Returns a string of length < length > whose characters are all r the first character of < string >.
+### EXAMPLES:
+```
+  10 X$ = STRING$ {10 , 45)
+  20 PRINT X$ "MONTHLY REPORT" X$
+  RUN
+  ----------MONTHLY REPORT----------
+  OK
+```
 
+---
+## SWAP
+Swap variable contents.
 ### FORMAT:
  - SWAP < variable >, < variable >
    - Action: Exchanges the values of two variables.

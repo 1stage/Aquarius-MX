@@ -148,7 +148,8 @@ tokens = {
     0xE6: "DEC",
     0xE7: "KEY",
     0xE8: "DEEK",
-    0xE9: "ERR" 
+    0xE9: "ERR",
+    0xEA: "STRING$"
 }
 
 
