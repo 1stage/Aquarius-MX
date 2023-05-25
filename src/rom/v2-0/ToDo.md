@@ -31,7 +31,7 @@ This file is for recording upcoming changes and features that are being added, a
   - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
 - Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
 - MOD(dividend, divisor) function for modulus/remainder
-- XOR and NOT logical functions/operators
+- XOR logical function/operator
 - RPL$(source string, match string, replacement string) replace string function
   - Example 1:
     - ` 10 NM$ = "JOHN JAMES SMITH" `
