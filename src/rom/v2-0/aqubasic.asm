@@ -80,7 +80,6 @@ REVISION = 0
 ; code options
 ;softrom  equ 1    ; loaded from disk into upper 16k of 32k RAM
 scrn_flag equ 1    ; enable screen save in lite debugger
-;softclock equ 1    ; using software clock
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
 ; See readme.md for full list of Commands and Functions
@@ -413,45 +412,32 @@ ROM_ENTRY:
     
     jp      SPLASH
 
-;New Hook Dispatch Routine using single table executes in 97 cycles
-;Old routine took 180 cycles + 20 for every table entry checked
-FASTHOOK:   
-    ex      (sp), hl            ; save HL and get address of byte after RST $30
-    push    af                  ; save AF
-    ld      a,(hl)              ; A = byte (RST $30 parameter)
-    inc     hl                  ; skip over byte after RST $30
-    push    hl                  ; push return address (code after RST $30,xx)
-    add     a,a                 ; A * 2 to index WORD size vectors
-    ld      l,a
-    ld      h,$E1
-    ld      a,(hl)
-    inc     hl
-    ld      h,(hl)
-    ld      l,a
-    jp      (hl)
 
-;This Hook Dispatch Routine takes 109 cycles to execute, but leaves all
-;registers except IY intact. This means that the HOOK code won't need to 
-;pop HL or AF off the stack, which will save at least 20 cycles.
-;TO US THIS, ALL THE HOOK ROUTINES WILL NEED TO BE MODIFIED.
+;------------------------------------------------------
+;             UDF Hook Service Routine
+;------------------------------------------------------
+; This address is stored at $3806-7, and is called by
+; every RST $30. It allows us to hook into the system
+; ROM in several places (anywhere a RST $30 is located).
+; Total execution time 92 cycles.
+
 ALTHOOK:
     ex      af,af'              ; save AF
     exx                         ; save BC,DE,HL
-    pop     hl                  ;
+    pop     hl                  ; get hook return address
     ld      a,(hl)              ; A = byte (RST $30 parameter)
-    inc     hl                  ; skip over byte after RST $30
-    push    hl                  ; push return address (code after RST $30,xx)
     add     a,a                 ; A * 2 to index WORD size vectors
     ld      l,a
     ld      h,$E1
     ld      a,(hl)
-    ld      IYL,a
+    ld      iyl,a
     inc     hl
     ld      a,(hl)
-    ld      IYH,a
+    ld      iyh,a
     exx                         ; Restore BC,DE,HL
     ex      af,af'              ; Restore AF
-    jp      (IY)
+    jp      (iy)
+
 
 ; fill with NOP to $E100
      assert !($E100 < $) ; Overran Hook Table!!!
@@ -459,34 +445,34 @@ ALTHOOK:
 
 HOOKTABLE:                    ; ## caller   addr  performing function
     dw      ERRORX            ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      HOOKEND           ;  1 ERRCRD   03E0 
+    dw      HOOK1+1           ;  1 ERRCRD   03E0 
     dw      AQMAIN            ;  2 READY    0402  BASIC command line (immediate mode)
-    dw      HOOKEND           ;  3 EDENT    0428  Tokenize Entered Line  
-    dw      HOOKEND           ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
+    dw      HOOK3+1           ;  3 EDENT    0428  Tokenize Entered Line  
+    dw      HOOK4+1           ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
     dw      LINKLINES         ;  5 LINKER   0485  Update BASIC Program Line Links
-    dw      HOOKEND           ;  6 PRINT    07BC  Execute PRINT Statement
-    dw      HOOKEND           ;  7 FINPRT   0866  End of PRINT Statement
-    dw      HOOKEND           ;  8 TRMNOK
+    dw      HOOK6+1           ;  6 PRINT    07BC  Execute PRINT Statement
+    dw      HOOK7+1           ;  7 FINPRT   0866  End of PRINT Statement
+    dw      HOOK8+1           ;  8 TRMNOK
     dw      EVAL_EXT          ;  9 EVAL     09FD  Evaluate Number or String
     dw      REPLCMD           ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      CLEARX            ; 11 CLEAR    0CCD  Execute CLEAR Statement
     dw      SCRTCX            ; 12 SCRTCH   0BBE  Execute NEW Statement
-    dw      HOOKEND           ; 13 OUTDO
+    dw      HOOK13+1          ; 13 OUTDO    198A  Execute OUTCHR
     dw      ATN1              ; 14 ATN      1985  ATN() function
     dw      DEFX              ; 15 DEF      0B3B  DEF statement
     dw      FNDOEX            ; 16 FNDOER   0B40  FNxx() call
-    dw      HOOKEND           ; 17
-    dw      HOOKEND           ; 18
-    dw      HOOKEND           ; 19
-    dw      HOOKEND           ; 20
-    dw      HOOKEND           ; 21
+    dw      HOOK17+1          ; 17 LPTOUT   1AE8  Print Character to Printer
+    dw      HOOK18+1          ; 18 INCHRH   1E7E  Read Character from Keyboard
+    dw      HOOK19+1          ; 19 TTYCHR   1D72  Print Character to Screen
+    dw      HOOK20+1          ; 20 CLOAD    1C2C  Load File from Tape
+    dw      HOOK21+1          ; 21 CSAVE    1C09  Save File to Tape
     dw      PEXPAND           ; 22 LISPRT   0598  expanding a token
     dw      NEXTSTMT          ; 23 GONE2    064B  interpreting next BASIC statement
     dw      RUNPROG           ; 24 RUN      06BE  starting BASIC program
     dw      ONGOTX            ; 25 ONGOTO   0780  ON statement
-    dw      HOOKEND           ; 26 INPUT    0893  Execute INPUT Statement 
+    dw      HOOK26+1          ; 26 INPUT    0893  Execute INPUT Statement 
     dw      AQFUNCTION        ; 27 ISFUN    0A5F  Executing a Function
-    dw      HOOKEND           ; 28 DATBK    08F1
+    dw      HOOK28+1          ; 28 DATBK    08F1
 
 
 ; show splash screen (Boot menu)
@@ -696,7 +682,7 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    ld      hl,FASTHOOK            ; RST $30 Vector (our UDF service routine)
+    ld      hl,ALTHOOK         ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     call    SHOWCOPYRIGHT      ; Show our copyright message
@@ -795,87 +781,7 @@ BootMenuPrint:
     ret
 
 
-;------------------------------------------------------
-;             UDF Hook Service Routine
-;------------------------------------------------------
-; This address is stored at $3806-7, and is called by
-; every RST $30. It allows us to hook into the system
-; ROM in several places (anywhere a RST $30 is located).
-HOOK: 
-    ex      (sp), hl            ; save HL and get address of byte after RST $30
-    push    af                  ; save AF
-    ld      a,(hl)              ; A = byte (RST $30 parameter)
-    inc     hl                  ; skip over byte after RST $30
-    push    hl                  ; push return address (code after RST $30,xx)
-    ld      hl,UDFLIST          ; HL = RST 30 parameter table
-    push    bc
-    ld      bc,UDF_JMP-UDFLIST+1 ; number of UDF parameters
-    cpir                        ; find paramater in list
-    ld      a,c                 ; A = parameter number in list
-    pop     bc
-    add     a,a                 ; A * 2 to index WORD size vectors
-    ld      hl,UDF_JMP          ; HL = Jump vector table
-do_jump:
-    add     a,l
-    ld      l,a
-    ld      a,$00
-    adc     a,h
-    ld      h,a                 ; HL += vector number
-    ld      a,(hl)
-    inc     hl
-    ld      h,(hl)              ; get vector address
-    ld      l,a
-    jp      (hl)                ; and jump to it
-                                ; will return to HOOKEND
 
-; End of hook
-HOOKEND:
-    pop     hl                 ; get return address
-    pop     af                 ; restore AF
-    ex      (sp),hl            ; restore HL and set return address
-    ret                        ; return to code after RST $30,xx
-
-
-; UDF parameter table
-; List of RST $30,xx hooks that we are monitoring.
-; NOTE: order is reverse of UDF jumps!
-
-UDFLIST:    ;xx     index caller    @addr  performing function:-
-    db      $00     ;15   ERROR     $03DB  Display Error and stop program
-    db      $0C     ;14   SCRTCH    $0BBE  NEW statement
-    db      $0B     ;13   CLEAR     $0CCD  CLEAR statement
-    db      $19     ;12   ONGOTO    $0780  ON statement
-    db      $10     ;11   FNDOER    $0B40  FNxx() call
-    db      $0F     ;10   DEF       $0B3B  DEF statement
-    db      $0E     ; 9   ATN       $1985  ATN() function
-    db      $09     ; 8   EVAL      $09FD  evaluate number or string
-    db      $18     ; 7   RUN       $06be  starting BASIC program
-    db      $17     ; 6   GONE2     $064b  interpreting next BASIC statement
-    db      $16     ; 5   LISPRT    $0598  expanding a token
-    db      $0a     ; 4   NOTGOS    $0536  converting keyword to token
-    db      $1b     ; 3   ISFUN     $0a5f  executing a function
-    db      $05     ; 2   LINKLINES $0485  updating nextline pointers in BASIC prog
-    db      $02     ; 1   READY     $0402  BASIC command line (immediate mode)
-
-; UDF parameter Jump table
-
-UDF_JMP:
-    dw      HOOKEND            ; 0 parameter not found in list
-    dw      AQMAIN             ; 1 replacement immediate mode
-    dw      LINKLINES          ; 2 update BASIC nextline pointers (returns to AQMAIN)
-    dw      AQFUNCTION         ; 3 execute AquBASIC function
-    dw      REPLCMD            ; 4 replace keyword with token
-    dw      PEXPAND            ; 5 expand token to keyword
-    dw      NEXTSTMT           ; 6 execute next BASIC statement
-    dw      RUNPROG            ; 7 run program
-    dw      EVAL_EXT           ; 8 evaluate hexadecimal number
-    dw      ATN1               ; 9 ATN() function
-    dw      DEFX               ;10 DEF statement
-    dw      FNDOEX             ;11 FNxx() call
-    dw      ONGOTX             ;12 ON ERROR... hook
-    dw      CLEARX             ;13 extend CLEAR statement 
-    dw      SCRTCX             ;14 Clear runtime variables
-    dw      ERRORX             ;15 Trap BASIC Error (from ON ERROR GOTO...)
 
 ; Our Commands and Functions
 ;
@@ -977,9 +883,9 @@ AQMAIN:
     jr      nz,.main            ; If 0
     ld      (ONELIN),hl         ;   Clear Error Trap
 .main:    
-    pop     af                  ; clean up stack
-    pop     af                  ; restore AF
-    pop     hl                  ; restore HL
+;    pop     af                  ; clean up stack
+;    pop     af                  ; restore AF
+;    pop     hl                  ; restore HL
 
     call    FINLPT              ; If we were printing to printer, LPRINT a CR and LF
     xor     a
@@ -1023,6 +929,11 @@ ENTERLINE:
     ld      c,5                 ; LENGTH OF KRUNCH BUFFER
     call    KLOOP               ; CRUNCH THE LINE DOWN
     ld      hl,LineBuf-1
+    ld      (de),a              ; NEED THREE 0'S ON THE END
+    inc     de                  ; ONE FOR END-OF-LINE
+    ld      (de),a              ; AND 2 FOR A ZERO LINK
+    inc     de                  ; SINCE IF THIS IS A DIRECT STATEMENT
+    ld      (de),a              ; ITS END MUST LOOK LIKE THE END OF A PROGRAM
     ld      b,a                 ; RETAIN CHARACTER COUNT.
     pop     de                  ; RESTORE LINE #
     pop     af                  ; WAS THERE A LINE #?
@@ -1121,10 +1032,12 @@ link_lines
 ; called from $0a5f by RST $30,$1b
 
 AQFUNCTION:
-    pop     bc                  ; get return address
-    pop     af
-    pop     hl
-    push    bc                  ; push return address back on stack
+    ld      ix,HOOK27+1         ; set hook return address
+    push    ix                  ; and put on stack
+    ;pop     bc                  ; get return address
+    ;pop     af
+    ;pop     hl
+    ;push    bc                  ; push return address back on stack
     cp      PEEKTK-$B2          ; If PEEK Token
     jp      z,FN_PEEK           ;   Do Extended PEEK
     cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
@@ -1135,9 +1048,16 @@ AQFUNCTION:
     add     a,a                 ; index = A * 2
     push    hl
     ld      hl,TBLFNJP          ; function address table
-    jp      do_jump             ; JP to our function
-
-
+    add     a,l
+    ld      l,a
+    ld      a,$00
+    adc     a,h
+    ld      h,a                 ; HL += vector number
+    ld      a,(hl)
+    inc     hl
+    ld      h,(hl)              ; get vector address
+    ld      l,a
+    jp      (hl)                ; and jump to it
 
 ;-------------------------------------
 ;         Replace Command
@@ -1146,17 +1066,19 @@ AQFUNCTION:
 ; Replaces keyword with token.
 
 REPLCMD:
-     ld      a,b                ; A = current index
-     cp      $cb                ; if < $CB then keyword was found in BASIC table
-     jp      nz,HOOKEND         ;    so return
-     pop     bc                 ; get return address from stack
-     pop     af                 ; restore AF
-     pop     hl                 ; restore HL
-     push    bc                 ; put return address back onto stack
-     ex      de,hl              ; HL = Line buffer
-     ld      de,TBLCMDS-1       ; DE = our keyword table
-     ld      b,BTOKEN-1         ; B = our first token
-     jp      $04f9              ; continue searching using our keyword table
+    ld      a,b                ; A = current index
+    cp      $cb                ; if < $CB then keyword was found in BASIC table
+    ld      IX,HOOK10+1        ;   CRUNCX will also return here when done
+    push    IX
+    ret     nz                 ;   so return
+;     pop     bc                 ; get return address from stack
+;     pop     af                 ; restore AF
+;     pop     hl                 ; restore HL
+;     push    bc                 ; put return address back onto stack
+    ex      de,hl              ; HL = Line buffer
+    ld      de,TBLCMDS-1       ; DE = our keyword table
+    ld      b,BTOKEN-1         ; B = our first token
+    jp      CRUNCX             ; continue searching using our keyword table
 
 ;-------------------------------------
 ;             PEXPAND
@@ -1165,13 +1087,14 @@ REPLCMD:
 ; Expand token to keyword
 
 PEXPAND:
-    pop     de
-    pop     af                  ; restore AF (token)
-    pop     hl                  ; restore HL (BASIC text)
+    ;pop     de
+    ;pop     af                  ; restore AF (token)
+    ;pop     hl                  ; restore HL (BASIC text)
     cp      BTOKEN              ; is it one of our tokens?
     jr      nc,PEXPBAB          ; yes, expand it
-    push    de
-    ret                         ; no, return to system for expansion
+    jp      HOOK22+1
+    ;push    de
+    ;ret                         ; no, return to system for expansion
 
 PEXPBAB:
     sub     BTOKEN - 1
@@ -1187,9 +1110,9 @@ PEXPBAB:
 ; with parameter $17
 
 NEXTSTMT:
-    pop     bc                  ; BC = return address
-    pop     af                  ; AF = token - $80, flags
-    pop     hl                  ; HL = text
+    ;pop     bc                  ; Take Hook Return Address off Stack
+    ;pop     af                  ; AF = token - $80, flags
+    ;pop     hl                  ; HL = text
     jr      nc,BASTMT           ; if NC then process BASIC statement
     push    af                  ; Save Flags
     cp      COPYTK-$80          ; If POKE Token
@@ -1197,20 +1120,21 @@ NEXTSTMT:
     cp      POKETK-$80          ; If POKE Token
     jp      z,ST_POKE           ;   Do Extended POKE
     pop     af                  ; Else
-    push    bc                  ;   Return to Standard Dispatch Routine
-    ret                        
+    jp      HOOK23+1
+    ;push    bc                  ;   Return to Standard Dispatch Routine
+    ;ret                        
 
 BASTMT:
     sub     (BTOKEN)-$80
-    jp      c,$03c4             ; SN error if < our 1st BASIC command token
+    jp      c,SNERR             ; SN error if < our 1st BASIC command token
     cp      BCOUNT              ; Count number of commands
-    jp      nc,$03c4            ; SN error if > out last BASIC command token
+    jp      nc,SNERR            ; SN error if > our last BASIC command token
     rlca                        ; A*2 indexing WORDs
     ld      c,a
     ld      b,$00               ; BC = index
     ex      de,hl
     ld      hl,TBLJMPS          ; HL = our command jump table
-    jp      $0665               ; Continue with NEXTSTMT
+    jp      GONE5               ; Continue with NEXTSTMT
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -1233,9 +1157,6 @@ BASTMT:
 
 RUNPROG:
     call    CLNERR             ; Clear Error Trapping Variables
-    pop     af                 ; clean up stack
-    pop     af                 ; restore AF
-    pop     hl                 ; restore HL
     jp      z,RUNC             ; if no argument then RUN from 1st line
     push    hl
     call    FRMEVL             ; get argument type
@@ -1650,7 +1571,7 @@ GOTO_HL:
 ;
 ; ST_PSG:
 ;     cp      $00
-;     jp      z,$03d6         ; MO error if no args
+;     jp      z,MOERR         ; MO error if no args
 ; psgloop:
 ;     call    GETBYT          ; get/evaluate register
 ;     out     ($f7),a         ; set the PSG register
@@ -1667,7 +1588,7 @@ GOTO_HL:
 ; Dual PSG Code
 ST_PSG:
     cp      $00
-    jp      z,$03d6             ; MO error if no args
+    jp      z,MOERR             ; MO error if no args
 psgloop:
     call    GETBYT              ; Get/evaluate register
     cp      16                  ; Compare to a 16 offset
@@ -2193,26 +2114,31 @@ return_string:
     ld      (VALTYP),a
     jp      TIMSTR
 
+
 ;-------------------------------------------------------------------------
 ; EVAL Extension - Hook 9
 
 EVAL_EXT:
-    pop     bc                  ; BC = Hook Return Address
-    pop     af                  ; AF = whatever was in AF
-    pop     hl                  ; HL = Text Pointer
+;    pop     bc                  ; BC = Hook Return Address
+;    pop     af                  ; AF = whatever was in AF
+;    pop     hl                  ; HL = Text Pointer
 
-    rst CHRGET                  
+    xor     a               ;
+    ld      (VALTYP),a      ; ASSUME VALUE WILL BE NUMERIC
+    rst     CHRGET          ;
+    jp      z,MOERR         ; TEST FOR MISSING OPERAND - IF NONE GIVE ERROR
+    jp      c,FIN           ; IF NUMERIC, INTERPRET CONSTANT
+    call    ISLETC          ; VARIABLE NAME?
+    jp      nc,ISVAR        ; AN ALPHABETIC CHARACTER MEANS YES
     cp      '$'                 
-    jr      z,EVAL_HEX
+    jp      z,EVAL_HEX
     cp      '&'                 
-    jr      z,GET_VARPTR
+    jp      z,GET_VARPTR
     cp      CDTK
-    jr      z,GET_PATH
- 
-return_to_eval:
-    push    bc                  ; Put HOOK Return Address back on stack
-    dec     hl                  ; Back up Text Pointer
-    ret
+    jp      z,GET_PATH
+    cp      PLUSTK          ; IGNORE "+"
+    jp      z,EVAL_EXT      ;
+    jp      QDOT     
 
 
 ;------------------------------------------------------------------------------

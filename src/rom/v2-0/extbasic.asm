@@ -33,9 +33,9 @@
 ;;; > Increments the value of G the rounded value of a random number between 1 and 10.
 ;----------------------------------------------------------------------------
 
-DEFX:    pop      hl              
-        pop      af              
-        pop      hl              
+DEFX:   ;pop      bc             ; clean up stack              
+        ;pop      af              
+        ;pop      hl              
         call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         call    ERRDIR          ; DEF IS "ILLEGAL DIRECT"
         ld      bc,DATA          ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
@@ -62,15 +62,15 @@ DEFX:    pop      hl
         ld      (hl),b          
         jp      STRADX           
 
-FNDOEX: pop      hl              
-        pop      af              
-        pop      hl              
+FNDOEX: ;pop      bc              
+        ;pop      af              
+        ;pop      hl              
         call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
 
         push    de                
         call    PARCHK          ;{M80} RECURSIVELY EVALUATE THE FORMULA
         call    CHKNUM          ;{M65} MUST BE NUMBER
-        ex      (sp),hl          ; SAVE THE TEXT POINTER THAT POINTS PAST THE 
+        ex      (sp),hl         ; SAVE THE TEXT POINTER THAT POINTS PAST THE 
                                 ; FUNCTION NAME IN THE CALL
         ld      e,(hl)          ;[H,L]=VALUE OF THE FUNCTION
         inc      hl              
@@ -78,7 +78,7 @@ FNDOEX: pop      hl
         inc      hl              ; WHICH IS A TEXT POINTER AT THE FORMAL
         ld      a,d              ; PARAMETER LIST IN THE DEFINITION
         or      e                ; A ZERO TEXT POINTER MEANS THE FUNCTION 
-                                ; WAS NEVER DEFINED
+                                 ; WAS NEVER DEFINED
         jp      z,UFERR          ; IF SO, GIVEN AN "UNDEFINED FUNCTION" ERROR
         ld      a,(hl)          
         inc      hl              
@@ -138,9 +138,9 @@ GETFNM: rst      SYNCHR
 ;;; > Defines variable X as the arctangent of another variable, J, divided by pi.
 ;----------------------------------------------------------------------------
 
-ATN1:    pop      hl
-        pop      af
-        pop      hl
+ATN1:   ;pop      bc
+        ;pop      af
+        ;pop      hl
         rst      FSIGN            ; SEE IF ARG IS NEGATIVE
         call    m,PSHNEG        ; IF ARG IS NEGATIVE, USE:
         call    m,NEG            ;     ARCTAN(X)=-ARCTAN(-X
@@ -154,7 +154,7 @@ ATN1:    pop      hl
         call    FDIV            ;    ARCTAN(X)=PI/2-ARCTAN(1/X)
         ld      hl,FSUBS        ; PUT FSUBS ON THE STACK SO WE WILL RETURN       
         push    hl              ;   TO IT AND SUBTRACT THE REULT FROM PI/2
-ATN2:    ld      hl,ATNCON        ; EVALUATE APPROXIMATION POLYNOMIAL
+ATN2:   ld      hl,ATNCON        ; EVALUATE APPROXIMATION POLYNOMIAL
 
         call    POLYX            
         ld      hl,PI2          ; GET POINTER TO PI/2 IN CASE WE HAVE TO
@@ -197,9 +197,9 @@ ATNCON: db    9                ;DEGREE
 ;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 ;----------------------------------------------------------------------------
 
-ONGOTX: pop      hl              ; Discard Hook Return Addres
-        pop      af              ; Restore Accumulator
-        pop      hl              ; Restore Text Pointer
+ONGOTX: ;pop      hl              ; Discard Hook Return Addres
+        ;pop      af              ; Restore Accumulator
+        ;pop      hl              ; Restore Text Pointer
         cp      ERRTK            ; "ON...ERROR"?
         jr      nz,.noerr        ; NO. Do ON GOTO
         inc      hl              ; Check Following Byte
@@ -236,8 +236,7 @@ RESTRP: ld      (ONELIN),de      ; SAVE POINTER TO LINE OR ZERO IF 0.
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
 ;----------------------------------------------------------------------------
 
-ERRORX: ;call     break 
-        ld      hl,(CURLIN)      ; GET CURRENT LINE NUMBER
+ERRORX: ld      hl,(CURLIN)      ; GET CURRENT LINE NUMBER
         ld      (ERRLIN),hl      ; SAVE IT FOR ERL VARIABLE
         ld      a,e              ; Get Error Table Offset
         ld      c,e              ; ALSO SAVE IT FOR LATER RESTORE
@@ -383,54 +382,57 @@ FN_ERR: call    InitFN          ; Parse Arg and set return address
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
 
-CLEARX: ld      b,4              ; Clear ERRLIN,ERRFLG,ONEFLG
-        call    CLERR
-        pop      af              ; Discard Hook Return Addres
-        pop      af              ; Restore Accumulator
-        pop      hl              ; Get Text Pointer
+CLEARX: exx                     ; Save Registers
+        ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
+        call    CLERR           ; and Restore registers  
         jp      z,CLEARC        ; IF NO arguments JUST CLEAR
-        cp      ERRTK            ; If CLEAR ERR?
+        cp      ERRTK           ; If CLEAR ERR?
         jp      nz,.args        ;    
-        rst      CHRGET          ;    Skip ERR Token, Eat Spaces
-        ret                      ;    and Return
+        rst     CHRGET          ;    Skip ERR Token, Eat Spaces
+        ret                     ;    and Return
 .args:  call    INTID2          ; GET AN INTEGER INTO [D,E] 
-        dec      hl              ;
-        rst      CHRGET          ; SEE IF ITS THE END 
+        dec     hl              ;
+        rst     CHRGET          ; SEE IF ITS THE END 
         push    hl              ;
-        ld      hl,(MEMSIZ)      ; GET HIGHEST ADDRESS
+        ld      hl,(MEMSIZ)     ; GET HIGHEST ADDRESS
         jp      z,CLEARS        ; SHOULD FINISH THERE
-        pop      hl              ;
-        SYNCHK  ','              ;
+        pop     hl              ;
+        SYNCHK  ','             ;
         push    de              ; Save String Size
         call    GETADR          ; Get Top of Memory
-        dec      hl              ;
-        rst      CHRGET          ;
+        dec     hl              ;
+        rst     CHRGET          ;
         jp      nz,SNERR        ; IF NOT TERMINATOR, GOOD BYE   
-        ex      (sp),hl          ; Get String Size, Save Text Pointer
+        ex      (sp),hl         ; Get String Size, Save Text Pointer
         push    hl              ; Put String Size back on Stack
-        ex      de,hl            ; HL = Top of Memory
-        ld      de,vars          ; DE = Start of Protected Memory
-        ld      a,h              ; 
-        or      l                ; 
-        jp      nz,.check        ; If HL = 0
-        ex      de,hl            ;    Set Top of Memory
-        dec      hl              ;    to One Less Start of Protected
+        ex      de,hl           ; HL = Top of Memory
+        ld      de,vars         ; DE = Start of Protected Memory
+        ld      a,h             ; 
+        or      l               ; 
+        jp      nz,.check       ; If HL = 0
+        ex      de,hl           ;    Set Top of Memory
+        dec     hl              ;    to One Less Start of Protected
         jr      .clear          ; Else
-.check: rst      COMPAR          ;    If Top >= Protected
+.check: rst     COMPAR          ;    If Top >= Protected
 .fcerr: jp      nc,FCERR        ;      FC Error
-.clear: pop      de              ; Get String Space into DE
+.clear: pop     de              ; Get String Space into DE
         jp      CLEARS          ; Set VARTAB, TOPMEM, and MEMSIZ then return
 
-;NEW statement hook
-SCRTCX: pop      hl              ; Get Hook Return Addres
-        pop      af              ; Discard Accumulator
-        ex      (sp),hl          ; Discard Text Pointer, Push Return Address
-CLNERR: ld      b,6              ; Clear ERRLIN,ERRFLG,ONEFLG,ONELIN
-CLERR:  call    dos__clearError ; returns A = 0
+;-------------------------------------------------------------------------
+; NEW statement hook
+SCRTCX: call    CLNERR
+        jp      HOOK12+1
+
+CLNERR: exx                     ; Save Registers
+        ld      b,6             ; Clear ERRLIN,ERRFLG,ONEFLG,ONELIN
+CLERR:  ex      af,af'
+        call    dos__clearError ; returns A = 0
         ld      hl,ERRLIN
 .zloop: ld      (hl),a
         inc      hl
         djnz    .zloop
+        ex      af,af'
+        exx                     ; Restore Registers                  
         ret
 
 ;----------------------------------------------------------------------------
@@ -571,7 +573,7 @@ ST_ERASE:
     call    PTRGET          ;GO FIND OUT WHERE TO ERASE
     jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
     push    hl              ;SAVE THE TEXT POINTER
-    ld      a,(SUBFLG)      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
+    ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
     ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
     ld      l,c
     dec     bc              ;BACK UP TO THE FRONT

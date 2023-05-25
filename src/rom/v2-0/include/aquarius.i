@@ -185,8 +185,10 @@ FSIGN   = $28     ; Get sign of Floating Point Accumulator
 REDDY   = $036E   ; Text "Ok" CR,LF,NUL
 READY   = $0402   ; Display "Ok" and Enter Immediate Mode
 KLOOP   = $04C5   ; CRUNCH Main Loop Entry Point
+CRUNCX  = $04F9   ; CRUNCH Alternate Entry Point
 GONE4   = $063C   ; Execute Next Statement
 GONE    = $064B   ; Execute Statement
+GONE5   = $0665   ; Add Offset to Table and Dispatch Statement
 NTOERR  = $0782   ; Execute ON GOTO
 
 STROUT  = $0E9D   ; Print null or quote terminated string
@@ -202,6 +204,7 @@ TTYSAV  = $1E3E   ; save cursor position (HL = address, A = column)
 
 LINEDONE    = $19e5  ; line entered (CR pressed)
 ERRCRD  = $03E0   ; Print Error Message and Return to Immediate Mode
+ERRCRH  = $03E6   ; ERRCRD rst $30
 FNDLIN  = $049f   ; Find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
@@ -215,6 +218,7 @@ CLEARS  = $0CEB   ; Set VARTAB, TOPMEM, and MEMSIZ
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEVL  = $0985   ; Evaluate Formula
 EVAL    = $09FD   ; Evaluate Variable, Constant, or Function Call
+QDOT    = $0A14   ; EVAL - Check for Decimal Point
 PARCHK  = $0A37   ; Evaluate Formula in Parentheses
 LABBCK  = $0A49   ; Functions that don't return string values come back here
 GETBYT  = $0B54   ; Evaluate Numeric Formula between 0 and 255
@@ -232,6 +236,14 @@ ZERO    = $12C3   ; Zero FAC
 MOVFR   = $1523   ; Move Number fron Registers to  Floating Point Accumulator
 MOVMF   = $153A   ; Move Number from Floating Point Accumulator to (HL)
 MOVE    = $153D   ; Move Number from (DE) TO (HL)
+
+EVAL    = $09FD   ; Evaluate Variable, Constant, Function Call
+ISVAR   = $0A4E   ; Evaluate Variable 
+RETVAR  = $0A51   ; Evaluate Variable with descriptor in DE
+ISLET   = $0CC5   ; Return No Carry is (HL) is an uppercase letter
+ISLETC  = $0CC6   ; Return No Carry is A is an uppercase letter
+FIN     = $15E5   ; Evaluate Floating Point Number
+
 
 TIMSTR  = $0E2F   ; Return string in HL from function  
 STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
@@ -352,6 +364,7 @@ ERRMO  =    $24             ; MO Missing operand
 SNERR    = $03C4  ; Syntax Error
 FCERR    = $0697  ; Function Call Error
 OVERR    = $03D3  ; Overflow
+MOERR    = $03D6  ; Missing Operand 
 OMERR    = $0BB7  ; Out of Memory
 USERR    = $06F3  ; Undefined Line Number
 BSERR    = $11CD  ;   bad subscript
@@ -374,10 +387,42 @@ POKETK      = $94   ; POKE Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token
 STEPTK      = $A7   ; STEP Token
+PLUSTK      = $A8   ; + Token
 MULTK       = $AA   ; * Token
 ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
 PEEKTK      = $C1   ; PEEK Token
+
+;Adddress of Byte following Hook RST
+HOOK0       = $03DF
+HOOK1       = $03E7
+HOOK2       = $0403
+HOOK3       = $0430
+HOOK4       = $0481
+HOOK5       = $0486
+HOOK6       = $07BD
+HOOK7       = $0867
+HOOK8       = $0881
+HOOK9       = $09FE
+HOOK10      = $0537
+HOOK11      = $0CCE
+HOOK12      = $0BBF
+HOOK13      = $198B
+HOOK14      = $1986
+HOOK15      = $0B3C
+HOOK16      = $0B41
+HOOK17      = $1AE9
+HOOK18      = $1E7F
+HOOK19      = $1D73
+HOOK20      = $1C2D
+HOOK21      = $1C09
+HOOK22      = $05A1
+HOOK23      = $0659
+HOOK24      = $06BF
+HOOK25      = $0781
+HOOK26      = $0894
+HOOK27      = $0A60
+HOOK28      = $08F1
 
 
 ;-------------------------------------------------
