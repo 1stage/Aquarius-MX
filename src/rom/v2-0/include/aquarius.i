@@ -393,7 +393,9 @@ PLUSTK      = $A8   ; + Token
 MULTK       = $AA   ; * Token
 ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
+ONEFUN      = $B2   ; First Function Token
 PEEKTK      = $C1   ; PEEK Token
+ASCTK       = $C5   ; ASC Token
 
 ;Adddress of Byte following Hook RST
 HOOK0       = $03DF

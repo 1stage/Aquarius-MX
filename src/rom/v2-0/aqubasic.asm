@@ -1037,6 +1037,8 @@ link_lines
 AQFUNCTION:
     cp      PEEKTK-$B2          ; If PEEK Token
     jp      z,FN_PEEK           ;   Do Extended PEEK
+    cp      ASCTK-$B2           ; If ASC Token
+    jp      z,FN_ASC            ;   See if ASC$
     cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
     jp      c,HOOK27+1
     cp      (lastf-$B2+1)
@@ -1687,6 +1689,7 @@ FN_KEY:
 ;;;    - Action: Returns the DECimal value of the hexadecimal number in < hexadecimal string >.
 ;;;      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
 ;;;      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
+;;;      - See the HEX function for number-to-hex conversion.
 ;;; ### EXAMPLES:
 ;;; ` PRINT DEC("FFFF") `
 ;;; > Prints "65535"
@@ -1710,11 +1713,14 @@ FN_DEC:
 ;;; Integer to hexadecimal conversion
 ;;; ### FORMAT:
 ;;;  - HEX$(< number >)
-;;;    - Action: Returns string containing < number > in two-byte hexadecimal format. FC Error if < number > is not in the range -32676 through 65535.
+;;;    - Action: Returns string containing < number > in two-byte hexadecimal format. 
+;;;      - FC Error if < number > is not in the range -32676 through 65535.
+;;;      - See the DEC function for hex-to-number conversion.
 ;;;  - HEX$(< string >)
 ;;;    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in < string >.
 ;;;      - Length of returned string is twice that < string >.
 ;;;      - LS Error results if length of < string > is greater than 127.
+;;;      - See the ASC$ function for hex-to-string conversion.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(1) `
 ;;; > Prints "0001"

@@ -1,4 +1,85 @@
+;-----------------------------------------
 ; Enhanced BASIC Statements and Commands
+;-----------------------------------------
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## ASC (Extended)
+;;; Read from Memory
+;;; ### FORMAT:
+;;;  - ASC (< string >)
+;;;    - Action: Returns a numerical value that is the ASCII code of the first character of < string >. If < string > is null, an FC error is returned.
+;;;      - See the CHR$ function for ASCII-to-string conversion.
+;;;  - ASC$ (< string >)
+;;;    - Action: Returns string who's characters ASCII values match the series of two digit hexadecimal numbers in < string >.
+;;;      - See the HEX$ function for string-to-hex conversion.
+;;; ### EXAMPLES:
+;;; ` PRINT ASC("TEST") `
+;;; > Prints the number 84.
+;;;
+;;; ` PRINT ASC$("414243") `
+;;; > Prints the string "ABC".
+;----------------------------------------------------------------------------
+
+FN_ASC:
+    inc     hl              ; Check character directly after ASC Token
+    ld      a,(hl)          ; (don't skip spaces)
+    cp      '$'             ; If it's not a dollar sign
+    jr      nz,ABORT_FN     ;   Return to do normal ASC
+    rst     CHRGET          ; Eat $ and Skip Spaces
+    call    PARCHK          ; Parse Argument in Parentheses
+    push    hl              ; Save Text Pointer
+    push    bc              ; Dummy Return Address for FINBCK to discard
+    call    CHKSTR          ; TM Error if Not a String
+    call    STRLENADR       ; Get Arg Length in A, Address in HL
+    sra     a               ; Divide Length by 2
+    jp      c,FCERR         ;   Error if Length was Odd
+    jr      z,null_string   ;   If 0, Return Null String
+    push    hl              ; Save Argument String Address
+    call    STRINI          ; Create Result String returning HL=Descriptor, DE=Text Address
+    pop     hl              ; Get Argument String Address
+    ld      b,a             ; Loop Count = Result String Length
+.asc_loop:
+    call    get_hex         ; Get Hex Digit from Argument
+    sla     a               ; Shift to High Nybble
+    sla     a
+    sla     a
+    sla     a
+    ld      c,a             ; and Save in C
+    call    get_hex         ; Get Next Hex Digit from Argument
+    or      c               ; Combine with High Nybble
+    ld      (de),a          ; Store in Result String
+    inc     de              ; Bump Result Pointer
+    djnz    .asc_loop
+    jp      FINBCK          ; Return Result String
+
+get_hex:
+    ld      a,(hl)          ; Get Hex Digit 
+    inc     hl              ; Bump Pointer
+cvt_hex:
+    cp      ':'             ; Test for Digit 
+    jr      nc,.not_digit   ; If A <= '9'
+    sub     '0'             ;   Convert Digit to Binary
+    jr      c,.fcerr        ;   If it was less than '0', Error
+    ret                     ;   Else Return 
+.not_digit:
+    and     $5F             ; Convert to Upper Case
+    sub     'A'-10          ; Make 'A' = 10
+    jr      c,.fcerr        ; Error if it was less than 'A'
+    cp      16              ; If less than 16
+    ret     c               ;   Return
+.fcerr                      ; Else 
+    jp      FCERR           ;   Error
+
+null_string
+    ld      hl,REDDY-1      ; Point at ASCII 0 
+    jp      TIMSTR          ; Literalize and Return It
+
+ABORT_FN:
+    dec     hl              ; Back up to Function Token
+    ld      a,(hl)          ; Re-Read Token
+    sub     ONEFUN          ; Convert to Offset
+    jp      HOOK27+1        ; Continue with Standard Function Code
 
 ;----------------------------------------------------------------------------
 ;;; ---
