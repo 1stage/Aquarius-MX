@@ -159,7 +159,7 @@ ST_COPY:
 FN_PEEK:
     call    PARCHK
     push    hl
-    ld      bc,LABBCK
+    ld      bc,LABBCK         ; Return Address for SGNFLT
     push    bc
     call    FRCADR            ; Convert to Arg to Address
     ld      a,(de)            ; Read byte at Address

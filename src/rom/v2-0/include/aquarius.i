@@ -216,6 +216,8 @@ CLEARC  = $0BCF   ; Initialize Variables and Arrays, Reset Stack
 CLEARS  = $0CEB   ; Set VARTAB, TOPMEM, and MEMSIZ
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
+FRMEQL  = $0980   ; Evaluate Formula Preceded by Equal Sign
+FRMPRN  = $0983   ; Evaluate Formula Preceded by Left Parenthesis
 FRMEVL  = $0985   ; Evaluate Formula
 EVAL    = $09FD   ; Evaluate Variable, Constant, or Function Call
 QDOT    = $0A14   ; EVAL - Check for Decimal Point
@@ -255,8 +257,10 @@ LEN1    = $0FF7   ; get string length (in: FACLO = string block; out: HL = strin
 ASC2    = $1006   ; Get pointer to string text (out: DE = filename, A = 1st char)
 FINBCK  = $101D   ; Skip CHKNUM and Return to Higher Level
 
-FRESTR  = $0FC6   ; Free up temporary string
-FREFAC  = $0FC9
+FRESTR  = $0FC6   ; Free up Temporary String
+FREFAC  = $0FC9   ; Free up String in FACLO
+FRETM2  = $0FCC   ; Free up String in HL
+
 CHKNUM  = $0975   ; Issue "TM" Error if result is not a number
 CHKSTR  = $0976   ; Issue "TM" Error if evaluated expression not string
 CHKVAL  = $0977   ; Issue "TM" Error if type does not match carry flag
@@ -395,6 +399,7 @@ ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
 ONEFUN      = $B2   ; First Function Token
 PEEKTK      = $C1   ; PEEK Token
+STRTK       = $C3   ; STR$ Token
 ASCTK       = $C5   ; ASC Token
 
 ;Adddress of Byte following Hook RST

@@ -491,8 +491,8 @@ ST_SWAP:
         pop     hl              ;GET THE TEXT POINTER BACK
         ret  
 
-VMOVE:  ex      de,hl           ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L	
-    			
+VMOVE:  ex      de,hl           ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L  
+          
 MOVVFM: ld        bc,4          ;MOVE VALUE FROM (HL) TO (DE)
         ldir
         ret
@@ -574,7 +574,7 @@ ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ;;;   OK
 ;;; ```
 FN_STRING: 
-        rst     CHRGET          ;GET NEXT CHAR FOLLOWING "STRING$"
+        SYNCHK  '$'             ;Require $ suffix
         SYNCHK  '('             ;MAKE SURE LEFT PAREN
         call    GETBYT          ;EVALUATE FIRST ARG (LENGTH)
         ld      a,(hl)          ;Check Next Character
@@ -593,7 +593,7 @@ FN_STRING:
         jp      CALSPA          ;NOW CALL SPACE CODE
 STRSTR: call    ASC2            ;GET VALUE OF CHAR IN [A]
 CALSPA: pop     de              ;GET REP FACTOR IN [E]
-        CALL	SPACE2			      ;INTO SPACE CODE, PUT DUMMY ENTRY
+        CALL  SPACE2            ;INTO SPACE CODE, PUT DUMMY ENTRY
 SPACE:  SYNCHK  ')'             ;Require Right Paren after Single Argument
         push    hl              ;Save Text Pointer
         ld      a,' '           ;GET SPACE CHAR
@@ -612,3 +612,120 @@ SPLP:   ld      (hl),a          ;SAVE CHAR
                                 ;DECR COUNT
         djnz    SPLP            ;KEEP STORING CHAR
         jp      FINBCK          ;PUT TEMP DESC WHEN DONE
+
+; THIS IS THE INSTR FUCNTION. IT TAKES ONE OF TWO FORMS: INSTR(I%,S1$,S2$) OR INSTR(S1$,S2$)
+; IN THE FIRST FORM THE STRING S1$ IS SEARCHED FOR THE CHARACTER S2$ STARTING AT CHARACTER POSITION I%.
+; THE SECOND FORM IS IDENTICAL, EXCEPT THAT THE SEARCH STARTS AT POSITION 1. INSTR RETURNS THE CHARACTER
+; POSITION OF THE FIRST OCCURANCE OF S2$ IN S1$. IF S1$ IS NULL, 0 IS RETURNED. IF S2$ IS NULL, THEN
+; I% IS RETURNED, UNLESS I% .GT. LEN(S1$) IN WHICH CASE 0 IS RETURNED.
+FN_INSTR:  
+        rst     CHRGET          ;EAT FIRST CHAR
+        call    FRMPRN          ;EVALUATE FIRST ARG
+        call    GETYPR          ;SET ZERO IF ARG A STRING.
+        ld      a,1             ;IF SO, ASSUME, SEARCH STARTS AT FIRST CHAR
+        push    af              ;SAVE OFFSET IN CASE STRING
+        jp      z,WUZSTR        ;WAS A STRING
+        pop     af              ;GET RID OF SAVED OFFSET
+        call    CONINT          ;FORCE ARG1 (I%) TO BE INTEGER
+        or      a               ;DONT ALLOW ZERO OFFSET
+        jp      z,FCERR         ;KILL HIM.
+        push    af              ;SAVE FOR LATER
+        SYNCHK  ','             ;EAT THE COMMA
+        call    FRMEVL          ;EAT FIRST STRING ARG
+        call    CHKSTR          ;BLOW UP IF NOT STRING
+WUZSTR: SYNCHK  ','             ;EAT COMMA AFTER ARG
+        push    hl              ;SAVE THE TEXT POINTER
+        ld      hl,(FACLO)      ;GET DESCRIPTOR POINTER
+        ex      (sp),hl         ;PUT ON STACK & GET BACK TEXT PNT.
+        call    FRMEVL          ;GET LAST ARG
+        SYNCHK  ')'             ;EAT RIGHT PAREN
+        push    hl              ;SAVE TEXT POINTER
+        call    FRESTR          ;FREE UP TEMP & CHECK STRING
+        ex      de,hl           ;SAVE 2ND DESC. POINTER IN [D,E]
+        pop     bc              ;GET TEXT POINTER IN B
+        pop     hl              ;DESC. POINTER FOR S1$
+        pop     af              ;OFFSET
+        push    bc              ;PUT TEXT POINTER ON BOTTOM
+        ld      bc,POPHRT       ;PUT ADDRESS OF POP H, RET ON
+        push    bc              ;PUSH IT
+        ld      bc,SNGFLT       ;NOW ADDRESS OF [A] RETURNER
+        push    bc              ;ONTO STACK
+        push    af              ;SAVE OFFSET BACK
+        push    de              ;SAVE DESC. OF S2
+        call    FRETM2          ;FREE UP S1 DESC.
+        pop     de              ;RESTORE DESC. S2
+        pop     af              ;GET BACK OFFSET
+        ld      b,a             ;SAVE UNMODIFIED OFFSET
+        dec     a               ;MAKE OFFSET OK
+        ld      c,a             ;SAVE IN C
+        cp      (hl)            ;IS IT BEYOND LENGTH OF S1?
+        ld      a,0             ;IF SO, RETURN ZERO. (ERROR)
+        ret     nc  
+        ld      a,(de)          ;GET LENGTH OF S2$
+        or      a               ;NULL??
+        ld      a,b             ;GET OFFSET BACK
+        ret     z               ;ALL IF S2 NULL, RETURN OFFSET
+        ld      a,(hl)          ;GET LENGTH OF S1$
+        inc     hl              ;BUMP POINTER
+        ld      b,(hl)          ;GET 1ST BYTE OF ADDRESS
+        inc     hl              ;BUMP POINTER
+        inc     hl              
+        ld      h,(hl)          ;GET 2ND BYTE
+        ld      l,b             ;GET 1ST BYTE SET UP
+        ld      b,0             ;GET READY FOR DAD
+        add     hl,bc           ;NOW INDEXING INTO STRING
+        sub     c               ;MAKE LENGTH OF STRING S1$ RIGHT
+        ld      b,a             ;SAVE LENGTH OF 1ST STRING IN [B]
+        push    bc              ;SAVE COUNTER, OFFSET
+        push    de              ;PUT 2ND DESC (S2$) ON STACK
+        ex      (sp),hl         ;GET 2ND DESC. POINTER
+        ld      c,(hl)          ;SET UP LENGTH
+        inc     hl              ;BUMP POINTER
+        inc     hl              
+        ld      e,(hl)          ;GET FIRST BYTE OF ADDRESS
+        inc     hl              ;BUMP POINTER AGAIN
+        ld      d,(hl)          ;GET 2ND BYTE
+        pop     hl              ;RESTORE POINTER FOR 1ST STRING
+        
+CHK1:   push    hl              ;SAVE POSITION IN SEARCH STRING
+        push    de              ;SAVE START OF SUBSTRING
+        push    bc              ;SAVE WHERE WE STARTED SEARCH
+CHK:    ld      a,(de)          ;GET CHAR FROM SUBSTRING
+        cp      (hl)            ; = CHAR POINTER TO BY [H,L]
+        jp      nz,OHWELL       ;NO
+        inc     de              ;BUMP COMPARE POINTER
+        dec     c               ;END OF SEARCH STRING?
+        jp      z,GOTSTR        ;WE FOUND IT!
+        inc     hl              ;BUMP POINTER INTO STRING BEING SEARCHED
+                                ;DECREMENT LENGTH OF SEARCH STRING
+        dec     b
+        jp      nz,CHK          ;END OF STRING, YOU LOSE
+RETZER: pop     de              ;GET RID OF POINTERS
+        pop     de              ;GET RID OF GARB
+        pop     bc              ;LIKE SO
+RETZR1: pop     de              
+        xor     a               ;GO TO SNGFLT.
+        ret                     ;RETURN
+
+GOTSTR: pop     hl
+        pop     de              ;GET RID OF GARB
+        pop     de              ;GET RID OF EXCESS STACK
+        pop     bc              ;GET COUNTER, OFFSET
+        ld      a,b             ;GET ORIGINAL SOURCE COUNTER
+        sub     h               ;SUBTRACT FINAL COUNTER
+        add     c               ;ADD ORIGINAL OFFSET (N1%)
+        inc     a               ;MAKE OFFSET OF ZERO = POSIT 1
+        ret                     ;DONE
+
+OHWELL: pop     bc
+        pop     de              ;POINT TO START OF SUBSTRING
+        pop     hl              ;GET BACK WHERE WE STARTED TO COMPARE
+        inc     hl              ;AND POINT TO NEXT CHAR
+                                ;DECR. # CHAR LEFT IN SOURCE STRING
+        dec     b       
+        jp      nz,CHK1         ;TRY SEARCHING SOME MORE
+        jr      RETZR1          ;END OF STRING, RETURN 0
+
+GETYPR: ld      a,(VALTYP)      ;REPLACEMENT FOR "GETYPE" RST
+        dec     a               
+        ret

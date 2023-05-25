@@ -828,7 +828,8 @@ CDTK    = $E0
     db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
     db      $80 + 'S', "TRING"      ; $ea - Create String function
     db      $80                     ; End of table marker
-ERRTK =  $E9
+ERRTK     = $E9
+STRINGTK  = $EA
 
 TBLJMPS:
     dw      ST_ERASE
@@ -1533,6 +1534,9 @@ FLOAT_M:
 ;----------------------------------------------------------------------------
 
 FN_IN:
+    ;INSTR code needs to be tested and debugged before being activated
+    ;cp      STRINGTK       
+    ;jp      z,FN_INSTR
     call    PARCHK
     push    hl
     ld      bc,LABBCK
