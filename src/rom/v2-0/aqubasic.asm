@@ -1032,21 +1032,15 @@ link_lines
 ; called from $0a5f by RST $30,$1b
 
 AQFUNCTION:
-    ld      ix,HOOK27+1         ; set hook return address
-    push    ix                  ; and put on stack
-    ;pop     bc                  ; get return address
-    ;pop     af
-    ;pop     hl
-    ;push    bc                  ; push return address back on stack
     cp      PEEKTK-$B2          ; If PEEK Token
     jp      z,FN_PEEK           ;   Do Extended PEEK
     cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
-    ret     c                   ; return if function number below ours
+    jp      c,HOOK27+1
     cp      (lastf-$B2+1)
-    ret     nc                  ; return if function number above ours
+    jp      nc,HOOK27+1
     sub     (firstf-$B2)
     add     a,a                 ; index = A * 2
-    push    hl
+    exx
     ld      hl,TBLFNJP          ; function address table
     add     a,l
     ld      l,a
@@ -1054,10 +1048,14 @@ AQFUNCTION:
     adc     a,h
     ld      h,a                 ; HL += vector number
     ld      a,(hl)
+    ld      iyl,a
     inc     hl
-    ld      h,(hl)              ; get vector address
+    ld      a,(hl)              ; get vector address
+    ld      iyh,a
     ld      l,a
-    jp      (hl)                ; and jump to it
+    exx
+    rst     CHRGET
+    jp      (iy)                ; and jump to it
 
 ;-------------------------------------
 ;         Replace Command
@@ -1087,14 +1085,9 @@ REPLCMD:
 ; Expand token to keyword
 
 PEXPAND:
-    ;pop     de
-    ;pop     af                  ; restore AF (token)
-    ;pop     hl                  ; restore HL (BASIC text)
     cp      BTOKEN              ; is it one of our tokens?
     jr      nc,PEXPBAB          ; yes, expand it
     jp      HOOK22+1
-    ;push    de
-    ;ret                         ; no, return to system for expansion
 
 PEXPBAB:
     sub     BTOKEN - 1
@@ -1110,9 +1103,6 @@ PEXPBAB:
 ; with parameter $17
 
 NEXTSTMT:
-    ;pop     bc                  ; Take Hook Return Address off Stack
-    ;pop     af                  ; AF = token - $80, flags
-    ;pop     hl                  ; HL = text
     jr      nc,BASTMT           ; if NC then process BASIC statement
     push    af                  ; Save Flags
     cp      COPYTK-$80          ; If POKE Token
@@ -1121,8 +1111,6 @@ NEXTSTMT:
     jp      z,ST_POKE           ;   Do Extended POKE
     pop     af                  ; Else
     jp      HOOK23+1
-    ;push    bc                  ;   Return to Standard Dispatch Routine
-    ;ret                        
 
 BASTMT:
     sub     (BTOKEN)-$80
@@ -1613,19 +1601,6 @@ psg2:
     out     (PSG2DATA),a        ; Send data to the selected PSG2 register
     jr      check_comma
 
-; Parse Function Argument and Put Return Address on Stack
-InitFN:
-    pop     hl                ; Pop Return Address
-    pop     de                ; Pop Text Pointer
-    ex      (sp),hl           ; Save Return Address, Discard Hook Return Address 
-    ex      de,hl             ; HL = Text Pointer
-    rst     CHRGET  
-    call    PARCHK            ; Evaluate Argument between parentheses into FAC   
-    ex      (sp),hl           ; Swap Text Pointer with Return Address
-    ld      de,LABBCK         ; return address for SNGFLT, etc.
-    push    de                ; on stack
-    jp      (hl)              ; Fast Return 
-
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## PEEK (Extended)
@@ -1642,8 +1617,10 @@ InitFN:
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
-    push    hl                ; Save Text Pointer
-    call    InitFN            ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    FRCADR            ; Convert to Arg to Address
     ld      a,(de)            ; Read byte at Address
     jp      SNGFLT            ; and Float it
@@ -1666,7 +1643,10 @@ FN_PEEK:
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
-    call    InitFN            ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    FRCADR            ; Convert to Integer
     ld      h,d               ; HL = <address>
     ld      l,e
@@ -1693,7 +1673,10 @@ FLOAT_M:
 ;----------------------------------------------------------------------------
 
 FN_IN:
-    call    InitFN            ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    FRCADR            ; convert argument to 16 bit integer in DE
     ld      b,d
     ld      c,e              ; bc = port
@@ -1721,7 +1704,10 @@ FN_IN:
 ;----------------------------------------------------------------------------
 
 FN_JOY:
-    call    InitFN            ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    FRCINT         ; convert argument to 16 bit integer in DE
 
     ld      a,e
@@ -1803,7 +1789,10 @@ joy05:
 ;----------------------------------------------------------------------------
 
 FN_KEY:
-    call    InitFN            ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    CHKNUM
     ld      a,(FAC)           ;
     or      a                 ; If Argument <> 0
@@ -1849,7 +1838,10 @@ FN_KEY:
 ;----------------------------------------------------------------------------
 
 FN_DEC:
-    call    InitFN          ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    STRLENADR       ; Get String Text Address
     dec     hl              ; Back up Text Pointer
     jp      EVAL_HEX        ; Convert the Text
@@ -1870,7 +1862,10 @@ FN_DEC:
 ;----------------------------------------------------------------------------
 
 FN_HEX:
-    call    InitFN          ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     ld      a,(FAC)
     call    FRCADR          ; convert argument to 16 bit integer DE
     ld      hl,FBUFFR+1     ; hl = temp string
@@ -1948,7 +1943,10 @@ PRINTHEX:
 ;----------------------------------------------------------------------------
 
 FN_VER:
-    call    InitFN            ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     ld      a, VERSION       ; returning (VERSION * 256) + REVISION
     ld      b, REVISION
     jp      FLOATB
@@ -2096,7 +2094,10 @@ ST_SDTM:
 ;---------------------------------------------------------------------------
 
 FN_DTM:
-    call    InitFN           ; Parse Arg and set return address
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
     call    CHKNUM
     ld      a,(FAC)          ;  
     or      a

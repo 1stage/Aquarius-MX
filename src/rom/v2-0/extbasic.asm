@@ -322,7 +322,10 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 ;;; |   14   | disk error #xx       | Other disk error                |
 ;;;
 ;----------------------------------------------------------------------------
-FN_ERR: call    InitFN          ; Parse Arg and set return address
+FN_ERR: call    PARCHK
+        push    hl
+        ld      bc,LABBCK
+        push    bc
         call    CONINT          ; Convert to Byte
         or      a                ; If 0
         jr      z,.onelin        ;    Return Error Trap Line Number
