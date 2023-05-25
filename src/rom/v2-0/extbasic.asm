@@ -1,9 +1,7 @@
 ;====================================================================
-; Mattel Aquarius: Extended BASIC Statements and Functions
+; Mattel Aquarius Extended BASIC Statements and Functions
 ;====================================================================
 ;
-; 2023-04-22 - Extracted from Aquarius Extended BASIC Disassembly
-
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## DEF FN / FN
@@ -32,7 +30,6 @@
 ;;; ` 20 G=G+FN A9(10) `
 ;;; > Increments the value of G the rounded value of a random number between 1 and 10.
 ;----------------------------------------------------------------------------
-
 DEFX:   ;pop      bc             ; clean up stack              
         ;pop      af              
         ;pop      hl              
@@ -122,7 +119,6 @@ GETFNM: rst      SYNCHR
         call    PTRGT2          
         jp      CHKNUM          
 
-
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ATN
@@ -171,6 +167,11 @@ ATNCON: db    9                ;DEGREE
         db    $E4,$BB,$4C,$7E ; .1999355
         db    $6C,$AA,$AA,$7F ; -.3333315
         db    $00,$00,$00,$81 ; 1.0
+
+
+;====================================================================
+; Microsoft BASIC80 Extended BASIC Statements and Functions`
+;====================================================================
 
 ;----------------------------------------------------------------------------
 ; ON ERROR
@@ -440,68 +441,8 @@ CLERR:  ex      af,af'
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## COPY (Extended)
-;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
-;;; ### FORMAT:
-;;;   - COPY < source >, < dest >, < count >
-;;; ### EXAMPLES:
-;;; ` COPY 12368,12328,920 `
-;;; > Scroll Screen Up One Line
-;;;
-;;; ` COPY 12288,12328,920 `
-;;; > Scroll Screen Down One Line
-;;;
-;;; ` COPY 12329,12328,39 `
-;;; > Scroll Row 1 right 1 char
-;;;
-;;; ` COPY $3000,$2000,2048 `
-;;; > Copy Screen and Colors to Low RAM
-;;;
-;;; ` COPY $2000,$3000,2048 `
-;;; > Restore Screen and Colors
-;----------------------------------------------------------------------------
-ST_COPY:   
-    pop      af             ; Discard Saved Token, Flags
-    rst      CHRGET         ; Skip COPY Token
-    jp      z,COPY          ; No Parameters? Do Standard COPY
-    call    GETADR          ; 
-    push    de              ; Stack = <source>
-    SYNCHK  ','             ; 
-    call    GETADR          ; 
-    push    de              ; Stack = <dest>, <source>
-    SYNCHK  ','             ; 
-    call    GETADR          ; Get <count> 
-    ld      b,d             ; BC = <count>
-    ld      c,e
-    ld      a,b             ; FC Error if <count> = 0
-    or      c
-    jp      z,FCERR
-    pop      de             ; DE = <dest>, Stack = <source>
-    ex      (sp),hl         ; HL = <source>, Stack = Text Pointer
-    rst      COMPAR         ; If <source> < <dest>
-    jr      c,.copy_down    ;    Do Reverse Copy Instead
-    ldir                    ; Do the Copy
-    pop      hl             ; Restore Text Pointer
-    ret
- 
-.copy_down
-    push    de              ; Stack = <dest>, Text Pointer
-    ex      (sp),hl         ; HL = <dest>, Stack = <source>, Text pointer
-    add      hl,bc          
-    dec      hl             
-    ld      d,h             
-    ld      e,l             ; DE = <dest> + <count> - 1
-    pop      hl             ; HL = <source>, Stack = Text Pointer
-    add      hl,bc          
-    dec      hl             ; HL = <source> + <count> - 1
-    lddr                    ; Do the Copy
-    pop      hl             ; Restore Text Pointer
-    ret
-    
-;----------------------------------------------------------------------------
-;;; ---
 ;;; ## SWAP
-;;; 
+;;; Swap variable contents.
 ;;; ### FORMAT:
 ;;;  - SWAP < variable >, < variable >
 ;;;    - Action: Exchanges the values of two variables.
@@ -518,49 +459,48 @@ ST_COPY:
 ;;; ```
 ;----------------------------------------------------------------------------
 ST_SWAP:  
-    call    PTRGET          ;[D,E]=POINTER AT VALUE #1
-    push    de              ;SAVE THE POINTER AT VALUE #1
-    push    hl              ;SAVE THE TEXT POINTER
-    ld      hl,SWPTMP       ;TEMPORARY STORE LOCATION
-    call    VMOVE           ;SWPTMP=VALUE #1
-    ld      hl,ARYTAB       ;GET ARYTAB SO CHANGE CAN BE NOTED
-    ex      (sp),hl         ;GET THE TEXT POINTER BACK AND SAVE CURRENT [ARYTAB]
-    ld      a,(VALTYP)      ;Get Variable Type
-    push    af              ;SAVE THE TYPE OF VALUE #1
-    SYNCHK  ','             ;MAKE SURE THE VARIABLES ARE DELIMITED BY A COMMA
-    call    PTRGET          ;[D,E]=POINTER AT VALUE #2
-    pop     bc              ;[B]=TYPE OF VALUE #1
-    ld      a,(VALTYP)      ;[A]=TYPE OF VALUE #2
-    cmp     b               ;MAKE SURE THEY ARE THE SAME
-    jp      nz,TMERR        ;IF NOT, "TYPE MISMATCH" ERROR
-    ex      (sp),hl         ;[H,L]=OLD [ARYTAB] SAVE THE TEXT POINTER
-    ex      de,hl           ;[D,E]=OLD [ARYTAB]
-    push    hl              ;SAVE THE POINTER AT VALUE #2
-    ld      hl,ARYTAB       ;GET NEW [ARYTAB]
-    rst     COMPAR
-    jp      nz,FCERR        ;IF ITS CHANGED, ERROR
-    pop     de              ;[D,E]=POINTER AT VALUE #2
-    pop     hl              ;[H,L]=TEXT POINTER
-    ex      (sp),hl         ;SAVE THE TEXT POINTER ON THE STACK, [H,L]=POINTER AT VALUE #1
-    push    de              ;SAVE THE POINTER AT VALUE #2
-    call    VMOVE           ;TRANSFER VALUE #2 INTO VALUE #1'S OLD POSITION
-    pop     hl              ;[H,L]=POINTER AT VALUE #2
-    ld      de,SWPTMP       ;LOCATION OF VALUE #1
-    call    VMOVE           ;TRANSFER SWPTMP=VALUE #1 INTO VALUE #2'S OLD POSITION
-    pop     hl              ;GET THE TEXT POINTER BACK
-    ret  
+        call    PTRGET          ;[D,E]=POINTER AT VALUE #1
+        push    de              ;SAVE THE POINTER AT VALUE #1
+        push    hl              ;SAVE THE TEXT POINTER
+        ld      hl,SWPTMP       ;TEMPORARY STORE LOCATION
+        call    VMOVE           ;SWPTMP=VALUE #1
+        ld      hl,ARYTAB       ;GET ARYTAB SO CHANGE CAN BE NOTED
+        ex      (sp),hl         ;GET THE TEXT POINTER BACK AND SAVE CURRENT [ARYTAB]
+        ld      a,(VALTYP)      ;Get Variable Type
+        push    af              ;SAVE THE TYPE OF VALUE #1
+        SYNCHK  ','             ;MAKE SURE THE VARIABLES ARE DELIMITED BY A COMMA
+        call    PTRGET          ;[D,E]=POINTER AT VALUE #2
+        pop     bc              ;[B]=TYPE OF VALUE #1
+        ld      a,(VALTYP)      ;[A]=TYPE OF VALUE #2
+        cmp     b               ;MAKE SURE THEY ARE THE SAME
+        jp      nz,TMERR        ;IF NOT, "TYPE MISMATCH" ERROR
+        ex      (sp),hl         ;[H,L]=OLD [ARYTAB] SAVE THE TEXT POINTER
+        ex      de,hl           ;[D,E]=OLD [ARYTAB]
+        push    hl              ;SAVE THE POINTER AT VALUE #2
+        ld      hl,ARYTAB       ;GET NEW [ARYTAB]
+        rst     COMPAR
+        jp      nz,FCERR        ;IF ITS CHANGED, ERROR
+        pop     de              ;[D,E]=POINTER AT VALUE #2
+        pop     hl              ;[H,L]=TEXT POINTER
+        ex      (sp),hl         ;SAVE THE TEXT POINTER ON THE STACK, [H,L]=POINTER AT VALUE #1
+        push    de              ;SAVE THE POINTER AT VALUE #2
+        call    VMOVE           ;TRANSFER VALUE #2 INTO VALUE #1'S OLD POSITION
+        pop     hl              ;[H,L]=POINTER AT VALUE #2
+        ld      de,SWPTMP       ;LOCATION OF VALUE #1
+        call    VMOVE           ;TRANSFER SWPTMP=VALUE #1 INTO VALUE #2'S OLD POSITION
+        pop     hl              ;GET THE TEXT POINTER BACK
+        ret  
 
-VMOVE:                      ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L	
-    ex      de,hl			
-MOVVFM:	                    ;MOVE VALUE FROM (HL) TO (DE)
-    ld        bc,4
-    ldir
-    ret
+VMOVE:  ex      de,hl           ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L	
+    			
+MOVVFM: ld        bc,4          ;MOVE VALUE FROM (HL) TO (DE)
+        ldir
+        ret
 
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ERASE
-;;; 
+;;; Erase array.
 ;;; ### FORMAT:
 ;;;  - ERASE < array > [, < array > ...]
 ;;;    - Action: Eliminates array from program.
@@ -571,39 +511,96 @@ MOVVFM:	                    ;MOVE VALUE FROM (HL) TO (DE)
 ;;; > Removes array A() from memory.
 ;----------------------------------------------------------------------------
 ST_ERASE:
-    ld      a,1
-    ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
-    call    PTRGET          ;GO FIND OUT WHERE TO ERASE
-    jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
-    push    hl              ;SAVE THE TEXT POINTER
-    ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
-    ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
-    ld      l,c
-    dec     bc              ;BACK UP TO THE FRONT
-LPBKNM:    
-    ld      a,(bc)          ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
-    dec     bc              ;SO LOOP UNTIL WE SKIP OVER THE COUNT
-    or      a               ;SKIP ALL THE EXTRA CHARACTERS
-    jp      m,LPBKNM
-    dec     bc
-    dec     bc
-    add     hl,de           ;[H,L]=THE END OF THIS ARRAY ENTRY
-    ex      de,hl           ;[D,E]=END OF THIS ARRAY
-    ld      hl,(STREND)     ;[H,L]=LAST LOCATION TO MOVE UP
-ERSLOP:    
-    rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
-    ld      a,(de)          ;DO THE MOVE
-    ld      (bc),a
-    inc     de              ;UPDATE THE POINTERS
-    inc     bc
-    jr      nz,ERSLOP       ;MOVE THE REST
-    dec     bc
-    ld      h,b             ;SETUP THE NEW STORAGE END POINTER
-    ld      l,c
-    ld      (STREND),hl
-    pop     hl              ;GET BACK THE TEXT POINTER
-    ld      a,(hl)          ;SEE IF MORE ERASURES NEEDED
-    cp      ','             ;ADDITIONAL VARIABLES DELIMITED BY COMMA
-    ret     nz              ;ALL DONE IF NOT
-    rst     CHRGET
-    jr      ST_ERASE
+        ld      a,1
+        ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
+        call    PTRGET          ;GO FIND OUT WHERE TO ERASE
+        jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
+        push    hl              ;SAVE THE TEXT POINTER
+        ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
+        ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
+        ld      l,c
+        dec     bc              ;BACK UP TO THE FRONT
+LPBKNM: ld      a,(bc)          ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
+        dec     bc              ;SO LOOP UNTIL WE SKIP OVER THE COUNT
+        or      a               ;SKIP ALL THE EXTRA CHARACTERS
+        jp      m,LPBKNM
+        dec     bc
+        dec     bc
+        add     hl,de           ;[H,L]=THE END OF THIS ARRAY ENTRY
+        ex      de,hl           ;[D,E]=END OF THIS ARRAY
+        ld      hl,(STREND)     ;[H,L]=LAST LOCATION TO MOVE UP
+ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
+        ld      a,(de)          ;DO THE MOVE
+        ld      (bc),a
+        inc     de              ;UPDATE THE POINTERS
+        inc     bc
+        jr      nz,ERSLOP       ;MOVE THE REST
+        dec     bc
+        ld      h,b             ;SETUP THE NEW STORAGE END POINTER
+        ld      l,c
+        ld      (STREND),hl
+        pop     hl              ;GET BACK THE TEXT POINTER
+        ld      a,(hl)          ;SEE IF MORE ERASURES NEEDED
+        cp      ','             ;ADDITIONAL VARIABLES DELIMITED BY COMMA
+        ret     nz              ;ALL DONE IF NOT
+        rst     CHRGET
+        jr      ST_ERASE
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## STRING$
+;;; Create string of repeating characters.
+;;; ### FORMAT: 
+;;;  - STRING$ (< length >)
+;;;    - Action: Returns a string of length < length > whose characters all spaces (ASCII code 32).
+;;;  - STRING$ (< length >, <byte> )
+;;;    - Action: Returns a string of length < length > whose characters all have ASCII code < byte >.
+;;;  - STRING$ (< length >, <string> )
+;;;    - Action: Returns a string of length < length > whose characters are all r the first character of < string >.
+;;; ### EXAMPLES:
+;;; ```
+;;;   10 X$ = STRING$ {10 , 45) 
+;;;   20 PRINT X$ "MONTHLY REPORT" X$ 
+;;;   RUN
+;;;   ----------MONTHLY REPORT----------
+;;;   OK
+;;; ```
+FN_STRING: 
+        rst     CHRGET          ;GET NEXT CHAR FOLLOWING "STRING$"
+        SYNCHK  '('             ;MAKE SURE LEFT PAREN
+        call    GETBYT          ;EVALUATE FIRST ARG (LENGTH)
+        ld      a,(hl)          ;Check Next Character
+        cp      ','             ;If No Comma
+        jr      nz,SPACE        ;  Single Argument - Act Like SPACE$() Function
+        rst     CHRGET          ;Else Skip Comma
+        push    de              ;SAVE FIRST ARG (LENGTH)
+        call    FRMEVL          ;GET FORMULA ARG 2
+        SYNCHK  ')'             ;EXPECT RIGHT PAREN
+        ex      (sp),hl         ;SAVE TEXT POINTER ON STACK, GET REP FACTOR
+        push    hl              ;SAVE BACK REP FACTOR
+        ld      a,(VALTYP)      ;GET TYPE OF ARG
+        dec     a               ;Make 1 into 0
+        jr      z,STRSTR        ;WAS A STRING
+        call    CONINT          ;GET ASCII VALUE OF CHAR
+        jp      CALSPA          ;NOW CALL SPACE CODE
+STRSTR: call    ASC2            ;GET VALUE OF CHAR IN [A]
+CALSPA: pop     de              ;GET REP FACTOR IN [E]
+        CALL	SPACE2			      ;INTO SPACE CODE, PUT DUMMY ENTRY
+SPACE:  SYNCHK  ')'             ;Require Right Paren after Single Argument
+        push    hl              ;Save Text Pointer
+        ld      a,' '           ;GET SPACE CHAR
+        push    bc              ;Dummy Return Address for FINBCK to discard
+SPACE2: push    af              ;SAVE CHAR
+        ld      a,e             ;GET NUMBER OF CHARS IN [A]
+        call    STRINI          ;GET A STRING THAT LONG
+        ld      b,a             ;COUNT OF CHARS BACK IN [B]
+        pop     af              ;GET BACK CHAR TO PUT IN STRING
+        inc     b               ;TEST FOR NULL STRING
+        dec     b
+        jp      z,FINBCK        ;YES, ALL DONE
+        ld      hl,(DSCTMP+2)   ;GET DESC. POINTER
+SPLP:   ld      (hl),a          ;SAVE CHAR
+        inc     hl              ;BUMP PTR
+                                ;DECR COUNT
+        djnz    SPLP            ;KEEP STORING CHAR
+        jp      FINBCK          ;PUT TEMP DESC WHEN DONE

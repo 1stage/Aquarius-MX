@@ -826,6 +826,7 @@ CDTK    = $E0
     db      $80 + 'K', "EY"         ; $e7 - Key function
     db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
     db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
+    db      $80 + 'S', "TRING"      ; $ea - Create String function
     db      $80                     ; End of table marker
 ERRTK =  $E9
 
@@ -861,6 +862,7 @@ TBLFNJP:
     dw      FN_KEY
     dw      FN_DEEK
     dw      FN_ERR
+    dw      FN_STRING
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
@@ -1030,6 +1032,7 @@ link_lines
 ;        AquBASIC Function
 ;-------------------------------------
 ; called from $0a5f by RST $30,$1b
+; A = Token - $B2 which starts at 47 ($2F)
 
 AQFUNCTION:
     cp      PEEKTK-$B2          ; If PEEK Token
@@ -1101,6 +1104,7 @@ PEXPBAB:
 ;-------------------------------------
 ; Called from $064b by RST 30
 ; with parameter $17
+
 
 NEXTSTMT:
     jr      nc,BASTMT           ; if NC then process BASIC statement
@@ -1251,128 +1255,6 @@ ST_DOKE:
     jr      .doke_loop      ; Do the Next Word
     ret
 
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## POKE (Extended)
-;;; Writes byte(s) to memory location(s)
-;;; ### FORMAT:
-;;;  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
-;;;    - Action: Writes < byte or string > to < address >, followed by < address > STEP counts away...
-;;;  - POKE < address > TO < address >, < byte >
-;;;    - Action: Writes < byte > to memory from < address > TO < address >.
-;;; ### EXAMPLES:
-;;; ` POKE $3000+500,64 `
-;;; > Display `@` at screen center
-;;;
-;;; ` POKE 12347,7,6 `
-;;; > Display double-ended arrow
-;;;
-;;; ` POKE 12366,$13,STEP 39,$14 `
-;;; > Display standing person "sprite"
-;;;
-;;; ` POKE 12329,$D4,STEP 1023,$10 `
-;;; > Display red heart on black background
-;;;
-;;; ` POKE $3009,T$,5,C$ `
-;;; > Display T$, copyright, C$ on row 0
-;;;
-;;; ` POKE $3400 TO $3427,5 `
-;;; > Set border color to magenta
-;;;
-;;; ` POKE $3028 TO $33E7,$86 `
-;;; > Fill screen with checkerboard character
-;----------------------------------------------------------------------------
-
-ST_POKE:   
-    pop     af              ; Discard Saved Token, Flags
-    rst     CHRGET          ; Skip POKE Token
-    call    GETADR          ; Get <address>
-    ld      a,(hl)          ; If next character 
-    cp      TOTK            ; is TO Token 
-    jr      z,.poke_fill    ;   Do Fill
-    SYNCHK  ','             ; Require a Comma
-.poke_save:
-    ld      b,d             ; Save Poke Address 
-    ld      c,e             
-.poke_loop:
-    cp      STEPTK          ; If STEP Token
-    jr      z,.poke_step     ;   Do STEP
-    push    de              ; Save Address  
-    call    FRMEVL          ; Evaluate Poke Argument
-    ld      a,(VALTYP)      ; 
-    or      a               ; If It's a String
-    jr      nz,.poke_string ;   Go Poke It
-    call    CONINT          ; Convert to <byte> in A
-    pop     de              ; Restore Address
-    ld      (de),a          ; Write Byte to Memory
-    ld      b,d             ; Save Last Poke Address
-    ld      c,e             
-.poke_comma:
-    ld      a,(hl)          ; If Next Character
-    cp      ','             ; is Not a Comma
-    ret     nz              ;   We are done
-    rst     CHRGET          ; Skip Comma
-    inc     de              ; Bump Poke Address
-    jr      .poke_loop      ; Do the Next Byte
-
-.poke_step:
-    rst     CHRGET          ; Skip STEP 
-    push    bc              ; Save Last Address
-    call    GETINT          ; Get Step Amount in DE
-    ex      (sp),hl         ; HL=Poke Address, Stack=Text Pointer
-    add     hl,de           ; Add Step to Address
-    ld      d,h             ; Now DE contains
-    ld      e,l             ;   new Address
-    pop     hl              ; Get Text Pointer back
-    SYNCHK  ','             ; Require a Comma
-    jr      .poke_save
-
-.poke_string:
-    ex      (sp),hl         ; HL=Poke Address, Stack=Text Pointer
-    push    hl              ; Stack=Poke Address, Text Pointer
-    push    hl              ; Stack=Poke Address, Poke Address, Text Pointer
-    call    STRLENADR       ; Get String Length in BC, Address in HL
-    pop     de              ; Get Address Back
-    jr      z,.poke_skip    ; If Length isn't 0
-    ldir                    ; Copy String to Memory
-.poke_skip:
-    dec     de              ; Compensate for INC DE after comma check
-    pop     bc              ; Get Starting Poke Address Back
-    pop     hl              ; Get Text Pointer Back
-    jr      .poke_comma     ; and check for a Comma
-
-.poke_fill:
-    rst     CHRGET          ; Skip TO Token
-    push    de              ; Stack = Start Address
-    call    GETADR          ; Get to Address
-    push    de              ; Stack = End Address, Start Address
-    SYNCHK  ','             ; Require a Comma
-    call    GETBYT          ; 
-    ld      c,a             ; Get <byte> in C
-    pop     de              
-    inc     de              ; DE = End Address + 1
-    ex      (sp),hl         ; HL = Start Address, Stack = Text Pointer
-.fill_loop:
-    ld      (hl),c          ; Store Byte
-    inc     hl              ; Bump Poke Address
-    rst     COMPAR          
-    jr      c,.fill_loop    ; Loop if < DE
-    pop     hl              ; Restore Text Pointer
-    ret
-
-STRLENADR:
-    call    FRESTR          ; Free up Temp String
-    ld      c,(hl)          ; Get length in BC
-    ld      b,0
-    inc     hl              ; Skip String Descriptor length byte
-    inc     hl              ; Set Address of String Text into HL
-    ld      a,(hl)          ;
-    inc     hl
-    ld      h,(hl)
-    ld      l,a
-    ld      a,c             ; Put length in A
-    or      a               ; and Set Flags
-    ret
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -1603,30 +1485,6 @@ psg2:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PEEK (Extended)
-;;; Read from Memory
-;;; ### FORMAT:
-;;;  - PEEK(< address >)
-;;;    - Action: Reads a byte from memory location < address >.
-;;; ### EXAMPLES:
-;;; ` PRINT CHR$(PEEK(12288)) `
-;;; > Print the current border character
-;;;
-;;; ` PRINT PEEK($3400) `
-;;; > Print the current border color value
-;----------------------------------------------------------------------------
-
-FN_PEEK:
-    call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    call    FRCADR            ; Convert to Arg to Address
-    ld      a,(de)            ; Read byte at Address
-    jp      SNGFLT            ; and Float it
-
-;----------------------------------------------------------------------------
-;;; ---
 ;;; ## DEEK
 ;;; Read 16 bit word from Memory
 ;;; ### FORMAT:
@@ -1853,6 +1711,10 @@ FN_DEC:
 ;;; ### FORMAT:
 ;;;  - HEX$(< number >)
 ;;;    - Action: Returns string containing < number > in two-byte hexadecimal format. FC Error if < number > is not in the range -32676 through 65535.
+;;;  - HEX$(< string >)
+;;;    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in < string >.
+;;;      - Length of returned string is twice that < string >.
+;;;      - LS Error results if length of < string > is greater than 127.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(1) `
 ;;; > Prints "0001"
@@ -1862,30 +1724,51 @@ FN_DEC:
 ;----------------------------------------------------------------------------
 
 FN_HEX:
-    call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    ld      a,(FAC)
+    call    PARCHK          ; Parse Argument in Parentheses
+    push    hl              ; Save Text Pointer
+    push    bc              ; Dummy Return Address for FINBCK to discard
+    ld      a,(VALTYP)      ; Get Type of Argument
+    dec     a               ; Make 1 into 0
+    jr      z,HEX_STRING    ; If String, Convert It
     call    FRCADR          ; convert argument to 16 bit integer DE
     ld      hl,FBUFFR+1     ; hl = temp string
     ld      a,d
-    call    .hexbyte        ; yes, convert byte in D to hex string
+    call    _hexbyte        ; yes, convert byte in D to hex string
     ld      a,e
-    call    .hexbyte        ; convert byte in E to hex string
+    call    _hexbyte        ; convert byte in E to hex string
     ld      (hl),0          ; null-terminate string
     ld      hl,FBUFFR+1
 .create_string:
     jp      TIMSTR          ; create BASIC string
 
-.hexbyte:
-    ld      b,a
+HEX_STRING:
+    call    STRLENADR       ; Get Arg Length in A, Address in HL
+    or      a               ; If Null String
+    jp      z,TIMSTR        ;   Return it as the Result
+    push    hl              ; Stack=Arg Text Address
+    push    af              ; Stack=Arg Length, Arg Text Address
+    add     a,a             ; New String will be Twice as long
+    jr      c,LSERR         ; LS Error if greater than 255
+    call    STRINI          ; Create Result String returning HL=Descriptor, DE=Text Address
+    pop     af              ; A=Arg Length, Stack=Arg Text Address
+    pop     hl              ; HL=Arg Text Address
+    ex      de,hl           ; DE=Arg Text Address, HL=Result Text Address
+    ld      b,a             ; Loop through Arg String Text 
+.hexloop:
+    ld      a,(de)          ; Get Arg String Character
+    inc     de              ; and Bump Pointer
+    call    _hexbyte        ; Convert to Hex in Result String
+    djnz    .hexloop        ; Loop until B=0
+    jp      FINBCK          ; Return Result String
+
+_hexbyte:
+    ld      c,a
     rra
     rra
     rra
     rra
     call    .hex
-    ld      a,b
+    ld      a,c
 .hex:
     and     $0f
     cp      10
@@ -1897,35 +1780,9 @@ FN_HEX:
     inc     hl
     ret
 
-
-;--------------------------
-;   print hex byte
-;--------------------------
-; in: A = byte
-
-PRINTHEX:
-    push    bc
-    ld      b,a
-    and     $f0
-    rra
-    rra
-    rra
-    rra
-    cp      10
-    jr      c,.hi_nib
-    add     7
-.hi_nib:
-    add     '0'
-    call    TTYOUT
-    ld      a,b
-    and     $0f
-    cp      10
-    jr      c,.low_nib
-    add     7
-.low_nib:
-    add     '0'
-    pop     bc
-    jp      TTYOUT
+LSERR:
+    ld      e,ERRLS       ;String Too Long Error
+    jp      ERROR
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -2257,6 +2114,13 @@ GET_PATH:
     jp      TIMSTR
 
 ;---------------------------------------------------------------------
+;                 Enhanced BASIC Commands and Functions 
+;---------------------------------------------------------------------
+; ST_COPY
+    include "enhanced.asm"
+
+
+;---------------------------------------------------------------------
 ;                 Extended BASIC Commands and Functions 
 ;---------------------------------------------------------------------
 ; DEFX
@@ -2267,7 +2131,6 @@ GET_PATH:
 ; FN_ERR
 ; CLEARX
 ; SCRTCX
-; ST_COPY
     include "extbasic.asm"
 
 

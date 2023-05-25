@@ -120,7 +120,7 @@ FRETOP  = $38C1 ; 14529 - 14530   Pointer to top of string space
 TENP3   = $38C3 ; 14531 - 14532   temp space used by FOR etc.
 TEMP8   = $38C5 ; 14533 - 14534
 ENDFOR  = $38C7 ; 14535 - 14536
-DATLIN  = $38c9 ; 14537 - 14538   Address of current DATA line
+DATLIN  = $38C9 ; 14537 - 14538   Address of current DATA line
 SUBFLG  = $38CB ; 14439           flag FOR:, PTRGET: 0=variable, 1=array
 USFLG   = $38CC ; 14440           Direct Mode Flag    
 FLGINP  = $38CD ; 14441           FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
@@ -246,12 +246,14 @@ FIN     = $15E5   ; Evaluate Floating Point Number
 
 
 TIMSTR  = $0E2F   ; Return string in HL from function  
+STRINI  = $0E50   ; Create string with length in A
 STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
 GETSPA  = $0EB3   ; Allocate Space for Temporary String
 STRLTI  = $0E60   ; Create string (HL = text starting with '"')
 LEN1    = $0FF7   ; get string length (in: FACLO = string block; out: HL = string block, A = length)
 ASC2    = $1006   ; Get pointer to string text (out: DE = filename, A = 1st char)
+FINBCK  = $101D   ; Skip CHKNUM and Return to Higher Level
 
 FRESTR  = $0FC6   ; Free up temporary string
 FREFAC  = $0FC9
