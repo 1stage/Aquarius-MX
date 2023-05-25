@@ -33,6 +33,14 @@ This file is for recording upcoming changes and features that are being added, a
 - MOD(dividend, divisor) function for modulus/remainder
 - XOR and NOT logical functions/operators
 - RPL$(source string, match string, replacement string) replace string function
+  - Example 1:
+    - ` 10 NM$ = "JOHN JAMES SMITH" `
+    - ` 20 NM$ = RPL$(NM$, "JAMES ", "") `
+    - ` 30 PRINT NM$ `
+      - "JOHN SMITH"
+  - Example 2:
+    - ` PRINT RPL$("Suzy Saves Stuff","S","Sh") `
+      - "Shuzy Shaves Shtuff"
 
 ## COMPLETE:
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
