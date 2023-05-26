@@ -286,14 +286,14 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 ;;; ### FORMAT:
 ;;;   - ERROR ( < number > )
 ;;;     - Action: Returns error status values.
-;;;       - If <number> is 0, returns the line number to GOTO when an error occures.
+;;;       - If < number > is 0, returns the line number to GOTO when an error occures.
 ;;;         - Returns 0 if no error trapping is disabled.
-;;;       - If <number> is 1, returns the number corresponding to the last error.
+;;;       - If < number > is 1, returns the number corresponding to the last error.
 ;;;         - - Returns 0 if no error has occured.
-;;;       - If <number> is 2, returns the line number the last error occured on.
+;;;       - If < number > is 2, returns the line number the last error occured on.
 ;;;         - Returns 0 if no error has occured.
 ;;;         - Returns 65535 if the error occured in immediate mode.
-;;;       - If <number> is 3, returns the number corresponding to the last DOS error.
+;;;       - If < number > is 3, returns the number corresponding to the last DOS error.
 ;;;         - Returns 0 if the last DOS command completed successfully.
 ;;;
 ;;; ### Basic Error Numbers
@@ -377,9 +377,9 @@ FN_ERR: call    PARCHK
 ;;; ### FORMAT:
 ;;;   - CLEAR [ < number >, [ < address > ] ]
 ;;;     - Action: Clears all variables and arrays, last arror number and line. 
-;;;       - If <number> is specified allocates string space.
+;;;       - If < number > is specified allocates string space.
 ;;;         - BASIC starts with 1024 bytes of string space allocated.
-;;;       - If <address> is specified, sets top of BASIC memory.
+;;;       - If < address > is specified, sets top of BASIC memory.
 ;;;         - If 0, set to start of system variables minus one
 ;;;         - FC Error if less than end of BASIC program plus 40 bytes
 ;;;         - FC Error if greater than or equal to start of system variables

@@ -25,7 +25,7 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
 ## UNDER CONSIDERATION / WISH LIST
--  Turn debugger into separate ROM option
+- Turn debugger into separate ROM option
 
 - Screen copy from MSX BASIC (this is preferred over GET/PUT commands from ExtBASIC)
   - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
