@@ -287,3 +287,6 @@ STRLENADR:
     ld      a,c             ; Put length in A
     or      a               ; and Set Flags
     ret
+
+FN_XOR:
+    jp      FCERR

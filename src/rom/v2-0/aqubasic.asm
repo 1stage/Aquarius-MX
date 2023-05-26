@@ -630,10 +630,16 @@ MEMSIZE:
 ;   and the BTOKEN value DECREMENTS as commands are added.
 ;   They also get added at the TOP of the TBLJMPS list.
 ;
-BTOKEN       equ $d0                ; our first token number
+BTOKEN       equ $cc                ; our first token number
 TBLCMDS:
 ; Commands list
-    db      $80 + 'E', "RASE"       ; $d0 - Double Poke
+    
+;other keywords
+    db      $80 + 'P', "UT"         ; $cc - Put Pixels
+    db      $80 + 'G', "ET"         ; $cd - Get Pixels
+    db      $80 + 'D', "RAW"        ; $ce - Graphic Macro Language
+    db      $80 + 'C', "IRCLE"      ; $cf - Draw Circle
+    db      $80 + 'L', "INE"        ; $d0 - Draw Line
     db      $80 + 'S', "WAP"        ; $d1 - Double Poke
     db      $80 + 'D', "OKE"        ; $d2 - Double Poke
     db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
@@ -668,12 +674,17 @@ CDTK    = $E0
     db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
     db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
     db      $80 + 'S', "TRING"      ; $ea - Create String function
+    db      $80 + 'X', "OR"         ; $eb - Bitwise XOR
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA
 
 TBLJMPS:
-    dw      ST_ERASE
+    dw      ST_PUT
+    dw      ST_GET
+    dw      ST_DRAW
+    dw      ST_CIRCLE
+    dw      ST_LINE
     dw      ST_SWAP
     dw      ST_DOKE
     dw      ST_SDTM
@@ -705,6 +716,7 @@ TBLFNJP:
     dw      FN_DEEK
     dw      FN_ERR
     dw      FN_STRING
+    dw      FN_XOR
 TBLFEND:
 
 FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions

@@ -169,6 +169,21 @@ ATNCON: db    9                ;DEGREE
         db    $00,$00,$00,$81 ; 1.0
 
 
+ST_LINE:
+      jp        FCERR
+      
+ST_CIRCLE:
+      jp        FCERR
+      
+ST_DRAW:
+      jp        FCERR
+      
+ST_GET:
+      jp        FCERR
+      
+ST_PUT:
+      jp        FCERR
+
 ;====================================================================
 ; Microsoft BASIC80 Extended BASIC Statements and Functions`
 ;====================================================================
@@ -371,6 +386,10 @@ FN_ERR: call    PARCHK
 ;;;   - CLEAR ERR
 ;;;     - Action: Clears last error number and line.
 ;;;       - Leaves variables and arrays intact.
+;;;   - CLEAR DIM < array > [, < array > ...]
+;;;    - Action: Eliminates array from program.
+;;;      - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes. 
+;;;      - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
 ;;; ### EXAMPLES:
 ;;; ` CLEAR 2000 `
 ;;; > Reserves 2000 bytes of space for strings.
@@ -383,12 +402,23 @@ FN_ERR: call    PARCHK
 ;;;
 ;;; ` CLEAR ERR `
 ;;; > Sets last error number and line as returned by ERR(1) and ERR(2) to 0.
+;;;
+;;; ` CLEAR DIM A `
+;;; > Removes array A() from memory.
+;;;
+;;; ` 10 DIM B$(20) `
+;;; ` 20 CLEAR DIM B$ `
+;;; ` 30 DIM B$(10) `
+;;; > Dimensions B$ as a 20 unit string array, then ERASES it, then redimensions it as a 10 unit array.
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
 
-CLEARX: exx                     ; Save Registers
+CLEARX: cp      DIMTK           ; If CLEAR DIM
+        jp      z,ST_ERASE      ;   Do BASIC80 ERASE
+        exx                     ; Save Registers
         ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
         call    CLERR           ; and Restore registers  
+        or      a
         jp      z,CLEARC        ; IF NO arguments JUST CLEAR
         cp      ERRTK           ; If CLEAR ERR?
         jp      nz,.args        ;    
@@ -421,6 +451,43 @@ CLEARX: exx                     ; Save Registers
 .fcerr: jp      nc,FCERR        ;      FC Error
 .clear: pop     de              ; Get String Space into DE
         jp      CLEARS          ; Set VARTAB, TOPMEM, and MEMSIZ then return
+
+ST_ERASE:
+        rst     CHRGET          ;Skip DIM Token from CLEAR DIM
+        ld      a,1
+        ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
+        call    PTRGET          ;GO FIND OUT WHERE TO ERASE
+        jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
+        push    hl              ;SAVE THE TEXT POINTER
+        ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
+        ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
+        ld      l,c
+        dec     bc              ;BACK UP TO THE FRONT
+LPBKNM: ld      a,(bc)          ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
+        dec     bc              ;SO LOOP UNTIL WE SKIP OVER THE COUNT
+        or      a               ;SKIP ALL THE EXTRA CHARACTERS
+        jp      m,LPBKNM
+        dec     bc
+        dec     bc
+        add     hl,de           ;[H,L]=THE END OF THIS ARRAY ENTRY
+        ex      de,hl           ;[D,E]=END OF THIS ARRAY
+        ld      hl,(STREND)     ;[H,L]=LAST LOCATION TO MOVE UP
+ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
+        ld      a,(de)          ;DO THE MOVE
+        ld      (bc),a
+        inc     de              ;UPDATE THE POINTERS
+        inc     bc
+        jr      nz,ERSLOP       ;MOVE THE REST
+        dec     bc
+        ld      h,b             ;SETUP THE NEW STORAGE END POINTER
+        ld      l,c
+        ld      (STREND),hl
+        pop     hl              ;GET BACK THE TEXT POINTER
+        ld      a,(hl)          ;SEE IF MORE ERASURES NEEDED
+        cp      ','             ;ADDITIONAL VARIABLES DELIMITED BY COMMA
+        ret     nz              ;ALL DONE IF NOT
+        rst     CHRGET
+        jr      ST_ERASE
 
 ;-------------------------------------------------------------------------
 ; NEW statement hook
@@ -497,62 +564,6 @@ MOVVFM: ld        bc,4          ;MOVE VALUE FROM (HL) TO (DE)
         ldir
         ret
 
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## ERASE
-;;; Erase array.
-;;; ### FORMAT:
-;;;  - ERASE < array > [, < array > ...]
-;;;    - Action: Eliminates array from program.
-;;;      - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes. 
-;;;      - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
-;;; ### EXAMPLES:
-;;; ` ERASE A `
-;;; > Removes array A() from memory.
-;;;
-;;; ` 10 DIM B$(20) `
-;;;
-;;; ` 20 ERASE B$ `
-;;;
-;;; ` 30 DIM B$(10) `
-;;;
-;;; > Dimensions B$ as a 20 unit string array, then ERASES it, then redimensions it as a 10 unit array.
-;----------------------------------------------------------------------------
-ST_ERASE:
-        ld      a,1
-        ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
-        call    PTRGET          ;GO FIND OUT WHERE TO ERASE
-        jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
-        push    hl              ;SAVE THE TEXT POINTER
-        ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
-        ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
-        ld      l,c
-        dec     bc              ;BACK UP TO THE FRONT
-LPBKNM: ld      a,(bc)          ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
-        dec     bc              ;SO LOOP UNTIL WE SKIP OVER THE COUNT
-        or      a               ;SKIP ALL THE EXTRA CHARACTERS
-        jp      m,LPBKNM
-        dec     bc
-        dec     bc
-        add     hl,de           ;[H,L]=THE END OF THIS ARRAY ENTRY
-        ex      de,hl           ;[D,E]=END OF THIS ARRAY
-        ld      hl,(STREND)     ;[H,L]=LAST LOCATION TO MOVE UP
-ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
-        ld      a,(de)          ;DO THE MOVE
-        ld      (bc),a
-        inc     de              ;UPDATE THE POINTERS
-        inc     bc
-        jr      nz,ERSLOP       ;MOVE THE REST
-        dec     bc
-        ld      h,b             ;SETUP THE NEW STORAGE END POINTER
-        ld      l,c
-        ld      (STREND),hl
-        pop     hl              ;GET BACK THE TEXT POINTER
-        ld      a,(hl)          ;SEE IF MORE ERASURES NEEDED
-        cp      ','             ;ADDITIONAL VARIABLES DELIMITED BY COMMA
-        ret     nz              ;ALL DONE IF NOT
-        rst     CHRGET
-        jr      ST_ERASE
 
 ;----------------------------------------------------------------------------
 ;;; ---

@@ -387,6 +387,7 @@ UFERR    = $03D0  ;   undefined function
 ERROR    = $03db  ; The canonical name is ERROR - close enough!
 
 ; Standard BASIC Tokens
+DIMTK       = $85   ; DIM Token
 GOTOTK      = $88   ; GOTO Token
 COPYTK      = $92   ; COPY Token
 POKETK      = $94   ; POKE Token
