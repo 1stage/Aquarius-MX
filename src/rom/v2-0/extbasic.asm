@@ -452,42 +452,6 @@ CLEARX: cp      DIMTK           ; If CLEAR DIM
 .clear: pop     de              ; Get String Space into DE
         jp      CLEARS          ; Set VARTAB, TOPMEM, and MEMSIZ then return
 
-ST_ERASE:
-        rst     CHRGET          ;Skip DIM Token from CLEAR DIM
-        ld      a,1
-        ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
-        call    PTRGET          ;GO FIND OUT WHERE TO ERASE
-        jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
-        push    hl              ;SAVE THE TEXT POINTER
-        ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
-        ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
-        ld      l,c
-        dec     bc              ;BACK UP TO THE FRONT
-LPBKNM: ld      a,(bc)          ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
-        dec     bc              ;SO LOOP UNTIL WE SKIP OVER THE COUNT
-        or      a               ;SKIP ALL THE EXTRA CHARACTERS
-        jp      m,LPBKNM
-        dec     bc
-        dec     bc
-        add     hl,de           ;[H,L]=THE END OF THIS ARRAY ENTRY
-        ex      de,hl           ;[D,E]=END OF THIS ARRAY
-        ld      hl,(STREND)     ;[H,L]=LAST LOCATION TO MOVE UP
-ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
-        ld      a,(de)          ;DO THE MOVE
-        ld      (bc),a
-        inc     de              ;UPDATE THE POINTERS
-        inc     bc
-        jr      nz,ERSLOP       ;MOVE THE REST
-        dec     bc
-        ld      h,b             ;SETUP THE NEW STORAGE END POINTER
-        ld      l,c
-        ld      (STREND),hl
-        pop     hl              ;GET BACK THE TEXT POINTER
-        ld      a,(hl)          ;SEE IF MORE ERASURES NEEDED
-        cp      ','             ;ADDITIONAL VARIABLES DELIMITED BY COMMA
-        ret     nz              ;ALL DONE IF NOT
-        rst     CHRGET
-        jr      ST_ERASE
 
 ;-------------------------------------------------------------------------
 ; NEW statement hook
@@ -564,6 +528,42 @@ MOVVFM: ld        bc,4          ;MOVE VALUE FROM (HL) TO (DE)
         ldir
         ret
 
+ST_ERASE:
+        rst     CHRGET          ;Skip DIM Token from CLEAR DIM
+        ld      a,1
+        ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
+        call    PTRGET          ;GO FIND OUT WHERE TO ERASE
+        jp      nz,FCERR        ;PTRGET DID NOT FIND VARIABLE!
+        push    hl              ;SAVE THE TEXT POINTER
+        ld      (SUBFLG),a      ;ZERO OUT SUBFLG TO RESET "ERASE" FLAG
+        ld      h,b             ;[B,C]=START OF ARRAY TO ERASE
+        ld      l,c
+        dec     bc              ;BACK UP TO THE FRONT
+LPBKNM: ld      a,(bc)          ;GET A CHARACTER. ONLY THE COUNT HAS HIGH BIT=0
+        dec     bc              ;SO LOOP UNTIL WE SKIP OVER THE COUNT
+        or      a               ;SKIP ALL THE EXTRA CHARACTERS
+        jp      m,LPBKNM
+        dec     bc
+        dec     bc
+        add     hl,de           ;[H,L]=THE END OF THIS ARRAY ENTRY
+        ex      de,hl           ;[D,E]=END OF THIS ARRAY
+        ld      hl,(STREND)     ;[H,L]=LAST LOCATION TO MOVE UP
+ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
+        ld      a,(de)          ;DO THE MOVE
+        ld      (bc),a
+        inc     de              ;UPDATE THE POINTERS
+        inc     bc
+        jr      nz,ERSLOP       ;MOVE THE REST
+        dec     bc
+        ld      h,b             ;SETUP THE NEW STORAGE END POINTER
+        ld      l,c
+        ld      (STREND),hl
+        pop     hl              ;GET BACK THE TEXT POINTER
+        ld      a,(hl)          ;SEE IF MORE ERASURES NEEDED
+        cp      ','             ;ADDITIONAL VARIABLES DELIMITED BY COMMA
+        ret     nz              ;ALL DONE IF NOT
+        rst     CHRGET
+        jr      ST_ERASE
 
 ;----------------------------------------------------------------------------
 ;;; ---
