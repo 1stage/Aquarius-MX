@@ -169,6 +169,80 @@ ATNCON: db    9                ;DEGREE
         db    $00,$00,$00,$81 ; 1.0
 
 
+; Extended PSET or PRESET
+; Reads Coordinates and saves them for subsequent
+;   LINE -(X,Y) or LINE -STEP(X,Y) statement
+; then executes standard basic PSET/PRESET code
+PRESEX: pop     af              ; Discard Saved Flags
+        xor     a               ; PRESET FLAG
+        jr      PPRSEX            
+PSETX:  pop     af              ; Discard Saved Flags
+        ld      a,1             ; PSET FLAG
+PPRSEX: inc     hl              ; Skip PSET/PRESET Token
+        ex      af,af'            
+        SYNCHK  '('             ; Require '('
+        dec     hl              ; Back up to '(' for SCAN1
+        call    SCAN1           ; Scan Coordinates as (X,Y)
+        jp      PPRSDO          ; Go Do PSET/PRESET
+
+; Parse Intger
+GETIN2: call    FRMEVL          ; EVALUATE A FORMULA
+INTFR2: push    hl              ; SAVE THE TEXT POINTER
+        call    CHKNUM          ; MUST BE NUMBER
+        call    FRCINT          ; COERCE THE ARGUMENT TO INTEGER
+        pop     hl              ; RESTORE THE TEXT POINTER
+        ret
+
+
+; ALLOW A COORDINATE OF THE FORM (X,Y) OR STEP(X,Y)
+; THE LATTER IS RELATIVE TO THE GRAPHICS AC.
+; THE GRAPHICS AC IS UPDATED WITH THE NEW VALUE
+; RESULT IS RETURNED WITH [B,C]=X AND [D,E]=Y
+; CALL SCAN1 TO GET FIRST IN A SET OF TWO PAIRS SINCE IT ALLOWS
+; A NULL ARGUMENT TO IMPLY THE CURRENT AC VALUE AND
+; IT WILL SKIP A "@" IF ONE IS PRESENT
+SCAN1:  ld      a,(hl)          ; GET THE CURRENT CHARACTER
+        cp      '@'             ; ALLOW MEANINGLESS "@"
+        call    z,CHRGTR        ; BY SKIPPING OVER IT
+        ld      bc,0            ; ASSUME NO COODINATES AT ALL (-SECOND)
+        ld      d,b             
+        ld      e,c             
+        cp      MINUTK          ; SEE IF ITS SAME AS PREVIOUS            
+        jr      z,SCANN         ; USE GRAPHICS ACCUMULATOR
+;[GWB] THE STANDARD ENTRY POINT  
+SCAND:  ld      a,(hl)          ; GET THE CURRENT CHARACTER
+        cp      STEPTK          ; IS IT RELATIVE?
+        push    af              ; REMEMBER
+        call    z,CHRGTR        ; SKIP OVER $STEP TOKEN
+        SYNCHK  '('             ; SKIP OVER OPEN PAREN
+        call    GETIN2          ; SCAN X INTO [D,E]
+
+        push    de              ; SAVE WHILE SCANNING Y
+        SYNCHK  ','             ; SCAN COMMA               
+        call    GETIN2          ; GET Y INTO [D,E]
+
+        SYNCHK  ')'             
+        pop     bc              ; GET BACK X INTO [B,C]             
+        pop     af              ; RECALL IF RELATIVE OR NOT
+SCANN:  push    hl              ; SAVE TEXT POINTER
+        ld      hl,(GRPACX)     ; GET OLD POSITION
+        jr      z,SCXREL        ; IF ZERO,RELATIVE SO USE OLD BASE
+        ld      hl,0            ; IN ABSOLUTE CASE, JUST Y USE ARGEUMENT
+SCXREL: add     hl,bc           ; ADD NEW VALUE
+        ld      (GRPACX),hl     ; UPDATE GRAPHICS ACCUMLATOR
+        ld      (GXPOS),hl      ; STORE SECOND COORDINTE FOR CALLER
+        ld      b,h             ; RETURN X IN BC
+        ld      c,l              
+        ld      hl,(GRPACY)     ; GET OLDY POSITION
+        jr      z,SCYREL        ; IF ZERO, RELATIVE SO USE OLD BASE
+        ld      hl,0            ; ABSOLUTE SO OFFSET BY 0
+SCYREL: add     hl,de           
+        ld      (GRPACY),hl     ; UPDATE Y PART OF ACCUMULATOR
+        ld      (GYPOS),hl      ; STORE Y FOR CALLER
+        ex      de,hl           ; RETURN Y IN [D,E]
+        pop     hl              ; GET BACK THE TEXT POINTER
+        ret
+
 ST_LINE:
       jp        FCERR
       
@@ -183,6 +257,8 @@ ST_GET:
       
 ST_PUT:
       jp        FCERR
+
+
 
 ;====================================================================
 ; Microsoft BASIC80 Extended BASIC Statements and Functions`

@@ -136,11 +136,6 @@ LineBufLen = 128
     WORD   _binlen              ; binary file length
     BYTE   _dosflags            ; DOS flags
     BYTE   _sysflags            ; system flags
-    WORD   _errlin              ; LINE NUMBER WHERE LAST ERROR OCCURED.
-    BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
-    BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
-    WORD   _onelin              ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
-    LONG   _swptmp              ; Holds value of the first SWAP variable
     VECTOR _break               ; Debugger Break
     VECTOR _godebug             ; Start Debugger
     STRUCT _linebuf,128         ; Line Input/Edit Buffer
@@ -155,17 +150,103 @@ BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags
 SysFlags = sysvars+_sysflags
-ERRLIN   = sysvars+_errlin          ;These must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
-ERRFLG   = sysvars+_errflg
-ONEFLG   = sysvars+_oneflg
-ONELIN   = sysvars+_onelin
-SWPTMP   = sysvars+_swptmp
 Break    = sysvars+_break
 GoDebug  = sysvars+_godebug
 LineBuf  = sysvars+_linebuf         ;Keep LineBuf, ReTypBuf at the top so they dont cross a 256 byte boundary
 ReTypBuf = sysvars+_retypbuf
 
-vars = SysVars ; for now
+ STRUCTURE _extvars,0
+    BYTE   _forclr              ; Foreground Color
+    BYTE   _gattrs              ; Current Graphics Attributes
+    WORD   _gxpos               ; X Position of Second Coordinate
+    WORD   _gypos               ; Y Position of Second Coordinate
+    WORD   _grpacy              ; Previous Y Coordinate
+    WORD   _grpacx              ; Previous X Coordinate
+    VECTOR _maxupd              ; Jump Instruction
+    VECTOR _minupd              ; Jump Instruction
+    WORD   _maxdel              ; Largest Delta for Line
+    WORD   _mindel              ; Smaller of 2 Deltas for Line
+    WORD   _aspect              ; ASPECT RATIO
+    WORD   _cencnt              ; END CIRCLE POINT COUNT
+    BYTE   _glinef              ; LINE-TO-CENTER FLAG
+    WORD   _cnpnts              ; 1/8 NO. OF PTS IN CIRCLE
+    BYTE   _cplotf              ; PLOT FLAG
+    WORD   _cpcnt               ; ;1/8 NO. OF PTS IN CIRCLE
+    WORD   _cpcnt8              ; NO. OF PTS IN CIRCLE
+    WORD   _crcsum              ; CIRCLE SUM
+    WORD   _cstcnt              ; START COUNT
+    BYTE   _csclxy              ; FLAG WHETHER ASPECT WAS .GT. 1
+    BYTE   _curloc              ; Current Point Address
+    WORD   _cmask               ; Point Bit Mask
+    WORD   _cxoff               ; X OFFSET FROM CENTER SAVE LOC
+    WORD   _cyoff               ; Y OFFSET SAVE LOCATION
+    WORD   _bufret              ; BUFLIN Return Address
+    WORD   _bufptr              ; Pointer into BUF while Unpacking Line
+    BYTE   _drwscl              ; DRAW: SCALE - DRAW POS,Scaling factor
+    BYTE   _drwflg              ; OPTION FLAGS - DRAW flag
+    BYTE   _drwang              ; DRAW "ANGLE" (0..3) - DRAW translation angle
+    WORD   _mclptr              ; MAC LANG PTR
+    BYTE   _mcllen              ; STRING LENGTH
+    BYTE   _mcltab              ; ;PTR TO COMMAND TABLE
+    BYTE   _putflg              ; WHETHER DOING PUT() OR GET()
+    WORD   _arypnt              ; Pointer into GET/PUT Array
+    BYTE   _opcjmp              ; Jump Instruction
+    WORD   _opcadr              ; Draw Operator Routine Address
+    BYTE   _gymax               ; Maximum X Position: 39
+    BYTE   _gxmax               ; Maximum Y Position: 23
+    WORD   _errlin              ; LINE NUMBER WHERE LAST ERROR OCCURED.
+    BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
+    BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
+    WORD   _onelin              ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
+    LONG   _swptmp              ; Holds value of the first SWAP variable
+ ENDSTRUCT _extvars
+
+ExtVars = SysVars-_extvars.size
+FORCLR   = extvars+_forclr
+GATTRS   = extvars+_gattrs
+GXPOS    = extvars+_gxpos 
+GYPOS    = extvars+_gypos 
+GRPACY   = extvars+_grpacy
+GRPACX   = extvars+_grpacx
+MAXUPD   = extvars+_maxupd
+MINUPD   = extvars+_minupd
+MAXDEL   = extvars+_maxdel
+MINDEL   = extvars+_mindel
+ASPECT   = extvars+_aspect
+CENCNT   = extvars+_cencnt
+GLINEF   = extvars+_glinef
+CNPNTS   = extvars+_cnpnts
+CPLOTF   = extvars+_cplotf
+CPCNT    = extvars+_cpcnt 
+CPCNT8   = extvars+_cpcnt8
+CRCSUM   = extvars+_crcsum
+CSTCNT   = extvars+_cstcnt
+CSCLXY   = extvars+_csclxy
+CURLOC   = extvars+_curloc
+CMASK    = extvars+_cmask 
+CXOFF    = extvars+_cxoff 
+CYOFF    = extvars+_cyoff 
+BUFRET   = extvars+_bufret
+BUFPTR   = extvars+_bufptr
+DRWSCL   = extvars+_drwscl
+DRWFLG   = extvars+_drwflg
+DRWANG   = extvars+_drwang
+MCLPTR   = extvars+_mclptr
+MCLLEN   = extvars+_mcllen
+MCLTAB   = extvars+_mcltab
+PUTFLG   = extvars+_putflg
+ARYPNT   = extvars+_arypnt
+OPCJMP   = extvars+_opcjmp
+OPCADR   = extvars+_opcadr
+GYMAX    = extvars+_gymax 
+GXMAX    = extvars+_gxmax 
+ERRLIN   = extvars+_errlin          ;These must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
+ERRFLG   = extvars+_errflg
+ONEFLG   = extvars+_oneflg
+ONELIN   = extvars+_onelin
+SWPTMP   = extvars+_swptmp
+
+vars = ExtVars ; for now
 
 ifdef debug
   pathname = $3006  ; store path in top line of screen
@@ -893,6 +974,8 @@ AQFUNCTION:
     jp      z,FN_PEEK           ;   Do Extended PEEK
     cp      ASCTK-$B2           ; If ASC Token
     jp      z,FN_ASC            ;   See if ASC$
+    cp      FRETK-$B2           ; If ASC Token
+    jp      z,FN_FRE            ;   See if ASC$
     cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
     jp      c,HOOK27+1
     cp      (lastf-$B2+1)
@@ -965,10 +1048,14 @@ PEXPBAB:
 NEXTSTMT:
     jr      nc,BASTMT           ; if NC then process BASIC statement
     push    af                  ; Save Flags
-    cp      COPYTK-$80          ; If POKE Token
-    jp      z,ST_COPY           ;   Do Extended POKE
     cp      POKETK-$80          ; If POKE Token
     jp      z,ST_POKE           ;   Do Extended POKE
+    cp      COPYTK-$80          ; If COPY Token
+    jp      z,ST_COPY           ;   Do Extended POKE
+    cp      PSETTK-$80          ; If PSET
+    jp      z,PSETX             ;   Do Extended BASIC PSET
+    cp      PRESTK-$80          ; If PRESET
+    jp      z,PRESEX            ;   Do Extended BASIC PRESET
     pop     af                  ; Else
     jp      HOOK23+1
 
@@ -1963,12 +2050,11 @@ GET_VARPTR:
     xor     a
     ld      (SUBFLG),a        ; Evaluate Array Indexes
     call    PTRGET
-    xor     a
-    ld      (VALTYP),a        ; Force Return Type to numeric
 
 FLOAT_DE:
     push    hl
     xor     a                 ; Set HO to 0
+    ld      (VALTYP),a        ; Force Return Type to numeric
     ld      b,$98             ; Exponent = 2^24
     call    FLOATR            ; Float It
     pop     hl

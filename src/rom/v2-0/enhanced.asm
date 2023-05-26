@@ -132,14 +132,74 @@ ST_COPY:
     ex      (sp),hl         ; HL = <dest>, Stack = <source>, Text pointer
     add      hl,bc          
     dec      hl             
-    ld      d,h             
-    ld      e,l             ; DE = <dest> + <count> - 1
+    ld       d,h             
+    ld       e,l            ; DE = <dest> + <count> - 1
     pop      hl             ; HL = <source>, Stack = Text Pointer
     add      hl,bc          
     dec      hl             ; HL = <source> + <count> - 1
     lddr                    ; Do the Copy
     pop      hl             ; Restore Text Pointer
     ret
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## FRE (Extended)
+;;; Read from Memory
+;;; ### FORMAT:
+;;;  - FRE ( 0 )
+;;;    - Action: Returns the number of bytes in memory not being used by BASlC.
+;;;  - FRE ( 1 )
+;;;    - Action: Returns  the total size of string space (as set by the first argument of CLEAR).
+;;;  - FRE ( 2 ) 
+;;;    - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
+;;;  - FRE ( 3 ) 
+;;;    - Action: Returns the start of protected memory (one more then the highest value allowed for CLEAR).
+;;;  - FRE ( <string> )
+;;;    - Action: Forces a garbage collection before returning the number of free bytes of string space. 
+;;;      - BASIC will not initiate garbage collection until all free memory has been used up. 
+;;;      - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
+;;;   - Any other argument returns an FC error.
+;----------------------------------------------------------------------------
+FN_FRE:
+    rst     CHRGET
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK       ; Return Address for FLOAT...
+    push    bc
+    call    GETYPR          ; If FRE(string)
+    jp      z,FRE_STR       ;   Garbage Collect and Return Free String Space 
+    call    CONINT          ; Convert Argument to byte in A
+    ld      hl,(STREND)     ; 
+    ex      de,hl           ; 
+    ld      hl,0            ;
+    add     hl,sp           ; 
+    or      a               ; If FRE(0)
+    jp      z,FLOAT_DIFF    ;   Return Free Space
+    ld      hl,(MEMSIZ)     ; 
+    ld      de,(TOPMEM)     ;
+    dec     a               ; If FRE(1)
+    jp      z,FLOAT_DIFF    ;   Return Total String Space
+    dec     a               ; If FRE(2)
+    jp      z,FLOAT_DE      ;   Return Top of BASIC Memory
+    ex      de,hl           ; 
+    dec     a               ; If FRE(3)
+    jp      z,FLOAT_DE      ;   Return Start of System Variables  
+    jp      FCERR           ; Else FC Error
+
+FRE_STR:
+    call    FREFAC          ;[M80] FREE UP ARGUMENT AND SETUP TO GIVE FREE STRING SPACE
+    call    GARBA2          ;[M80] DO GARBAGE COLLECTION
+    ld      de,(TOPMEM)     ;
+    ld      hl,(FRETOP)     ;[M80] TOP OF FREE AREA
+FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point number
+    ld      a,l             ; E = L - E
+    sub     e               ;
+    ld      e,a             ;
+    ld      a,h             ;
+    sbc     a,d             ; D = H - E - carry
+    ld      d,a
+    jp      FLOAT_DE        ; Float It
+
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -157,6 +217,7 @@ ST_COPY:
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
+    rst     CHRGET
     call    PARCHK
     push    hl
     ld      bc,LABBCK         ; Return Address for SGNFLT

@@ -189,6 +189,7 @@ CRUNCX  = $04F9   ; CRUNCH Alternate Entry Point
 GONE4   = $063C   ; Execute Next Statement
 GONE    = $064B   ; Execute Statement
 GONE5   = $0665   ; Add Offset to Table and Dispatch Statement
+CHRGTR  = $066B   ; Alternate CHRGET for conditional CALL
 NTOERR  = $0782   ; Execute ON GOTO
 
 STROUT  = $0E9D   ; Print null or quote terminated string
@@ -253,9 +254,11 @@ STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
 GETSPA  = $0EB3   ; Allocate Space for Temporary String
 STRLTI  = $0E60   ; Create string (HL = text starting with '"')
+GARBA2  = $0EDB   ; Force Garbage Collection
 LEN1    = $0FF7   ; get string length (in: FACLO = string block; out: HL = string block, A = length)
 ASC2    = $1006   ; Get pointer to string text (out: DE = filename, A = 1st char)
 FINBCK  = $101D   ; Skip CHKNUM and Return to Higher Level
+FRE     = $10A8   ; FRE Function
 
 FRESTR  = $0FC6   ; Free up Temporary String
 FREFAC  = $0FC9   ; Free up String in FACLO
@@ -291,6 +294,7 @@ INCHRC  = $1E80   ; Get current key pressed (direct)
 GETSTK  = $0BA0   ; Check for stack space (in: C = number of words required)
 POPHRT  = $141A   ; Pop HL and Return
 
+PPRSDO  = $1A55   ; Execute PSET/PRESET: BC = X-coord, DE = Y-coord, A = 0 for PRESET, else PSET
 COPY    = $1B15   ; COPY statement
 
 ;-----------------------------------------------------------------------------
@@ -391,14 +395,18 @@ DIMTK       = $85   ; DIM Token
 GOTOTK      = $88   ; GOTO Token
 COPYTK      = $92   ; COPY Token
 POKETK      = $94   ; POKE Token
+PSETTK      = $9C   ; PSET Token
+PRESTK      = $9D   ; PRESET Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token
 STEPTK      = $A7   ; STEP Token
 PLUSTK      = $A8   ; + Token
+MINUTK      = $A9   ; - Token
 MULTK       = $AA   ; * Token
 ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
 ONEFUN      = $B2   ; First Function Token
+FRETK       = $B6   ; FRE Token
 PEEKTK      = $C1   ; PEEK Token
 STRTK       = $C3   ; STR$ Token
 ASCTK       = $C5   ; ASC Token
