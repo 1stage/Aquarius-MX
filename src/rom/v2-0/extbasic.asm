@@ -169,6 +169,21 @@ ATNCON: db    9                ;DEGREE
         db    $00,$00,$00,$81 ; 1.0
 
 
+ST_LINE:
+      jp        FCERR
+      
+ST_CIRCLE:
+      jp        FCERR
+      
+ST_DRAW:
+      jp        FCERR
+      
+ST_GET:
+      jp        FCERR
+      
+ST_PUT:
+      jp        FCERR
+
 ;====================================================================
 ; Microsoft BASIC80 Extended BASIC Statements and Functions`
 ;====================================================================
@@ -386,9 +401,12 @@ FN_ERR: call    PARCHK
 ;----------------------------------------------------------------------------
 ;CLEAR statement hook
 
-CLEARX: exx                     ; Save Registers
+CLEARX: cp      DIMTK           ; If CLEAR DIM
+        jp      z,ST_ERASE      ;   Do BASIC80 ERASE
+        exx                     ; Save Registers
         ld      b,4             ; Clear ERRLIN,ERRFLG,ONEFLG
         call    CLERR           ; and Restore registers  
+        or      a
         jp      z,CLEARC        ; IF NO arguments JUST CLEAR
         cp      ERRTK           ; If CLEAR ERR?
         jp      nz,.args        ;    
@@ -519,6 +537,7 @@ MOVVFM: ld        bc,4          ;MOVE VALUE FROM (HL) TO (DE)
 ;;; > Dimensions B$ as a 20 unit string array, then ERASES it, then redimensions it as a 10 unit array.
 ;----------------------------------------------------------------------------
 ST_ERASE:
+        rst     CHRGET          ;Skip DIM Token from CLEAR DIM
         ld      a,1
         ld      (SUBFLG),a      ;THAT THIS IS "ERASE" CALLING PTRGET
         call    PTRGET          ;GO FIND OUT WHERE TO ERASE
