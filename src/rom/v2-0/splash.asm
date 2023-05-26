@@ -37,8 +37,8 @@ SPLGOTKEY:
     cp      "1"                ; '1' = load ROM
     jr      z,LoadROM
   endif
-    ;cp      "2"                ; '2' = debugger
-    ;jr      z, DEBUG
+    cp      "2"                ; '2' = debugger
+    jr      z, DEBUG
     cp      $0d                ; RTN = cold boot
     jp      z, COLDBOOT
     and     $DF                ; Convert letters to upper-case
@@ -52,8 +52,9 @@ SPLGOTKEY:
     jr      SPLLOOP
 
 DEBUG:
-    ;call    InitBreak          ; set RST $38 vector to Trace Break4
-    ;ld      hl,0               ; HL = 0 (no BASIC text)
+    ld      a,(SysFlags)
+    bit     SF_DEBUG,a
+    jr      z,SPLLOOP
     call    ST_DEBUG           ; invoke Debugger
     JR      SPLASH
 
@@ -107,4 +108,58 @@ AboutText:
     db     CR
     db     " github.com/1stage/Aquarius-MX",CR
     db     0
+
+; boot outer window with border
+BootBdrWindow:
+    db      (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
+    db      CYAN                   ; text colors
+    db      CYAN                   ; border colors
+    db      2,3,36,20              ; x,y,w,h
+    dw      bootWinTitle           ; Titlebar text
+
+; boot window text inside border
+BootWindow:
+    db     0
+    db     CYAN
+    db     CYAN
+    db     9,5,26,18
+    dw     0
+
+BootWinTitle:
+    db     " Aquarius MX "
+StrBasicVersion:
+    db     "BASIC "
+    db     "v",VERSION+'0','.',REVISION+'0',' ',0
+
+BootMenuPrint:
+    call    WinPrtMsg
+    db      CR,CR
+    db      "      1. "
+  ifdef softrom
+    db      "(disabled)"
+  else  
+    db      "Load ROM"
+  endif 
+    db      CR,CR,CR,0
+    ld      a,(SysFlags)
+    bit     SF_DEBUG,a
+    jr      z,.nodebug
+    call    WinPrtMsg
+    db      "      2. Debug"
+.nodebug    
+    call    WinPrtMsg
+    db      CR,CR,CR,CR,CR                      ; Move down a few rows
+    db      "    <RTN> USB BASIC"
+    db      CR,0
+    or      c                             ; If Ctrl-C Flag is 0
+    jr      z,.about                      ;   Skip Ctrl-C Message
+    call    WinPrtMsg
+    db      CR," <CTRL-C> Warm Start",CR,0
+.about
+    call    WinPrtMsg
+    db      CR
+    db      "      <A> About...",CR
+    db      CR,CR,0
+    ret
+
 

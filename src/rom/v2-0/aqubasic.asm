@@ -344,6 +344,47 @@ Wait_key:
     pop     af
     RET
 
+;-------------------------------------------------------------------
+;                  Test for PAL or NTSC
+;-------------------------------------------------------------------
+; Measure video frame period, compare to 1.80ms
+; NTSC = 16.7ms, PAL = 20ms
+;
+; out: nc = PAL, c = NTSC
+;
+; NOTE: waits for ~17-41ms. Do not use in timing-critical code!
+
+PAL__NTSC:
+    PUSH BC
+.wait_vbl1:
+    IN   A,($FD)
+    RRA                   ; wait for start of vertical blank
+    JR   C,.wait_vbl1
+.wait_vbh1:
+    IN   A,($FD)
+    RRA                   ; wait for end of vertical blank
+    JR   NC,.wait_vbh1
+    LD   BC,0
+.wait_vbl2:               ; 1.117us/cycle
+    INC  BC               ; 2 count                 ]
+    IN   A,($FD)          ; 3 read status reg       ]
+    RRA                   ; 1 test VBL bit          ]   9 cycles per loop
+    JR   C,.wait_vbl2     ; 3 loop until VLB high   ]   10.06us/loop
+.wait_vbh2:               ; cycles (1.12us/cycle)
+    INC  BC               ; 2 count                 ]
+    IN   A,($FD)          ; 3 read status reg       ]   9 cycles per loop
+    RRA                   ; 1 test VBL bit          ]   10.06us/loop
+    JR   NC,.wait_vbh2    ; 3 loop until VLB high   ]
+    LD   C,A
+    LD   A,B              ; ~1657 = 60Hz, ~1989 = 50Hz
+    CP   7                ; c = NTSC, nc = PAL
+    LD   A,C
+    POP  BC
+    RET
+
+
+
+
 C0_END:   
 C0_SIZE = C0_END - $C000
 
@@ -374,8 +415,13 @@ ROM_ENTRY:
     set     SF_NTSC,a
 .set_sysflags:
     ld      (Sysflags),a
-;
-;
+
+; init Debugger Vectors
+    ld      hl,debug_defs      ;default jumps for Break and GoDebug
+    ld      de,Break           ;Break and GoDebug Vectors
+    ld      bc,6               ;6 bytes for 2 jumps
+    ldir                       ;Copy
+
 ; init CH376
     call    usb__check_exists  ; CH376 present?
     jr      nz,.no_ch376
@@ -522,11 +568,6 @@ STR_VERSION:
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
 
-    ld      hl,debug_defs      ;default jumps for Break and GoDebug
-    ld      de,Break           ;Break and GoDebug Vectors
-    ld      bc,6               ;6 bytes for 2 jumps
-    ldir                       ;Copy
-
     ld      hl,$0187           ; default values in system ROM
     ld      bc,$0051           ; 81 bytes to copy
     ld      de,$3803           ; system variables
@@ -581,95 +622,6 @@ MEMSIZE:
     call    SHOWCOPYRIGHT      ; Show our copyright message
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
-
-
-;-------------------------------------------------------------------
-;                  Test for PAL or NTSC
-;-------------------------------------------------------------------
-; Measure video frame period, compare to 1.80ms
-; NTSC = 16.7ms, PAL = 20ms
-;
-; out: nc = PAL, c = NTSC
-;
-; NOTE: waits for ~17-41ms. Do not use in timing-critical code!
-
-PAL__NTSC:
-    PUSH BC
-.wait_vbl1:
-    IN   A,($FD)
-    RRA                   ; wait for start of vertical blank
-    JR   C,.wait_vbl1
-.wait_vbh1:
-    IN   A,($FD)
-    RRA                   ; wait for end of vertical blank
-    JR   NC,.wait_vbh1
-    LD   BC,0
-.wait_vbl2:               ; 1.117us/cycle
-    INC  BC               ; 2 count                 ]
-    IN   A,($FD)          ; 3 read status reg       ]
-    RRA                   ; 1 test VBL bit          ]   9 cycles per loop
-    JR   C,.wait_vbl2     ; 3 loop until VLB high   ]   10.06us/loop
-.wait_vbh2:               ; cycles (1.12us/cycle)
-    INC  BC               ; 2 count                 ]
-    IN   A,($FD)          ; 3 read status reg       ]   9 cycles per loop
-    RRA                   ; 1 test VBL bit          ]   10.06us/loop
-    JR   NC,.wait_vbh2    ; 3 loop until VLB high   ]
-    LD   C,A
-    LD   A,B              ; ~1657 = 60Hz, ~1989 = 50Hz
-    CP   7                ; c = NTSC, nc = PAL
-    LD   A,C
-    POP  BC
-    RET
-
-; boot outer window with border
-BootBdrWindow:
-    db      (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
-    db      CYAN                   ; text colors
-    db      CYAN                   ; border colors
-    db      2,3,36,20              ; x,y,w,h
-    dw      bootWinTitle           ; Titlebar text
-
-; boot window text inside border
-BootWindow:
-    db     0
-    db     CYAN
-    db     CYAN
-    db     9,5,26,18
-    dw     0
-
-BootWinTitle:
-    db     " Aquarius MX "
-StrBasicVersion:
-    db     "BASIC "
-    db     "v",VERSION+'0','.',REVISION+'0',' ',0
-
-BootMenuPrint:
-    call    WinPrtMsg
-    db      CR,CR
-    db      "      1. "
-  ifdef softrom
-    db      "(disabled)"
-  else  
-    db      "Load ROM"
-  endif 
-    db      CR,CR,CR
-    ;db      "      2. Debug",
-    db      CR
-    db      CR,CR,CR,CR                      ; Move down a few rows
-    db      "    <RTN> USB BASIC"
-    db      CR,0
-    or      c                             ; If Ctrl-C Flag is 0
-    jr      z,.about                      ;   Skip Ctrl-C Message
-    call    WinPrtMsg
-    db      CR," <CTRL-C> Warm Start",CR,0
-.about
-    call    WinPrtMsg
-    db      CR
-    db      "      <A> About...",CR
-    db      CR,CR,0
-    ret
-
-
 
 
 ; Our Commands and Functions
