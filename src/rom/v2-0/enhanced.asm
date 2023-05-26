@@ -157,6 +157,7 @@ ST_COPY:
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
+    rst     CHRGET
     call    PARCHK
     push    hl
     ld      bc,LABBCK         ; Return Address for SGNFLT
