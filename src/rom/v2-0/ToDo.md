@@ -25,13 +25,23 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
 ## UNDER CONSIDERATION / WISH LIST
-- Remove debugger and turn into separate ROM option
+-  Turn debugger into separate ROM option
+
 - Screen copy from MSX BASIC (this is preferred over GET/PUT commands from ExtBASIC)
   - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
   - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
+
 - Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
+
 - MOD(dividend, divisor) function for modulus/remainder
+  - No hook 
+
 - XOR logical function/operator
+  
+- Full Error Messages
+  - Example:
+    - ` Syntax Error ` instead of ` SN Error `
+
 - RPL$(source string, match string, replacement string) replace string function
   - Example 1:
     - ` 10 NM$ = "JOHN JAMES SMITH" `
@@ -41,6 +51,8 @@ This file is for recording upcoming changes and features that are being added, a
   - Example 2:
     - ` PRINT RPL$("Suzy Saves Stuff","S","Sh") `
       - "Shuzy Shaves Shtuff"
+  - Out of Scope, although left hand MID$ is a possibility
+    - ` MID$(<string expl> ,n [,m] ) = <str ing exp2> `
 
 ## COMPLETE:
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
@@ -50,7 +62,7 @@ This file is for recording upcoming changes and features that are being added, a
 - [x] Created FRCADR - FRCINT replacement that accepts -32768 through 65535
   - [x] Replaced FRCINT with FRCADR in IN/OUT/CALL
   - [x] Override PEEK and POKE to use a 16bit unsigned integer as well a 16 Bit Signed.
-  - [x] LOAD, SAVE, etc - use FRCADR instead of FRCINT
+  - [x] LOAD, SAVE, etc - use FRCADR instead of FRCINTn
   - [x] Modified FRCADR to TM Error if argument is string
 
 - [x] VER() - Return version and revision
@@ -117,6 +129,11 @@ This file is for recording upcoming changes and features that are being added, a
 - [x] Add SWAP, ERASE statements
 
 - [x] Create CD$ pseudo-variable for PATH to string value
+
+- [x] Debugger removed
+  - [x] Debug and Break vectors added to SysVars
+  - [x] Debug statement prints "Debugger not installed"
+  - [x] Option commented out of splash screen - 
   
 ### AquaLite
 

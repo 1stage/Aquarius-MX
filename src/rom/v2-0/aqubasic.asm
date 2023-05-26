@@ -141,6 +141,8 @@ LineBufLen = 128
     BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
     WORD   _onelin              ; THE pointer to the LINE TO GOTO WHEN AN ERROR OCCURS
     LONG   _swptmp              ; Holds value of the first SWAP variable
+    VECTOR _break               ; Debugger Break
+    VECTOR _godebug             ; Start Debugger
     STRUCT _linebuf,128         ; Line Input/Edit Buffer
     STRUCT _retypbuf,128        ; BASIC command line history
  ENDSTRUCT _sysvars
@@ -158,8 +160,12 @@ ERRFLG   = sysvars+_errflg
 ONEFLG   = sysvars+_oneflg
 ONELIN   = sysvars+_onelin
 SWPTMP   = sysvars+_swptmp
-LineBuf =  sysvars+_linebuf         ;Keep LineBuf, ReTypBuf at the top so they dont cross a 256 byte boundary
+Break    = sysvars+_break
+GoDebug  = sysvars+_godebug
+LineBuf  = sysvars+_linebuf         ;Keep LineBuf, ReTypBuf at the top so they dont cross a 256 byte boundary
 ReTypBuf = sysvars+_retypbuf
+
+vars = SysVars ; for now
 
 ifdef debug
   pathname = $3006  ; store path in top line of screen
@@ -260,7 +266,7 @@ WIN_CLEARTOEND    jp  ClearToEnd
 WIN_BACKSPACE     jp  BackSpace
 WIN_WAITKEY       jp  Wait_Key
 WIN_CAT_DISK      jp  WinCatDisk
-WIN_INPUTLINE     jp  InputLine
+WIN_removed       jp  break
 WIN_reserved1     jp  break
 WIN_reserved2     jp  break
 
@@ -276,14 +282,14 @@ RTC_FTS_TO_DTM    jp  fts_to_dtm
 
 
 ;---------------------------------------------------------------------
+;                     splash screen / boot menu
+;---------------------------------------------------------------------
+   include "splash.asm"
+
+;---------------------------------------------------------------------
 ;                     windowed text functions
 ;---------------------------------------------------------------------
    include "windows.asm"
-
-;---------------------------------------------------------------------
-;                          debugger
-;---------------------------------------------------------------------
-   include "debug.asm"
 
 ;---------------------------------------------------------------------
 ;                         ROM loader
@@ -294,6 +300,11 @@ RTC_FTS_TO_DTM    jp  fts_to_dtm
 ;                     disk file selector
 ;---------------------------------------------------------------------
    include "filerequest.asm"
+
+;---------------------------------------------------------------------
+;                      USB Disk Driver
+;---------------------------------------------------------------------
+    include "ch376.asm"
    
 ;---------------------------------------------------------------------
 ;                RTC Driver for Dallas DS1244
@@ -364,20 +375,6 @@ ROM_ENTRY:
 .set_sysflags:
     ld      (Sysflags),a
 ;
-; init debugger
-    ld      hl,vars
-    ld      bc,v.size
-.clrbugmem:
-    ld      (hl),0             ; clear all debugger variables
-    inc     hl
-    dec     bc
-    ld      a,b
-    or      c
-    jr      nz,.clrbugmem
-    ld      a,$C3
-    ld      (USRPOK),a
-    ld      HL,0
-    ld      (USRADD),HL       ; set system RST $38 vector
 ;
 ; init CH376
     call    usb__check_exists  ; CH376 present?
@@ -475,116 +472,6 @@ HOOKTABLE:                    ; ## caller   addr  performing function
     dw      HOOK28+1          ; 28 DATBK    08F1
 
 
-; show splash screen (Boot menu)
-SPLASH:
-    push    bc                 ; Save Ctrl-C flag
-    call    usb__root          ; root directory
-    ld      a,CYAN
-    call    clearscreen
-    ld      b,40
-    ld      hl,$3000
-TOPLINE: 
-    ld      (hl),' '
-    set     2,h
-    ld      (hl),WHITE*16+BLACK ; black border, white on black chars in top line
-    res     2,h
-    inc     hl
-    djnz    TOPLINE
-REDRAW:
-    ld      ix,BootbdrWindow
-    call    OpenWindow
-    ld      ix,bootwindow
-    call    OpenWindow
-    pop     bc                ; Get Ctrl-C Flag
-    push    bc
-    call    BootMenuPrint
-    
-; outer loop for boot option key so date time display gets updated
-SPLLOOP:
-    call    SPL_DATETIME       ; Print DateTime at the bottom of the screen
-; wait for Boot option key
-    ld      b,0                ; Call the clock update every 256 loops
-SPLKEY:                        ;
-    call    Key_Check          ;
-    jr      nz,SPLGOTKEY       ; We got a key pressed
-    djnz    SPLKEY             ; loop until c=0
-    jr      SPLLOOP
-SPLGOTKEY:
-  ifndef softrom
-    cp      "1"                ; '1' = load ROM
-    jr      z,LoadROM
-  endif
-    cp      "2"                ; '2' = debugger
-    jr      z, DEBUG
-    cp      $0d                ; RTN = cold boot
-    jp      z, COLDBOOT
-    and     $DF                ; Convert letters to upper-case
-    cp      "A"                ; 'A' = About screen
-    jr      z, AboutSCR        
-    pop     bc                 ; Get Ctrl-C Flag
-    push    bc
-    and     c                  ;  Make A=0 if Ctrl-C disabled
-    cp      $03                ;  ^C = warm boot
-    jp      z, WARMBOOT
-    jr      SPLLOOP
-
-DEBUG:
-    call    InitBreak          ; set RST $38 vector to Trace Break
-    ld      hl,0               ; HL = 0 (no BASIC text)
-    call    ST_DEBUG           ; invoke Debugger
-    JR      SPLASH
-
-LoadROM:
-    call    Load_ROM           ; ROM loader
-    JR      SPLASH
-
-; About/Credits window
-
-AboutSCR:
-    ld      ix,AboutBdrWindow           ; Draw outer window
-    call    OpenWindow
-    ld      ix,AboutWindow              ; Draw smaller inset window
-    call    OpenWindow
-    ld      hl,AboutText
-    ;call    OpenWindow
-    call    WinPrtStr
-    call    Wait_key
-    JP      REDRAW
-
-AboutBdrWindow:
-    db   (1<<WA_BORDER)|(1<<WA_TITLE)|(1<<WA_CENTER) ; attributes
-    db   (BLUE*16)+CYAN               ; text colors,   (FG * 16) + BG
-    db   (DKBLUE*16)+CYAN             ; border colors, (FG * 16) + BG
-    db   2,3,36,20                    ; x,y,w,h
-    dw   AboutBdrTitle                ; title
-
-AboutWindow:
-    db   0                            ; attributes
-    db   (BLUE*16)+CYAN               ; text colors,   (FG * 16) + BG
-    db   (DKBLUE*16)+CYAN             ; border colors, (FG * 16) + BG
-    db   4,4,32,18                    ; x,y,w,h
-    dw   0                            ; title
-
-AboutBdrTitle:
-    db     " About MX BASIC ",0
-
-AboutText:
-    db     CR,CR,CR
-    db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
-    db     " Release Date - Alpha 2023-05-19",CR,CR                       ; Can we parameterize this later?
-    db     " ROM Dev Team - Curtis F Kaylor",CR
-    db     "                Mack Wharton",CR
-    db     "                Sean Harrington",CR
-    db     CR
-    db     "Original Code - Bruce Abbott",CR
-    db     CR
-    db     "     AquaLite - Richard Chandler",CR
-    db     CR
-    db     "Aquarius Draw - Matt Pilz",CR
-    db     CR
-    db     " github.com/1stage/Aquarius-MX",CR
-    db     0
-
 ; CTRL-C pressed in boot menu
 WARMBOOT:
     xor     a
@@ -634,6 +521,12 @@ STR_VERSION:
 
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
+
+    ld      hl,debug_defs      ;default jumps for Break and GoDebug
+    ld      de,Break           ;Break and GoDebug Vectors
+    ld      bc,6               ;6 bytes for 2 jumps
+    ldir                       ;Copy
+
     ld      hl,$0187           ; default values in system ROM
     ld      bc,$0051           ; 81 bytes to copy
     ld      de,$3803           ; system variables
@@ -689,11 +582,6 @@ MEMSIZE:
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
 
-
-;---------------------------------------------------------------------
-;                      USB Disk Driver
-;---------------------------------------------------------------------
-    include "ch376.asm"
 
 ;-------------------------------------------------------------------
 ;                  Test for PAL or NTSC
@@ -765,7 +653,8 @@ BootMenuPrint:
     db      "Load ROM"
   endif 
     db      CR,CR,CR
-    db      "      2. Debug",CR
+    ;db      "      2. Debug",
+    db      CR
     db      CR,CR,CR,CR                      ; Move down a few rows
     db      "    <RTN> USB BASIC"
     db      CR,0
@@ -1219,6 +1108,28 @@ _run_file:
 
 ST_reserved:
     ret
+
+;----------------------------------------------------------------------------
+; Invoke Debugger
+;----------------------------------------------------------------------------
+
+ST_DEBUG:
+    jp      GoDebug
+
+debug_defs:
+    jp      debug_ret   ;Break vector
+    jp      no_debug    ;GoDebug vector
+    
+no_debug:
+    push    hl
+    ld      hl,no_debug_msg
+    call      prtstr
+    pop     hl
+debug_ret:
+    ret
+
+no_debug_msg:
+    db      "Debugger not installed",$0D,$0A,0
 
 ;----------------------------------------------------------------------------
 ;;; ---
