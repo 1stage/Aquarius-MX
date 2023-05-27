@@ -1037,7 +1037,7 @@ print_integer:
 ;;; Delete a file
 ;;; ### FORMAT:
 ;;;  - DEL < filename >
-;;;    - Action: Deletes the file named <filename> from the current directory.
+;;;    - Action: Deletes the file named < filename > from the current directory.
 ;;;      - No warnings are given.
 ;;;      - Wildcards and paths cannot be used.
 ;;; ### EXAMPLES:

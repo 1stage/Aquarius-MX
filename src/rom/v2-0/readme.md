@@ -23,7 +23,7 @@ Read from Memory
    - Action: Returns a numerical value that is the ASCII code of the first character of < string >. If < string > is null, an FC error is returned.
      - See the CHR$ function for ASCII-to-string conversion.
  - ASC$ (< string >)
-   - Action: Returns string who's characters ASCII values match the series of two digit hexadecimal numbers in < string >.
+   - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in < string >.
      - See the HEX$ function for string-to-hex conversion.
 ### EXAMPLES:
 ` PRINT ASC("TEST") `
@@ -113,15 +113,19 @@ Clear Variables and/or Error Code
 ### FORMAT:
   - CLEAR [ < number >, [ < address > ] ]
     - Action: Clears all variables and arrays, last arror number and line.
-      - If <number> is specified allocates string space.
+      - If < number > is specified allocates string space.
         - BASIC starts with 1024 bytes of string space allocated.
-      - If <address> is specified, sets top of BASIC memory.
+      - If < address > is specified, sets top of BASIC memory.
         - If 0, set to start of system variables minus one
         - FC Error if less than end of BASIC program plus 40 bytes
         - FC Error if greater than or equal to start of system variables
   - CLEAR ERR
     - Action: Clears last error number and line.
       - Leaves variables and arrays intact.
+  - CLEAR DIM < array > [, < array > ...]
+   - Action: Eliminates array from program.
+     - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes.
+     - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
 ### EXAMPLES:
 ` CLEAR 2000 `
 > Reserves 2000 bytes of space for strings.
@@ -134,6 +138,14 @@ Clear Variables and/or Error Code
 
 ` CLEAR ERR `
 > Sets last error number and line as returned by ERR(1) and ERR(2) to 0.
+
+` CLEAR DIM A `
+> Removes array A() from memory.
+
+` 10 DIM B$(20) `
+` 20 CLEAR DIM B$ `
+` 30 DIM B$(10) `
+> Dimensions B$ as a 20 unit string array, then ERASES it, then redimensions it as a 10 unit array.
 
 ---
 ## CLS (Extended)
@@ -272,7 +284,7 @@ Define User Function
 Delete a file
 ### FORMAT:
  - DEL < filename >
-   - Action: Deletes the file named <filename> from the current directory.
+   - Action: Deletes the file named < filename > from the current directory.
      - No warnings are given.
      - Wildcards and paths cannot be used.
 ### EXAMPLES:
@@ -307,7 +319,7 @@ Get a listing of the files on the current USB directory
 ## DOKE
 Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ### FORMAT:
- - DOKE < address >, < word >, [, <word> ...]
+ - DOKE < address >, < word >, [, < word > ...]
    - Action: Writes < word > to memory starting at < address >.
 ### EXAMPLES:
 ` DOKE 14340, 1382 `
@@ -363,39 +375,19 @@ Edit BASIC Line
    - Note: The above control keys are also available when entering a new line or direct mode command.
 
 ---
-## ERASE
-Erase array.
-### FORMAT:
- - ERASE < array > [, < array > ...]
-   - Action: Eliminates array from program.
-     - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes.
-     - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
-### EXAMPLES:
-` ERASE A `
-> Removes array A() from memory.
-
-` 10 DIM B$(20) `
-
-` 20 ERASE B$ `
-
-` 30 DIM B$(10) `
-
-> Dimensions B$ as a 20 unit string array, then ERASES it, then redimensions it as a 10 unit array.
-
----
 ## ERR
 Error Status
 ### FORMAT:
   - ERROR ( < number > )
     - Action: Returns error status values.
-      - If <number> is 0, returns the line number to GOTO when an error occures.
+      - If < number > is 0, returns the line number to GOTO when an error occures.
         - Returns 0 if no error trapping is disabled.
-      - If <number> is 1, returns the number corresponding to the last error.
+      - If < number > is 1, returns the number corresponding to the last error.
         - - Returns 0 if no error has occured.
-      - If <number> is 2, returns the line number the last error occured on.
+      - If < number > is 2, returns the line number the last error occured on.
         - Returns 0 if no error has occured.
         - Returns 65535 if the error occured in immediate mode.
-      - If <number> is 3, returns the number corresponding to the last DOS error.
+      - If < number > is 3, returns the number corresponding to the last DOS error.
         - Returns 0 if the last DOS command completed successfully.
 
 ### Basic Error Numbers

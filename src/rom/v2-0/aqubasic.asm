@@ -1187,7 +1187,7 @@ no_debug_msg:
 ;;; ## DOKE
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ;;; ### FORMAT:
-;;;  - DOKE < address >, < word >, [, <word> ...]
+;;;  - DOKE < address >, < word >, [, < word > ...]
 ;;;    - Action: Writes < word > to memory starting at < address >.
 ;;; ### EXAMPLES:
 ;;; ` DOKE 14340, 1382 `
