@@ -154,7 +154,7 @@ ST_COPY:
 ;;;    - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
 ;;;  - FRE ( 3 ) 
 ;;;    - Action: Returns the start of protected memory (one more then the highest value allowed for CLEAR).
-;;;  - FRE ( <string> )
+;;;  - FRE ( < string > )
 ;;;    - Action: Forces a garbage collection before returning the number of free bytes of string space. 
 ;;;      - BASIC will not initiate garbage collection until all free memory has been used up. 
 ;;;      - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
