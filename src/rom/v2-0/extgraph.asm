@@ -473,7 +473,7 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;;;   - CIRCLE(< xcenter >, < ycenter >), < radius >[,[< color >][,[< start >],[< end >][,< aspect >]]]
 ;;;     - Action: Draws circle, elipse, or arc with radius < radius > and centered at < xcenter >, < ycenter >.
 ;;;       - If < color > is not specified, the screen colors are maintained. 
-;;;       - The < start > and <end> angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end. 
+;;;       - The < start > and < end > angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end. 
 ;;;         - If start or end is negative, the ellipse is connected to the center point with a line, and the angles are treated as if they are positive (note that this is different from adding 2π).
 ;;;         - The start angle may be less than the end angle.
 ;;;       - The option < aspect > describes the ratio of the x radius to the y radius (x:y). 

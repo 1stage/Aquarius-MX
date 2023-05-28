@@ -556,7 +556,7 @@ ERSLOP: rst     COMPAR          ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ;;;    - Action: Returns a string of length < length > whose characters are all r the first character of < string >.
 ;;; ### EXAMPLES:
 ;;; ```
-;;;   10 X$ = STRING$ {10 , 45) 
+;;;   10 X$ = STRING$ (10 , 45) 
 ;;;   20 PRINT X$ "MONTHLY REPORT" X$ 
 ;;;   RUN
 ;;;   ----------MONTHLY REPORT----------
