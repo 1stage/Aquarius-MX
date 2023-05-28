@@ -364,26 +364,36 @@ RTC_STR_TO_DTM    jp  str_to_dtm
 RTC_DTM_TO_FTS    jp  dtm_to_fts
 RTC_FTS_TO_DTM    jp  fts_to_dtm
 
+;---------------------------------------------------------------------
+;                          UDF Hook Routine
+;---------------------------------------------------------------------
+HOOKBASE  = $C100  ; Start of Hook Table, must be on a page boundary
+    include "udfhook.asm"
+
+;---------------------------------------------------------------------
+;                Dispatch and Keyword Tables and Routines
+;---------------------------------------------------------------------
+    include "dispatch.asm" 
 
 ;---------------------------------------------------------------------
 ;                     splash screen / boot menu
 ;---------------------------------------------------------------------
-   include "splash.asm"
+    include "splash.asm"
 
 ;---------------------------------------------------------------------
 ;                     windowed text functions
 ;---------------------------------------------------------------------
-   include "windows.asm"
+    include "windows.asm"
 
 ;---------------------------------------------------------------------
 ;                         ROM loader
 ;---------------------------------------------------------------------
-   include "load_rom.asm"
+    include "load_rom.asm"
 
 ;---------------------------------------------------------------------
 ;                     disk file selector
 ;---------------------------------------------------------------------
-   include "filerequest.asm"
+    include "filerequest.asm"
 
 ;---------------------------------------------------------------------
 ;                      USB Disk Driver
@@ -540,67 +550,6 @@ ROM_ENTRY:
     jp      SPLASH
 
 
-;------------------------------------------------------
-;             UDF Hook Service Routine
-;------------------------------------------------------
-; This address is stored at $3806-7, and is called by
-; every RST $30. It allows us to hook into the system
-; ROM in several places (anywhere a RST $30 is located).
-; Total execution time 92 cycles.
-
-ALTHOOK:
-    ex      af,af'              ; save AF
-    exx                         ; save BC,DE,HL
-    pop     hl                  ; get hook return address
-    ld      a,(hl)              ; A = byte (RST $30 parameter)
-    add     a,a                 ; A * 2 to index WORD size vectors
-    ld      l,a
-    ld      h,$E1
-    ld      a,(hl)
-    ld      iyl,a
-    inc     hl
-    ld      a,(hl)
-    ld      iyh,a
-    exx                         ; Restore BC,DE,HL
-    ex      af,af'              ; Restore AF
-    jp      (iy)
-
-
-; fill with NOP to $E100
-     assert !($E100 < $) ; Overran Hook Table!!!
-     dc  $E100-$,$00
-
-HOOKTABLE:                    ; ## caller   addr  performing function
-    dw      ERRORX            ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      HOOK1+1           ;  1 ERRCRD   03E0 
-    dw      AQMAIN            ;  2 READY    0402  BASIC command line (immediate mode)
-    dw      HOOK3+1           ;  3 EDENT    0428  Tokenize Entered Line  
-    dw      HOOK4+1           ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program
-    dw      LINKLINES         ;  5 LINKER   0485  Update BASIC Program Line Links
-    dw      HOOK6+1           ;  6 PRINT    07BC  Execute PRINT Statement
-    dw      HOOK7+1           ;  7 FINPRT   0866  End of PRINT Statement
-    dw      HOOK8+1           ;  8 TRMNOK
-    dw      EVAL_EXT          ;  9 EVAL     09FD  Evaluate Number or String
-    dw      REPLCMD           ; 10 NOTGOS   0536  Converting Keyword to Token
-    dw      CLEARX            ; 11 CLEAR    0CCD  Execute CLEAR Statement
-    dw      SCRTCX            ; 12 SCRTCH   0BBE  Execute NEW Statement
-    dw      HOOK13+1          ; 13 OUTDO    198A  Execute OUTCHR
-    dw      ATN1              ; 14 ATN      1985  ATN() function
-    dw      DEFX              ; 15 DEF      0B3B  DEF statement
-    dw      FNDOEX            ; 16 FNDOER   0B40  FNxx() call
-    dw      HOOK17+1          ; 17 LPTOUT   1AE8  Print Character to Printer
-    dw      HOOK18+1          ; 18 INCHRH   1E7E  Read Character from Keyboard
-    dw      HOOK19+1          ; 19 TTYCHR   1D72  Print Character to Screen
-    dw      HOOK20+1          ; 20 CLOAD    1C2C  Load File from Tape
-    dw      HOOK21+1          ; 21 CSAVE    1C09  Save File to Tape
-    dw      PEXPAND           ; 22 LISPRT   0598  expanding a token
-    dw      NEXTSTMT          ; 23 GONE2    064B  interpreting next BASIC statement
-    dw      RUNPROG           ; 24 RUN      06BE  starting BASIC program
-    dw      ONGOTX            ; 25 ONGOTO   0780  ON statement
-    dw      HOOK26+1          ; 26 INPUT    0893  Execute INPUT Statement 
-    dw      AQFUNCTION        ; 27 ISFUN    0A5F  Executing a Function
-    dw      HOOK28+1          ; 28 DATBK    08F1
-
 
 ; CTRL-C pressed in boot menu
 WARMBOOT:
@@ -701,7 +650,7 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    ld      hl,ALTHOOK         ; RST $30 Vector (our UDF service routine)
+    ld      hl,FASTHOOK         ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     call    SHOWCOPYRIGHT      ; Show our copyright message
@@ -709,105 +658,6 @@ MEMSIZE:
     jp      READY              ; Jump to OKMAIN (BASIC command line)
 
 
-; Our Commands and Functions
-;
-; - New commands get added to the TOP of the commands list,
-;   and the BTOKEN value DECREMENTS as commands are added.
-;   They also get added at the TOP of the TBLJMPS list.
-;
-BTOKEN       equ $cc                ; our first token number
-TBLCMDS:
-; Commands list
-    
-;other keywords
-    db      $80 + 'P', "UT"         ; $cc - Put Pixels
-    db      $80 + 'G', "ET"         ; $cd - Get Pixels
-    db      $80 + 'D', "RAW"        ; $ce - Graphic Macro Language
-    db      $80 + 'C', "IRCLE"      ; $cf - Draw Circle
-    db      $80 + 'L', "INE"        ; $d0 - Draw Line
-    db      $80 + 'S', "WAP"        ; $d1 - Double Poke
-    db      $80 + 'D', "OKE"        ; $d2 - Double Poke
-    db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
-    db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line (advanced editor)
-    db      $80 + 'C', "LS"         ; $d5 - Clear screen
-    db      $80 + 'L', "OCATE"      ; $d6 - Move cursor to position on screen
-    db      $80 + 'O', "UT"         ; $d7 - Read data from serial device
-    db      $80 + 'P', "SG"         ; $d8 - Send data to Programmable Sound Generator
-    db      $80 + 'D', "EBUG"       ; $d9 - Run debugger
-    db      $80 + 'C', "ALL"        ; $da - Call routine in memory
-    db      $80 + 'L', "OAD"        ; $db - Load file
-    db      $80 + 'S', "AVE"        ; $dc - Save file
-    db      $80 + 'D', "IR"         ; $dd - Directory, full listing
-    db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
-    db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
-    db      $80 + 'C', "D"          ; $e0 - Change directory
-SDTMTK  = $D3
-CDTK    = $E0
-
-; - New functions get added to the END of the functions list.
-;   They also get added at the END of the TBLFNJP list.
-;
-; Functions list
-
-    db      $80 + 'I', "N"          ; $e1 - Input function
-    db      $80 + 'J', "OY"         ; $e2 - Joystick function
-    db      $80 + 'H', "EX$"        ; $e3 - Hex value function
-    db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
-    db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
-    db      $80 + 'D', "EC"         ; $e6 - Decimal value function
-    db      $80 + 'K', "EY"         ; $e7 - Key function
-    db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
-    db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
-    db      $80 + 'S', "TRING"      ; $ea - Create String function
-    db      $80 + 'X', "OR"         ; $eb - Bitwise XOR
-    db      $80                     ; End of table marker
-ERRTK     = $E9
-STRINGTK  = $EA
-
-TBLJMPS:
-    dw      ST_PUT
-    dw      ST_GET
-    dw      ST_DRAW
-    dw      ST_CIRCLE
-    dw      ST_LINE
-    dw      ST_SWAP
-    dw      ST_DOKE
-    dw      ST_SDTM
-    dw      ST_EDIT
-    dw      ST_CLS
-    dw      ST_LOCATE
-    dw      ST_OUT
-    dw      ST_PSG
-    dw      ST_DEBUG
-    dw      ST_CALL
-    dw      ST_LOAD
-    dw      ST_SAVE
-    dw      ST_DIR
-    dw      ST_CAT
-    dw      ST_DEL
-    dw      ST_CD
-TBLJEND:
-
-BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
-
-TBLFNJP:
-    dw      FN_IN
-    dw      FN_JOY
-    dw      FN_HEX
-    dw      FN_VER
-    dw      FN_DTM
-    dw      FN_DEC
-    dw      FN_KEY
-    dw      FN_DEEK
-    dw      FN_ERR
-    dw      FN_STRING
-    dw      FN_XOR
-TBLFEND:
-
-FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
-
-firstf equ BTOKEN+BCOUNT          ; token number of first function in table
-lastf  equ firstf+FCOUNT-1        ; token number of last function in table
 
 
 ;--------------------------------------------------------------------
@@ -1002,78 +852,6 @@ AQFUNCTION:
     exx
     rst     CHRGET
     jp      (iy)                ; and jump to it
-
-;-------------------------------------
-;         Replace Command
-;-------------------------------------
-; Called from $0536 by RST $30,$0a
-; Replaces keyword with token.
-
-REPLCMD:
-    ld      a,b                ; A = current index
-    cp      $cb                ; if < $CB then keyword was found in BASIC table
-    ld      IX,HOOK10+1        ;   CRUNCX will also return here when done
-    push    IX
-    ret     nz                 ;   so return
-;     pop     bc                 ; get return address from stack
-;     pop     af                 ; restore AF
-;     pop     hl                 ; restore HL
-;     push    bc                 ; put return address back onto stack
-    ex      de,hl              ; HL = Line buffer
-    ld      de,TBLCMDS-1       ; DE = our keyword table
-    ld      b,BTOKEN-1         ; B = our first token
-    jp      CRUNCX             ; continue searching using our keyword table
-
-;-------------------------------------
-;             PEXPAND
-;-------------------------------------
-; Called from $0598 by RST $30,$16
-; Expand token to keyword
-
-PEXPAND:
-    cp      BTOKEN              ; is it one of our tokens?
-    jr      nc,PEXPBAB          ; yes, expand it
-    jp      HOOK22+1
-
-PEXPBAB:
-    sub     BTOKEN - 1
-    ld      c,a                 ; C = offset to AquBASIC command
-    ld      de,TBLCMDS          ; DE = table of AquBASIC command names
-    jp      $05a8               ; Print keyword indexed by C
-
-
-;-------------------------------------
-;            NEXTSTMT
-;-------------------------------------
-; Called from $064b by RST 30
-; with parameter $17
-
-
-NEXTSTMT:
-    jr      nc,BASTMT           ; if NC then process BASIC statement
-    push    af                  ; Save Flags
-    cp      POKETK-$80          ; If POKE Token
-    jp      z,ST_POKE           ;   Do Extended POKE
-    cp      COPYTK-$80          ; If COPY Token
-    jp      z,ST_COPY           ;   Do Extended POKE
-    cp      PSETTK-$80          ; If PSET
-    jp      z,ST_PSET           ;   Do Extended BASIC PSET
-    cp      PRESTK-$80          ; If PRESET
-    jp      z,ST_PRESET         ;   Do Extended BASIC PRESET
-    pop     af                  ; Else
-    jp      HOOK23+1
-
-BASTMT:
-    sub     (BTOKEN)-$80
-    jp      c,SNERR             ; SN error if < our 1st BASIC command token
-    cp      BCOUNT              ; Count number of commands
-    jp      nc,SNERR            ; SN error if > our last BASIC command token
-    rlca                        ; A*2 indexing WORDs
-    ld      c,a
-    ld      b,$00               ; BC = index
-    ex      de,hl
-    ld      hl,TBLJMPS          ; HL = our command jump table
-    jp      GONE5               ; Continue with NEXTSTMT
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -1839,24 +1617,6 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
 ;ST_EDIT
     include "edit.asm"
 
-;------------------------------------------------------------------------------
-;     Redraw DateTime at bottom of SPLASH screen
-;------------------------------------------------------------------------------
-;
-
-SPL_DATETIME:
-    ld      bc,RTC_SHADOW
-    ld      hl,DTM_BUFFER
-    call    rtc_read
-    ld      de,DTM_STRING
-    call    dtm_to_fmt    ;Convert to Formatted String   
-    ld      d,2                
-    ld      e,16              
-    call    WinSetCursor
-    ld      hl,DTM_STRING
-    call    WinPrtStr
-    ret    
-    
 ;------------------------------------------------------------------------------
 ;;; ---
 ;;; ## SDTM

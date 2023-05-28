@@ -237,9 +237,13 @@ GETINT  = $1AD0   ; Parse an Integer
 NORMAL  = $12B0   ; Normalize Floating Point Accumulator
 ZERO    = $12C3   ; Zero FAC
 
-MOVFR   = $1523   ; Move Number fron Registers to  Floating Point Accumulator
+MOVFM   = $1520   ; Move Number from (HL) to Floating Point Accumulator
+MOVFR   = $1523   ; Move Number fron Registers to Floating Point Accumulator
+MOVRF   = $152E   ; Move Number from Floating Point Accumulator to Registers
+MOVRM   = $1531   ; Move Number from (HL) to Registers
 MOVMF   = $153A   ; Move Number from Floating Point Accumulator to (HL)
-MOVE    = $153D   ; Move Number from (DE) TO (HL)
+MOVE    = $153D   ; Move Number from (DE) to (HL)
+MOVE1   = $153F   ; Move B bytes fro (DE) to (HL)
 
 EVAL    = $09FD   ; Evaluate Variable, Constant, Function Call
 ISVAR   = $0A4E   ; Evaluate Variable 

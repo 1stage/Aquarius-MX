@@ -80,6 +80,12 @@ MAKINT: push    hl                ; Save Registers
         pop     hl
         ret
 
+ST_PUT:     ;E3F6
+      jp        FCERR
+
+ST_GET:     ;E3FA
+      jp        FCERR
+
 ; E3FE
 ; Parse Intger
 GETIN2: call    FRMEVL            ; EVALUATE A FORMULA
@@ -852,15 +858,452 @@ CMPONE: ld      bc,$8100          ; Compare FAC with 1.0
         dec     a
         ret
       
-ST_DRAW:    ;EB28
-      jp        FCERR
-      
-ST_PUT:     ;E3F6
-      jp        FCERR
+; EB28
+ST_DRAW:    
+        ld      de,DRWTAB         ; DISPATCH TABLE FOR GML
+        xor     a                 ; CLEAR OUT DRAW FLAGS
+        ld      (DRWFLG),a  
+        jp      MACLNG  
+; EB32  
+DRWTAB: db      'U'+128           ; UP
+        dw      DRUP  
+        db      'D'+128           ; DOWN
+        dw      DRDOWN  
+        db      'L'+128           ; LEFT
+        dw      DRLEFT  
+        db      'R'+128           ; RIGHT
+        dw      DRIGHT  
+        db      'M'               ; MOVE
+        dw      DMOVE 
+        db      'E'+128           ; -,-
+        dw      DRWEEE  
+        db      'F'+128           ; +,-
+        dw      DRWFFF  
+        db      'G'+128           ; +,+
+        dw      DRWGGG  
+        db      'H'+128           ; -,+
+        dw      DRWHHH  
+        db      'A'+128           ; ANGLE COMMAND
+        dw      DANGLE  
+        db      'B'               ; MOVE WITHOUT PLOTTING
+        dw      DNOPLT  
+        db      'N'               ; DON'T CHANGE CURRENT COORDS
+        dw      DNOMOV  
+        db      'X'               ; EXECUTE STRING
+        dw      MCLXEQ  
+        db      'C'+128           ; COLOR
+        dw      DCOLR 
+        db      'S'+128           ; SCALE
+        dw      DSCALE  
+        db      0                 ; END OF TABLE
+  
+DRUP:   call    NEGDE             ; MOVE +0,-Y
+DRDOWN: ld      bc,0              ; MOVE +0,+Y, DX=0
+        jp      DOMOVR            ; TREAT AS RELATIVE MOVE
+;   
+DRLEFT: call    NEGDE             ; MOVE -X,+0
+DRIGHT: ld      b,d               ; MOVE +X,+0
+        ld      c,e               ; [BC]=VALUE
+        ld      de,0              ; DY=0
+        jp      DOMOVR            ; TREAT AS RELATIVE MOVE
+  
+DRWHHH: call    NEGDE             ; MOVE -X,-Y
+DRWFFF: ld      b,d               ; MOVE +X,+Y
+        ld      c,e 
+        jp      DOMOVR  
+  
+DRWEEE: ld      b,d               ; MOVE +X,-Y
+        ld      c,e 
+DRWHHC: call    NEGDE 
+        jp      DOMOVR  
+  
+DRWGGG: call    NEGDE             ; MOVE -X,+Y
+        ld      b,d 
+        ld      c,e 
+        jp      DRWHHC            ; MAKE DY POSITIVE & GO
+  
+DMOVE:  call    FETCHZ            ; GET NEXT CHAR AFTER COMMA
+        ld      b,0               ; ASSUME RELATIVE
+        cp      '+'               ; IF "+" OR "-" THEN RELATIVE
+        jp      z,MOVREL  
+        cp      '-' 
+        jp      z,MOVREL  
+        inc     b                 ; NON-Z TO FLAG ABSOLUTE
+MOVREL: ld      a,b 
+        push    af                ; SAVE ABS/REL FLAG ON STACK
+        call    DECFET            ; BACK UP SO VALSCN WILL SEE "-"
+        call    VALSCN            ; GET X VALUE
+        push    de                ; SAVE IT
+        call    FETCHZ            ; NOW CHECK FOR COMMA
+        cp      ','               ; COMMA?
+        jp      nz,FCERR  
+        call    VALSCN            ; GET Y VALUE IN D
+        pop     bc                ; GET BACK X VALUE
+        pop     af                ; GET ABS/REL FLAG
+        or      a 
+        jp      nz,DRWABS         ; NZ - ABSOLUTE
+  
+DOMOVR: call    DSCLDE            ; ADJUST Y OFFSET BY SCALE
+        push    de                ; SAVE Y OFFSET
+        ld      d,b               ; GET X INTO [DE]
+        ld      e,c 
+        call    DSCLDE            ; GO SCALE IT.
+        ex      de,hl             ; GET ADJUSTED X INTO [HL]
+        pop     de                ; GET ADJUSTED Y INTO [DE]
+        xor     a 
+        ld      (CSCLXY),a  
+        ld      a,(DRWANG)        ; GET ANGLE BYTE
+        rra                       ; LOW BIT TO CARRY
+        jr      nc,ANGEVN         ; ANGLE IS EVEN - DON'T SWAP X AND Y
+        push    af                ; SAVE THIS BYTE
+        push    de                ; SAVE DY
+        push    hl                ; SAVE DX
+        call    GTASPC            ; GO GET SCREEN ASPECT RATIO
+        ld      a,h 
+        or      a                 ; IS ASPECT RATIO GREATER THAN ONE?
+        jr      z,ASPLS0          ; BRIF GOOD ASPECT RATIO
+        ld      a,1 
+        ld      (CSCLXY),a  
+ASPLS0: ex      de,hl             ; GET ASPECT RATIO INTO [C] FOR GOSCAL
+        ld      c,l 
+        pop     hl                ; GET BACK DX
+        ld      a,(CSCLXY)  
+        or      a 
+        jr      z,ASPLS1          ;branch if aspect ratio less 1.0
+        ex      (sp),hl           ; XTHL
+ASPLS1: ex      de,hl             ; [HL]=DY, save DX
+        push    hl                ; SAVE 1/ASPECT
+        call    GOSCAL            ; SCALE DELTA X BY ASPECT RATIO
+        pop     bc                ; GET BACK 1/ASPECT RATIO
+        pop     hl                ; GET DY
+        push    de                ; SAVE SCALED DX
+        ex      de,hl             ; DY TO [DE] FOR GOSCAL
+        ld      hl,0  
+DMULP:  add     hl,de             ; MULTIPLY [DE] BY HI BYTE OF 1/ASPECT
+        djnz    DMULP 
+        push    hl                ; SAVE PARTIAL RESULT
+        call    GOSCAL            ; MULTIPLY [DE] BY LOW BYTE
+        pop     hl                ; GET BACK PARTIAL RESULT
+        add     hl,de             ; [HL]=Y * 1/ASPECT
+        pop     de                ; GET BACK SCALED Y
+        ld      a,(CSCLXY)  
+        or      a 
+        jr      z,ASLSS1          ; branch if aspect ratio less than 1
+        ex      de,hl 
+ASLSS1: call    NEGDE             ; ALWAYS NEGATE NEW DY
+        pop     af                ; GET BACK SHIFTED ANGLE
+ANGEVN: rra                       ; TEST SECOND BIT
+        jp      nc,ANGPOS         ; DON'T NEGATE COORDS IF NOT SET
+        call    NEGHL 
+        call    NEGDE             ; NEGATE BOTH DELTAS
+ANGPOS: call    GTABSC            ; GO CALC TRUE COORDINATES
 
-ST_GET:     ;E3F6
-      jp        FCERR
+DRWABS: ld      a,(DRWFLG)        ; SEE WHETHER WE PLOT OR NOT
+        add     a,a               ; CHECK HI BIT
+        jp      c,DSTPOS          ; JUST SET POSITION.
+        push    af                ; SAVE THIS FLAG
+        push    bc                ; SAVE X,Y COORDS
+        push    de                ; BEFORE SCALE SO REFLECT DISTANCE OFF
+        call    SCLXYX            ; SCALE IN CASE COORDS OFF SCREEN
+        call    GLINE2            
+        pop     de                
+        pop     bc                ; GET THEM BACK
+        pop     af                ; GET BACK FLAG
+DSTPOS: add     a,a               ; SEE WHETHER TO STORE COORDS
+        jp      c,DNSTOR          ; DON'T UPDATE IF B6=1
+        ex      de,hl             
+        ld      (GRPACY),hl       ; UPDATE GRAPHICS AC
+        ex      de,hl             
+        ld      h,b               
+        ld      l,c               
+        ld      (GRPACX),hl       
+DNSTOR: xor     a                 ; CLEAR SPECIAL FUNCTION FLAGS
+        ld      (DRWFLG),a        
+        ret                       
+                                  
+DNOMOV: ld      a,64              ; SET BIT SIX IN FLAG BYTE
+        jp      DSTFLG            
+                                  
+DNOPLT: ld      a,128             ; SET BIT 7
+DSTFLG: ld      hl,DRWFLG         
+        or      (hl)              
+        ld      (hl),a            ; STORE UPDATED BYTE
+        ret                       
+                                  
+DANGLE: jp      nc,NCFCER         ; ERROR IF NO ARG
+        ld      a,e               ; MAKE SURE LESS THAN 4
+        cp      4                 
+        jp      nc,NCFCER         ; ERROR IF NOT
+        ld      (DRWANG),a        
+        ret                       
+NCFCER:                           
+DSCALE: jp      nc,FCERR          ; FC ERROR IF NO ARG
+        ld      a,d               ; MAKE SURE LESS THAN 256
+        or      a                 
+        jp      nz,FCERR          
+        ld      a,e               
+        ld      (DRWSCL),a        ; STORE SCALE FACTOR
+        ret                       
+                                  
+DSCLDE: ld      a,(DRWSCL)        ; GET SCALE FACTOR
+        or      a                 ; ZERO MEANS NO SCALING
+        ret     z                 
+        ld      hl,0              
+                                  
+DSCLP:  add     hl,de             ; ADD IN [DE] SCALE TIMES
+        dec     a                 
+        jp      nz,DSCLP          
+        ex      de,hl             ; PUT IT BACK IN [DE]
+        ld      a,d               ; SEE IF VALUE IS NEGATIVE
+        add     a,a               
+        push    af                ; SAVE RESULTS OF TEST
+        jp      nc,DSCPOS         
+        dec     de                ; MAKE IT TRUNCATE DOWN
+DSCPOS: call    HLFDE             ; DIVIDE BY FOUR
+        call    HLFDE             
+        pop     af                ; SEE IF WAS NEGATIVE
+        ret     nc                
+        ld      a,d               
+        or      0C0H              
+        ld      d,a               
+        inc     de                
+        ret                       ; ALL DONE IF WAS POSITIVE
+                                  
+GOSCAL: ld      a,d               ; SEE IF NEGATIVE
+        add     a,a               
+        jp      nc,GOSC2          ; NO, MULTIPLY AS-IS
+        ld      hl,NEGD           ; NEGATE BEFORE RETURNING
+        push    hl                
+        call    NEGDE             ; MAKE POSITIVE FOR MULTIPLY
+GOSC2:  ld      a,c               ; GET SCALE FACTOR
+        jp      SCALE2            ; GET SCALE FACTOR
+                                  
+DCOLR:  jp      nc,NCFCER         ; FC ERROR IF NO ARG
+        ld      a,e               ; GO SET ATTRIBUTE
+        call    SETATR            
+        jp      c,FCERR           ; ERROR IF ILLEGAL ATTRIBUTE
+        ret
 
+;;Issue FC Error if Point is Not on Screen
+CHKRNG: push    hl                ; SAVE TXTPTR
+        call    CHKRXY            
+        jp      nc,FCERR          ; OUT OF BOUNDS - ERROR
+        pop     hl                
+        ret                       
+                                  
+MACLNG: ex      de,hl             
+        ld      (MCLTAB),hl       ; SAVE POINTER TO COMMAND TABLE
+        ex      de,hl             
+        call    FRMEVL            ; EVALUATE STRING ARGUMENT
+        push    hl                ; SAVE TXTPTR TILL DONE
+        ld      de,0              ; PUSH DUMMY ENTRY TO MARK END OF STK
+        push    de                ; DUMMY ADDR
+        push    af                ; DUMMY LENGTH
+                                  
+MCLNEW: call    FRESTR            
+        call    MOVRM             ; GET LENGTH & POINTER
+        ld      a,b               
+        or      c                 
+        jr      z,MCLOOP          ; Don't Push if addr is 0
+        ld      a,e               
+        or      a                 
+        jr      z,MCLOOP          ;  or if Len is 0...
+        push    bc                ; PUSH ADDR OF STRING
+        push    af                
+                                  
+MCLOOP: pop     af                ; GET LENGTH OFF STACK
+        ld      (MCLLEN),a        
+        pop     hl                ; GET ADDR
+        ld      a,h               
+        or      l                 ; SEE IF LAST ENTRY
+        jr      z,POPHRX          ; ALL FINISHED IF ZERO
+        ld      (MCLPTR),hl       ; SET UP POINTER
+MCLSCN: call    FETCHR            ; GET A CHAR FROM STRING
+        jr      z,MCLOOP          ; END OF STRING - SEE IF MORE ON STK
+        add     a,a               ; PUT CHAR * 2 INTO [C]
+        ld      c,a               
+        ld      hl,(MCLTAB)       ; POINT TO COMMAND TABLE
+                                  
+MSCNLP: ld      a,(hl)            ; GET CHAR FROM COMMAND TABLE
+        add     a,a               ; CHAR = CHAR * 2 (CLR HI BIT FOR CMP)
+                                  
+GOFCER: call    z,FCERR           ; END OF TABLE.
+        cp      c                 ; HAVE WE GOT IT?
+        jr      z,MISCMD          ; YES.
+        inc     hl                ; MOVE TO NEXT ENTRY
+        inc     hl                
+        inc     hl                
+        jr      MSCNLP            
+                                  
+MISCMD: ld      bc,MCLSCN         ; RETURN TO TOP OF LOOP WHEN DONE
+        push    bc                
+        ld      a,(hl)            ; SEE IF A VALUE NEEDED
+        ld      c,a               ; PASS GOTTEN CHAR IN [C]
+        add     a,a               
+        jr      nc,MNOARG         ; COMMAND DOESN'T REQUIRE ARGUMENT
+        or      a                 ; CLEAR CARRY
+        rra                       ; MAKE IT A CHAR AGAIN
+        ld      c,a               ; PUT IN [C]
+        push    bc                
+        push    hl                ; SAVE PTR INTO CMD TABLE
+        call    FETCHR            ; GET A CHAR
+        ld      de,1              ; DEFAULT ARG=1
+        jr      z,VSNAR0          
+        call    ISLETC            
+        jr      nc,VSNARG         ; NO ARG IF END OF STRING
+        call    ISLET2            ; SEE IF POSSIBLE LETTER
+        scf                       
+        jr      ISCMD3            
+                                  
+VSNARG: call    DECFET            ; PUT CHAR BACK INTO STRING
+VSNAR0: or      a                 ; CLEAR CARRY
+ISCMD3: pop     hl                
+        pop     bc                ; GET BACK COMMAND CHAR
+MNOARG: inc     hl                ; POINT TO DISPATCH ADDR
+        ld      a,(hl)            ; GET Address INTO HL
+        inc     hl                
+        ld      h,(hl)            
+        ld      l,a               
+        jp      (hl)              ; DISPATCH
+                                  
+FETCHZ: call    FETCHR            ; GET A CHAR FROM STRING
+        jr      z,GOFCER          ; GIVE ERROR IF END OF LINE
+        ret                       
+                                  
+FETCHR: push    hl                
+FETCH2: ld      hl,MCLLEN         ; POINT TO STRING LENGTH
+        ld      a,(hl)            
+        or      a                 
+        jr      z,POPHRX          ; RETURN Z=0 IF END OF STRING
+        dec     (hl)              ; UPDATE COUNT FOR NEXT TIME
+        ld      hl,(MCLPTR)       ; GET PTR TO STRING
+        ld      a,(hl)            ; GET CHARACTER FROM STRING
+        inc     hl                ; UPDATE PTR FOR NEXT TIME
+        ld      (MCLPTR),hl       
+        cp      ' '               ;  SKIP SPACES
+        jr      z,FETCH2          
+        cp      96                ; CONVERT LOWER CASE TO UPPER
+        jr      c,POPHRX          
+        sub     32                ; DO CONVERSION
+POPHRX: pop     hl                
+        ret                       
+; ED40                            
+DECFET: push    hl                
+        ld      hl,MCLLEN         ; INCREMENT LENGTH
+        inc     (hl)              
+        ld      hl,(MCLPTR)       ; BACK UP POINTER
+        dec     hl
+        ld      (MCLPTR),hl
+        pop     hl
+        ret
+; ED4E
+VALSCN: call    FETCHZ            ; GET FIRST CHAR OF ARGUMENT
+ISLET2: cp      '='               ; NUMERIC?
+        jr      z,VARGET          ; No, Evaluate Variable
+        cp      '+'               ; PLUS SIGN?
+        jr      z,VALSCN          ; THEN SKIP IT
+        cp      '-'               ; NEGATIVE VALUE?
+        jr      nz,VALSC2         
+        ld      de,NEGD           ; IF SO, NEGATE BEFORE RETURNING
+        push    de                
+        jr      VALSCN            ; EAT THE "-"
+VALSC2: ld      de,0              
+        ld      b,4               
+; ED68                            
+NUMLOP: cp      ','               ; COMMA
+        jr      z,DECFET          ; YES, BACK UP AND RETURN
+        cp      ';'               ; SEMICOLON?
+        ret     z                 ; YES, JUST RETURN
+        cp      '9'+1             ; NOW SEE IF ITS A DIGIT
+        jr      nc,DECFET         ; IF NOT, BACK UP AND RETURN
+        cp      '0'               
+        jr      c,DECFET          
+        ld      l,e               
+        ld      h,d               
+        add     hl,hl             
+        add     hl,hl             
+        add     hl,de             
+        add     hl,hl             
+        sub     '0'               ; ADD IN THE DIGIT
+        ld      e,a               
+        ld      d,0               
+        add     hl,de             ; VALUE SHOULD BE IN [DE]
+        ex      de,hl             ; GET NEXT CHAR
+        call    FETCHR  
+        ret     z 
+        dec     b 
+        jr      nz,NUMLOP 
+        cp      '0' 
+        jr      c,NUMLOP  
+        cp      '9'+1 
+        jr      nc,NUMLOP 
+        jr      SCNFC 
+; ED95  
+SCNVAR: call    FETCHZ            ; MAKE SURE FIRST CHAR IS LETTER
+        ld      de,BUF            ; PLACE TO COPY NAME FOR PTRGET
+        push    de                ; SAVE ADDR OF BUF FOR "ISVAR"
+        ld      b,32              ; COPY MAX OF 32 CHARACTERS
+        call    ISLETC            ; MAKE SURE IT'S A LETTER
+        jr      c,SCNFC           ; FC ERROR IF NOT LETTER
+SCNVLP: ld      (de),a            ; STORE CHAR IN BUF
+        inc     de  
+        cp      ';'               ; A SEMICOLON?
+        jr      z,SCNV2           ; YES - END OF VARIABLE NAME
+        call    FETCHZ            ; GET NEXT CHAR
+        dec     b 
+        jr      nz,SCNVLP 
+SCNFC:  call    FCERR             ; ERROR - VARIABLE TOO LONG
+SCNV2:  pop     hl                ; GET PTR TO BUF
+        jp      ISVAR             ; GO GET ITS VALUE
+; EDB6                              
+VARGET: call    SCNVAR            ; SCAN & EVALUATE VARIABLE
+        call    FRCINX            ; MAKE IT AN INTEGER
+        ex      de,hl             ; IN [DE]
+        ret 
+; EDBE  
+MCLXEQ: call    SCNVAR            ; SCAN VARIABLE NAME
+        ld      a,(MCLLEN)        ; SAVE CURRENT STRING POS & LENGTH
+        ld      hl,(MCLPTR) 
+        ex      (sp),hl           ;PUSH MCLPTR
+        push    af  
+        ld      c,2               ;MAKE SURE OF ROOM ON STACK
+        call    GETSTK  
+        jp      MCLNEW  
+; EDD1  
+NEGD:   xor     a                 ;;[DE] = -[DE]
+        sub     e
+        ld      e,a
+        sbc     a,d
+        sub     e
+        ld      d,a
+        ret
+; EDD8
+;;Move Cursor to Column [H], Row [L]
+MOVEIT: push    af
+        push    hl              ;;Save Location
+        exx
+        ld      hl,(CURRAM)     ;;Get Current Cursor Address
+        ld      a,(CURCHR)      ;;Get Character Under Cursor
+        ld      (hl),a          ;;and Put Back into Screen Location
+        pop     hl              ;;Restore Location
+        ld      a,l             ;;Address Offset = Row * 5
+        add     a,a
+        add     a,a
+        add     a,l
+        ex      de,hl
+        ld      e,d             ;;[DE] = Column
+        ld      d,0
+        ld      h,d             ;;[HL] = Offset
+        ld      l,a
+        ld      a,e             ;;[A] = Column - 1
+        dec     a
+        add     hl,hl           ;;Offset = Offset * 8 (Row * 40)
+        add     hl,hl
+        add     hl,hl
+        add     hl,de           ;;Offset = Offset + Column
+        ld      de,CHRRAM       ;;Get Screen Address
+        add     hl,de           ;;and Add Offset
+        jp      TTYFIS          ;;Save Position and Finish
 ;EDFA
 GTASPC: ld      de,204          ; Aspect Ration = 318:204 (6.25:4)
         ld      hl,318
@@ -959,7 +1402,13 @@ MAPXYA: add     hl,bc             ; Add XPOS to Screen Address
         pop     de                ; Get YPOS back into DE
         pop     hl                ; Restore HL
         ret                       
-  
+; EC9D
+; SEE IF LOCATION OFF SCREEN
+CHKRXY: ld       a,23
+        ld       (GYMAX),a       ;;Mex Y = 23 Rows
+        ld       a,39
+        ld       (GXMAX),a       ;;Mac X = 39 Coumns
+        jr       CMPGMY
 ; EEB6  
 ; SEE IF POINT OFF SCREEN 
 SCLXYX: ld      a,71              
