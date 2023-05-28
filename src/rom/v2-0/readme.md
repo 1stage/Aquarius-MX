@@ -433,6 +433,24 @@ Error Status
 
 
 ---
+## FRE (Extended)
+Read from Memory
+### FORMAT:
+ - FRE ( 0 )
+   - Action: Returns the number of bytes in memory not being used by BASlC.
+ - FRE ( 1 )
+   - Action: Returns  the total size of string space (as set by the first argument of CLEAR).
+ - FRE ( 2 )
+   - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
+ - FRE ( 3 )
+   - Action: Returns the start of protected memory (one more then the highest value allowed for CLEAR).
+ - FRE ( < string > )
+   - Action: Forces a garbage collection before returning the number of free bytes of string space.
+     - BASIC will not initiate garbage collection until all free memory has been used up.
+     - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
+  - Any other argument returns an FC error.
+
+---
 ## HEX$
 Integer to hexadecimal conversion
 ### FORMAT:
