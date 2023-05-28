@@ -80,11 +80,12 @@ MAKINT: push    hl                ; Save Registers
         pop     hl
         ret
 
-ST_PUT:     ;E3F6
-      jp        FCERR
-
-ST_GET:     ;E3FA
-      jp        FCERR
+;E3F6
+ST_PUT: ld      a,1               ;;Mode = GET
+        jr      GGPUTG
+;E3FA
+ST_GET: xor     a                 ;;Mode = PUT
+GGPUTG: jp      GPUTG
 
 ; E3FE
 ; Parse Intger
@@ -227,12 +228,12 @@ XCHGX:  push    hl
 ;;; ## LINE
 ;;; Draw line or box on screen.
 ;;; ### FORMAT:
-;;;   - LINE [ (<x-coord>,<y-coord>) ] - (<x-coord>,<y-coord>) [ ,[ <color> ] [,B[F] ]
+;;;   - LINE [ (< x-coord >,< y-coord >) ] - ( <x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
 ;;;     - Action: Draws line from the first specified point to the second specified point.
-;;;       - If the first (<x-coord>,<y-coord>) is ommited, the line starts at the last referenced point.
+;;;       - If the first (< x-coord >,< y-coord >) is ommited, the line starts at the last referenced point.
 ;;;       - B (box) draws a box with the specified points at opposite corners.
 ;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
-;;;       - If <color> is not specified, two commas must be used before B or BF
+;;;       - If <color> is not specified, the current screen colors are maintained and two commas must be used before B or BF
 ;;; ### EXAMPLES:
 ;;; ` LINE (0,36)-(79,36) `
 ;;; > Draws a horizontal line which divides the screen in half from top to bottom.
@@ -454,15 +455,19 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;E78B
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## LINE
+;;; ## CIRCLE
 ;;; Draw line or box on screen.
 ;;; ### FORMAT:
-;;;   - CIRCLE(<xcenter>, <ycenter>), <radius>[,[<color>][,[<start>],[<end>][,<aspect>]]]
-;;;     - Action: Draws line from the first specified point to the second specified point.
-;;;       - If the first (<x-coord>,<y-coord>) is ommited, the line starts at the last referenced point.
-;;;       - B (box) draws a box with the specified points at opposite corners.
-;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
-;;;       - If <color> is not specified, two commas must be used before B or BF
+;;;   - CIRCLE(< xcenter >, < ycenter >), < radius >[,[< color >][,[< start >],[< end >][,< aspect >]]]
+;;;     - Action: Draws circle, elipse, or arc with radius < radius > and centered at < xcenter >, < ycenter >.
+;;;       - If < color > is not specified, the screen colors are maintained. 
+;;;       - The < start > and <end> angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end. 
+;;;         - If start or end is negative, the ellipse is connected to the center point with a line, and the angles are treated as if they are positive (note that this is different from adding 2π).
+;;;         - The start angle may be less than the end angle.
+;;;       - The option < aspect > describes the ratio of the x radius to the y radius (x:y). 
+;;;         - The default aspect ratio gives a visual circle, assuming a standard monitor screen aspect ratio of 4:3. 
+;;;         - If the aspect ratio is less than 1, then the radius is given in x-pixels. If it is greater than 1, the radius is given in y-pixels. 
+;;;         - In many cases, an aspect ratio of 1 gives better ellipses. This also causes the ellipse to be drawn faster. 
 ;;; ### EXAMPLES:
 ST_CIRCLE:  
         call    SCAN1             ; GET (X,Y) OF CENTER INTO GRPACX,Y
@@ -717,7 +722,7 @@ CBTWEN: ld      a,(CPLOTF)        ; SEE WHETHER PLOTTING BETWEENS OR NOT
 GCPLFN: pop     de                ; CLEAN UP STACK
         pop     hl  
         jp      CPLFIN  
-  
+
 CPLTIT: pop     de                ; GET X & Y OFFSETS
         pop     hl  
         call    GTABSC            ; CALC TRUE COORDINATE OF POINT
@@ -804,7 +809,7 @@ SCAL2L: add     hl,hl             ; [HL] = [HL] * 2
 NOCARY: dec     b                 ; Countdown
         jp      nz,SCAL2L         ;   and Loop
         ret
-
+; CGTCNT
 ; PARSE THE BEGIN AND END ANGLES
 CGTCNT: dec     hl
         rst     CHRGET            ; GET CURRENT CHAR
@@ -851,14 +856,74 @@ CGTC2:  ld      bc,$7E22          ; LOAD REGS WITH 1/2*PI
         pop     de                ; GET BACK TXTPTR
         ex      de,hl             
         ret                       
-                                  
+; EA04                                  
 CMPONE: ld      bc,$8100          ; Compare FAC with 1.0
         ld      de,$0000
         call    FCOMP
         dec     a
         ret
+; EA0F
+GPUTG:  jp      FCERR
       
 ; EB28
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## DRAW
+;;; Draws a figure.
+;;; ### FORMAT:
+;;;   - DRAW <string expression>
+;;;     - Action: The DRAW statement combines most of the capabilities of the other graphics statements into an object definition language called Graphics Macro Language (GML). A GML command is a single character within a string, optionally followed by one or more arguments.
+;;; #### Commands:
+;;; Each of the movement commands begins movement from the current graphics position. 
+;;;  - This is usually the coordinate of the last graphics point plotted with another GML command, LINE, or PSET. 
+;;;  - The current position defaults to upper right hand corner of the screen (0,0) when a program is run. 
+;;;  - Movement commands move for a distance of scale factor *n, where the default for n is 1; thus, they move one point if n is omitted and the default scale factor is used.
+;;; | Command  | Action
+;;; |    Un    | Move up
+;;; |    Dn    | Move down
+;;; |    Ln    | Move left
+;;; |    Rn    | Move right
+;;; |    En    | Move diagonally up and right
+;;; |    Fn    | Move diagonally down and right
+;;; |    Gn    | Move diagonally down and left
+;;; |    Hn    | Move diagonally up and left
+;;; This command moves as specified by the following argument:
+;;; ` Mx, y ` Move absolute or relative. 
+;;;   - If x is preceded by a + or -, x and y are added to the current graphics position, and connected to the current position by a line. 
+;;;   - Otherwise, a line is drawn to point x, y from the current position.
+;;; The following prefix commands may precede any of the above movement commands:
+;;; ` B`  Move, but plot no points.
+;;; ` N`  Move, but return to original position when done.
+;;; The following commands are also available:
+;;; ` An  ` Set angle n. 
+;;; - n may range from 0 to 3, where 0 is 0°, 1 is 90°, 2 is 180°, and 3 is 270°. 
+;;; - Figures rotated 90° or 270° are scaled so that they will appear the same size as with 0° or 180° on a monitor screen with the standard aspect ratio of 4:3.
+;;; ` TAn `  Turn angle n. 
+;;; - n can be any value from negative 360 to positive 360. 
+;;; - If the value specified by n is positive, it turns the angle counter-clockwise. 
+;;; - If the value specified by n is negative, it turns clockwise.
+;;; ` Cn  ` Set color n. 
+;;; ` Sn  ` Set scale factor n. 
+;;; - n may range from 1 to 255. n is divided by 4 to derive the scale factor. 
+;;; - The scale factor is multiplied by the distances given with U, D, L, R, E, F, G, H, or relative M commands to get the actual distance traveled. 
+;;; - The default for S is 4.
+;;; `x<string> ` Execute substring. 
+;;; - This command executes a second substring from a string, much like GOSUB. One string executes another, which executes a third, and so on.
+;;; - <string> is a variable assigned to a string of movement commands.
+;;; #### Numeric Arguments:
+;;; - Numeric arguments can be constants like "123" or "=variable;", where variable is the name of a variable.
+;;; - When you use the second syntax, "=variable;", the semicolon must be used. Otherwise, the semicolon is optional between commands.
+;;; ### EXAMPLES:
+;;; ```
+;;;   10 DRAW "BM 40,36"
+;;;   20 A=20: DRAW "R=A; D=A; L=A; U=A;" 
+;;; ````
+;;; > Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixles high.
+;;; ```
+;;;   30 PSET (10, 20)
+;;;   40 DRAW "E20; F20; L39"
+;;; ```
+;;; > Draws a 42 pixel wide triangle with it's top vertex at x-coordinate 10 and y-coordinate 20.
 ST_DRAW:    
         ld      de,DRWTAB         ; DISPATCH TABLE FOR GML
         xor     a                 ; CLEAR OUT DRAW FLAGS
