@@ -81,9 +81,21 @@ MAKINT: push    hl                ; Save Registers
         ret
 
 ;E3F6
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## GET
+;;; 
+;;; ### FORMAT:
+;----------------------------------------------------------------------------
 ST_PUT: ld      a,1               ;;Mode = GET
         jr      GGPUTG
 ;E3FA
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## PUT
+;;; 
+;;; ### FORMAT:
+;----------------------------------------------------------------------------
 ST_GET: xor     a                 ;;Mode = PUT
 GGPUTG: jp      GPUTG
 
@@ -863,8 +875,189 @@ CMPONE: ld      bc,$8100          ; Compare FAC with 1.0
         dec     a
         ret
 ; EA0F
-GPUTG:  jp      FCERR
-      
+; GET & PUT - READ & WRITE GRAPHICS BIT ARRAY
+GPUTG:  ld      (PUTFLG),a        ; STORE WHETHER PUTTING OR NOT
+        push    af                ; SAVE THIS FLAG A SEC
+        SYNCHK  '('               ; SKIP OVER OPEN PAREN
+        dec     hl
+        call    SCAN1             ; GET FIRST COORD
+        call    CHKRNG
+        pop     af                ; REGET PUT FLAG
+        or      a                 ; If Not 0
+        jr      nz,PUT1           ;   Do PUT
+        rst     SYNCHR  
+        db      MINUTK            ; EAT "-"
+        push    bc                ; SAVE X1
+        push    de                ; SAVE Y1
+        call    SCANDX            ; GET SECOND COORD FOR 'GET' ONLY
+        call    CHKRNG
+        pop     de                ; GET Y1 BACK
+        pop     bc                ; AND X1
+        push    hl                ; SAVE TXTPTR
+        call    YDELT             ; CALC DELTA Y
+        call    c,XCHGY           ; MAKE DE=MIN(GXPOS,DE)
+        inc     hl                ; MAKE DELTA A COUNT
+        ld      (MINDEL),hl       ; SAVE DELTA Y IN MIDEL
+        call    XDELT
+        call    c,XCHGX           ; BC = MIN(GXPOS,DE)
+        inc     hl                ; MAKE DELTA A COUNT
+        ld      (MAXDEL),hl       ; SAVE DX IN MAXDEL
+        call    MAPXYC
+        pop     hl
+        call    GTARRY
+        push    hl
+        push    de              ;;Save Pointer to Array Data
+        push    bc              ;;Save End of Array Data
+        push    de              ;;Save Number of Bytes to be Used
+        ex      de,hl
+        ld      hl,(MAXDEL)
+        ld      c,l
+        ld      b,h
+        ex      de,hl
+        sla     e
+        rl      d
+        ld      hl,(MINDEL)       ; GET DELTA Y
+        push    bc                ; SAVE DX*BITS/PIX
+        ld      b,h               ; INTO [BC] FOR UMULT
+        ld      c,l
+        call    UMULT             ; [DE]=DX*DY*BITS/PIX
+        pop     bc                ; GET BACK DX*BITS/PIX
+        ld      de,4              ; ADD 4 BYTES FOR DX,DY STORAGE
+        add     hl,de           ;[HL] HAS NO. OF BYTES TO BE USED
+        pop     de              ;ADD NO. OF BYTES TO BE USED
+        add     hl,de
+        ex      de,hl             ; [DE] = CALCULATED END OF DATA
+        pop     hl                ; END OF ARRAY DATA TO [HL]
+        rst     COMPAR
+        jp      c,FCERR           ; ARRAY START+LENGTH .GT. 64K
+                                  ; BEG OF DATA PTR IS ON STK HERE
+        pop     hl                ; GET POINTER TO ARRAY DATA
+        rst     COMPAR
+        jp      nc,FCERR          ; ARRAY START+LENGTH .GT. 64K
+        ld      (hl),c            ; SAVE DX*BITS/PIX IN 1ST 2 BYTES OF ARY
+        inc     hl
+        ld      (hl),b            ; PASS NO. OF BITS DESIRED IN [BC]
+        inc     hl
+        ex      de,hl
+        ld      hl,(MINDEL)       ; GET LINE (Y) COUNT
+        ex      de,hl
+        ld      (hl),e
+        inc     hl
+        ld      (hl),d
+        inc     hl                ; SAVE DY IN 2ND 2 BYTES
+        or      a                 ; CLEAR CARRY FOR GET INIT.
+        jr      GOPGIN            ; GIVE LOW LEVEL ADDR OF ARRAY & GO
+; EA8C
+PUT1:   push    hl                ; SAVE TXTPTR
+        call    MAPXYC            ; MAP THE POINT
+        pop     hl
+        call    GTARRY            ; SCAN ARRAY NAME & GET PTR TO IT
+        push    de                ; SAVE PTR TO DELTAS IN ARRAY
+        dec     hl                ; NOW SCAN POSSIBLE PUT OPTION
+        rst     CHRGET
+        ld      b,5               ; DEFAULT OPTION IS XOR
+        jr      z,PUT2            ; IF NO CHAR, USE DEFAULT
+        SYNCHK  ','               ; MUST BE A COMMA
+        ex      de,hl             ; PUT TXTPTR IN [DE]
+        ld      hl,GFUNTB+4     ;;From End of Table to Start if Table
+PFUNLP: cp      (hl)              ; IS THIS AN OPTION?
+        jr      z,PUT20           ; YES, HAND IT TO PGINIT.
+        dec     hl                ; POINT TO NEXT
+        dec     b
+        jr      nz,PFUNLP
+        ex      de,hl             ; GET TXTPTR BACK TO [HL]
+        pop     de                ; CLEAN UP STACK
+        ret                       ; LET NEWSTT GIVE SYNTAX ERROR
+; EAAB
+PUT20:  ex      de,hl             ; GET TXTPTR BACK TO [HL]
+        rst     CHRGET            ; EAT THE TOKEN
+PUT2:   dec     b                 ; 1..5 TO 0..4
+        ld      a,b               ; INTO [A] FOR PGINIT
+        ex      (sp),hl           ; XTHL
+        push    af                ; SAVE PUT ACTION MODE
+        ld      e,(hl)            ; [DE]=NO. OF BITS IN X
+        inc     hl
+        ld      d,(hl)
+        inc     hl
+        push    de                ; SAVE BIT COUNT
+        push    hl                ; SAVE ARRAY POINTER
+        dec     de                ; DECREMENT DX SINCE IT'S A COUNTER
+        ld      hl,(GXPOS)        ; NOW CALC TRUE X
+        ex      de,hl
+        add     hl,de
+        jr      c,PRNGER          ; ERROR IF CARRY
+        ld      b,h               ; TO [BC] FOR SCLXYX
+        ld      c,l
+        pop     hl                ; GET BACK ARRAY POINTER
+        ld      e,(hl)            ; [DE] = DELTA Y ([HL] POINTS TO DATA)
+        inc     hl
+        ld      d,(hl)
+        inc     hl
+        push    de                ; SAVE DELTA Y ON STACK
+        push    hl                ; SAVE PTR ON STACK AGAIN
+        ld      hl,(GYPOS)
+        dec     de                ; DECREMENT DY SINCE IT'S A COUNTER
+        add     hl,de
+PRNGER: jp      c,FCERR           ; ERROR IF CARRY
+        ex      de,hl             ; [DE]=Y + DELTA Y
+        pop     hl                ; GET BACK ARRAY POINTER
+        call    CHKRNG            ; MAKE SURE [BC],[HL] ARE ON THE SCREEN
+        pop     de                ; POP DY
+        pop     bc                ; POP DX*BITS/PIX
+        pop     af                ; GET BACK ACTION MODE
+        scf                       ; SET CARRY TO FLAG PUT INIT
+; 2A4E
+GOPGIN: push    de                ; RESAVE DY
+        call    PGINIT            ; Set Operation Routine Address
+        pop     de                ; GET Y COUNT
+PGLOOP: push    de                ; SAVE LINE COUNT
+        call    FETCHC
+        push    hl
+        push    af
+        ld      a,(PUTFLG)        ; SEE IF PUTTING OR GETTING
+        or      a
+        jr      nz,PGLOO2
+        call    NREAD
+        jr      PGLOO3
+PGLOO2: call    NWRITE
+PGLOO3: pop     af                ; GET BACK STARTING C
+        pop     hl                ; Address AND BIT MASK
+        call    STOREC            ; SET UP AS CURRENT "C"
+        call    DOWNL             ; NOW MOVE DOWN A LINE
+        pop     de
+        dec     de
+        ld      a,d
+        or      e
+        jr      nz,PGLOOP         ; CONTINUE IF NOT ZERO
+        pop     hl                ; GET BACK TXTPTR
+        ret                       ; AND RETURN
+; EB02
+GTARRY: SYNCHK  ','               ; EAT COMMA
+        ld      a,1               ; SEARCH ARRAYS ONLY
+        ld      (SUBFLG),a
+        call    PTRGET            ; GET PTR TO ARRAY
+        jp      nz,FCERR          ; NOT THERE - ERROR
+        ld      (SUBFLG),a        ; CLEAR THIS
+        push    hl                ; SAVE TXTPTR
+        ld      h,b               ; HL = PTR TO ARRAY
+        ld      l,c
+        ex      de,hl             ; HL = LENGTH
+        add     hl,de             ; HL = LAST BYTE OF ARRAY
+        push    hl                ; SAVE
+        ld      a,(bc)            ; GET NO. OF DIMS
+        add     a,a               ; DOUBLE SINCE 2 BYTE ENTRIES
+        ld      l,a
+        ld      h,0
+        inc     bc                ; SKIP NO. OF DIMS
+        add     hl,bc
+        ex      de,hl             ; DE = PTR TO FIRST BYTE OF DATA
+        pop     bc                ; BC = PTR TO LAST BYTE OF DATA
+        pop     hl                ; GET TXTPTR
+        ret
+; EB23
+GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
+        db      PRESTK, PSETTK
+        db      XORTK
 ; EB28
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -1441,6 +1634,19 @@ NSETCX: ld      a,l               ; Looping HL Times
         dec     hl                ; Count Down
         jr      NSETCX            ; and Loop
 
+
+; EE78
+;;Get Screen Address and and Pixel Index from Character X, Character Y
+MAPXYC: push    hl              ;;Save [H,L]
+        push    de              ;;Save [D,E] (YPOS)
+        ld      hl,CHRRAM+40    ;;Address = Column 0, Line 1
+        ld      a,e             ;;
+        ld      de,40           ;;Screen Width
+        inc     a               ;;Mask = YPOS +1
+MAPCLP: dec     a               ;;Mask = Mask - 1
+        jr      z,MAPXYA        ;;iF Zero, Add XPOS and FInish Up
+        add     hl,de           ;;Else Add Screen Width to Address
+        jr      MAPCLP          ;;and Loop
 ; EE88 
 ; Get Screen Address and and Pixel Index from Character X, Character Y
 ; Uses: [B,C] = Character X Position 
@@ -1555,12 +1761,12 @@ RIGHTP: inc     a                 ; Increment Bit Index
         ret                     
 ; EF3C
 ; Move Text Cursor Down One Line
-DOWNL:  push    af               ; SAVE BIT MASK OF CURRENT "C" Address
-        push    hl               ; SAVE Address
-        call    FETCHC           ; GET CURRENT LOCATION
-        ld      de,40            ; Line Width = 40 characters
-        add     hl,de            ; Move Down One Line
-        jp      POPSTC           ; Store Current, Restore Saved and Return
+DOWNL:  push    af                ; SAVE BIT MASK OF CURRENT "C" Address
+        push    hl                ; SAVE Address
+        call    FETCHC            ; GET CURRENT LOCATION
+        ld      de,40             ; Line Width = 40 characters
+        add     hl,de             ; Move Down One Line
+        jp      POPSTC            ; Store Current, Restore Saved and Return
 ; EF48
 ; Move Pixel Cursor Down One Line   
 DOWNC:  push    af                ; SAVE BIT MASK OF CURRENT "C" Address
@@ -1586,4 +1792,92 @@ POPSTC: ld      (PINDEX),a        ; Store Bit Position
         pop     hl                ; Restore Saved Address
         pop     af                ; Restore Saved Bit Index
         ret                       ; Return from Subroutine
-
+; EF8B
+PGINIT: ld      (ARYPNT),hl     ;;Save Pointer into Array
+        ld      h,b
+        ld      l,c
+        ld      (MAXDEL),hl     ;;Save Bit Counr?
+        add     a,a             ;;Index = Operation ID * 2
+        ld      c,a             ;;Copy to BC
+        ld      b,0
+        ld      hl,OPCTAB       ;;Get Operation Table Address
+        add     hl,bc           ;;Add Index
+        ld      a,(hl)          ;;Get Address from Table
+        inc     hl
+        ld      h,(hl)
+        ld      l,a
+        ld      (OPCADR),hl      ;;Store It
+        ret
+; EFA3
+OPCTAB: dw      ORC             ;;A = A | C     OR
+        dw      ANDC            ;;A = A & C     AND
+        dw      CPLA            ;;A = !A        PRESET
+        dw      NOOP            ;;No Operation  PSET
+        dw      XORC            ;;A = A ^ C     XOR (Default)
+; EFAD
+;;Read One Line of Characters from Colors to Screen
+NREAD:  call    NSETUP            ; [H,L] = Screen Address, [A] = Counter
+NREADL: ld      b,(hl)            ; [B] = Character at Address
+        ld      de,COLRAM-CHRRAM  ; [D,E] = Offset into Color Matrix
+        ex      de,hl             ; [D,E] = Screen Address, [H,L] = Offset
+        add     hl,de             ; [H,L] = Color Address
+        ld      c,(hl)            ; [C] = Color Attribute
+        pop     hl                ; Pop Array Pointer into [H,L]
+        ld      (hl),b            ; Copy Character into Array
+        inc     hl                ; Bump Array Pointer
+        ld      (hl),c            ; Copy Colors into Array
+        inc     hl                ; Bump Array Pointer
+        push    hl                ; Push Array Pointer back onto Stack
+        ex      de,hl             ; [H,L} = Screen Address, Discard Offset
+        inc     hl                ; Bump Screen Address
+        dec     a                 ; Decrement Counter
+        jr      nz,NREADL         ; If Not Done, Do Next Position
+        jr      NDONE             ; Else Save Array Pointer and Return
+; EFC4
+;;Write One Line of Characters and Colors to Screen
+NWRITE: call    NSETUP            ; [H,L] = Screen Address, [A] = Counter
+NWRITL: ex      de,hl             ; [D,E] = Screen Address
+        ld      hl,COLRAM-CHRRAM  ; [H,L] = Offset into Color Matrix
+        add     hl,de             ; [H,L] = Color Address
+        ld      c,(hl)            ; [C] = Color Attribute
+        pop     hl                ; Pop Array Pointer into [H,L]
+        ld      b,(hl)            ; Read Character from Array into [B]
+        inc     hl                ; Bump Array Pointer
+        ex      af,af'            ; Save Counter
+        ld      a,(hl)            ; Read Color Attribute from into [A]
+        inc     hl                ; Bump Array Pointer
+        call    OPCJMP            ; Do Operation on Color Attribute
+        push    hl                ; Push Array Pointer onto Stack
+        ex      de,hl             ; [H,L} = Screen Address, Discard Offset
+        ld      (hl),b            ; Write Character to Character
+        ld      de,COLRAM-CHRRAM  ; [H,L] = Offset into Color Matrix
+        ex      de,hl             ; [D,E] = Screen Address, [H,L] = Offse
+        add     hl,de             ; [H,L] = Color Address
+        ld      (hl),a            ; Write Attribute to Color Matrix
+        ex      de,hl             ; [H,L] = Screen Address
+        inc     hl                ; Next Screen Address
+        ex      af,af'            ; Restore Counter
+        dec     a                 ; Decremement it
+        jr      nz,NWRITL         ; If Not Done, Do Next Position
+NDONE:  pop     hl                ; Pop Array Pointer off Stack
+        ld      (ARYPNT),hl       ; and Store in ARYPNT
+        ret
+; EFEA
+;;Get CURLOC and MAXDEL for NREAD and NWRITE
+NSETUP: ld      hl,(MAXDEL)
+        ld      a,l               ; [A] = Byte Count
+        ld      hl,(ARYPNT)       ; 
+        ex      (sp),hl           ; Push Array Pointer under Return Address
+        push    hl                ; 
+        ld      hl,(CURLOC)       ; [H,L] = Screen Address
+        ret
+; EFF7
+;;PUT Action Subroutines
+ORC:    or      c               ;;OR
+        ret                     ;;
+ANDC:   and     c               ;;AND
+        ret                     ;;
+XORC:   xor     c               ;;XOR (Default)
+        ret                     ;;
+CPLA:   cpl                     ;;PRSET
+NOOP:   ret                     ;;PSET (Use Color from Array)

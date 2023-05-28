@@ -290,6 +290,7 @@ FDIV    = $142F   ; Floating Point Divide
 NEG     = $150B   ; Negate Value in Floating Point Accumulator
 PUSHF   = $1513   ; Put Floating Point Accumulator on Stack
 FCOMP   = $155B   ; Floating Point Compare
+UMULT   = $15CA   ; Integer Multiply: DE = BC * DE
 PSHNEG  = $1770   ; Push address of NEG routine on Stack
 POLYX   = $1837   ; Polynomial Evaluator
 PI2     = $1953   ; Floating Point Constant Pi/2  
@@ -413,6 +414,7 @@ STEPTK      = $A7   ; STEP Token
 PLUSTK      = $A8   ; + Token
 MINUTK      = $A9   ; - Token
 MULTK       = $AA   ; * Token
+ANDTK       = $AD   ; AND Token
 ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
 ONEFUN      = $B2   ; First Function Token

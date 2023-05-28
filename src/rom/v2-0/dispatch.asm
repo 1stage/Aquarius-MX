@@ -101,6 +101,7 @@ CDTK    = $E0
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA
+XORTK     = $EB
 
 ;-------------------------------------
 ;            NEXTSTMT
