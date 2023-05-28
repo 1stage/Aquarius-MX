@@ -190,6 +190,7 @@ GONE4   = $063C   ; Execute Next Statement
 GONE    = $064B   ; Execute Statement
 GONE5   = $0665   ; Add Offset to Table and Dispatch Statement
 CHRGTR  = $066B   ; Alternate CHRGET for conditional CALL
+CHRGT2  = $066C   ; Alternate CHRGOT for CALL
 NTOERR  = $0782   ; Execute ON GOTO
 
 STROUT  = $0E9D   ; Print null or quote terminated string
@@ -280,12 +281,16 @@ PTRGET  = $10D1   ; Get Pointer to Variable
 PTRGT2  = $10D6   ; Get Pointer to Variable after reading first char
 
 FSUBS   = $1258   ; Floating Point Subtract
+FMULT   = $13CB   ; Floating Point Multiply
 FDIV    = $142F   ; Floating Point Divide
 NEG     = $150B   ; Negate Value in Floating Point Accumulator
+PUSHF   = $1513   ; Put Floating Point Accumulator on Stack
+FCOMP   = $155B   ; Floating Point Compare
 PSHNEG  = $1770   ; Push address of NEG routine on Stack
 POLYX   = $1837   ; Polynomial Evaluator
 PI2     = $1953   ; Floating Point Constant Pi/2  
 
+ISCNTC  = $1A25   ; Check for ^C and ^S
 CONIN   = $1A33   ; Wait for keypress (out: A = key)
 INCHR   = $19DA   ; Flush keyboard buffer and wait for keypress
 INCHRH  = $1E7E   ; Get current key pressed (through UDF)
@@ -295,6 +300,7 @@ GETSTK  = $0BA0   ; Check for stack space (in: C = number of words required)
 POPHRT  = $141A   ; Pop HL and Return
 
 PPRSDO  = $1A55   ; Execute PSET/PRESET: BC = X-coord, DE = Y-coord, A = 0 for PRESET, else PSET
+BITTAB  = $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
 COPY    = $1B15   ; COPY statement
 
 ;-----------------------------------------------------------------------------

@@ -30,23 +30,20 @@
 ;;; ` 20 G=G+FN A9(10) `
 ;;; > Increments the value of G the rounded value of a random number between 1 and 10.
 ;----------------------------------------------------------------------------
-DEFX:   ;pop      bc             ; clean up stack              
-        ;pop      af              
-        ;pop      hl              
-        call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
+DEFX:   call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         call    ERRDIR          ; DEF IS "ILLEGAL DIRECT"
-        ld      bc,DATA          ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
+        ld      bc,DATA         ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
         push    bc              ; SKIPPING THE REST OF THE FORMULA
         push    de              
-        SYNCHK  '('              ;{GWB} SKIP OVER OPEN PAREN
+        SYNCHK  '('             ; SKIP OVER OPEN PAREN
         call    PTRGET          ; GET POINTER TO DUMMY VAR(CREATE VAR)
         push    hl              
         ex      de,hl            
-        dec      hl              
+        dec     hl              
         ld      d,(hl)          
-        dec      hl              
+        dec     hl              
         ld      e,(hl)          
-        pop      hl              
+        pop     hl              
         call    CHKNUM          
         SYNCHK  ')'              ;{M80} MUST BE FOLLOWED BY )
         rst      SYNCHR
@@ -55,30 +52,26 @@ DEFX:   ;pop      bc             ; clean up stack
         ld      c,l              
         ex      (sp),hl          
         ld      (hl),c          
-        inc      hl              
+        inc     hl              
         ld      (hl),b          
         jp      STRADX           
 
-FNDOEX: ;pop      bc              
-        ;pop      af              
-        ;pop      hl              
-        call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
-
+FNDOEX: call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         push    de                
-        call    PARCHK          ;{M80} RECURSIVELY EVALUATE THE FORMULA
-        call    CHKNUM          ;{M65} MUST BE NUMBER
+        call    PARCHK          ; RECURSIVELY EVALUATE THE FORMULA
+        call    CHKNUM          ; MUST BE NUMBER
         ex      (sp),hl         ; SAVE THE TEXT POINTER THAT POINTS PAST THE 
                                 ; FUNCTION NAME IN THE CALL
-        ld      e,(hl)          ;[H,L]=VALUE OF THE FUNCTION
-        inc      hl              
+        ld      e,(hl)          ; [H,L]=VALUE OF THE FUNCTION
+        inc     hl              
         ld      d,(hl)          
-        inc      hl              ; WHICH IS A TEXT POINTER AT THE FORMAL
-        ld      a,d              ; PARAMETER LIST IN THE DEFINITION
-        or      e                ; A ZERO TEXT POINTER MEANS THE FUNCTION 
-                                 ; WAS NEVER DEFINED
-        jp      z,UFERR          ; IF SO, GIVEN AN "UNDEFINED FUNCTION" ERROR
+        inc     hl              ; WHICH IS A TEXT POINTER AT THE FORMAL
+        ld      a,d             ; PARAMETER LIST IN THE DEFINITION
+        or      e               ; A ZERO TEXT POINTER MEANS THE FUNCTION 
+                                ; WAS NEVER DEFINED
+        jp      z,UFERR         ; IF SO, GIVEN AN "UNDEFINED FUNCTION" ERROR
         ld      a,(hl)          
-        inc      hl              
+        inc     hl              
         ld      h,(hl)          
         ld      l,a              
         push    hl              ; SAVE THE NEW VALUE FOR PRMSTK
@@ -93,29 +86,29 @@ FNDOEX: ;pop      bc
         push    de              
         call    MOVMF            
         pop      hl              
-        call    FRMNUM          ;AND EVALUATE THE DEFINITION FORMULA
-        dec      hl              ;CAN HAVE RECURSION AT THIS POINT
-        rst      CHRGET          ;SEE IF THE STATEMENT ENDED RIGHT
-        jp      nz,SNERR        ;THIS IS A CHEAT, SINCE THE LINE 
-                                ;NUMBER OF THE ERROR WILL BE THE CALLERS
-                                ;LINE # INSTEAD OF THE DEFINITIONS LINE #
-        pop      hl              
+        call    FRMNUM          ; AND EVALUATE THE DEFINITION FORMULA
+        dec     hl              ; CAN HAVE RECURSION AT THIS POINT
+        rst     CHRGET          ; SEE IF THE STATEMENT ENDED RIGHT
+        jp      nz,SNERR        ; THIS IS A CHEAT, SINCE THE LINE 
+                                ; NUMBER OF THE ERROR WILL BE THE CALLERS
+                                ; LINE # INSTEAD OF THE DEFINITIONS LINE #
+        pop     hl              
         ld      (VARPNT),hl       
-        pop      hl              
+        pop     hl              
         ld      (FNPARM),hl       
-        pop      hl              
+        pop     hl              
         ld      (VARNAM),hl       
-        pop      hl              ;GET BACK THE TEXT POINTER
+        pop     hl              ;GET BACK THE TEXT POINTER
         ret                      
 
 ; SUBROUTINE TO GET A POINTER TO A FUNCTION NAME
 ; 
-GETFNM: rst      SYNCHR  
-        db      FNTK            ;   MUST START WITH "FN"
-        ld      a,128            ;   DONT ALLOW AN ARRAY
-        ld      (SUBFLG),a      ;   DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
-        or      (hl)            ;   PUT FUNCTION BIT ON
-        ld      c,a              ;   GET FIRST CHARACTER INTO [C]
+GETFNM: rst     SYNCHR  
+        db      FNTK            ; MUST START WITH "FN"
+        ld      a,128           ; DONT ALLOW AN ARRAY
+        ld      (SUBFLG),a      ; DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
+        or      (hl)            ; PUT FUNCTION BIT ON
+        ld      c,a             ; GET FIRST CHARACTER INTO [C]
         call    PTRGT2          
         jp      CHKNUM          
 
@@ -137,127 +130,36 @@ GETFNM: rst      SYNCHR
 ATN1:   ;pop      bc
         ;pop      af
         ;pop      hl
-        rst      FSIGN            ; SEE IF ARG IS NEGATIVE
+        rst     FSIGN           ; SEE IF ARG IS NEGATIVE
         call    m,PSHNEG        ; IF ARG IS NEGATIVE, USE:
-        call    m,NEG            ;     ARCTAN(X)=-ARCTAN(-X
-        ld      a,(FAC)          ; SEE IF FAC .GT. 1
+        call    m,NEG           ;     ARCTAN(X)=-ARCTAN(-X
+        ld      a,(FAC)         ; SEE IF FAC .GT. 1
         cp      129             
         jp      c,ATN2         
 
         ld      bc,$8100        ; GET THE CONSTANT 1
         ld      d,c              
-        ld      e,c              ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
+        ld      e,c             ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
         call    FDIV            ;    ARCTAN(X)=PI/2-ARCTAN(1/X)
         ld      hl,FSUBS        ; PUT FSUBS ON THE STACK SO WE WILL RETURN       
         push    hl              ;   TO IT AND SUBTRACT THE REULT FROM PI/2
-ATN2:   ld      hl,ATNCON        ; EVALUATE APPROXIMATION POLYNOMIAL
+ATN2:   ld      hl,ATNCON       ; EVALUATE APPROXIMATION POLYNOMIAL
 
         call    POLYX            
         ld      hl,PI2          ; GET POINTER TO PI/2 IN CASE WE HAVE TO
-        ret                      ;   SUBTRACT THE RESULT FROM PI/2
+        ret                     ;   SUBTRACT THE RESULT FROM PI/2
 
 ;CONSTANTS FOR ATN
-ATNCON: db    9                ;DEGREE
-        db    $4A,$D7,$3B,$78 ; .002866226
-        db    $02,$6E,$84,$7B ; -.01616574
-        db    $FE,$C1,$2F,$7C ; .04290961
-        db    $74,$31,$9A,$7D ; -.07528964
-        db    $84,$3D,$5A,$7D ; .1065626
-        db    $C8,$7F,$91,$7E ; -.142089
-        db    $E4,$BB,$4C,$7E ; .1999355
-        db    $6C,$AA,$AA,$7F ; -.3333315
-        db    $00,$00,$00,$81 ; 1.0
-
-
-; Extended PSET or PRESET
-; Reads Coordinates and saves them for subsequent
-;   LINE -(X,Y) or LINE -STEP(X,Y) statement
-; then executes standard basic PSET/PRESET code
-PRESEX: pop     af              ; Discard Saved Flags
-        xor     a               ; PRESET FLAG
-        jr      PPRSEX            
-PSETX:  pop     af              ; Discard Saved Flags
-        ld      a,1             ; PSET FLAG
-PPRSEX: inc     hl              ; Skip PSET/PRESET Token
-        ex      af,af'            
-        SYNCHK  '('             ; Require '('
-        dec     hl              ; Back up to '(' for SCAN1
-        call    SCAN1           ; Scan Coordinates as (X,Y)
-        jp      PPRSDO          ; Go Do PSET/PRESET
-
-; Parse Intger
-GETIN2: call    FRMEVL          ; EVALUATE A FORMULA
-INTFR2: push    hl              ; SAVE THE TEXT POINTER
-        call    CHKNUM          ; MUST BE NUMBER
-        call    FRCINT          ; COERCE THE ARGUMENT TO INTEGER
-        pop     hl              ; RESTORE THE TEXT POINTER
-        ret
-
-
-; ALLOW A COORDINATE OF THE FORM (X,Y) OR STEP(X,Y)
-; THE LATTER IS RELATIVE TO THE GRAPHICS AC.
-; THE GRAPHICS AC IS UPDATED WITH THE NEW VALUE
-; RESULT IS RETURNED WITH [B,C]=X AND [D,E]=Y
-; CALL SCAN1 TO GET FIRST IN A SET OF TWO PAIRS SINCE IT ALLOWS
-; A NULL ARGUMENT TO IMPLY THE CURRENT AC VALUE AND
-; IT WILL SKIP A "@" IF ONE IS PRESENT
-SCAN1:  ld      a,(hl)          ; GET THE CURRENT CHARACTER
-        cp      '@'             ; ALLOW MEANINGLESS "@"
-        call    z,CHRGTR        ; BY SKIPPING OVER IT
-        ld      bc,0            ; ASSUME NO COODINATES AT ALL (-SECOND)
-        ld      d,b             
-        ld      e,c             
-        cp      MINUTK          ; SEE IF ITS SAME AS PREVIOUS            
-        jr      z,SCANN         ; USE GRAPHICS ACCUMULATOR
-;[GWB] THE STANDARD ENTRY POINT  
-SCAND:  ld      a,(hl)          ; GET THE CURRENT CHARACTER
-        cp      STEPTK          ; IS IT RELATIVE?
-        push    af              ; REMEMBER
-        call    z,CHRGTR        ; SKIP OVER $STEP TOKEN
-        SYNCHK  '('             ; SKIP OVER OPEN PAREN
-        call    GETIN2          ; SCAN X INTO [D,E]
-
-        push    de              ; SAVE WHILE SCANNING Y
-        SYNCHK  ','             ; SCAN COMMA               
-        call    GETIN2          ; GET Y INTO [D,E]
-
-        SYNCHK  ')'             
-        pop     bc              ; GET BACK X INTO [B,C]             
-        pop     af              ; RECALL IF RELATIVE OR NOT
-SCANN:  push    hl              ; SAVE TEXT POINTER
-        ld      hl,(GRPACX)     ; GET OLD POSITION
-        jr      z,SCXREL        ; IF ZERO,RELATIVE SO USE OLD BASE
-        ld      hl,0            ; IN ABSOLUTE CASE, JUST Y USE ARGEUMENT
-SCXREL: add     hl,bc           ; ADD NEW VALUE
-        ld      (GRPACX),hl     ; UPDATE GRAPHICS ACCUMLATOR
-        ld      (GXPOS),hl      ; STORE SECOND COORDINTE FOR CALLER
-        ld      b,h             ; RETURN X IN BC
-        ld      c,l              
-        ld      hl,(GRPACY)     ; GET OLDY POSITION
-        jr      z,SCYREL        ; IF ZERO, RELATIVE SO USE OLD BASE
-        ld      hl,0            ; ABSOLUTE SO OFFSET BY 0
-SCYREL: add     hl,de           
-        ld      (GRPACY),hl     ; UPDATE Y PART OF ACCUMULATOR
-        ld      (GYPOS),hl      ; STORE Y FOR CALLER
-        ex      de,hl           ; RETURN Y IN [D,E]
-        pop     hl              ; GET BACK THE TEXT POINTER
-        ret
-
-ST_LINE:
-      jp        FCERR
-      
-ST_CIRCLE:
-      jp        FCERR
-      
-ST_DRAW:
-      jp        FCERR
-      
-ST_GET:
-      jp        FCERR
-      
-ST_PUT:
-      jp        FCERR
-
+ATNCON: db    9                 ;DEGREE
+        db    $4A,$D7,$3B,$78   ; .002866226
+        db    $02,$6E,$84,$7B   ; -.01616574
+        db    $FE,$C1,$2F,$7C   ; .04290961
+        db    $74,$31,$9A,$7D   ; -.07528964
+        db    $84,$3D,$5A,$7D   ; .1065626
+        db    $C8,$7F,$91,$7E   ; -.142089
+        db    $E4,$BB,$4C,$7E   ; .1999355
+        db    $6C,$AA,$AA,$7F   ; -.3333315
+        db    $00,$00,$00,$81   ; 1.0
 
 
 ;====================================================================

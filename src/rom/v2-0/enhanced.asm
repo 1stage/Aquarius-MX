@@ -153,7 +153,7 @@ ST_COPY:
 ;;;  - FRE ( 2 ) 
 ;;;    - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
 ;;;  - FRE ( 3 ) 
-;;;    - Action: Returns the start of protected memory (one more then the highest value allowed for CLEAR).
+;;;    - Action: Returns the top of user memory (the highest value allowed for CLEAR).
 ;;;  - FRE ( <string> )
 ;;;    - Action: Forces a garbage collection before returning the number of free bytes of string space. 
 ;;;      - BASIC will not initiate garbage collection until all free memory has been used up. 
@@ -183,7 +183,7 @@ FN_FRE:
     jp      z,FLOAT_DE      ;   Return Top of BASIC Memory
     ex      de,hl           ; 
     dec     a               ; If FRE(3)
-    jp      z,FLOAT_DE      ;   Return Start of System Variables  
+    jp      z,FLOAT_DE      ;   Return End of User Memory  
     jp      FCERR           ; Else FC Error
 
 FRE_STR:

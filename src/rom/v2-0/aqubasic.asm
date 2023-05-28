@@ -156,8 +156,8 @@ LineBuf  = sysvars+_linebuf         ;Keep LineBuf, ReTypBuf at the top so they d
 ReTypBuf = sysvars+_retypbuf
 
  STRUCTURE _extvars,0
-    BYTE   _forclr              ; Foreground Color
-    BYTE   _gattrs              ; Current Graphics Attributes
+    WORD   _forclr              ; Foreground Color
+    BYTE   _atrbyt              ; Current Graphics Attributes
     WORD   _gxpos               ; X Position of Second Coordinate
     WORD   _gypos               ; Y Position of Second Coordinate
     WORD   _grpacy              ; Previous Y Coordinate
@@ -176,10 +176,11 @@ ReTypBuf = sysvars+_retypbuf
     WORD   _crcsum              ; CIRCLE SUM
     WORD   _cstcnt              ; START COUNT
     BYTE   _csclxy              ; FLAG WHETHER ASPECT WAS .GT. 1
-    BYTE   _curloc              ; Current Point Address
-    WORD   _cmask               ; Point Bit Mask
+    WORD   _curloc              ; Current Point Address
+    BYTE   _pindex              ; Point Bit Mask Index
     WORD   _cxoff               ; X OFFSET FROM CENTER SAVE LOC
     WORD   _cyoff               ; Y OFFSET SAVE LOCATION
+    WORD   _extgap              ; possibly unused 
     WORD   _bufret              ; BUFLIN Return Address
     WORD   _bufptr              ; Pointer into BUF while Unpacking Line
     BYTE   _drwscl              ; DRAW: SCALE - DRAW POS,Scaling factor
@@ -187,13 +188,14 @@ ReTypBuf = sysvars+_retypbuf
     BYTE   _drwang              ; DRAW "ANGLE" (0..3) - DRAW translation angle
     WORD   _mclptr              ; MAC LANG PTR
     BYTE   _mcllen              ; STRING LENGTH
-    BYTE   _mcltab              ; ;PTR TO COMMAND TABLE
+    WORD   _mcltab              ; ;PTR TO COMMAND TABLE
     BYTE   _putflg              ; WHETHER DOING PUT() OR GET()
     WORD   _arypnt              ; Pointer into GET/PUT Array
     BYTE   _opcjmp              ; Jump Instruction
     WORD   _opcadr              ; Draw Operator Routine Address
     BYTE   _gymax               ; Maximum X Position: 39
     BYTE   _gxmax               ; Maximum Y Position: 23
+    STRUCT _unused,5            ; possibly unused
     WORD   _errlin              ; LINE NUMBER WHERE LAST ERROR OCCURED.
     BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
     BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
@@ -201,9 +203,10 @@ ReTypBuf = sysvars+_retypbuf
     LONG   _swptmp              ; Holds value of the first SWAP variable
  ENDSTRUCT _extvars
 
-ExtVars = SysVars-_extvars.size
+;ExtVars = SysVars-_extvars.size
+ExtVars = $BE00
 FORCLR   = extvars+_forclr
-GATTRS   = extvars+_gattrs
+ATRBYT   = extvars+_atrbyt
 GXPOS    = extvars+_gxpos 
 GYPOS    = extvars+_gypos 
 GRPACY   = extvars+_grpacy
@@ -215,7 +218,7 @@ MINDEL   = extvars+_mindel
 ASPECT   = extvars+_aspect
 CENCNT   = extvars+_cencnt
 GLINEF   = extvars+_glinef
-CNPNTS   = extvars+_cnpnts
+CNPNTS   = extvars+_cnpnts  
 CPLOTF   = extvars+_cplotf
 CPCNT    = extvars+_cpcnt 
 CPCNT8   = extvars+_cpcnt8
@@ -223,7 +226,7 @@ CRCSUM   = extvars+_crcsum
 CSTCNT   = extvars+_cstcnt
 CSCLXY   = extvars+_csclxy
 CURLOC   = extvars+_curloc
-CMASK    = extvars+_cmask 
+PINDEX   = extvars+_pindex
 CXOFF    = extvars+_cxoff 
 CYOFF    = extvars+_cyoff 
 BUFRET   = extvars+_bufret
@@ -659,6 +662,7 @@ COLDBOOT:
     ld      (RETYPBUF),a       ; NULL history buffer
     ld      a,$0b
     rst     $18                ; clear screen
+    call    XSTART             ; Initialize Extended BASIC Variables
 
 ; Test the memory
 ; only testing 1st byte in each 256 byte page!
@@ -1053,9 +1057,9 @@ NEXTSTMT:
     cp      COPYTK-$80          ; If COPY Token
     jp      z,ST_COPY           ;   Do Extended POKE
     cp      PSETTK-$80          ; If PSET
-    jp      z,PSETX             ;   Do Extended BASIC PSET
+    jp      z,ST_PSET           ;   Do Extended BASIC PSET
     cp      PRESTK-$80          ; If PRESET
-    jp      z,PRESEX            ;   Do Extended BASIC PRESET
+    jp      z,ST_PRESET         ;   Do Extended BASIC PRESET
     pop     af                  ; Else
     jp      HOOK23+1
 
@@ -2103,6 +2107,18 @@ GET_PATH:
 ; CLEARX
 ; SCRTCX
     include "extbasic.asm"
+
+;---------------------------------------------------------------------
+;                 Extended BASIC Graphics Commands 
+;---------------------------------------------------------------------
+; ST_PRESET
+; ST_PSET
+; ST_LINE
+; ST_CIRCLE
+; ST_DRAW
+; ST_GET
+; ST_PUT
+    include "extgraph.asm"
 
 
 E0_END:   

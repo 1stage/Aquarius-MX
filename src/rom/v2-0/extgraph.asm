@@ -1,0 +1,1075 @@
+;----------------------------------------------------------------------------
+; Extended BASIC Graphics Routines
+;----------------------------------------------------------------------------
+
+SGBASE  equ     $A0     ; Base Semigraphics Character
+
+;Set Up Extended BASIC System Variables
+XSTART: ld      hl,$0704         ; Default = White, Current = Blue 
+        ld      (FORCLR),hl      ; Set Foreground Colors
+        ld      a,$C3            ; JP Instruction
+        ld      (MAXUPD),a       ;{GWB} Major Axis Move Update
+        ld      (MINUPD),a       ;{GWB} Minor Axis Move Update
+        ld      (OPCJMP),a       ; Draw Operator Routine
+        xor     a                ; Store 0 in
+        ld      (DRWSCL),a       
+        ld      (DRWFLG),a       
+        ld      (DRWANG),a       
+        ret
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## PSET / PRESET
+;;; Set or Reset Pixel
+;;; ### FORMAT:
+;;;   - PSET | PRESET [STEP] ( < x-coord > , < y-coord > ) [ , color ]
+;;;     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
+;;; ### EXAMPLES:
+;;; `  `
+;;; > 
+;----------------------------------------------------------------------------
+; E1F0
+; Extended PSET or PRESET
+; Reads Coordinates and saves them for subsequent LINE -(X,Y) or LINE -STEP(X,Y) statement then executes standard basic PSET/PRESET code
+ST_PRESET: 
+        pop     af              ; Discard Saved Token, Flags
+        xor     a               ; PRESET FLAG
+        jr      PPRSEX            
+ST_PSET:  
+        pop     af              ; Discard Saved Token, Flags
+        ld      a,1             ; PSET FLAG
+PPRSEX: ex      af,af'          ; Save PSET/PRESET flag
+        rst     CHRGET          ; Skip PSET/PRESET Token
+        call    SCANDX          ; Scan Coordinates as [STEP] (X,Y)
+        jp      PPRSDO          ; Go Do PSET/PRESET
+;possibe extension - , attribute        
+        call    CHRGT2          ; Get Character at Text Pointer
+        ret     z               ; If End of Statement, Return
+        SYNCHK  ','             ; Else Require Comma
+        push    bc              
+        push    de
+        call    ATRGET          ; Read Attribute Byte
+        jp      SETC
+      
+; E38F
+;;Convert FAC to Integer and Return in [H,L]
+FRCINX: rst     FSIGN             ;[M80] GET THE SIGN OF THE FAC IN A
+        jp      m,FRCINM          ; If Positive
+        ex      de,hl             ;   Save DE in HL
+        call    FRCINT            ;   Convert FAC into Integer in DE
+        ex      de,hl             ;   Put Result into HL, Restore DE
+        ret                       ; Else
+FRCINM: push    de                ;   Save DE
+        call    NEG               ;   Negate FAC
+        call    FRCINT            ;   Convert FAC into Integer in DE
+        call    NEG               ;   Un-Negate FAC
+        ld      hl,0
+        or      a
+        sbc     hl,de             ;   Put 0 - Integer into HL
+        pop     de                ;   and Restore DE
+        ret
+; E3AB
+MAKINT: push    hl                ; Save Registers
+        push    de
+        push    bc
+        ld      a,h
+        ld      d,l
+        call    FLOATD            ; Put HL into FAC
+        pop     bc                ; Restore Registers
+        pop     de
+        pop     hl
+        ret
+
+; E3FE
+; Parse Intger
+GETIN2: call    FRMEVL            ; EVALUATE A FORMULA
+INTFR2: push    hl                ; SAVE THE TEXT POINTER
+        call    CHKNUM            ; MUST BE NUMBER
+        call    FRCINT            ; COERCE THE ARGUMENT TO INTEGER
+        pop     hl                ; RESTORE THE TEXT POINTER
+        ret
+
+; ALLOW A COORDINATE OF THE FORM (X,Y) OR STEP(X,Y)
+; THE LATTER IS RELATIVE TO THE GRAPHICS AC.
+; THE GRAPHICS AC IS UPDATED WITH THE NEW VALUE
+; RESULT IS RETURNED WITH [B,C]=X AND [D,E]=Y
+; CALL SCAN1 TO GET FIRST IN A SET OF TWO PAIRS SINCE IT ALLOWS
+; A NULL ARGUMENT TO IMPLY THE CURRENT AC VALUE AND
+; IT WILL SKIP A "@" IF ONE IS PRESENT
+; E5D2
+SCAN1:  ld      a,(hl)            ; GET THE CURRENT CHARACTER
+        cp      '@'               ; ALLOW MEANINGLESS "@"
+        call    z,CHRGTR          ; BY SKIPPING OVER IT
+        ld      bc,0              ; ASSUME NO COODINATES AT ALL (-SECOND)
+        ld      d,b               
+        ld      e,c               
+        cp      MINUTK            ; SEE IF ITS SAME AS PREVIOUS            
+        jr      z,SCANN           ; USE GRAPHICS ACCUMULATOR
+; THE STANDARD ENTRY POINT  
+SCANDX: ld      a,(hl)            ; GET THE CURRENT CHARACTER
+        cp      STEPTK            ; IS IT RELATIVE?
+        push    af                ; REMEMBER
+        call    z,CHRGTR          ; SKIP OVER $STEP TOKEN
+        SYNCHK  '('               ; SKIP OVER OPEN PAREN
+        call    GETIN2            ; SCAN X INTO [D,E]
+        push    de                ; SAVE WHILE SCANNING Y
+        SYNCHK  ','               ; SCAN COMMA               
+        call    GETIN2            ; GET Y INTO [D,E]
+        SYNCHK  ')'               
+        pop     bc                ; GET BACK X INTO [B,C]             
+        pop     af                ; RECALL IF RELATIVE OR NOT
+SCANN:  push    hl                ; SAVE TEXT POINTER
+        ld      hl,(GRPACX)       ; GET OLD POSITION
+        jr      z,SCXREL          ; IF ZERO,RELATIVE SO USE OLD BASE
+        ld      hl,0              ; IN ABSOLUTE CASE, JUST Y USE ARGEUMENT
+SCXREL: add     hl,bc             ; ADD NEW VALUE
+        ld      (GRPACX),hl       ; UPDATE GRAPHICS ACCUMLATOR
+        ld      (GXPOS),hl        ; STORE SECOND COORDINTE FOR CALLER
+        ld      b,h               ; RETURN X IN BC
+        ld      c,l                
+        ld      hl,(GRPACY)       ; GET OLDY POSITION
+        jr      z,SCYREL          ; IF ZERO, RELATIVE SO USE OLD BASE
+        ld      hl,0              ; ABSOLUTE SO OFFSET BY 0
+SCYREL: add     hl,de             
+        ld      (GRPACY),hl       ; UPDATE Y PART OF ACCUMULATOR
+        ld      (GYPOS),hl        ; STORE Y FOR CALLER
+        ex      de,hl             ; RETURN Y IN [D,E]
+        pop     hl                ; GET BACK THE TEXT POINTER
+        ret
+; E61B
+; ATTRIBUTE SCAN
+; LOOK AT THE CURRENT POSITION AND IF THERE IS AN ARGUMENT READ IT AS
+; THE 8-BIT ATTRIBUTE VALUE TO SEND TO SETATR. IF STATEMENT HAS ENDED
+; OR THERE IS A NULL ARGUMENT, SEND FORCLR  TO SETATR
+; 
+; Entry point ATRENT will leave [A] unchanged if there is a null agrument
+ATRSCN: ld      a,(FORCLR)        ; Get Default foreground color
+ATRENT: push    bc                ; SAVE THE CURRENT POINT
+        push    de                  
+        ld      e,a               ; Preload Attribute with Default Value
+        dec     hl                ; SEE IF STATEMENT ENDED
+        rst     CHRGET              
+        jr      z,ATRFIN          ; USE DEFAULT
+        SYNCHK  ','               ;  INSIST ON COMMA
+        cp      ','               ; ANOTHER COMMA FOLLOWS?
+        jr      z,ATRFIN          ; IF SO, NULL ARGUMENT SO USE DEFAULT
+ATRGET: call    GETBYT            ; GET THE BYTE
+ATRFIN: ld      a,e               ; GET ATTRIBUTE INTO [A]
+        push    hl                ; SAVE THE TEXT POINTER
+        call    SETATR            ; SET THE ATTRIBUTE AS THE CURRENT ONE
+        jp      c,FCERR           ; ILLEGAL ATTRIBUTES GIVE FUNCTION CALL
+        pop     hl                  
+        pop     de                ; GET BACK CURRENT POINT
+        pop     bc              
+        jp      CHRGT2          
+; E63C 
+; XDELT SETS [H,L]=ABS(GXPOS-[B,C]) AND SETS CARRY IF [B,C].GT.GXPOS
+; ALL REGISTERS EXCEPT [H,L] AND [A,PSW] ARE PRESERVED
+; NOTE: [H,L] WILL BE A DELTA BETWEEN GXPOS AND [B,C] - ADD 1 FOR AN X "COUNT"
+XDELT:  ld      hl,(GXPOS)      ; GET ACCUMULATOR POSITION
+        ld      a,l             
+        sub     c               ; DO SUBTRACT INTO [H,L]
+        ld      l,a             
+        ld      a,h             
+        sbc     a,b             
+        ld      h,a             
+CNEGHL: ret     nc              
+; E646
+NEGHL:  xor       a             ; STANDARD [H,L] NEGATE
+        sub       l
+        ld        l,a
+        sbc       a,h
+        sub       l
+        ld        h,a
+        scf
+        ret
+; E64E 
+; YDELT SETS [H,L]=ABS(GYPOS-[D,E]) AND SETS CARRY IF [D,E].GT.GYPOS
+; ALL REGISTERS EXCEPT [H,L] AND [A,PSW] ARE PRESERVED
+YDELT:  ld      hl,(GYPOS)
+        ld      a,l
+        sub     e
+        ld      l,a
+        ld      a,h
+        sbc     a,d
+        ld      h,a
+        jr      CNEGHL
+; E659 
+; Register Exchange Routines
+; XCHGY EXCHANGES [D,E] WITH GYPOS
+; XCHGAC PERFORMS BOTH OF THE ABOVE
+; NONE OF THE OTHER REGISTERS IS AFFECTED
+XCHGY:  push    hl
+        ld      hl,(GYPOS)
+        ex      de,hl
+        ld      (GYPOS),hl
+        pop     hl
+        ret
+; E663
+XCHGAC: call    XCHGY
+XCHGX:  push    hl
+        push    bc
+        ld      hl,(GXPOS)
+        ex      (sp),hl
+        ld      (GXPOS),hl
+        pop     bc
+        pop     hl
+        ret
+; E672
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## LINE
+;;; Draw line or box on screen.
+;;; ### FORMAT:
+;;;   - LINE [ (<x-coord>,<y-coord>) ] - (<x-coord>,<y-coord>) [ ,[ <color> ] [,B[F] ]
+;;;     - Action: Draws line from the first specified point to the second specified point.
+;;;       - If the first (<x-coord>,<y-coord>) is ommited, the line starts at the last referenced point.
+;;;       - B (box) draws a box with the specified points at opposite corners.
+;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
+;;;       - If <color> is not specified, two commas must be used before B or BF
+;;; ### EXAMPLES:
+;;; ` LINE (0,36)-(79,36) `
+;;; > Draws a horizontal line which divides the screen in half from top to bottom.
+;;; 
+;;; ` LINE (40,0)-(40,71) `
+;;; > Draws a vertical line which divides the screen in half from left to right.
+;;; 
+;;; ` LINE (0,0)-(79,71) `
+;;; > Draws a diagonal line from the top left to lower right corner of the screen.
+;;;  
+;;; ` LINE (10,10)-(20,20),2 `
+;;; > Draws a line in color 2.
+;;; ```
+;;;   10 CLS
+;;;   20 LINE -(RND*80,RND*72),RND*16
+;;;   30 GOTO 20
+;;; ```
+;;; ?  Draw lines forever using random attributes.;;; `  `
+;;; > 
+;----------------------------------------------------------------------------
+; LINE COMMAND
+; LINE [(X1,Y1)]-(X2,Y2) [,ATTRIBUTE[,B[F]]]
+; DRAW A LINE FROM (X1,Y1) TO (X2,Y2) EITHER
+; 1. STANDARD FORM -- JUST A LINE CONNECTING THE 2 POINTS
+; 2. ,B=BOXLINE -- RECTANGLE TREATING (X1,Y1) AND (X2,Y2) AS OPPOSITE CORNERS
+; 3. ,BF= BOXFILL --  FILLED RECTANGLE WITH (X1,Y1) AND (X2,Y2) AS OPPOSITE CORNERS
+; ATTRIBUTE is the Foreground Color
+ST_LINE:    
+        call    SCAN1             ; SCAN THE FIRST COORDINATE
+        push    bc                ; SAVE THE POINT
+        push    de                
+        rst     SYNCHR            
+        db      MINUTK            ; MAKE SURE ITS PROPERLY SEPERATED
+        call    SCANDX            ; SCAN THE SECOND SET
+        call    ATRSCN            ; SCAN THE ATTRIBUTE
+        pop     de                ; GET BACK THE FIRST POINT
+        pop     bc                
+        jr      z,DOLINE          ; IF STATEMENT ENDED ITS A NORMAL LINE
+        SYNCHK  ','               ; OTHERWISE MUST HAVE A COMMA
+        SYNCHK  'B'
+        jr      z,BOXLIN          ; IF JUST "B" THE NON-FILLED BOX
+        SYNCHK  'F'               ; MUST BE FILLED BOX
+DOBOXF: push    hl                ; SAVE THE TEXT POINTER
+        call    SCLXYX            ; SCALE FIRST POINT
+        call    XCHGAC            ; SWITCH POINTS
+        call    SCLXYX            ; SCALE SECOND POINT
+        call    YDELT             ; SEE HOW MANY LINES AND SET CARRY
+        call    c,XCHGY           ; MAKE [D,E] THE SMALLEST Y
+        inc     hl                ; MAKE [H,L] INTO A COUNT
+        push    hl                ; SAVE COUNT OF LINES
+        call    XDELT             ; GET WIDTH AND SMALLEST X
+        call    c,XCHGX           ; MAKE [B,C] THE SMALLEST X
+        inc     hl                ; MAKE [H,L] INTO A WIDTH COUNT
+        push    hl                ; SAVE WIDTH COUNT
+        call    MAPXYP            ; MAP INTO A "C"
+        pop     de                ; GET WIDTH COUNT
+        pop     bc                ; GET LINE COUNT
+BOXLOP: push    de                ; SAVE WIDTH
+        push    bc                ; SAVE NUMBER OF LINES
+        call    FETCHC            ; LOOK AT CURRENT C
+        push    af                ; SAVE BIT MASK OF CURRENT "C"
+        push    hl                ; SAVE Address
+        ex      de,hl             ; SET UP FOR NSETCX WITH COUNT
+        call    NSETCX            ; IN [H,L] OF POINTS TO SETC
+        pop     hl                ; GET BACK STARTING C
+        pop     af                ; Address AND BIT MASK
+        call    STOREC            ; SET UP AS CURRENT "C"
+        call    DOWNC             ; MOVE TO NEXT LINE DOWN IN Y
+        pop     bc                ; GET BACK NUMBER OF LINES
+        pop     de                ; GET BACK WIDTH
+        dec     bc                ; COUNT DOWN LINES
+        ld      a,b               
+        or      c                 ; SEE IF ANY LEFT
+        jr      nz,BOXLOP         ; KEEP DRAWING MORE LINES
+        pop     hl              
+        ret                     
+; E6C6 
+DOLINE: push    bc                ; SAVE COORDINATES
+        push    de                
+        push    hl                ; SAVE TEXT POINTER
+        call    DOGRPH            
+        ld      hl,(GRPACX)       ; RESTORE ORIGINAL SECOND COORDINATE
+        ld      (GXPOS),hl        
+        ld      hl,(GRPACY)       ; FOR BOXLIN CODE
+        ld      (GYPOS),hl        
+        pop     hl                ; RESTORE TEXT POINTER
+        pop     de              
+        pop     bc              
+        ret                     
+; E6DC 
+BOXLIN: push    hl                ; SAVE TEXT POINTER
+        ld      hl,(GYPOS)        
+        push    hl                ; SAVE Y2
+        push    de                ; SAVE Y1
+        ex      de,hl             ; MOVE Y2 TO Y1
+        call    DOLINE            ; DO TOP LINE
+        pop     hl                ; MOVE Y1 TO Y2
+        ld      (GYPOS),hl        
+        ex      de,hl             ; RESTORE Y1 TO [D,E]
+        call    DOLINE            
+        pop     hl                ; GET BACK Y2
+        ld      (GYPOS),hl        ; AND RESTORE
+        ld      hl,(GXPOS)        ; GET X2
+        push    bc                ; SAVE X1
+        ld      b,h               ; SET X1=X2
+        ld      c,l               
+        call    DOLINE            
+        pop     hl                
+        ld      (GXPOS),hl        ; SET X2=X1
+        ld      b,h               ; RESTORE X1 TO [B,C]
+        ld      c,l               
+        call    DOLINE            
+        pop     hl                ; RESTORE THE TEXT POINTER
+        ret                     
+; E706 
+DOGRPH: call    SCLXYX            ; CHEATY SCALING - JUST TRUNCATE FOR NOW
+        call    XCHGAC            
+        call    SCLXYX            
+        call    YDELT             ; GET COUNT DIFFERENCE IN [H,L]
+        call    c,XCHGAC          ; IF CURRENT Y IS SMALLER NO EXCHANGE
+        push    de                ; SAVE Y1 COORDINATE
+        push    hl                ; SAVE DELTA Y
+        call    XDELT             
+        ex      de,hl             ; PUT DELTA X INTO [D,E]
+        ld      hl,RIGHTC         ; ASSUME X WILL GO RIGHT
+        jr      nc,LINCN2        
+        ld      hl,LEFTC        
+LINCN2: ex      (sp),hl           ; XTHL
+        rst     COMPAR            ; SEE WHICH DELTA IS BIGGER
+        jr      nc,YDLTBG         ; YDELTA IS BIGGER OR EQUAL 
+        ld      (MINDEL),hl       ; SAVE MINOR AXIS DELTA (Y)
+        pop     hl                ; GET X ACTION ROUTINE
+        ld      (MAXUPD+1),hl     ; SAVE IN MAJOR ACTION Address
+        ld      hl,DOWNC          ; ALWAYS INCREMENT 
+        ld      (MINUPD+1),hl     ; WHICH IS THE MINOR AXIS
+        ex      de,hl             ; [H,L]=DELTA X=MAJOR DELTA
+        jr      LINCN3            ; MERGE WITH YDLTBG CASE AND DO DRAW
+; E737  
+YDLTBG: ex      (sp),hl           ; XTHL
+        ld      (MINUPD+1),hl     ; SAVE Address OF MINOR AXIS UPDATE
+        ld      hl,DOWNC          ; Y IS ALWAYS INCREMENT MODE
+        ld      (MAXUPD+1),hl     ; SAVE AS MAJOR AXIS UPDATE
+        ex      de,hl             ; [H,L]=DELTA X
+        ld      (MINDEL),hl       ; SAVE MINOR DELTA
+        pop     hl                ; [H,L]=DELTA Y=MAJOR DELTA
+; E746 
+;;Draw a Line
+; MAJOR AXIS IS ONE WITH THE LARGEST DELTA
+; MINOR IS THE OTHER
+; READY TO DRAW NOW
+; MINUPD+1=Address TO GO TO UPDATE MINOR AXIS COORDINATE
+; MAXUPD+1=Address TO GO TO UPDATE MAJOR AXIS COORDINATE
+; [H,L]=MAJOR AXIS DELTA=# OF POINTS-1
+; MINDEL=DELTA ON MINOR AXIS
+;
+; IDEA IS
+;  SET SUM=MAJOR DELTA/2
+;  [B,C]=# OF POINTS
+;  MAXDEL=-MAJOR DELTA (CONVENIENT FOR ADDING)
+; LINE LOOP (LINLP3):
+;       DRAW AT CURRENT POSITION
+;       UPDATE MAJOR AXIS
+;       SUM=SUM+MINOR DELTA
+;       IF SUM.GT.MAJOR DELTA THEN UPDATE MINOR AND SUM=SUM-MAJOR DELTA
+;       DECREMENT [B,C] AND TEST FOR 0 -- LOOP IF NOT
+; END LOOP
+LINCN3: pop     de                ; GET BACK Y1 
+        push    hl                ; SAVE FOR SETTING UP COUNT
+        call    NEGHL          
+        ld      (MAXDEL),hl       ; SAVE MAJOR DELTA FOR SUMMING
+        call    MAPXYP            ; GET POSITION INTO BITMSK AND [H,L]  
+        pop     de                
+        push    de                ; START SUM AT MAXDEL/2 
+        call    HLFDE             
+        pop     bc                ; GET COUNT IN [B,C]
+        inc     bc                ; NUMBER OF POINTS IS DELTA PLUS ONE 
+        jr      LINLP3           
+; E75A 
+LINLPR: pop     hl
+        ld      a,b
+        or      c
+        ret     z
+LINLOP: call    MAXUPD            ; UPDATE MAJOR AXIS
+; Inner loop of line code.        
+LINLP3: call    SETC              ; SET CURRENT POINT
+        dec     bc                
+        push    hl                
+        ld      hl,(MINDEL)       
+        add     hl,de             ; ADD SMALL DELTA TO SUM
+        ex      de,hl             
+        ld      hl,(MAXDEL)       ; UPDATE SUM FOR NEXT POINT
+        add     hl,de             
+        jr      nc,LINLPR         
+        ex      de,hl             
+        pop     hl                
+        ld      a,b               
+        or      c                 
+        ret     z                 
+        call    MINUPD            ; ADVANCE MINOR AXIS           
+        jr      LINLOP            ; CONTINUE UNTIL COUNT EXHAUSTED
+; E77B                            
+HLFDE:  ld      a,d               ; DE = DE/2
+        or      a
+        rra
+        ld      d,a
+        ld      a,e
+        rra
+        ld      e,a
+        ret
+; E783
+;Restore Text Pointer and Return
+POPTRT: pop     hl
+        ret
+; E785
+NEGDE:  ex      de,hl           ; DE = 0 - DE
+        call    NEGHL
+        ex      de,hl
+        ret
+;E78B
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## LINE
+;;; Draw line or box on screen.
+;;; ### FORMAT:
+;;;   - CIRCLE(<xcenter>, <ycenter>), <radius>[,[<color>][,[<start>],[<end>][,<aspect>]]]
+;;;     - Action: Draws line from the first specified point to the second specified point.
+;;;       - If the first (<x-coord>,<y-coord>) is ommited, the line starts at the last referenced point.
+;;;       - B (box) draws a box with the specified points at opposite corners.
+;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
+;;;       - If <color> is not specified, two commas must be used before B or BF
+;;; ### EXAMPLES:
+ST_CIRCLE:  
+        call    SCAN1             ; GET (X,Y) OF CENTER INTO GRPACX,Y
+        SYNCHK  ','               ; EAT COMMA
+        call    GETIN2            ; GET THE RADIUS
+        ld      a,d 
+        or      a 
+        jp      m,FCERR 
+        push    hl                ; SAVE TXTPTR
+        ex      de,hl 
+        ld      (GXPOS),hl        ; SAVE HERE TILL START OF MAIN LOOP
+        call    MAKINT            ; PUT INTEGER INTO FAC
+        call    CHKNUM            ; MUST BE NUMBER
+        ld      bc,$8035          ; LOAD REGS WITH SQR(2)/2
+        ld      de,$04F3  
+        call    FMULT             ; DO FLOATING PT MULTIPLY
+        call    FRCINX            ; CONVERT TO INTEGER & GET INTO [HL]
+        ld      (CNPNTS),hl       ; CNPNTS=RADIUS*SQR(2)/2=# PTS TO PLOT
+        xor     a                 ; ZERO OUT GLINEF - NO LINES TO CENTER
+        ld      (GLINEF),a  
+        ld      (CSCLXY),a  
+        pop     hl                ; REGET TXTPTR
+        call    ATRSCN            ; SCAN POSSIBLE ATTRIBUTE
+        ld      c,1               ; SET LO BIT IN GLINEF FOR LINE TO CNTR
+        ld      de,0              ; DEFAULT START COUNT = 0
+        call    CGTCNT  
+        push    de                ; SAVE COUNT FOR LATER COMPARISON
+        ld      c,128             ; SET HI BIT IN GLINEF FOR LINE TO CNTR
+        ld      de,0-1            ; DEFAULT END COUNT = INFINITY
+        call    CGTCNT  
+        ex      (sp),hl           ; GET START COUNT, PUSH TXTPTR TILL DONE
+        xor     a 
+        ex      de,hl             ; REVERSE REGS TO TEST FOR .LT.
+        rst     COMPAR            ; SEE IF END .GE. START
+        ld      a,0 
+        jp      nc,CSTPLT         ; YES, PLOT POINTS BETWEEN STRT & END
+        dec     a                 ; PLOT POINTS ABOVE & BELOW
+        ex      de,hl             ; SWAP START AND END SO START .LT. END
+        push    af                ; Swap sense of center line flags
+        ld      a,(GLINEF)  
+        ld      c,a 
+        rlca  
+        rlca  
+        or      c 
+        rrca  
+        ld      (GLINEF),a        ; Store swapped flags
+        pop     af  
+; E7E6  
+CSTPLT: ld      (CPLOTF),a        ; SET UP PLOT POLARITY FLAG
+        ex      de,hl 
+        ld      (CSTCNT),hl       ; STORE START COUNT
+        ex      de,hl 
+        ld      (CENCNT),hl       ; AND END COUNT
+        pop     hl                ; GET TXTPTR
+        dec     hl                ; NOW SEE IF LAST CHAR WAS A COMMA
+        rst     CHRGET  
+        jp      nz,CIRC1          ; SOMETHING THERE
+        push    hl                ; SAVE TXTPTR
+        call    GTASPC            ; GET DEFAULT ASPECT RATIO INTO [HL]
+        ld      a,h 
+        or      a                 ; IS ASPECT RATIO GREATER THAN ONE?
+        jp      z,CIRC2           ; BRIF GOOD ASPECT RATIO
+        ld      a,1 
+        ld      (CSCLXY),a  
+        ex      de,hl             ; ASPECT RATIO IS GREATER THAN ONE, USE INVERSE
+        jp      CIRC2             ; NOW GO CONVERT TO FRACTION OF 256
+; E809  
+CIRC1:  SYNCHK  ','               ; EAT COMMA
+        call    FRMEVL            ; EVALUATE A FORMULA
+        push    hl                ; SAVE TXTPTR
+        call    CHKNUM            ; MUST BE NUMBER
+        call    CMPONE            ; SEE IF GREATER THAN ONE
+        jp      nz,CIRC11         ; LESS THAN ONE - SCALING Y
+        inc     a                 ; MAKE [A] NZ
+        ld      (CSCLXY),a        ; FLAG SCALING X
+        call    FDIV              ; RATIO = 1/RATIO, MAKE NUMBER FRACTION OF 256
+; E81F  
+CIRC11: ld      hl,FAC            ; BY MULTIPLYING BY 2^8 (256)
+        ld      a,(hl)  
+        add     a,8               ; ADD 8 TO EXPONENT
+        ld      (hl),a  
+        call    FRCINX            ; MAKE IT AN INTEGER IN [HL]
+CIRC2:  ld      (ASPECT),hl       ; STORE ASPECT RATIO
+;       CIRCLE ALGORITHM
+;
+;       [HL]=X=RADIUS * 2 (ONE BIT FRACTION FOR ROUNDING)
+;       [DE]=Y=0
+;       SUM =0
+; LOOP: IF Y IS EVEN THEN
+;             REFLECT((X+1)/2,(Y+1)/2) (I.E., PLOT POINTS)
+;             IF X.LT.Y THEN EXIT
+;       SUM=SUM+2*Y+1
+;       Y=Y+1
+;       IF SUM.GGWGRP.RNO
+;             SUM=SUM-2*X+1
+;             X=X-1
+;       ENDIF
+;       GOTO LOOP
+;
+        ld      de,0              ; INIT Y = 0
+        ex      de,hl 
+        ld      (CRCSUM),hl       ; SUM = 0
+        ex      de,hl 
+        ld      hl,(GXPOS)        ; X = RADIUS*2
+        add     hl,hl 
+; E838  
+CIRCLP: call    ISCNTC            ;[M80] CHECK FOR CONTROL-C
+        ld      a,e               ; TEST EVENNESS OF Y
+        rra                       ; TO SEE IF WE NEED TO PLOT
+        jp      c,CRCLP2          ; Y IS ODD - DON'T TEST OR PLOT
+        push    de                ; SAVE Y AND X
+        push    hl  
+        inc     hl                ; ACTUAL COORDS ARE (X+1)/2,(Y+1)/2
+        ex      de,hl 
+        call    HLFDE             ; (PLUS ONE BEFORE DIVIDE TO ROUND UP)
+        ex      de,hl 
+        inc     de  
+        call    HLFDE 
+        call    CPLOT8  
+        pop     de                ; RESTORE X AND Y
+        pop     hl                ; INTO [DE] AND [HL] (BACKWARDS FOR CMP)
+        rst     COMPAR            ; QUIT IF Y .GE. X
+        jp      nc,POPTRT         ; GO POP TXTPTR AND QUIT
+        ex      de,hl             ; GET OFFSETS INTO PROPER REGISTERS
+CRCLP2: ld      b,h               ; [BC]=X
+        ld      c,l 
+        ld      hl,(CRCSUM) 
+        inc     hl                ; SUM = SUM+2*Y+1
+        add     hl,de 
+        add     hl,de 
+        ld      a,h               ; NOW CHECK SIGN OF RESULT
+        add     a,a 
+        jp      c,CNODEX          ; DON'T ADJUST X IF WAS NEGATIVE
+        push    de                ; SAVE Y
+        ex      de,hl             ; [DE]=SUM
+        ld      h,b               ; [HL]=X
+        ld      l,c               ; [HL]=2*X-1
+        add     hl,hl 
+        dec     hl  
+        ex      de,hl             ; PREPARE TO SUBTRACT
+        ld      a,l               ; CALC SUM-2*X+1
+        sub     e 
+        ld      l,a 
+        ld      a,h 
+        sbc     a,d 
+        ld      h,a 
+        dec     bc                ; X=X-1
+        pop     de                ; GET Y BACK
+CNODEX: ld      (CRCSUM),hl       ; UPDATE CIRCLE SUM
+        ld      h,b               ; GET X BACK TO [HL]
+        ld      l,c 
+        inc     de                ; Y=Y+1
+        jp      CIRCLP  
+; E87B  
+CPLSCX: push    de  
+        call    SCALEY  
+        pop     hl                ; GET UNSCALED INTO [HL]
+        ld      a,(CSCLXY)        ; SEE WHETHER ASPECT WAS .GT. 1
+        or      a 
+        ret     z                 ; DON'T SWAP IF ZERO
+        ex      de,hl 
+        ret 
+; E887  
+CPLOT8: ex      de,hl 
+        ld      (CPCNT),hl        ; POINT COUNT IS ALWAYS = Y
+        ex      de,hl 
+        push    hl                ; SAVE X
+        ld      hl,0              ; START CPCNT8 OUT AT 0
+        ld      (CPCNT8),hl 
+        call    CPLSCX            ; SCALE Y AS APPROPRIATE
+        ld      (CXOFF),hl        ; SAVE CXOFF
+        pop     hl                ; GET BACK X
+        ex      de,hl 
+        push    hl                ; SAVE INITIAL [DE]
+        call    CPLSCX            ; SCALE X AS APPROPRIATE
+        ex      de,hl 
+        ld      (CYOFF),hl  
+        ex      de,hl 
+        pop     de                ; GET BACK INITIAL [DE]
+        call    NEGDE             ; START: [DE]=-Y,[HL]=X,CXOFF=Y,CY=X
+        call    CPLOT4            ; PLOT +X,-SY -Y,-SX -X,+SY +Y,-SX
+        push    hl  
+        push    de  
+        ld      hl,(CNPNTS)       ; GET # PNTS PER OCTANT
+        ld      (CPCNT8),hl       ; AND SET FOR DOING ODD OCTANTS
+        ex      de,hl 
+        ld      hl,(CPCNT)        ; GET POINT COUNT
+        ex      de,hl
+        ld      a,l               ; ODD OCTANTS ARE BACKWARDS SO
+        sub     e                 ; PNTCNT = PNTS/OCT - PNTCN
+        ld      l,a 
+        ld      a,h 
+        sbc     a,d 
+        ld      h,a 
+        ld      (CPCNT),hl        ; PNTCNT = PNTS/OCT - PNTCNT
+        ld      hl,(CXOFF)        ; NEED TO NEGATE CXOFF TO START OUT RIGHT
+        call    NEGHL 
+        ld      (CXOFF),hl  
+        pop     de  
+        pop     hl  
+        call    NEGDE             ; ALSO NEED TO MAKE [DE]=-SX=-[DE],
+                                  ;[GBB] PLOT +Y,-SX -X,-SY -Y,+SX +X,+SY
+                                  ; (FALL THRU TO CPLOT4)
+CPLOT4: ld      a,4               ; LOOP FOUR TIMES
+CPLOT:  push    af                ; SAVE LOOP COUNT
+        push    hl                ; SAVE BOTH X & Y OFFSETS
+        push    de  
+        push    hl                ; SAVE TWICE
+        push    de  
+        ex      de,hl 
+        ld      hl,(CPCNT8)       ; GET NP*OCTANT*8
+        ex      de,hl 
+        ld      hl,(CNPNTS)       ; ADD SQR(2)*RADIUS FOR NEXT OCTANT
+        add     hl,hl 
+        add     hl,de 
+        ld      (CPCNT8),hl       ; UPDATE FOR NEXT TIME
+        ld      hl,(CPCNT)        ; CALC THIS POINT'S POINT COUNT
+        add     hl,de             ; ADD IN PNTCNT*OCTANT*NP
+        ex      de,hl             ; SAVE THIS POINT'S COUNT IN [DE]
+        ld      hl,(CSTCNT)       ; GET START COUNT
+        rst     COMPAR  
+        jp      z,CLINSC          ; SEE IF LINE TO CENTER REQUIRED
+        jp      nc,CNBTWN         ; IF SC .GT. PC, THEN NOT BETWEEN
+        ld      hl,(CENCNT)       ; GET END COUNT
+        rst     COMPAR  
+        jp      z,GLINEC          ; GO SEE IF LINE FROM CENTER NEEDED
+        jp      nc,CBTWEN         ; IF EC .GT. PC, THEN BETWEEN
+  
+CNBTWN: ld      a,(CPLOTF)        ; SEE WHETHER TO PLOT OR NOT
+        or      a                 ; IF NZ, PLOT POINTS NOT IN BETWEEN
+        jp      nz,CPLTIT         ; NEED TO PLOT NOT-BETWEEN POINTS
+        jp      GCPLFN            ; DON'T PLOT - FIX UP STACK & RETURN
+  
+GLINEC: ld      a,(GLINEF)        ; GET CENTER LINE FLAG BYTE
+        add     a,a               ; BIT 7=1 MEANS DRAW LINE FROM CENTER
+        jp      nc,CPLTIT         ; NO LINE REQUIRED - JUST PLOT POINT
+        jp      CLINE             ; LINE REQUIRED.
+  
+CLINSC: ld      a,(GLINEF)        ; GET CENTER LINE FLAG BYTE
+        rra                       ; BIT 0=1 MEANS LINE FROM CENTER NEEDED.
+        jp      nc,CPLTIT         ; NO LINE REQUIRED - JUST PLOT POINT
+  
+CLINE:  pop     de                ; GET X & Y OFFSETS
+        pop     hl  
+        call    GTABSC            ; GO CALC TRUE COORDINATE OF POINT
+        call    GLINE2            ; DRAW LINE FROM [BC],[DE] TO CENTER
+        jp      CPLFIN  
+  
+CBTWEN: ld      a,(CPLOTF)        ; SEE WHETHER PLOTTING BETWEENS OR NOT
+        or      a 
+        jp      z,CPLTIT          ; IF Z, THEN DOING BETWEENS
+GCPLFN: pop     de                ; CLEAN UP STACK
+        pop     hl  
+        jp      CPLFIN  
+  
+CPLTIT: pop     de                ; GET X & Y OFFSETS
+        pop     hl  
+        call    GTABSC            ; CALC TRUE COORDINATE OF POINT
+        call    SCLXYX            ; SEE IF POINT OFF SCREEN
+        jp      nc,CPLFIN         ; NC IF POINT OFF SCREEN - NO PLOT
+        call    MAPXYP  
+        call    SETC              ; PLOT THE POINT
+  
+CPLFIN: pop     de                ; GET BACK OFFSETS
+        pop     hl  
+        pop     af                ; GET BACK LOOP COUNT
+        dec     a 
+        ret     z                 ; QUIT IF DONE.
+        push    af                ;  PUSH PSW
+        push    de                ; SAVE X OFFSET
+        ex      de,hl 
+        ld      hl,(CXOFF)        ; SWAP [HL] AND CXOFF
+        ex      de,hl 
+        call    NEGDE             ; NEGATE NEW [HL]
+        ld      (CXOFF),hl
+        ex      de,hl
+        pop     de
+        push    hl
+        ld      hl,(CYOFF)        ; SWAP [DE] AND CYOFF
+        ex      de,hl             ; NEGATE NEW [DE]
+        ld      (CYOFF),hl  
+        call    NEGDE 
+        pop     hl  
+        pop     af                ;  POP PSW
+        jp      CPLOT             ; PLOT NEXT POINT
+  
+  
+GLINE2: ld      hl,(GRPACX)       ; DRAW LINE FROM [BC],[DE]
+        ld      (GXPOS),hl        ; TO GRPACX,Y
+        ld      hl,(GRPACY) 
+        ld      (GYPOS),hl  
+        jp      DOGRPH            ; GO DRAW THE LINE
+  
+; GTABSC - GET ABSOLUTE COORDS  
+GTABSC: push    de                ; SAVE Y OFFSET FROM CENTER
+        ex      de,hl 
+        ld      hl,(GRPACX)       ; GET CENTER POS
+        ex      de,hl 
+        add     hl,de             ; ADD TO DX
+        ld      b,h               ; [BC]=X CENTER + [HL]
+        ld      c,l 
+        pop     de  
+        ld      hl,(GRPACY)       ; GET CENTER Y
+        add     hl,de 
+        ex      de,hl             ; [DE]=Y CENTER + [DE]
+        ret 
+  
+SCALEY: ld      hl,(ASPECT)       ; CHECK FOR *0 AND *1 CASES
+        ld      a,l 
+SCALE2: or      a                 ; ENTRY TO DO [A]*[DE] ([A] NON-Z)
+        jp      nz,SCAL2          ; NON-ZERO
+        or      h                 ; TEST HI BYTE
+        ret     nz                ; IF NZ, THEN WAS *1 CASE
+        ex      de,hl             ; WAS *0 CASE - PUT 0 IN [DE]
+        ret
+
+SCAL2:  ld      c,d
+        ld      d,0
+        push    af
+        call    SCAL2M
+        ld      e,128
+        add     hl,de             ;  ADDI AX,128  - ROUND UP
+        ld      e,c
+        ld      c,h
+        pop     af
+        call    SCAL2M
+        ld      e,c
+        add     hl,de
+        ex      de,hl
+        ret
+
+;;
+SCAL2M: ld      b,8               ; Going to Loop 8 Times
+        ld      hl,0              ; Clear [HL] First
+SCAL2L: add     hl,hl             ; [HL] = [HL] * 2
+        add     a,a               ; [A] = [A] * 2
+        jp      nc,NOCARY         ; If Carry
+        add     hl,de             ;   [HL] = [HL] + [DE]
+NOCARY: dec     b                 ; Countdown
+        jp      nz,SCAL2L         ;   and Loop
+        ret
+
+; PARSE THE BEGIN AND END ANGLES
+CGTCNT: dec     hl
+        rst     CHRGET            ; GET CURRENT CHAR
+        ret     z                 ; IF NOTHING, RETURN DFLT IN [DE]
+        SYNCHK  ','               ; EAT THE COMMA
+        cp      ','               ; USE DEFAULT IF NO ARGUMENT.
+        ret     z                 
+        push    bc                ; SAVE FLAG BYTE IN [C]
+        call    FRMEVL            ; EVALUATE THE THING
+        ex      (sp),hl           ; XTHL
+        push    hl                ; POP FLAG BYTE, PUSH TXTPTR
+        call    CHKNUM            ; MUST BE NUMBER
+        pop     bc                ; GET BACK FLAG BYTE
+        ld      hl,FAC            ; NOW SEE WHETHER POSITIVE OR NOT
+        ld      a,(hl)            ; GET EXPONENT BYTE
+        or      a                 
+        jp      z,CGTC2           ; SET TO HIGH MANTISSA BYTE
+        dec     hl                
+        ld      a,(hl)            
+        or      a                 
+        jp      p,CGTC2           
+        and     127               ; MAKE IT POSITIVE
+        ld      (hl),a            
+        ld      hl,GLINEF         ; SET BIT IN [C] IN GLINEF
+        ld      a,(hl)            
+        or      c                 
+        ld      (hl),a            
+CGTC2:  ld      bc,$7E22          ; LOAD REGS WITH 1/2*PI
+        ld      de,$F983          
+        call    FMULT             ; MULTIPLY BY 1/(2*PI) TO GET FRACTION
+        call    CMPONE            ; SEE IF RESULT IS GREATER THAN ONE
+        jp      z,FCERR           ; FC ERROR IF SO
+        call    PUSHF             ; SAVE FAC ON STAC
+        ld      hl,(CNPNTS)       ; GET NO. OF POINTS PER OCTANT
+        add     hl,hl             ; TIMES 8 FOR TRUE CIRCUMFERENCE
+        add     hl,hl             
+        add     hl,hl             
+        call    MAKINT            ; STICK IT IN FAC
+        call    CHKNUM            ; MUST BE NUMBER
+        pop     bc                ; GET BACK ANG/2*PI IN REGS
+        pop     de                
+        call    FMULT             ; DO THE MULTIPLY
+        call    FRCINX            ; CONVERT TO INTEGER IN [HL]
+        pop     de                ; GET BACK TXTPTR
+        ex      de,hl             
+        ret                       
+                                  
+CMPONE: ld      bc,$8100          ; Compare FAC with 1.0
+        ld      de,$0000
+        call    FCOMP
+        dec     a
+        ret
+      
+ST_DRAW:    ;EB28
+      jp        FCERR
+      
+ST_PUT:     ;E3F6
+      jp        FCERR
+
+ST_GET:     ;E3F6
+      jp        FCERR
+
+;EDFA
+GTASPC: ld      de,204          ; Aspect Ration = 318:204 (6.25:4)
+        ld      hl,318
+        ret
+; EE01 
+STOREC: ld      (PINDEX),a        ; Store Point Position
+        ld      (CURLOC),hl       ; and Semigraphics Character Address
+        ret                     
+; EE08 
+FETCHC: ld      a,(PINDEX)        ; Load Bit Index 
+        ld      hl,(CURLOC)       ; Load Current Point Address
+        ret                     
+; EE0F                                                  
+; Set Graphics Attribute (Foreground Color) 
+SETATR: cp      16                ; Is Color > 16
+        ccf                       ; If Yes
+        ret     c                 ;   Return Error
+        ld      (ATRBYT),a        ; Store Color
+        ret                     
+; EE17
+; Get Bit Mask for Bit Position PINDEX
+GETMSK:  ld      de,BITTAB       
+         ld      a,(PINDEX)
+         add     a,e
+         ld      e,a
+         jr      nc,GETMSS
+         inc     d
+GETMSS:  ld      a,(de)
+         ret
+; EE24       
+; SET CURRENT POINT
+; Sets Current Point to Foreground Color ATRBYT
+; Background Color is not changed
+; Current point is at Current Point Index PINDEX in 
+; Semigraphics Character at Current Address CURLOC
+SETC:   push    hl                ; Save [HL]
+        push    de                ; and [DE]
+        ld      hl,(CURLOC)       ; Get Current Screen Address
+        ld      a,(hl)            ; Get Character at Address
+        or      SGBASE            ; Verify it's in the range of              
+        xor     (hl)              ; Semigraphics Characters
+        jr      z,SETC2           ; If Not
+        ld      (hl),SGBASE       ;   Store Base Semigraphic Character
+SETC2:  call    GETMSK            ; Get Bit Mask for Pixel to set
+        or      (hl)              ; Set it
+        ld      (hl),a            ; Write Character back to Screen Matrix
+        ld      de,COLRAM-CHRRAM  ; Add Offset into Color Matrix to
+        add     hl,de             ; Screen Address to Get Color Address
+        ld      a,(ATRBYT)        ; Get Color Byte
+        add     a,a               ; Now multiply by 16,
+        add     a,a               ; moving it to the high nybble (Foreground Color)
+        add     a,a               ; leaving 0 (Black) in thr low nybblr (Background Color)
+        add     a,a                 
+        ld      d,a               ; Save New Color Byte
+        ld      e,(hl)            ; Get Old Color Byte
+        ld      a,15              ; Override Old Background Color ($0F would keep it)
+        and     e                 ; Clear Old Foreground Color
+        or      d                 ; Put in the New Foreground Color
+        ld      (hl),a            ; Writeback Attribute back to Color Matrix
+        pop     de                
+        pop     hl              
+        ret
+; EE4B 
+; Draw Horizontal Line [HL] Pixels Long 
+NSETCX: ld      a,l               ; Looping HL Times
+        or      h                 ; If HL is 0
+        ret     z                 ;   Return
+        call    SETC              ; Set Pixel at Current Location
+        call    RIGHTC            ; Move 1 Pixel Right
+        dec     hl                ; Count Down
+        jr      NSETCX            ; and Loop
+
+; EE88 
+; Get Screen Address and and Pixel Index from Character X, Character Y
+; Uses: [B,C] = Character X Position 
+;       [D,E] = Pixel Y Position 
+; Sets: PINDEX = [A] = 0, 1, or 2
+;       CURLOC = [H,L] = Screen Address
+MAPXYP: push    hl                ; Save [H,L] 
+        push    de                ; Save [D,E] (YPOS)
+        ld      hl,CHRRAM+40      ; Address = Column 0, Line 1
+        ld      a,e               ; Mask = YPOS
+        ld      de,40             ; Screen Width
+MAPPLP: sub     3                 ; Mask = Mask - 3
+        jr      c,MAPPAD          ; If Positive
+        add     hl,de             ;   Add Screen Width to Screen Address
+        jr      MAPPLP            ;   and Loop
+MAPPAD: add     a,3               ; Mask = Mask + 3
+        add     a,a               ; 
+        sra     c                 ; 
+        jr      nc,MAPXYA         ; If Mask is Even
+        inc     a                 ;   Mask = Mask + 1
+MAPXYA: add     hl,bc             ; Add XPOS to Screen Address
+        ld      (PINDEX),a        ; Store Mask
+        ld      (CURLOC),hl       ; Store Address
+        pop     de                ; Get YPOS back into DE
+        pop     hl                ; Restore HL
+        ret                       
+  
+; EEB6  
+; SEE IF POINT OFF SCREEN 
+SCLXYX: ld      a,71              
+        ld      (GYMAX),a         ; Max Y = 71 Pixels
+        ld      a,79              
+        ld      (GXMAX),a         ; Max X = 79 Pixels
+CMPGMY: push    hl                ;Save Registers
+        push    bc                
+        push    de                
+        ld      a,(GYMAX)         
+        ld      h,0               ; [H,L] = GYMAX
+        ld      l,a               
+        bit     7,d               ; If [D,E] is Negative
+        jr      nz,SETGYZ         ;   [H,L] = 0 and Set Carry
+        rst     COMPAR            ; Else Compare [D,E] and [H,L]
+SCLXY2: ld      d,b               ; [D,E] = [B,C]
+        ld      e,c               
+        ld      b,0               
+        jr      nc,CMPGMX         
+        ex      (sp),hl           
+        inc     b                 
+CMPGMX: ld      a,(GXMAX)         
+        ld      h,0               ; [H,L] = GXMAX
+        ld      l,a               
+        bit     7,d               ; If [D,E] is Negative
+        jr      nz,SETGXZ         ;   [H,L] = 0 and Set Carry
+        rst     COMPAR            ; Else Compare [D,E] and [H,L]
+SCLXY3: pop     de                
+        jr      c,SCLXY4           
+        rr      b                 
+        db      $06               ; LD B, over EX
+SCLXY4: ex      (sp),hl              
+        pop     bc                
+        ccf                       
+        pop     hl                
+        ret                       
+; EEEC  
+SETGYZ: ld      l,0               ; [L] = 0
+        scf                       ; Set Carry Flag
+        jr      SCLXY2            ; and Continue
+  
+SETGXZ: ld      l,0                    ; [L] = 0
+        scf                       ; Set Carry Flag
+        jr      SCLXY3                 ; and Continue
+
+; EF1A 
+;Down 1 Pixel: Calculate New Screen Address and Bit Index
+DOWNP:  inc     a               
+        inc     a                 ; [A] = Bit Index * 2
+        cp      6                 
+        ccf                       
+        ret     nc                
+        sub     6                 ; [A] = [A] - 6 
+        push    de                
+        ld      de,40         
+        add     hl,de             ; [HL] = curloc + 40
+        pop     de                
+        or      a                 ; Set Flags
+        ret                       
+; EF2A 
+; Left 1 Pixel: Calculate New Screen Address and Bit Index
+LEFTP:  dec     a                 ; Decrement Bit Index
+        bit     0,a               
+        ret     z                 ; If Bit Index is Even
+        inc     a                 ;   Add 2
+        inc     a                 
+        dec     hl                ;   Decremement Address
+        or      a                 ;   Set Flags from Bit Index
+        ret                     
+; EF33
+; Right 1 Pixel: Calculate New Screen Address and Bit Index
+RIGHTP: inc     a                 ; Increment Bit Index
+        bit     0,a               ; 
+        ret     nz                ; If Bit Index is Odd
+        dec     a                 ;   Add 2
+        dec     a                 ; 
+        inc     hl                ;   Incremement Address
+        or      a                 ;   Set Flags from Bit Index
+        ret                     
+; EF3C
+; Move Text Cursor Down One Line
+DOWNL:  push    af               ; SAVE BIT MASK OF CURRENT "C" Address
+        push    hl               ; SAVE Address
+        call    FETCHC           ; GET CURRENT LOCATION
+        ld      de,40            ; Line Width = 40 characters
+        add     hl,de            ; Move Down One Line
+        jp      POPSTC           ; Store Current, Restore Saved and Return
+; EF48
+; Move Pixel Cursor Down One Line   
+DOWNC:  push    af                ; SAVE BIT MASK OF CURRENT "C" Address
+        push    hl                ; SAVE Address    
+        call    FETCHC            ; GET CURRENT LOCATION
+        call    DOWNP             ; Calculate New Screen Address, Bit Index
+        jr      POPSTC            ; Store Current, Restore Saved and Return
+
+; EF5C                                              
+LEFTC:  push    af                ; SAVE BIT MASK OF CURRENT "C" Address
+        push    hl                ; SAVE Address    
+        call    FETCHC            ; GET CURRENT LOCATION
+        call    LEFTP             ; Calculate New Screen Address, Bit Index
+        jr      POPSTC            ; Store Current, Restore Saved and Return
+; EF66 
+RIGHTC: push    af                ; SAVE BIT MASK OF CURRENT "C" Address
+        push    hl                ; SAVE Address    
+        call    FETCHC            ; GET CURRENT LOCATION
+        call    RIGHTP           
+; EF7A
+POPSTC: ld      (PINDEX),a        ; Store Bit Position 
+        ld      (CURLOC),hl       ; Store Current Point Address
+        pop     hl                ; Restore Saved Address
+        pop     af                ; Restore Saved Bit Index
+        ret                       ; Return from Subroutine
+
