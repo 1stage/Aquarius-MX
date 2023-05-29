@@ -145,6 +145,10 @@ CH376_CMD_BYTE_READ     equ     $3A     ; start reading bytes
 CH376_CMD_BYTE_RD_GO    equ     $3B     ; continue reading bytes
 CH376_CMD_BYTE_WRITE    equ     $3C     ; start writing bytes
 CH376_CMD_BYTE_WR_GO    equ     $3D     ; continue writing bytes
+CH376_CMD_DISK_QUERY    equ     $3F     ; check disk space
+CH376_CMD_DIR_CREATE    equ     $40     ; create and open or open existing catalog 
+CH376_CMD_DISK_RD_GO    equ     $55     ; go on reading operation of USB storage device
+
 ; status codes
 CH376_INT_SUCCESS       equ     $14     ; command executed OK
 CH376_INT_DISK_READ     equ     $1D     ; read again (more bytes to read)

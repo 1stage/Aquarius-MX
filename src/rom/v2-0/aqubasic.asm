@@ -1745,8 +1745,6 @@ EVAL_EXT:
     jp      z,FN_AND
     cp      ORTK
     jp      z,FN_OR
-    cp      CDTK
-    jp      z,GET_PATH
     cp      PLUSTK          ; IGNORE "+"
     jp      z,EVAL_EXT      ;
     jp      QDOT     
@@ -1840,30 +1838,6 @@ FLOAT_DE:
     call    FLOATR            ; Float It
     pop     hl
     ret
-
-;------------------------------------------------------------------------------
-;;; ---
-;;; ## CD$
-;;; Get Current Directory path as a string
-;;; ### FORMAT:
-;;;  - CD$
-;;;    - Action: Returns the current directory path as displayed by the CD command with no arguments
-;;; ### EXAMPLES:
-;;; ` PRINT CD$ `
-;;; > Prints the current directory path to the screen
-;;;
-;;; ` 10 A$=CD$:PRINT A$ `
-;;; > Assigns the current path string to A$, then prints it.
-;------------------------------------------------------------------------------
-GET_PATH:
-    inc     hl                ; Skip CD Token
-    SYNCHK  '$'               ; Require $
-    push    hl                ; Text Pointer on Stack
-    ex      (sp),hl           ; Swap Text Pointer with Return Address
-    ld      de,LABBCK         ; return address for SNGFLT, etc.
-    push    de                ; on stack
-    ld      hl,PathName
-    jp      TIMSTR
 
 ;---------------------------------------------------------------------
 ;                 Enhanced BASIC Commands and Functions 

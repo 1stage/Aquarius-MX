@@ -98,7 +98,7 @@ ST_CD:
     CALL   FRMEVL                  ; evaluate expression
     PUSH   HL                    ; push BASIC text pointer
     CALL   CHKSTR                ; type mismatch error if not string
-    CALL   LEN1                ; get string and its length
+    CALL   LEN1                  ; get string and its length
     JR     Z,.open               ; if null string then open current directory
     inc    hl
     inc    hl                    ; skip to string text pointer
@@ -130,6 +130,30 @@ ST_CD:
 .done:
     pop    hl                    ; restore BASIC text pointer
     ret
+
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## CD$
+;;; Get Current Directory path as a string
+;;; ### FORMAT:
+;;;  - CD$
+;;;    - Action: Returns the current directory path as displayed by the CD command with no arguments
+;;; ### EXAMPLES:
+;;; ` PRINT CD$ `
+;;; > Prints the current directory path to the screen
+;;;
+;;; ` 10 A$=CD$:PRINT A$ `
+;;; > Assigns the current path string to A$, then prints it.
+;------------------------------------------------------------------------------
+FN_CD:
+    inc     hl                ; Skip CD Token
+    SYNCHK  '$'               ; Require $
+    push    hl                ; Text Pointer on Stack
+    ex      (sp),hl           ; Swap Text Pointer with Return Address
+    ld      de,LABBCK         ; return address for SNGFLT, etc.
+    push    de                ; on stack
+    call    usb__get_path     ; Get pointer to current path in HL
+    jp      TIMSTR
 
 ;--------------------------------------------------------------------
 ;                             LOAD
