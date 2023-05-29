@@ -465,45 +465,45 @@ Error Status
         - Returns 0 if the last DOS command completed successfully.
 
 ### Basic Error Numbers
-| Err# | Code | Description                   |
+| Err# | Code | Description                  |
 |------|------|------------------------------|
-|    1   |  NF  | NEXT without FOR             |
-|    2   |  SN  | Syntax error                 |
-|    3   |  RG  | RETURN without GOSUB         |
-|    4   |  OD  | Out of DATA                   |
-|    5   |  FC  | Function Call error           |
-|    6   |  OV  | Overflow                     |
-|    7   |  OM  | Out of Memory                 |
-|    8   |  UL  | Undefined Line number         |
-|    9   |  BS  | Bad Subscript                 |
-|   10   |  DD  | Re-DIMensioned array         |
-|   11   |  /0  | Division by Zero             |
-|   12   |  ID  | Illegal direct               |
-|   13   |  TM  | Type mismatch                 |
-|   14   |  OS  | Out of String space           |
-|   15   |  LS  | String too Long               |
-|   16   |  WT  | String formula too complex   |
-|   17   |  CN  | Cant CONTinue                 |
-|   18   |  UF  | UnDEFined FN function         |
-|   19   |  MO  | Missing operand               |
+|   1  |  NF  | NEXT without FOR             |
+|   2  |  SN  | Syntax error                 |
+|   3  |  RG  | RETURN without GOSUB         |
+|   4  |  OD  | Out of DATA                  |
+|   5  |  FC  | Function Call error          |
+|   6  |  OV  | Overflow                     |
+|   7  |  OM  | Out of Memory                |
+|   8  |  UL  | Undefined Line number        |
+|   9  |  BS  | Bad Subscript                |
+|  10  |  DD  | Re-DIMensioned array         |
+|  11  |  /0  | Division by Zero             |
+|  12  |  ID  | Illegal direct               |
+|  13  |  TM  | Type mismatch                |
+|  14  |  OS  | Out of String space          |
+|  15  |  LS  | String too Long              |
+|  16  |  WT  | String formula too complex   |
+|  17  |  CN  | Cant CONTinue                |
+|  18  |  UF  | UnDEFined FN function        |
+|  19  |  MO  | Missing operand              |
 
 ### DOS Error Numbers
 | Err# | Error Message       | Description                    |
 |------|---------------------|--------------------------------|
-|    1   | no CH376             | CH376 not responding            |
-|    2   | no USB               | Not in USB mode                |
-|    3   | no disk             | USB Drive mount failed          |
-|    4   | invalid name         | Invalid DOS file name          |
-|    5   | file not found       | File does not exist            |
-|    6   | file empty           | File does not contain data      |
-|    7   | filetype mismatch   | File is not in CAQ format      |
-|    8   | remove dir error     | Unable to remove directory      |
-|    9   | read error           | Error while reading USB drive  |
-|   10   | write error         | Error while writing USB drive  |
-|   11   | file create error   | Unable to create file          |
-|   12   | directory not found | Unable to open directory        |
-|   13   | path too long       | Path is too long                |
-|   14   | disk error #xx       | Other disk error                |
+|   1  | no CH376            | CH376 not responding           |
+|   2  | no USB              | Not in USB mode                |
+|   3  | no disk             | USB Drive mount failed         |
+|   4  | invalid name        | Invalid DOS file name          |
+|   5  | file not found      | File does not exist            |
+|   6  | file empty          | File does not contain data     |
+|   7  | filetype mismatch   | File is not in CAQ format      |
+|   8  | remove dir error    | Unable to remove directory     |
+|   9  | read error          | Error while reading USB drive  |
+|  10  | write error         | Error while writing USB drive  |
+|  11  | file create error   | Unable to create file          |
+|  12  | directory not found | Unable to open directory       |
+|  13  | path too long       | Path is too long               |
+|  14  | disk error #xx      | Other disk error               |
 
 
 ---
@@ -677,6 +677,15 @@ Move the cursor to a specific column and row on the screen
 ` CLS:LOCATE 19,11:PRINT"&" `
 > Clears the screen and prints `&` in the middle
 
+---
+## MENU
+Display and execute menu.
+### FORMAT:
+  - MENU ( <xpos>,<ypos>) [, <spacing>;] <string> [,<string>,...] GOTO <line>, [,<line>...]
+    - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
+### EXAMPLES:
+
+his Statement appears to be unique to the Aquarius
 ---
 ## ON ERROR
 BASIC error handling function and codes
