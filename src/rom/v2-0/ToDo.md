@@ -14,7 +14,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] Verify this is feasible
   - [ ] Add accompanying routines to CH376.asm
 
-- [ ] Rewrite hook dispatch routine fo faster execution of BASIC Programs.
+- [ ] SLEEP microseconds command
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -26,12 +26,6 @@ This file is for recording upcoming changes and features that are being added, a
 
 ## UNDER CONSIDERATION / WISH LIST
 - Turn debugger into separate ROM option
-
-- Screen copy from MSX BASIC (this is preferred over GET/PUT commands from ExtBASIC)
-  - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
-  - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
-
-- Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
 
 - MOD(dividend, divisor) function for modulus/remainder
   - No hook 
@@ -134,7 +128,16 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Debug and Break vectors added to SysVars
   - [x] Debug statement prints "Debugger not installed"
   - [x] Option commented out of splash screen - 
-  
+
+- [x] Screen copy from MSX BASIC - Extended BASIC GET/PUT does this and has been added
+  - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
+  - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
+
+- [x] Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
+
+- [x] Rewrite hook dispatch routine fo faster execution of BASIC Programs.
+ - [x] Also rewrote statement and function dispatch routines to improve speed and flexibility
+
 ### AquaLite
 
 - [x] Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
