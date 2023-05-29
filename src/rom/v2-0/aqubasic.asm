@@ -1549,11 +1549,11 @@ FN_VER:
 ;;; ## CALL
 ;;; Jump to and run machine code at specified address
 ;;; ### FORMAT:
-;;;  - CALL(< address >)
+;;;  - CALL < address >
 ;;;    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
 ;;;    - < address > can be a 16 bit signed or unsigned integer or hex value 
 ;;; ### EXAMPLES:
-;;; ` CALL($A000) `
+;;; ` CALL $A000 `
 ;;; > Begin executing machine code stored at upper half of middle 32k expansion RAM
 ;;;
 ;;; ` 10 LOAD "PRG.BIN",$A000 `
@@ -1563,11 +1563,53 @@ FN_VER:
 ;----------------------------------------------------------------------------
 
 ST_CALL:
-    call    GETADR           ; get <address>
-    push    de
-    ret                      ; jump to user code, HL = BASIC text pointer
+    call    GETADR                ; get <address>
+    push    de                    ; put it on the stack
+    ret                           ; jump to user code, HL = BASIC text pointer
 
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## SLEEP
+;;; Pause program execution.
+;;; ### FORMAT:
+;;;  - SLEEP < number >
+;;;    - Action: Causes BASIC to pause for approximately <number> microseconds.
+;;;      - If < number > is less than zero, pauses 65536 - <number> seconds
+;;;      - Returns FC Error if <number> is not between -32768 and 65535, inclusive.
+;;;      - Ctrl-C will interrupt the SLEEP command and the BASIC Program
+;;; ### EXAMPLES:
+;;; ` SLEEP 250 `
+;;; > Pauses for 1/4 second.
+;;; ` SLEEP S `
+;;; > Pauses for S / 1000 seconds.
+;----------------------------------------------------------------------------
 
+ST_SLEEP:
+    call    GETADR                ; get argument
+    push    hl                    ; save text pointer
+.deloop                           ; 3,579 cycles = 1 microsecond
+    ;Check for CTL Key - No Debounce
+    ld      bc,$7fff              ;  10 Scan A15 column
+    in      a,(c)                 ;  12 Read the results
+    cp      $df                   ;   7 z = only D5 row is down
+    jr      nz,.notctl            ;  12 Not CTL, skip check for C
+    ;Check for C Key - No Debounce   Total 41
+    ld      bc,$efff              ; Scan A12 column
+    in      a,(c)                 ; Read the results
+    cp      $ef                   ; z = only D4 row is down
+    jp      z,STOPC               ; CTL-C, interrupt program
+.notctl
+    ld      bc,152                ; 10
+.bcloop                           ; .bcloop total 152 * (10 + 13) = 3296
+    djnz    .bcloop               ; 13 
+                                  ; .deloop total: 41 + 3496 + 26 = 3563
+    dec     de                    ; 6     
+    ld      a,d                   ; 4
+    or      e                     ; 4
+    jr      nz,.deloop            ; 12 
+                                  ; Total 26
+    pop     hl                    ; restore text pointer
+    ret
 
 ; Require Open Parenthesis and Read Address
 PARADR:
