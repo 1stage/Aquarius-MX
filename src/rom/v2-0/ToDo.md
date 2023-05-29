@@ -14,8 +14,6 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] Verify this is feasible
   - [ ] Add accompanying routines to CH376.asm
 
-- [ ] SLEEP microseconds command
-
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
 
@@ -137,6 +135,8 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [x] Rewrite hook dispatch routine fo faster execution of BASIC Programs.
  - [x] Also rewrote statement and function dispatch routines to improve speed and flexibility
+
+- [x] SLEEP microseconds command
 
 ### AquaLite
 

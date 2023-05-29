@@ -123,7 +123,7 @@ STJUMPS:
     dw      SNERR                 ;$EB XOR
     dw      ST_MENU               ;$EC MENU
     dw      SNERR                 ;$ED EVAL
-    dw      SNERR                 ;$EE
+    dw      ST_SLEEP              ;$EE SLEEP
     dw      SNERR                 ;$EF
     dw      SNERR                 ;$F0
     dw      SNERR                 ;$F1
@@ -206,7 +206,7 @@ FNJUMPS:
     dw      FN_XOR                ;$EB XOR
     dw      SNERR                 ;$EC MENU
     dw      FN_EVAL               ;$ED EVAL
-    dw      SNERR                 ;$EE
+    dw      SNERR                 ;$EE SLEEP
     dw      SNERR                 ;$EF
     dw      SNERR                 ;$F0
     dw      SNERR                 ;$F1
@@ -306,6 +306,7 @@ CDTK    = $E0
     db      $80 + 'X', "OR"         ; $eb - PUT Operator and Bitwise XOR 
     db      $80 + 'M', "ENU"        ; $ec - Display and Execute Menu
     db      $80 + 'E', "VAL"        ; $ed - Display and Execute Menu
+    db      $80 + 'S', "LEEP"       ; $ed - Display and Execute Menu
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA

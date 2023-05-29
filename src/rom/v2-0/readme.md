@@ -61,11 +61,11 @@ Arctangent
 ## CALL
 Jump to and run machine code at specified address
 ### FORMAT:
- - CALL(< address >)
+ - CALL < address >
    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
    - < address > can be a 16 bit signed or unsigned integer or hex value
 ### EXAMPLES:
-` CALL($A000) `
+` CALL $A000 `
 > Begin executing machine code stored at upper half of middle 32k expansion RAM
 
 ` 10 LOAD "PRG.BIN",$A000 `
@@ -877,6 +877,21 @@ Set DateTime
 
 ` 10 SDTM "010101000000" `
 > Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
+
+---
+## SLEEP
+Pause program execution.
+### FORMAT:
+ - SLEEP < number >
+   - Action: Causes BASIC to pause for approximately <number> milliseconds.
+     - If < number > is less than zero, pauses 65536 - <number> seconds
+     - Returns FC Error if <number> is not between -32768 and 65535, inclusive.
+     - Ctrl-C will interrupt the SLEEP command and the BASIC Program
+### EXAMPLES:
+` SLEEP 250 `
+> Pauses for 1/4 second.
+` SLEEP S `
+> Pauses for S / 1000 seconds.
 
 ---
 ## STRING$

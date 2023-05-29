@@ -219,6 +219,7 @@ BLTU    = $0B92   ; Block Transfer Routine
 SCRTCH  = $0BBE   ; Execute NEW Command (without syntax check)
 RUNC    = $0BCB   ; RUN Program
 CLEARC  = $0BCF   ; Initialize Variables and Arrays, Reset Stack 
+STOPC   = $0C20   ; Stop Program (Ctrl-C)
 CLEARS  = $0CEB   ; Set VARTAB, TOPMEM, and MEMSIZ
 
 FRMNUM  = $0972   ; Evaluate Numeric Formula
