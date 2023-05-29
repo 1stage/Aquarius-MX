@@ -1099,7 +1099,7 @@ GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
 ;;; - The default for S is 4.
 ;;; `x<string> ` Execute substring. 
 ;;; - This command executes a second substring from a string, much like GOSUB. One string executes another, which executes a third, and so on.
-;;; - <string> is a variable assigned to a string of movement commands.
+;;; - < string > is a variable assigned to a string of movement commands.
 ;;; #### Numeric Arguments:
 ;;; - Numeric arguments can be constants like "123" or "=variable;", where variable is the name of a variable.
 ;;; - When you use the second syntax, "=variable;", the semicolon must be used. Otherwise, the semicolon is optional between commands.
@@ -1107,7 +1107,7 @@ GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
 ;;; ```
 ;;;   10 DRAW "BM 40,36"
 ;;;   20 A=20: DRAW "R=A; D=A; L=A; U=A;" 
-;;; ````
+;;; ```
 ;;; > Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixles high.
 ;;; ```
 ;;;   30 PSET (10, 20)

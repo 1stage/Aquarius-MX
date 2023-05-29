@@ -16,6 +16,18 @@ Get Variable Address
 > Assigns A a value, copies its contents from the address of A to a new address for B, and prints the value at that address.
 
 ---
+## AND
+Bitwise AND
+### FORMAT:
+ - AND( < number >, < number > )
+   - Action: Returns the bitwise AND of two numbers.
+     - Each < number > must be between -32768 and 65535.
+     - Can be used instead of AND operator which only allows operands between -32768 and 32767.
+### EXAMPLES:
+` PRINT AND(-1,$FFFF) `
+> Prints 65535
+
+---
 ## ASC (Extended)
 Read from Memory
 ### FORMAT:
@@ -389,7 +401,7 @@ The following commands are also available:
 - The default for S is 4.
 `x<string> ` Execute substring.
 - This command executes a second substring from a string, much like GOSUB. One string executes another, which executes a third, and so on.
-- <string> is a variable assigned to a string of movement commands.
+- < string > is a variable assigned to a string of movement commands.
 #### Numeric Arguments:
 - Numeric arguments can be constants like "123" or "=variable;", where variable is the name of a variable.
 - When you use the second syntax, "=variable;", the semicolon must be used. Otherwise, the semicolon is optional between commands.
@@ -397,7 +409,7 @@ The following commands are also available:
 ```
   10 DRAW "BM 40,36"
   20 A=20: DRAW "R=A; D=A; L=A; U=A;"
-````
+```
 > Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixles high.
 ```
   30 PSET (10, 20)
@@ -505,6 +517,11 @@ Error Status
 |  13  | path too long       | Path is too long               |
 |  14  | disk error #xx      | Other disk error               |
 
+
+---
+## EVAL
+Evaluate a formula in a string.
+### FORMAT:
 
 ---
 ## FRE (Extended)
@@ -706,6 +723,18 @@ BASIC error handling function and codes
 > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 
 ---
+## OR
+Bitwise OR
+### FORMAT:
+ - OR( < number >, < number > )
+   - Action: Returns the bitwise OR of two numbers.
+     - Each < number > must be between -32768 and 65535.
+     - Can be used instead of OR   operator which only allows operands between -32768 and 32767.
+### EXAMPLES:
+` PRINT HEX$(OR($8080,$0808)) `
+> Prints 8888
+
+---
 ## OUT
 Write to Z80 I/O Port
 ### FORMAT:
@@ -898,4 +927,15 @@ Returns 16 bit integer value of MX BASIC ROM version
 
 ` PRINT HEX$(VER(0)) `
 > Prints `0200`, the HEX value of version 2, rev 0
+
+---
+## XOR
+Bitwise Exclusive OR
+### FORMAT:
+ - XOR( < number >, < number > )
+   - Action: Returns the bitwise Exlusive OR of two numbers.
+     - Each < number > must be between -32768 and 65535.
+### EXAMPLES:
+` PRINT HEX$(XOR($FFFF,$0808)) `
+> Prints F7F7
 
