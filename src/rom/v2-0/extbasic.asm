@@ -171,7 +171,7 @@ ATNCON: db    9                 ;DEGREE
 ;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------
-;;;This Statement appears to be unique to the Aquarius
+; This Statement appears to be unique to the Aquarius
 ST_MENU:
         cp      '@'               ;{GWB} ALLOW MEANINGLESS "@"
         call    z,CHRGTR          ;{GWB} BY SKIPPING OVER IT
@@ -284,9 +284,6 @@ ADDLC:  ld      a,l               ;;L = L + C
 ;====================================================================
 
 ;----------------------------------------------------------------------------
-; ON ERROR
-; Taken from CP/M MBASIC 80 - BINTRP.MAC
-;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ON ERROR
 ;;; BASIC error handling function and codes
@@ -307,7 +304,8 @@ ADDLC:  ld      a,l               ;;L = L + C
 ;;; ` 120 PRINT ERR(2) `
 ;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 ;----------------------------------------------------------------------------
-
+; ON ERROR
+; Taken from CP/M MBASIC 80 - BINTRP.MACm
 ONGOTX: ;pop      hl              ; Discard Hook Return Addres
         ;pop      af              ; Restore Accumulator
         ;pop      hl              ; Restore Text Pointer
@@ -465,6 +463,52 @@ FN_ERR: rst     CHRGET
 .doserr:
         ld      a,(DosError)      ; Get DOS Error Number
         jr      .ret_a
+
+fnerr_message:
+        ret
+
+
+ERRMSG: DW      MSGNF 
+        DW      MSGSN   
+        DW      MSGRG 
+        DW      MSGOD 
+        DW      MSGFC 
+        DW      MSGOV 
+        DW      MSGOM 
+        DW      MSGUS 
+        DW      MSGBS 
+        DW      MSGDD 
+        DW      MSGDV0
+        DW      MSGID 
+        DW      MSGTM 
+        DW      MSGSO 
+        DW      MSGLS 
+        DW      MSGST 
+        DW      MSGCN 
+        DW      MSGUF 
+        DW      MSGMO 
+        DW      MSGUE 
+  
+MSGNF:  DB      "NEXT without FOR",0
+MSGSN:  DB      "Syntax error",0
+MSGRG:  DB      "RETURN without GOSUB",0
+MSGOD:  DB      "Out of DATA",0
+MSGFC:  DB      "Illegal function call",0
+MSGOV:  DB      "Overflow",0
+MSGOM:  DB      "Out of memory",0
+MSGUS:  DB      "Undefined line number",0
+MSGBS:  DB      "Subscript out of range",0
+MSGDD:  DB      "Duplicate Definition",0
+MSGDV0: DB      "Division by zero",0
+MSGID:  DB      "Illegal direct",0
+MSGTM:  DB      "Type mismatch",0
+MSGSO:  DB      "Out of string space",0
+MSGLS:  DB      "String too long",0
+MSGST:  DB      "String formula too complex",0
+MSGCN:  DB      "Can''t continue",0
+MSGUF:  DB      "Undefined user function",0
+MSGMO:  DB      "Missing operand",0
+MSGUE:  DB      "Unprintable error",0
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -837,4 +881,32 @@ GETYPR: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
         dec     a               
         ret
         
- 
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## EVAL
+;;; Evaluate a formula in a string.
+;;; ### FORMAT: 
+;----------------------------------------------------------------------------
+FN_EVAL:
+        call    ERRDIR            ; Issue Error if in Direct Mode
+        rst     CHRGET
+        call    PARCHK            ; Get Argument
+        push    hl                ; Save Text Pointer
+        call    STRLENADR         ; Get Argument String Length in BC, Address in HL
+        jp      m,LSERR           ; Error if longer than 127 bytes
+        ld      de,LineBuf        ;
+        ldir                      ; Copy String to Line Buffer
+        xor     a
+        ld      (de),a            ; Terminate String
+        ld      hl,LineBuf        ; Reading Line Buffer
+        ld      d,h               ; Writing Line Buffers
+        ld      e,l 
+        xor     a                 ; Tokenize String
+        ld      (DORES),a         ; 
+        ld      c,5               ; 
+        call    KLOOP             ; 
+        ld      hl,LineBuf        ; Point to Line Buffer
+        call    FRMEVL            ; Evaluate Formula
+        pop     hl                ; Restore Text Pointer
+        ret

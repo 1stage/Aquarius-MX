@@ -29,9 +29,9 @@ for filename in glob.glob(source):
             section.append(line)
             blank = False
             next
-        if line[:3] == ";--" and not blank: 
+        if line[:5] == ";----" and not blank: 
             if key == "": 
-               print("No Section Title: %s line %d\n" % (filename % line_no))
+               print("No Section Title: %s line %d\n" % (filename , line_no))
                exit(1)
             doc[key] = section
             key = ""
