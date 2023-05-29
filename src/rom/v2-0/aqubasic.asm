@@ -367,7 +367,6 @@ RTC_FTS_TO_DTM    jp  fts_to_dtm
 ;---------------------------------------------------------------------
 ;                          UDF Hook Routine
 ;---------------------------------------------------------------------
-HOOKBASE  = $C100  ; Start of Hook Table, must be on a page boundary
     include "udfhook.asm"
 
 ;---------------------------------------------------------------------
@@ -817,42 +816,6 @@ link_lines
     jr      .chead              ; next line
 
 
-;-------------------------------------
-;        AquBASIC Function
-;-------------------------------------
-; called from $0a5f by RST $30,$1b
-; A = Token - $B2 which starts at 47 ($2F)
-
-AQFUNCTION:
-    cp      PEEKTK-$B2          ; If PEEK Token
-    jp      z,FN_PEEK           ;   Do Extended PEEK
-    cp      ASCTK-$B2           ; If ASC Token
-    jp      z,FN_ASC            ;   See if ASC$
-    cp      FRETK-$B2           ; If ASC Token
-    jp      z,FN_FRE            ;   See if ASC$
-    cp      (firstf-$B2)        ; ($B2 = first system BASIC function token)
-    jp      c,HOOK27+1
-    cp      (lastf-$B2+1)
-    jp      nc,HOOK27+1
-    sub     (firstf-$B2)
-    add     a,a                 ; index = A * 2
-    exx
-    ld      hl,TBLFNJP          ; function address table
-    add     a,l
-    ld      l,a
-    ld      a,$00
-    adc     a,h
-    ld      h,a                 ; HL += vector number
-    ld      a,(hl)
-    ld      iyl,a
-    inc     hl
-    ld      a,(hl)              ; get vector address
-    ld      iyh,a
-    ld      l,a
-    exx
-    rst     CHRGET
-    jp      (iy)                ; and jump to it
-
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## RUN
@@ -1248,6 +1211,7 @@ psg2:
 ;----------------------------------------------------------------------------
 
 FN_DEEK:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -1278,9 +1242,7 @@ FLOAT_M:
 ;----------------------------------------------------------------------------
 
 FN_IN:
-    ;INSTR code needs to be tested and debugged before being activated
-    ;cp      STRINGTK       
-    ;jp      z,FN_INSTR
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -1312,6 +1274,7 @@ FN_IN:
 ;----------------------------------------------------------------------------
 
 FN_JOY:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -1397,6 +1360,7 @@ joy05:
 ;----------------------------------------------------------------------------
 
 FN_KEY:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -1447,6 +1411,7 @@ FN_KEY:
 ;----------------------------------------------------------------------------
 
 FN_DEC:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -1478,6 +1443,7 @@ FN_DEC:
 ;----------------------------------------------------------------------------
 
 FN_HEX:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK          ; Parse Argument in Parentheses
     push    hl              ; Save Text Pointer
     push    bc              ; Dummy Return Address for FINBCK to discard
@@ -1554,6 +1520,7 @@ LSERR:
 ;----------------------------------------------------------------------------
 
 FN_VER:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK
@@ -1687,6 +1654,7 @@ ST_SDTM:
 ;---------------------------------------------------------------------------
 
 FN_DTM:
+    rst     CHRGET            ; Skip Token and Eat Spaces
     call    PARCHK
     push    hl
     ld      bc,LABBCK

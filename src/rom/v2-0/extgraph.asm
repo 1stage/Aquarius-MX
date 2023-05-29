@@ -32,14 +32,11 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 ; Extended PSET or PRESET
 ; Reads Coordinates and saves them for subsequent LINE -(X,Y) or LINE -STEP(X,Y) statement then executes standard basic PSET/PRESET code
 ST_PRESET: 
-        pop     af              ; Discard Saved Token, Flags
         xor     a               ; PRESET FLAG
         jr      PPRSEX            
 ST_PSET:  
-        pop     af              ; Discard Saved Token, Flags
         ld      a,1             ; PSET FLAG
 PPRSEX: ex      af,af'          ; Save PSET/PRESET flag
-        rst     CHRGET          ; Skip PSET/PRESET Token
         call    SCANDX          ; Scan Coordinates as [STEP] (X,Y)
         jp      PPRSDO          ; Go Do PSET/PRESET
 ;possibe extension - , attribute        

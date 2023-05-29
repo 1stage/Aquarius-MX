@@ -104,8 +104,6 @@ ABORT_FN:
 ;;; > Restore Screen and Colors
 ;----------------------------------------------------------------------------
 ST_COPY:   
-    pop      af             ; Discard Saved Token, Flags
-    rst      CHRGET         ; Skip COPY Token
     jp      z,COPY          ; No Parameters? Do Standard COPY
     call    GETADR          ; 
     push    de              ; Stack = <source>
@@ -259,8 +257,6 @@ FN_PEEK:
 ;----------------------------------------------------------------------------
 
 ST_POKE:   
-    pop     af              ; Discard Saved Token, Flags
-    rst     CHRGET          ; Skip POKE Token
     call    GETADR          ; Get <address>
     ld      a,(hl)          ; If next character 
     cp      TOTK            ; is TO Token 

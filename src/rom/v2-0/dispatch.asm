@@ -2,62 +2,272 @@
 ;  Statement/Function Dispatch and Keyword Tables and Related Routines
 ;===============================================================================
 
-TBLJMPS:
-    dw      ST_PUT
-    dw      ST_GET
-    dw      ST_DRAW
-    dw      ST_CIRCLE
-    dw      ST_LINE
-    dw      ST_SWAP
-    dw      ST_DOKE
-    dw      ST_SDTM
-    dw      ST_EDIT
-    dw      ST_CLS
-    dw      ST_LOCATE
-    dw      ST_OUT
-    dw      ST_PSG
-    dw      ST_DEBUG
-    dw      ST_CALL
-    dw      ST_LOAD
-    dw      ST_SAVE
-    dw      ST_DIR
-    dw      ST_CAT
-    dw      ST_DEL
-    dw      ST_CD
+if $ & $FF00
+    org ($ & $FF00) + 256
+endif
+
+; Combined Statement Jump Table
+; Standard BASIC Routines left as HEX
+STJUMPS:
+    dw      $0C21                 ;$80 END              
+    dw      $05BC                 ;$81 FOR               
+    dw      $0D13                 ;$82 NEXT              
+    dw      $071C                 ;$83 DATA              
+    dw      $0893                 ;$84 INPUT             
+    dw      $10CC                 ;$85 DIM               
+    dw      $08BE                 ;$86 READ              
+    dw      $0731                 ;$87 LET               
+    dw      $06DC                 ;$88 GOTO              
+    dw      $06BE                 ;$89 RUN               
+    dw      $079C                 ;$8A IFS               
+    dw      $0C05                 ;$8B RESTOR            
+    dw      $06CB                 ;$8C GOSUB             
+    dw      $06F8                 ;$8D RETURN            
+    dw      $071E                 ;$8E REM               
+    dw      $0C1F                 ;$8F STOP              
+    dw      $0780                 ;$90 ONGOTO            
+    dw      $07B5                 ;$91 LPRINT            
+    dw      ST_COPY               ;$92 COPY              
+    dw      $0B3B                 ;$93 DEF               
+    dw      ST_POKE               ;$94 POKE              
+    dw      $07BC                 ;$95 PRINT             
+    dw      $0C4B                 ;$96 CONT              
+    dw      $056C                 ;$97 LIST              
+    dw      $0567                 ;$98 LLIST             
+    dw      $0CCD                 ;$99 CLEAR             
+    dw      $1C2C                 ;$9A CLOAD             
+    dw      $1C08                 ;$9B CSAVE             
+    dw      ST_PSET               ;$9C PSET              
+    dw      ST_PRESET             ;$9D PRESET            
+    dw      $1AD6                 ;$9E SOUND             
+    dw      $0BBD                 ;$9F NEW
+;Miscellaneous Functions
+    dw      SNERR                 ;$A0 TAB(   
+    dw      SNERR                 ;$A1 TO     
+    dw      SNERR                 ;$A2 FN     
+    dw      SNERR                 ;$A3 SPC(   
+    dw      SNERR                 ;$A4 INKEY$ 
+    dw      SNERR                 ;$A5 THEN   
+    dw      SNERR                 ;$A6 NOT    
+    dw      SNERR                 ;$A7 STEP   
+;Operators
+    dw      SNERR                 ;$A8 +      
+    dw      SNERR                 ;$A9 -      
+    dw      SNERR                 ;$AA *      
+    dw      SNERR                 ;$AB /      
+    dw      SNERR                 ;$AC ^      
+    dw      SNERR                 ;$AD AND    
+    dw      SNERR                 ;$AE OR     
+    dw      SNERR                 ;$AF >      
+    dw      SNERR                 ;$B0 =      
+    dw      SNERR                 ;$B1 <      
+;Standard BASIC Functions
+    dw      SNERR                 ;$B2 SGN     
+    dw      SNERR                 ;$B3 INT     
+    dw      SNERR                 ;$B4 ABS     
+    dw      SNERR                 ;$B5 USR  
+    dw      SNERR                 ;$B6 FRE     
+    dw      SNERR                 ;$B7 LPOS    
+    dw      SNERR                 ;$B8 POS     
+    dw      SNERR                 ;$B9 SQR     
+    dw      SNERR                 ;$BA RND     
+    dw      SNERR                 ;$BB LOG     
+    dw      SNERR                 ;$BC EXP     
+    dw      SNERR                 ;$BD COS     
+    dw      SNERR                 ;$BE SIN     
+    dw      SNERR                 ;$BF TAN     
+    dw      SNERR                 ;$C0 ATN     
+    dw      SNERR                 ;$C1 PEEK    
+    dw      SNERR                 ;$C2 LEN     
+    dw      SNERR                 ;$C3 STR$     
+    dw      SNERR                 ;$C4 VAL     
+    dw      SNERR                 ;$C5 ASC     
+    dw      SNERR                 ;$C6 CHR$     
+    dw      SNERR                 ;$C7 LEFT$    
+    dw      SNERR                 ;$C8 RIGHT$   
+    dw      SNERR                 ;$C9 MID$     
+    dw      SNERR                 ;$CA POINT
+;MX BASIC Statements and Functions
+    dw      SNERR                 ;$CB INSTR
+TBLJMPS:    
+    dw      ST_PUT                ;$CC PUT    
+    dw      ST_GET                ;$CD GET    
+    dw      ST_DRAW               ;$CE DRAW   
+    dw      ST_CIRCLE             ;$CF CIRCLE 
+    dw      ST_LINE               ;$D0 LINE   
+    dw      ST_SWAP               ;$D1 SWAP   
+    dw      ST_DOKE               ;$D2 DOKE   
+    dw      ST_SDTM               ;$D3 SDTM   
+    dw      ST_EDIT               ;$D4 EDIT   
+    dw      ST_CLS                ;$D5 CLS    
+    dw      ST_LOCATE             ;$D6 LOCATE 
+    dw      ST_OUT                ;$D7 OUT    
+    dw      ST_PSG                ;$D8 PSG    
+    dw      ST_DEBUG              ;$D9 DEBUG  
+    dw      ST_CALL               ;$DA CALL   
+    dw      ST_LOAD               ;$DB LOAD   
+    dw      ST_SAVE               ;$DC SAVE   
+    dw      ST_DIR                ;$DD DIR    
+    dw      ST_CAT                ;$DE CAT    
+    dw      ST_DEL                ;$DF DEL    
+    dw      ST_CD                 ;$E0 CD     
 TBLJEND:
+    dw      SNERR                 ;$E1 IN
+    dw      SNERR                 ;$E2 JOY
+    dw      SNERR                 ;$E3 HEX
+    dw      SNERR                 ;$E4 VER
+    dw      SNERR                 ;$E5 DTM
+    dw      SNERR                 ;$E6 DEC
+    dw      SNERR                 ;$E7 KEY
+    dw      SNERR                 ;$E8 DEEK
+    dw      SNERR                 ;$E9 ERR
+    dw      SNERR                 ;$EA STRING
+    dw      SNERR                 ;$EB XOR
+    dw      SNERR                 ;$EC MENU
+    dw      SNERR                 ;$ED
+    dw      SNERR                 ;$EE
+    dw      SNERR                 ;$EF
+    dw      SNERR                 ;$F0
+    dw      SNERR                 ;$F1
+    dw      SNERR                 ;$F2
+    dw      SNERR                 ;$F3
+    dw      SNERR                 ;$F4
+    dw      SNERR                 ;$F5
+    dw      SNERR                 ;$F6
+    dw      SNERR                 ;$F7
+    dw      SNERR                 ;$F8
+    dw      SNERR                 ;$F9
+    dw      SNERR                 ;$FA
+    dw      SNERR                 ;$FB
+    dw      SNERR                 ;$FC
+    dw      SNERR                 ;$FD
+    dw      SNERR                 ;$FE
+    dw      SNERR                 ;$FF
+
+; Combined Function Jump Table
+FNJUMPS:
+;Standard BASIC Functions
+    dw      HOOK27+1              ;$B2 SGN     
+    dw      HOOK27+1              ;$B3 INT     
+    dw      HOOK27+1              ;$B4 ABS     
+    dw      HOOK27+1              ;$B5 USR  
+    dw      HOOK27+1              ;$B6 FRE     
+    dw      HOOK27+1              ;$B7 LPOS    
+    dw      HOOK27+1              ;$B8 POS     
+    dw      HOOK27+1              ;$B9 SQR     
+    dw      HOOK27+1              ;$BA RND     
+    dw      HOOK27+1              ;$BB LOG     
+    dw      HOOK27+1              ;$BC EXP     
+    dw      HOOK27+1              ;$BD COS     
+    dw      HOOK27+1              ;$BE SIN     
+    dw      HOOK27+1              ;$BF TAN     
+    dw      HOOK27+1              ;$C0 ATN     
+    dw      HOOK27+1              ;$C1 PEEK    
+    dw      HOOK27+1              ;$C2 LEN     
+    dw      HOOK27+1              ;$C3 STR$     
+    dw      HOOK27+1              ;$C4 VAL     
+    dw      HOOK27+1              ;$C5 ASC     
+    dw      HOOK27+1              ;$C6 CHR$     
+    dw      HOOK27+1              ;$C7 LEFT$    
+    dw      HOOK27+1              ;$C8 RIGHT$   
+    dw      HOOK27+1              ;$C9 MID$     
+    dw      HOOK27+1              ;$CA POINT
+;MX BASIC Statements and Functions
+    dw      SNERR                 ;$CB INSTR
+    dw      SNERR                 ;$CC PUT    
+    dw      SNERR                 ;$CD GET    
+    dw      SNERR                 ;$CE DRAW   
+    dw      SNERR                 ;$CF CIRCLE 
+    dw      SNERR                 ;$D0 LINE   
+    dw      SNERR                 ;$D1 SWAP   
+    dw      SNERR                 ;$D2 DOKE   
+    dw      SNERR                 ;$D3 SDTM   
+    dw      SNERR                 ;$D4 EDIT   
+    dw      SNERR                 ;$D5 CLS    
+    dw      SNERR                 ;$D6 LOCATE 
+    dw      SNERR                 ;$D7 OUT    
+    dw      SNERR                 ;$D8 PSG    
+    dw      SNERR                 ;$D9 DEBUG  
+    dw      SNERR                 ;$DA CALL   
+    dw      SNERR                 ;$DB LOAD   
+    dw      SNERR                 ;$DC SAVE   
+    dw      SNERR                 ;$DD DIR    
+    dw      SNERR                 ;$DE CAT    
+    dw      SNERR                 ;$DF DEL    
+    dw      SNERR                 ;$E0 CD     
+    dw      FN_IN                 ;$E1 IN
+    dw      FN_JOY                ;$E2 JOY
+    dw      FN_HEX                ;$E3 HEX
+    dw      FN_VER                ;$E4 VER
+    dw      FN_DTM                ;$E5 DTM
+    dw      FN_DEC                ;$E6 DEC
+    dw      FN_KEY                ;$E7 KEY
+    dw      FN_DEEK               ;$E8 DEEK
+    dw      FN_ERR                ;$E9 ERR
+    dw      FN_STRING             ;$EA STRING
+    dw      SNERR                 ;$EB XOR
+    dw      SNERR                 ;$EC MENU
+    dw      SNERR                 ;$ED
+    dw      SNERR                 ;$EE
+    dw      SNERR                 ;$EF
+    dw      SNERR                 ;$F0
+    dw      SNERR                 ;$F1
+    dw      SNERR                 ;$F2
+    dw      SNERR                 ;$F3
+    dw      SNERR                 ;$F4
+    dw      SNERR                 ;$F5
+    dw      SNERR                 ;$F6
+    dw      SNERR                 ;$F7
+    dw      SNERR                 ;$F8
+    dw      SNERR                 ;$F9
+    dw      SNERR                 ;$FA
+    dw      SNERR                 ;$FB
+    dw      SNERR                 ;$FC
+    dw      SNERR                 ;$FD
+    dw      SNERR                 ;$FE
+    dw      SNERR                 ;$FF
+
+STATEMENT:
+    exx                         ; save BC,DE,HL
+    sub     $80                 ; Convert from Token to Table Position
+    add     a,a                 ; A * 2 to index WORD size vectors
+    ld      l,a
+    ld      h,high(STJUMPS)
+    ld      a,(hl)
+    ld      iyl,a
+    inc     hl
+    ld      a,(hl)
+    ld      iyh,a
+    exx                         ; Restore BC,DE,HL
+    rst     CHRGET              ; Skip Token and Eat Spaces
+    jp      (iy)                ; Go Do It
+
+FUNCTION:
+    push    af
+    exx                         ; save BC,DE,HL
+    add     a,a                 ; A * 2 to index WORD size vectors
+    ld      l,a
+    ld      h,high(FNJUMPS)
+    ld      a,(hl)
+    ld      iyl,a
+    inc     hl
+    ld      a,(hl)
+    ld      iyh,a
+    exx                         ; Restore BC,DE,HL
+    pop     af
+    jp      (iy)                ; Go Do It
 
 BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
-TBLFNJP:
-    dw      FN_IN
-    dw      FN_JOY
-    dw      FN_HEX
-    dw      FN_VER
-    dw      FN_DTM
-    dw      FN_DEC
-    dw      FN_KEY
-    dw      FN_DEEK
-    dw      FN_ERR
-    dw      FN_STRING
-    dw      FN_XOR
-TBLFEND:
-
-FCOUNT equ (TBLFEND-TBLFNJP)/2    ; number of functions
-
-firstf equ BTOKEN+BCOUNT          ; token number of first function in table
-lastf  equ firstf+FCOUNT-1        ; token number of last function in table
-
 ; Our Commands and Functions
 ;
-; - New commands get added to the TOP of the commands list,
-;   and the BTOKEN value DECREMENTS as commands are added.
-;   They also get added at the TOP of the TBLJMPS list.
+; - Any more commands will need to be added after the functions
 ;
-BTOKEN       equ $cc                ; our first token number
+BTOKEN       equ $cb                ; our first token number
 TBLCMDS:
-; Commands list
-    
-;other keywords
+; Squeezed in before IN funcvtion
+    db      $80 + 'IN', "STR"       ; $cb - String Position Function    
+; MX BASIC Commands
     db      $80 + 'P', "UT"         ; $cc - Put Pixels
     db      $80 + 'G', "ET"         ; $cd - Get Pixels
     db      $80 + 'D', "RAW"        ; $ce - Graphic Macro Language
@@ -85,7 +295,7 @@ CDTK    = $E0
 ; - New functions get added to the END of the functions list.
 ;   They also get added at the END of the TBLFNJP list.
 ;
-; Functions list
+; MX BASIC Functions Functions list
 
     db      $80 + 'I', "N"          ; $e1 - Input function
     db      $80 + 'J', "OY"         ; $e2 - Joystick function
@@ -103,38 +313,6 @@ ERRTK     = $E9
 STRINGTK  = $EA
 XORTK     = $EB
 
-;-------------------------------------
-;            NEXTSTMT
-;-------------------------------------
-; Called from $064b by RST 30
-; with parameter $17
-
-
-NEXTSTMT:
-    jr      nc,BASTMT           ; if NC then process BASIC statement
-    push    af                  ; Save Flags
-    cp      POKETK-$80          ; If POKE Token
-    jp      z,ST_POKE           ;   Do Extended POKE
-    cp      COPYTK-$80          ; If COPY Token
-    jp      z,ST_COPY           ;   Do Extended POKE
-    cp      PSETTK-$80          ; If PSET
-    jp      z,ST_PSET           ;   Do Extended BASIC PSET
-    cp      PRESTK-$80          ; If PRESET
-    jp      z,ST_PRESET         ;   Do Extended BASIC PRESET
-    pop     af                  ; Else
-    jp      HOOK23+1
-
-BASTMT:
-    sub     (BTOKEN)-$80
-    jp      c,SNERR             ; SN error if < our 1st BASIC command token
-    cp      BCOUNT              ; Count number of commands
-    jp      nc,SNERR            ; SN error if > our last BASIC command token
-    rlca                        ; A*2 indexing WORDs
-    ld      c,a
-    ld      b,$00               ; BC = index
-    ex      de,hl
-    ld      hl,TBLJMPS          ; HL = our command jump table
-    jp      GONE5               ; Continue with NEXTSTMT
 
 ;-------------------------------------
 ;         Replace Command
@@ -173,4 +351,3 @@ PEXPBAB:
     ld      c,a                 ; C = offset to AquBASIC command
     ld      de,TBLCMDS          ; DE = table of AquBASIC command names
     jp      $05a8               ; Print keyword indexed by C
-

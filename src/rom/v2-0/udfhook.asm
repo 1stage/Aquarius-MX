@@ -2,9 +2,10 @@
 ;  UDF Hook Table and Dispatch Routine
 ;===============================================================================
 
-; fill with NOP to HOOKBASE
-     assert !(HOOKBASE < $) ; Overran Hook Table!!!
-     dc  HOOKBASE-$,$00
+; Align to 256 Byte Boundary
+if $ & $FF00
+    org ($ & $FF00) + 256
+endif
 
 HOOKTABLE:                    ; ## caller   addr  performing function
     dw      ERRORX            ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
@@ -30,11 +31,11 @@ HOOKTABLE:                    ; ## caller   addr  performing function
     dw      HOOK20+1          ; 20 CLOAD    1C2C  Load File from Tape
     dw      HOOK21+1          ; 21 CSAVE    1C09  Save File to Tape
     dw      PEXPAND           ; 22 LISPRT   0598  expanding a token
-    dw      NEXTSTMT          ; 23 GONE2    064B  interpreting next BASIC statement
+    dw      STATEMENT         ; 23 GONE2    064B  interpreting next BASIC statement
     dw      RUNPROG           ; 24 RUN      06BE  starting BASIC program
     dw      ONGOTX            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1          ; 26 INPUT    0893  Execute INPUT Statement 
-    dw      AQFUNCTION        ; 27 ISFUN    0A5F  Executing a Function
+    dw      FUNCTION          ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1          ; 28 DATBK    08F1
 
 ;------------------------------------------------------
@@ -52,7 +53,7 @@ FASTHOOK:
     ld      a,(hl)              ; A = byte (RST $30 parameter)
     add     a,a                 ; A * 2 to index WORD size vectors
     ld      l,a
-    ld      h,high(HOOKBASE)
+    ld      h,high(HOOKTABLE)
     ld      a,(hl)
     ld      iyl,a
     inc     hl
