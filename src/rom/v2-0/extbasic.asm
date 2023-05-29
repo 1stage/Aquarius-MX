@@ -171,7 +171,7 @@ ATNCON: db    9                 ;DEGREE
 ;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------
-;;;This Statement appears to be unique to the Aquarius
+; This Statement appears to be unique to the Aquarius
 ST_MENU:
         cp      '@'               ;{GWB} ALLOW MEANINGLESS "@"
         call    z,CHRGTR          ;{GWB} BY SKIPPING OVER IT
@@ -283,10 +283,10 @@ ADDLC:  ld      a,l               ;;L = L + C
 ; Microsoft BASIC80 Extended BASIC Statements and Functions
 ;====================================================================
 
-; ----------------------------------------------------------------------------
+;----------------------------------------------------------------------------
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
-; ----------------------------------------------------------------------------
+;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ON ERROR
 ;;; BASIC error handling function and codes

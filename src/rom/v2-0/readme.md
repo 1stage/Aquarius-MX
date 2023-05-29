@@ -685,7 +685,6 @@ Display and execute menu.
     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ### EXAMPLES:
 
-his Statement appears to be unique to the Aquarius
 ---
 ## ON ERROR
 BASIC error handling function and codes
