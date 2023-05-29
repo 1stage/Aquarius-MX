@@ -1587,7 +1587,7 @@ ST_CALL:
 ST_SLEEP:
     call    GETADR                ; get argument
     push    hl                    ; save text pointer
-.deloop                           ; 3,579 cycles = 1 microsecond
+.deloop                           ; 3,579 cycles = 1 millisecond
     ;Check for CTL Key - No Debounce
     ld      bc,$7fff              ;  10 Scan A15 column
     in      a,(c)                 ;  12 Read the results
@@ -1602,7 +1602,7 @@ ST_SLEEP:
     ld      bc,152                ; 10
 .bcloop                           ; .bcloop total 152 * (10 + 13) = 3296
     djnz    .bcloop               ; 13 
-                                  ; .deloop total: 41 + 3496 + 26 = 3563
+                                  ; .deloop total: 41 + 3496 + 26 = 3563 = 995 microseconds
     dec     de                    ; 6     
     ld      a,d                   ; 4
     or      e                     ; 4

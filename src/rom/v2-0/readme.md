@@ -883,7 +883,11 @@ Set DateTime
 Pause program execution.
 ### FORMAT:
  - SLEEP < number >
+<<<<<<< HEAD
    - Action: Causes BASIC to pause for approximately <number> milliseconds.
+=======
+   - Action: Causes BASIC to pause for approximately <number> microseconds.
+>>>>>>> 7798df9bf24d9bae04d74895f8ad3912be7534a4
      - If < number > is less than zero, pauses 65536 - <number> seconds
      - Returns FC Error if <number> is not between -32768 and 65535, inclusive.
      - Ctrl-C will interrupt the SLEEP command and the BASIC Program
