@@ -475,8 +475,16 @@ PAL__NTSC:
     POP  BC
     RET
 
-
-
+;---------------------------------------------------------------------
+;                       DOS commands
+;---------------------------------------------------------------------
+; ST_CD
+; ST_LOAD
+; ST_SAVE7
+; ST_DIR
+; ST_CAT
+; ST_DEL
+    include "dos.asm"
 
 C0_END:   
 C0_SIZE = C0_END - $C000
@@ -1575,17 +1583,6 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
         cp      145         ; If Float < 65536
         jp      c,QINT      ;   Convert to Integer and Return
         jp      FRCINT
-
-;---------------------------------------------------------------------
-;                       DOS commands
-;---------------------------------------------------------------------
-; ST_CD
-; ST_LOAD
-; ST_SAVE7
-; ST_DIR
-; ST_CAT
-; ST_DEL
-    include "dos.asm"
 
 ;ST_EDIT
     include "edit.asm"
