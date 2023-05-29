@@ -130,7 +130,7 @@ CH376_CMD_SET_USB_MODE  equ     $15     ; set USB mode
 CH376_CMD_GET_STATUS    equ     $22     ; get status
 CH376_CMD_RD_USB_DATA   equ     $27     ; read data from USB
 CH376_CMD_WR_REQ_DATA   equ     $2D     ; write data to USB
-CH376_CMD_WR_OFS_DATA   equ     $2E     ; write data to USB
+CH376_CMD_WR_OFS_DATA   equ     $2E     ; write Filing System Entry data to USB
 CH376_CMD_SET_FILE_NAME equ     $2F     ; set name of file to open, read etc.
 CH376_CMD_DISK_CONNECT  equ     $30     ; check if USB drive is plugged in
 CH376_CMD_DISK_MOUNT    equ     $31     ; mount disk
