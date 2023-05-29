@@ -89,7 +89,6 @@ STJUMPS:
     dw      SNERR                 ;$CA POINT
 ;MX BASIC Statements and Functions
     dw      SNERR                 ;$CB INSTR
-TBLJMPS:    
     dw      ST_PUT                ;$CC PUT    
     dw      ST_GET                ;$CD GET    
     dw      ST_DRAW               ;$CE DRAW   
@@ -111,7 +110,6 @@ TBLJMPS:
     dw      ST_CAT                ;$DE CAT    
     dw      ST_DEL                ;$DF DEL    
     dw      ST_CD                 ;$E0 CD     
-TBLJEND:
     dw      SNERR                 ;$E1 IN
     dw      SNERR                 ;$E2 JOY
     dw      SNERR                 ;$E3 HEX
@@ -179,7 +177,7 @@ FNJUMPS:
     dw      SNERR                 ;$CE DRAW   
     dw      SNERR                 ;$CF CIRCLE 
     dw      SNERR                 ;$D0 LINE   
-    dw      SNERR                 ;$D1 SWAP   
+    dw      FN_SWAP               ;$D1 SWAP   
     dw      SNERR                 ;$D2 DOKE   
     dw      SNERR                 ;$D3 SDTM   
     dw      SNERR                 ;$D4 EDIT   
@@ -205,7 +203,7 @@ FNJUMPS:
     dw      FN_DEEK               ;$E8 DEEK
     dw      FN_ERR                ;$E9 ERR
     dw      FN_STRING             ;$EA STRING
-    dw      SNERR                 ;$EB XOR
+    dw      FN_XOR                ;$EB XOR
     dw      SNERR                 ;$EC MENU
     dw      SNERR                 ;$ED
     dw      SNERR                 ;$EE
@@ -256,8 +254,6 @@ FUNCTION:
     exx                         ; Restore BC,DE,HL
     pop     af
     jp      (iy)                ; Go Do It
-
-BCOUNT equ (TBLJEND-TBLJMPS)/2    ; number of commands
 
 ; Our Commands and Functions
 ;

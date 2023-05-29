@@ -414,6 +414,7 @@ PSETTK      = $9C   ; PSET Token
 PRESTK      = $9D   ; PRESET Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token
+NOTTK       = $A6   ; NOT Token
 STEPTK      = $A7   ; STEP Token
 PLUSTK      = $A8   ; + Token
 MINUTK      = $A9   ; - Token

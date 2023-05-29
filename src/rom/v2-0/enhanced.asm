@@ -345,5 +345,115 @@ STRLENADR:
     or      a               ; and Set Flags
     ret
 
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## AND 
+;;; Bitwise AND
+;;; ### FORMAT:
+;;;  - AND( < number >, < number > )
+;;;    - Action: Returns the bitwise AND of two numbers.
+;;;      - Each < number > must be between -32768 and 65535.
+;;;      - Can be used instead of AND operator which only allows operands between -32768 and 32767.
+;;; ### EXAMPLES:
+;;; ` PRINT AND(-1,$FFFF) `
+;;; > Prints 65535
+;----------------------------------------------------------------------------
+FN_AND:
+    call    PARADR          ; Read First Argument
+    push    de              ; Save It
+    SYNCHK  ','             ; Require Comma
+    call    GETADR          ; Read Second Address into DE
+    SYNCHK  ')'             ; Require Parenthesis
+    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; D = D | H
+    and     h
+    ld      d,a
+    ld      a,e             ; E = E | L
+    and     l 
+    ld      e,a
+    jp      FLOAT_DE
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## OR 
+;;; Bitwise OR
+;;; ### FORMAT:
+;;;  - OR( < number >, < number > )
+;;;    - Action: Returns the bitwise OR of two numbers.
+;;;      - Each < number > must be between -32768 and 65535.
+;;;      - Can be used instead of OR   operator which only allows operands between -32768 and 32767.
+;;; ### EXAMPLES:
+;;; ` PRINT HEX$(OR($8080,$0808)) `
+;;; > Prints 8888
+;----------------------------------------------------------------------------
+FN_OR:
+    call    PARADR          ; Read First Argument
+    push    de              ; Save It
+    SYNCHK  ','             ; Require Comma
+    call    GETADR          ; Read Second Address into DE
+    SYNCHK  ')'             ; Require Parenthesis
+    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; D = D | H
+    or      h
+    ld      d,a
+    ld      a,e             ; E = E | L
+    or      l 
+    ld      e,a
+    jp      FLOAT_DE
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## XOR 
+;;; Bitwise Exclusive OR
+;;; ### FORMAT:
+;;;  - XOR( < number >, < number > )
+;;;    - Action: Returns the bitwise Exlusive OR of two numbers.
+;;;      - Each < number > must be between -32768 and 65535.
+;;; ### EXAMPLES:
+;;; ` PRINT HEX$(XOR($FFFF,$0808)) `
+;;; > Prints F7F7
+;----------------------------------------------------------------------------
 FN_XOR:
-    jp      FCERR
+    call    PARADR          ; Read First Argument
+    push    de              ; Save It
+    SYNCHK  ','             ; Require Comma
+    call    GETADR          ; Read Second Address into DE
+    SYNCHK  ')'             ; Require Parenthesis
+    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; D = D ^ H
+    xor     h
+    ld      d,a
+    ld      a,e             ; E = E ^ L
+    xor     l 
+    ld      e,a
+    jp      FLOAT_DE
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## SWAP 
+;;; Swap MSB and LSB
+;;; ### FORMAT:
+;;;  - XOR( < number >
+;;;    - Action: Returns <number> with the least significant and most significant bytes swapped.
+;;;      - < number > must be between -32768 and 65535.
+;;; ### EXAMPLES:
+;;; ` PRINT HEX$(SWAP($ABCD)) `
+;;; > Prints CDAB
+;----------------------------------------------------------------------------
+FN_SWAP:
+    call    PARADR          ; Read First Argument
+    SYNCHK  ')'             ; Require Parenthesis
+    push    hl              ;   Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; Swap D and E
+    ld      d,e
+    ld      e,a             ; E = E ^ L
+    jp      FLOAT_DE
+

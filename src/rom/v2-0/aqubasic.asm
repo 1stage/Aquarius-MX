@@ -1560,6 +1560,12 @@ ST_CALL:
     ret                      ; jump to user code, HL = BASIC text pointer
 
 
+
+; Require Open Parenthesis and Read Address
+PARADR:
+    rst     CHRGET
+    SYNCHK  '('             ; Require Parenthesis
+
 ; Parse an Address (-32676 to 65535 in 16 bit integer)  
 GETADR: call    FRMEVL      ; Evaluate Formula
 ; Convert FAC to Address or Signed Integer and Return in DE
@@ -1696,6 +1702,10 @@ EVAL_EXT:
     jp      z,EVAL_HEX
     cp      '&'                 
     jp      z,GET_VARPTR
+    cp      ANDTK
+    jp      z,FN_AND
+    cp      ORTK
+    jp      z,FN_OR
     cp      CDTK
     jp      z,GET_PATH
     cp      PLUSTK          ; IGNORE "+"
