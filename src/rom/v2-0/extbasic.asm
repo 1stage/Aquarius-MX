@@ -280,7 +280,7 @@ ADDLC:  ld      a,l               ;;L = L + C
         ret
 
 ;====================================================================
-; Microsoft BASIC80 Extended BASIC Statements and Functions`
+; Microsoft BASIC80 Extended BASIC Statements and Functions
 ;====================================================================
 
 ;----------------------------------------------------------------------------
