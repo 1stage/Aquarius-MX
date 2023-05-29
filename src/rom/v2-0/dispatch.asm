@@ -123,7 +123,7 @@ TBLJEND:
     dw      SNERR                 ;$E9 ERR
     dw      SNERR                 ;$EA STRING
     dw      SNERR                 ;$EB XOR
-    dw      SNERR                 ;$EC MENU
+    dw      ST_MENU               ;$EC MENU
     dw      SNERR                 ;$ED
     dw      SNERR                 ;$EE
     dw      SNERR                 ;$EF
@@ -306,8 +306,9 @@ CDTK    = $E0
     db      $80 + 'K', "EY"         ; $e7 - Key function
     db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
     db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
-    db      $80 + 'S', "TRING"      ; $ea - Create String function
-    db      $80 + 'X', "OR"         ; $eb - Bitwise XOR
+    db      $80 + 'S', "TRING$"     ; $ea - Create String function
+    db      $80 + 'X', "OR"         ; $eb - PUT Operator and Bitwise XOR 
+    db      $80 + 'M', "ENU"        ; $ec - Display and Execute Menu
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA

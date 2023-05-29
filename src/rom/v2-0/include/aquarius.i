@@ -179,6 +179,7 @@ FBUFFRLEN   = RESHO-FBUFFR
 SYNCHR  = $08     ; Syntax Check
 CHRGET  = $10     ; Scan for Next Character
 CHRGOT  = $11     ; Check Current Character, Skipping Spaces
+OUTCHR  = $18     ; Output Character
 COMPAR  = $20     ; Compare HL to DE
 FSIGN   = $28     ; Get sign of Floating Point Accumulator
 
@@ -191,13 +192,16 @@ GONE    = $064B   ; Execute Statement
 GONE5   = $0665   ; Add Offset to Table and Dispatch Statement
 CHRGTR  = $066B   ; Alternate CHRGET for conditional CALL
 CHRGT2  = $066C   ; Alternate CHRGOT for CALL
-NTOERR  = $0782   ; Execute ON GOTO
+NTOERR  = $0782   ; Execute ON ... GOTO
+OMGOTO  = $0785   ; Execute GOTO part of ON ... GOTO
 
 STROUT  = $0E9D   ; Print null or quote terminated string
+STRPRT  = $0EA0   ; Print String with Descriptor in Floating Point Accumulator
 LINPRT  = $1675   ; Print line number in HL
 CRDONZ  = $19DE   ; Print CR/LF if not at beginning of line
 CRDO    = $19EA   ; Print CR+LF
 FINLPT  = $19BE   ; Terminate Printer Output
+TRYIN   = $1A2F   ; Wait for character from keyboard
 TTYCHR  = $1D72   ; Print character in A with pause/break at end of page
 TTYOUT  = $1D94   ; Print character in A to screen
 TTYFIS  = $1DE7   ; Save cursor position, character under cursor, and display cursor
