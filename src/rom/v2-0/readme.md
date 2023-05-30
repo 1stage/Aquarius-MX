@@ -61,11 +61,11 @@ Arctangent
 ## CALL
 Jump to and run machine code at specified address
 ### FORMAT:
- - CALL(< address >)
+ - CALL < address >
    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
    - < address > can be a 16 bit signed or unsigned integer or hex value
 ### EXAMPLES:
-` CALL($A000) `
+` CALL $A000 `
 > Begin executing machine code stored at upper half of middle 32k expansion RAM
 
 ` 10 LOAD "PRG.BIN",$A000 `
@@ -363,7 +363,7 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ## DRAW
 Draws a figure.
 ### FORMAT:
-  - DRAW <string expression>
+  - DRAW < string expression >
     - Action: The DRAW statement combines most of the capabilities of the other graphics statements into an object definition language called Graphics Macro Language (GML). A GML command is a single character within a string, optionally followed by one or more arguments.
 #### Commands:
 Each of the movement commands begins movement from the current graphics position.
@@ -466,15 +466,16 @@ Error Status
 ### FORMAT:
   - ERROR ( < number > )
     - Action: Returns error status values.
-      - If < number > is 0, returns the line number to GOTO when an error occures.
+      - If < number > is -1, returns the line number to GOTO when an error occures.
         - Returns 0 if no error trapping is disabled.
-      - If < number > is 1, returns the number corresponding to the last error.
+      - If < number > is 0, returns the number corresponding to the last error.
         - - Returns 0 if no error has occured.
-      - If < number > is 2, returns the line number the last error occured on.
+      - If < number > is 1, returns the line number the last error occured on.
         - Returns 0 if no error has occured.
         - Returns 65535 if the error occured in immediate mode.
-      - If < number > is 3, returns the number corresponding to the last DOS error.
+      - If < number > is 2, returns the number corresponding to the last DOS error.
         - Returns 0 if the last DOS command completed successfully.
+      - If < number > is 3, returns the status code of the last CH376 operation.
 
 ### Basic Error Numbers
 | Err# | Code | Description                  |
@@ -653,12 +654,12 @@ ASCII:  158  143  159  142   $C6   255     160        134
 ## LINE
 Draw line or box on screen.
 ### FORMAT:
-  - LINE [ (< x-coord >,< y-coord >) ] - ( <x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
+  - LINE [ (< x-coord >,< y-coord >) ] - ( < x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
     - Action: Draws line from the first specified point to the second specified point.
       - If the first (< x-coord >,< y-coord >) is ommited, the line starts at the last referenced point.
       - B (box) draws a box with the specified points at opposite corners.
       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
-      - If <color> is not specified, the current screen colors are maintained and two commas must be used before B or BF
+      - If < color > is not specified, the current screen colors are maintained and two commas must be used before B or BF
 ### EXAMPLES:
 ` LINE (0,36)-(79,36) `
 > Draws a horizontal line which divides the screen in half from top to bottom.
@@ -698,9 +699,21 @@ Move the cursor to a specific column and row on the screen
 ## MENU
 Display and execute menu.
 ### FORMAT:
-  - MENU ( <xpos>,<ypos>) [, <spacing>;] <string> [,<string>,...] GOTO <line>, [,<line>...]
+  - MENU ( < xpos >,< ypos >) [, < spacing >;] < string > [,< string >,...] GOTO < line >, [,< line >...]
     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ### EXAMPLES:
+
+---
+## MKDIR
+Create directory in current path
+### FORMAT:
+ - MKDIR < dirname >
+   - Action: Create directory < dirname > in the current directory (see CD).
+     - Returns without error if directory already exists.
+     - Returns Disk I/O Error "file exists" if a file with the same name is in the current directory.
+### EXAMPLES:
+` MKDIR "mydir" `
+> Creates new directory MYDIR in the current directory.
 
 ---
 ## ON ERROR
@@ -877,6 +890,21 @@ Set DateTime
 
 ` 10 SDTM "010101000000" `
 > Sets DateTime to 01 JAN 2001 00:00:00 (24 hour format)
+
+---
+## SLEEP
+Pause program execution.
+### FORMAT:
+ - SLEEP < number >
+   - Action: Causes BASIC to pause for approximately < number > milliseconds.
+     - If < number > is less than zero, pauses 65536 - < number > seconds
+     - Returns FC Error if < number > is not between -32768 and 65535, inclusive.
+     - Ctrl-C will interrupt the SLEEP command and the BASIC Program
+### EXAMPLES:
+` SLEEP 250 `
+> Pauses for 1/4 second.
+` SLEEP S `
+> Pauses for S / 1000 seconds.
 
 ---
 ## STRING$

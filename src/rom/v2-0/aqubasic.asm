@@ -131,6 +131,7 @@ LineBufLen = 128
  STRUCTURE _sysvars,0
     STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
     STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
+    BYTE   _chstatus            ; status after last CH368 command
     BYTE   _doserror            ; file type BASIC/array/binary/etc.
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
@@ -146,6 +147,7 @@ SysVars  = RAMEND-_sysvars.size
 PathName = sysvars+_pathname
 FileName = sysvars+_filename
 DosError = sysvars+_doserror
+ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags
@@ -475,8 +477,16 @@ PAL__NTSC:
     POP  BC
     RET
 
-
-
+;---------------------------------------------------------------------
+;                       DOS commands
+;---------------------------------------------------------------------
+; ST_CD
+; ST_LOAD
+; ST_SAVE7
+; ST_DIR
+; ST_CAT
+; ST_DEL
+    include "dos.asm"
 
 C0_END:   
 C0_SIZE = C0_END - $C000
@@ -1541,11 +1551,11 @@ FN_VER:
 ;;; ## CALL
 ;;; Jump to and run machine code at specified address
 ;;; ### FORMAT:
-;;;  - CALL(< address >)
+;;;  - CALL < address >
 ;;;    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
 ;;;    - < address > can be a 16 bit signed or unsigned integer or hex value 
 ;;; ### EXAMPLES:
-;;; ` CALL($A000) `
+;;; ` CALL $A000 `
 ;;; > Begin executing machine code stored at upper half of middle 32k expansion RAM
 ;;;
 ;;; ` 10 LOAD "PRG.BIN",$A000 `
@@ -1555,11 +1565,53 @@ FN_VER:
 ;----------------------------------------------------------------------------
 
 ST_CALL:
-    call    GETADR           ; get <address>
-    push    de
-    ret                      ; jump to user code, HL = BASIC text pointer
+    call    GETADR                ; get <address>
+    push    de                    ; put it on the stack
+    ret                           ; jump to user code, HL = BASIC text pointer
 
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## SLEEP
+;;; Pause program execution.
+;;; ### FORMAT:
+;;;  - SLEEP < number >
+;;;    - Action: Causes BASIC to pause for approximately < number > milliseconds.
+;;;      - If < number > is less than zero, pauses 65536 - < number > seconds
+;;;      - Returns FC Error if < number > is not between -32768 and 65535, inclusive.
+;;;      - Ctrl-C will interrupt the SLEEP command and the BASIC Program
+;;; ### EXAMPLES:
+;;; ` SLEEP 250 `
+;;; > Pauses for 1/4 second.
+;;; ` SLEEP S `
+;;; > Pauses for S / 1000 seconds.
+;----------------------------------------------------------------------------
 
+ST_SLEEP:
+    call    GETADR                ; get argument
+    push    hl                    ; save text pointer
+.deloop                           ; 3,579 cycles = 1 millisecond
+    ;Check for CTL Key - No Debounce
+    ld      bc,$7fff              ;  10 Scan A15 column
+    in      a,(c)                 ;  12 Read the results
+    cp      $df                   ;   7 z = only D5 row is down
+    jr      nz,.notctl            ;  12 Not CTL, skip check for C
+    ;Check for C Key - No Debounce   Total 41
+    ld      bc,$efff              ; Scan A12 column
+    in      a,(c)                 ; Read the results
+    cp      $ef                   ; z = only D4 row is down
+    jp      z,STOPC               ; CTL-C, interrupt program
+.notctl
+    ld      bc,152                ; 10
+.bcloop                           ; .bcloop total 152 * (10 + 13) = 3296
+    djnz    .bcloop               ; 13 
+                                  ; .deloop total: 41 + 3496 + 26 = 3563 = 995 microseconds
+    dec     de                    ; 6     
+    ld      a,d                   ; 4
+    or      e                     ; 4
+    jr      nz,.deloop            ; 12 
+                                  ; Total 26
+    pop     hl                    ; restore text pointer
+    ret
 
 ; Require Open Parenthesis and Read Address
 PARADR:
@@ -1575,17 +1627,6 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
         cp      145         ; If Float < 65536
         jp      c,QINT      ;   Convert to Integer and Return
         jp      FRCINT
-
-;---------------------------------------------------------------------
-;                       DOS commands
-;---------------------------------------------------------------------
-; ST_CD
-; ST_LOAD
-; ST_SAVE7
-; ST_DIR
-; ST_CAT
-; ST_DEL
-    include "dos.asm"
 
 ;ST_EDIT
     include "edit.asm"
@@ -1706,8 +1747,6 @@ EVAL_EXT:
     jp      z,FN_AND
     cp      ORTK
     jp      z,FN_OR
-    cp      CDTK
-    jp      z,GET_PATH
     cp      PLUSTK          ; IGNORE "+"
     jp      z,EVAL_EXT      ;
     jp      QDOT     
@@ -1801,30 +1840,6 @@ FLOAT_DE:
     call    FLOATR            ; Float It
     pop     hl
     ret
-
-;------------------------------------------------------------------------------
-;;; ---
-;;; ## CD$
-;;; Get Current Directory path as a string
-;;; ### FORMAT:
-;;;  - CD$
-;;;    - Action: Returns the current directory path as displayed by the CD command with no arguments
-;;; ### EXAMPLES:
-;;; ` PRINT CD$ `
-;;; > Prints the current directory path to the screen
-;;;
-;;; ` 10 A$=CD$:PRINT A$ `
-;;; > Assigns the current path string to A$, then prints it.
-;------------------------------------------------------------------------------
-GET_PATH:
-    inc     hl                ; Skip CD Token
-    SYNCHK  '$'               ; Require $
-    push    hl                ; Text Pointer on Stack
-    ex      (sp),hl           ; Swap Text Pointer with Return Address
-    ld      de,LABBCK         ; return address for SNGFLT, etc.
-    push    de                ; on stack
-    ld      hl,PathName
-    jp      TIMSTR
 
 ;---------------------------------------------------------------------
 ;                 Enhanced BASIC Commands and Functions 

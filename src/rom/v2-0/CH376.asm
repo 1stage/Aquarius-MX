@@ -91,6 +91,12 @@
 ;  output:   Z = OK
 ;           NZ = fail, A = error code
 ;
+; usb_create_dir:
+;    create directory
+;   input:  HL = directory name
+;  out: z = directory opened
+;      nz = error
+;
 ; usb_open_dir:
 ;    open current directory  (if not found then open root directory)
 ;  out: z = directory opened
@@ -146,12 +152,17 @@ CH376_CMD_BYTE_READ     equ     $3A     ; start reading bytes
 CH376_CMD_BYTE_RD_GO    equ     $3B     ; continue reading bytes
 CH376_CMD_BYTE_WRITE    equ     $3C     ; start writing bytes
 CH376_CMD_BYTE_WR_GO    equ     $3D     ; continue writing bytes
+CH376_CMD_DISK_QUERY    equ     $3F     ; check disk space
+CH376_CMD_DIR_CREATE    equ     $40     ; create and open or open existing catalog 
+CH376_CMD_DISK_RD_GO    equ     $55     ; go on reading operation of USB storage device
+
 ; status codes
 CH376_INT_SUCCESS       equ     $14     ; command executed OK
 CH376_INT_DISK_READ     equ     $1D     ; read again (more bytes to read)
 CH376_INT_DISK_WRITE    equ     $1E     ; write again (more bytes to write)
 CH376_ERR_OPEN_DIR      equ     $41     ; is directory, not file
 CH376_ERR_MISS_FILE     equ     $42     ; file not found
+CH376_ERR_FOUND_NAME    equ     $43     ; file with name exists (CMD_DIR_CREATE)
 
  structure FAT_DIR_INFO,0
     STRUCT DIR_Name,11          ; $00 0
@@ -271,12 +282,26 @@ usb__open_dir:
     RET                             ; z = OK, nz = error
 
 
-;------------------------------------------------------------------------------
-;                      Test if File Exists
-;------------------------------------------------------------------------------
-; Input:    HL = filename
+;-----------------------------------------------------
+;           Create Directory
+;-----------------------------------------------------
+; in: hl = directory name  
 ;
-; Output:    Z = file exists
+; out: z = directory opened
+;      nz = error
+;
+usb__create_dir:
+        CALL    usb__set_filename       ; set USB filename to new directory name
+        LD      A,CH376_CMD_DIR_CREATE  ; 
+        OUT     (CH376_CONTROL_PORT),A  ; command: create directory
+        JP      usb__wait_int           ; wait for and return
+
+;------------------------------------------------------------------------------
+;                      TEST IF FILE EXISTS
+;------------------------------------------------------------------------------
+; INPUT:    HL = FILENAME
+;
+; OUTPUT:    Z = FILE EXISTS
 ;           NZ = file not exist or is directory, A = error code
 ;
 usb__file_exist:
@@ -592,6 +617,7 @@ usb__wait_int:
         OUT     (CH376_CONTROL_PORT),A  ; command: get status
         NOP
         IN      A,(CH376_DATA_PORT)     ; read status byte
+        ld      (ChStatus),a            ; record status byte
         CP      CH376_INT_SUCCESS       ; test return code
         POP     BC
         RET

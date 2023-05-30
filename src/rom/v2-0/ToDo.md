@@ -10,11 +10,19 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [ ] Modify dos.asm and CH376.asm to write USB file timestamp
 
-- [ ] Add MKDIR. RMDIR, and RENAME to dos.asm
-  - [ ] Verify this is feasible
-  - [ ] Add accompanying routines to CH376.asm
+- [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
+  - [X] MKDIR and usb__create_dir
+  - [ ] RMDIR and usb__delete_dir
+  - [ ] RENAME and ??? (most likely the same routine that will write the USB timestamp)
 
-- [ ] Rewrite hook dispatch routine fo faster execution of BASIC Programs.
+- [ ] Turn debugger into separate ROM option
+
+- [ ] MOD(dividend, divisor) function for modulus/remainder
+  - No hook 
+  
+- [ ] Full Error Messages
+  - Example:
+    - ` Syntax Error ` instead of ` SN Error `
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -25,23 +33,6 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
 ## UNDER CONSIDERATION / WISH LIST
-- Turn debugger into separate ROM option
-
-- Screen copy from MSX BASIC (this is preferred over GET/PUT commands from ExtBASIC)
-  - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
-  - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
-
-- Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
-
-- MOD(dividend, divisor) function for modulus/remainder
-  - No hook 
-
-- XOR logical function/operator
-  
-- Full Error Messages
-  - Example:
-    - ` Syntax Error ` instead of ` SN Error `
-
 - RPL$(source string, match string, replacement string) replace string function
   - Example 1:
     - ` 10 NM$ = "JOHN JAMES SMITH" `
@@ -134,7 +125,20 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Debug and Break vectors added to SysVars
   - [x] Debug statement prints "Debugger not installed"
   - [x] Option commented out of splash screen - 
-  
+
+- [x] Screen copy from MSX BASIC - Extended BASIC GET/PUT does this and has been added
+  - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
+  - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
+
+- [x] Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
+
+- [x] Rewrite hook dispatch routine fo faster execution of BASIC Programs.
+ - [x] Also rewrote statement and function dispatch routines to improve speed and flexibility
+
+- [x] SLEEP microseconds command
+
+- [x] XOR logical function/operator
+
 ### AquaLite
 
 - [x] Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory

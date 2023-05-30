@@ -49,13 +49,6 @@ DF_ADDR   = 0      ; set = address specified
 DF_SDTM   = 6      ; set = show file date/time
 DF_ARRAY  = 7      ; set = numeric array
 
-;--------------------------------------------------------------------
-;                        Change Directory
-;--------------------------------------------------------------------
-; CD "dirname"  = add 'subdir' to path
-; CD "/path"    = set path to '/path'
-; CD ""         = no operation
-; CD            = show path
 ;------------------------------------------------------------------------------
 ;;; ---
 ;;; ## CD
@@ -84,7 +77,7 @@ ST_CD:
     ld     c,a
     call   dos__clearError
     call   usb__ready            ; check for USB disk (may reset path to root!)
-    jr     nz,.do_error
+    jp     nz,_dos_do_error
     ld     a,c
     OR     A                     ; any args?
     JR     NZ,.change_dir        ; yes,
@@ -92,14 +85,14 @@ ST_CD:
     LD     HL,PathName
     call   STROUT                ; print path
     call   CRDO
-    jr     .done
+    jp     _pop_hl_ret           ; pop HL and return
 .change_dir:
     pop    hl                    ; pop BASIC text pointer
     CALL   FRMEVL                  ; evaluate expression
     PUSH   HL                    ; push BASIC text pointer
     CALL   CHKSTR                ; type mismatch error if not string
-    CALL   LEN1                ; get string and its length
-    JR     Z,.open               ; if null string then open current directory
+    CALL   LEN1                  ; get string and its length
+    JR     Z,_dos_opendir        ; if null string then open current directory
     inc    hl
     inc    hl                    ; skip to string text pointer
     ld     b,(hl)
@@ -109,27 +102,80 @@ ST_CD:
     call   dos__set_path         ; update path (out: DE = end of old path)
     jr     z,.open
     ld     a,ERROR_PATH_LEN
-    jr     .do_error             ; path too long
+    jp     _dos_do_error         ; path too long
 .open:
-    ld     hl,PathName
+    pop    hl
+_dos_opendir:
+    push   hl
     call   usb__open_path        ; try to open directory
-    jr     z,.done               ; if opened OK then done
+    jp     z,_pop_hl_ret         ; if opened OK then done
     cp     CH376_ERR_MISS_FILE   ; directory missing?
     jr     z,.undo
     cp     CH376_INT_SUCCESS     ; 'directory' is actually a file?
-    jr     nz,.do_error          ; no, disk error
+    jp     nz,_dos_do_error      ; no, disk error
 .undo:
     ex     de,hl                 ; HL = end of old path
     ld     (hl),0                ; remove subdirectory from path
     ld     a,ERROR_NO_DIR        ; error = missing directory
-.do_error:
-    call   _show_error           ; print error message
-    ld     e,ERRFC
-    pop    hl
-    jp     ERROR              ; return to BASIC with FC error
-.done:
-    pop    hl                    ; restore BASIC text pointer
-    ret
+    jp     _dos_do_error         ; display DOS error and generate FCERR
+
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## CD$
+;;; Get Current Directory path as a string
+;;; ### FORMAT:
+;;;  - CD$
+;;;    - Action: Returns the current directory path as displayed by the CD command with no arguments
+;;; ### EXAMPLES:
+;;; ` PRINT CD$ `
+;;; > Prints the current directory path to the screen
+;;;
+;;; ` 10 A$=CD$:PRINT A$ `
+;;; > Assigns the current path string to A$, then prints it.
+;------------------------------------------------------------------------------
+FN_CD:
+    inc     hl                ; Skip CD Token
+    SYNCHK  '$'               ; Require $
+    push    hl                ; Text Pointer on Stack
+    ex      (sp),hl           ; Swap Text Pointer with Return Address
+    ld      de,LABBCK         ; return address for SNGFLT, etc.
+    push    de                ; on stack
+    call    usb__get_path     ; Get pointer to current path in HL
+    jp      TIMSTR
+
+
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## MKDIR
+;;; Create directory in current path
+;;; ### FORMAT: 
+;;;  - MKDIR < dirname >
+;;;    - Action: Create directory < dirname > in the current directory (see CD).
+;;;      - Returns without error if directory already exists.
+;;;      - Returns Disk I/O Error "file exists" if a file with the same name is in the current directory.
+;;; ### EXAMPLES:
+;;; ` MKDIR "mydir" `
+;;; > Creates new directory MYDIR in the current directory.
+;------------------------------------------------------------------------------
+ST_MKDIR:
+    call    dos__getfilename      ; parse directory name
+    jp      nz,_dos_badname_error
+    push    hl                    ; save BASIC text pointer
+    call    dos__clearError
+    call    usb__ready            ; check for USB disk (may reset path to root!)
+    jp      nz,_dos_do_error
+    call    _dos_opendir          ; open current path
+    ld      hl,FileName
+    call    usb__create_dir       ; create directory
+    jp      z,_pop_hl_ret         ; if successful return
+    cp      CH376_ERR_FOUND_NAME
+    jr      z,_dos_file_exists
+_dos_unknown_error:
+    ld      a,ERROR_UNKNOWN
+    jp      _dos_do_error
+_dos_file_exists:
+    ld      a,ERROR_FILE_EXISTS
+    jp      _dos_do_error
 
 ;--------------------------------------------------------------------
 ;                             LOAD
@@ -276,8 +322,8 @@ ERROR_WRITE_FAIL  equ  10 ; write error
 ERROR_CREATE_FAIL equ  11 ; can't create file
 ERROR_NO_DIR      equ  12 ; can't open directory
 ERROR_PATH_LEN    equ  13 ; path too long
-
-ERROR_UNKNOWN     equ  14 ; other disk error
+ERROR_FILE_EXISTS equ  14 ; file with name exists
+ERROR_UNKNOWN     equ  15 ; other disk error
 
 _show_error:
     ld      (DosError),a         ; save error number
@@ -313,12 +359,13 @@ _error_messages:
     dw      no_file_msg          ; 5
     dw      file_empty_msg       ; 6
     dw      bad_file_msg         ; 7
-    dw      rmdir_error          ; 8
+    dw      rmdir_error_msg      ; 8
     dw      read_error_msg       ; 9
     dw      write_error_msg      ;10
     dw      create_error_msg     ;11
     dw      open_dir_error_msg   ;12
     dw      path_too_long_msg    ;13
+    dw      file_exists_msg      ;14
 
 no_376_msg:
     db      "no CH376",0
@@ -334,8 +381,8 @@ file_empty_msg
     db      "file empty",0
 bad_file_msg:
     db      "filetype mismatch",0
-rmdir_error:
-    db      "remover dir error",0
+rmdir_error_msg:
+    db      "remove dir error",0
 read_error_msg:
     db      "read error",0
 write_error_msg:
@@ -346,6 +393,8 @@ open_dir_error_msg:
     db      "directory not found",0
 path_too_long_msg:
     db      "path too long",0
+file_exists_msg:
+    db      "file exists",0
 unknown_error_msg:
     db      "disk error $",0
 
@@ -1052,23 +1101,20 @@ print_integer:
 ST_DEL:
     call   dos__getfilename  ; filename -> FileName
     push   hl                ; push BASIC text pointer
-    jr     z,.goodname
-    ld     e,a
-    ld     a,ERROR_BAD_NAME
-    jr     .do_error
-.goodname:
+    jr     nz,_dos_badname_error
     ld     hl,FileName
     call   usb__delete       ; delete file
-    jr     z,.done
-    ld     e,ERRFC
+    jr     z,_pop_hl_ret
     ld     a,ERROR_NO_FILE
-.do_error:
+_dos_do_error:
     call   _show_error       ; print error message
-    pop    hl                ; pop BASIC text pointer
-    jp     ERROR
-.done:
+    jp     FCERR
+_pop_hl_ret:
     pop    hl                ; pop BASIC text pointer
     ret
+_dos_badname_error:
+    ld     a,ERROR_BAD_NAME
+    jr     _dos_do_error
 
 
 ;----------------------------------------------------------------
@@ -1190,9 +1236,7 @@ dos__getfilename:
     call    dos__clearError   ; clear DOS error code
     call    FRMEVL            ; evaluate expression
     push    hl                ; save BASIC text pointer
-    ld      a,(VALTYP)        ; get type
-    dec     a
-    jr      nz,.type_mismatch
+    call    CHKSTR
     call    LEN1              ; get string and its length
     jr      z,.null_str       ; if empty string then return
     cp      12
