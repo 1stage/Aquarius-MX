@@ -1394,13 +1394,11 @@ PRINTHEX:
 ;------------------------------------------------------------------------------
 ;              Sets File Date time stamp on Write
 ;------------------------------------------------------------------------------
-;  Input:  DE = Address of Time Stamp
-;       :  HL = Address of FileName
-; Output:  A = MDOS compatible char
+;  Input:  HL = Address of FileName
+;  Output:  NZ set if error
 ;
-; converts:-
-;     lowercase to upppercase
-;     '=' -> '~' (in case we cannot type '~' on the keyboard!)
+;  Reads the RTC and sets the Created & Modified timestamps in the File FS Details
+;  If we ever start using interupts, then this will need DI/EI type code   
 ;
 
 
