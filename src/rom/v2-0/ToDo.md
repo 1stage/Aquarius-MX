@@ -8,8 +8,6 @@ This file is for recording upcoming changes and features that are being added, a
 ### ROM
 - [ ] Test hardware behavior without RTC installed (RAM only)
 
-- [ ] Modify dos.asm and CH376.asm to write USB file timestamp
-
 - [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
   - [X] MKDIR and usb__create_dir
   - [ ] RMDIR and usb__delete_dir
@@ -46,6 +44,8 @@ This file is for recording upcoming changes and features that are being added, a
     - ` MID$(<string expl> ,n [,m] ) = <str ing exp2> `
 
 ## COMPLETE:
+- [X] Modify dos.asm and CH376.asm to write USB file timestamp
+
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
 
 - [x] Test/Tweak, document KEY() function
