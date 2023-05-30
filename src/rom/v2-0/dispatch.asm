@@ -118,7 +118,7 @@ STJUMPS:
     dw      SNERR                 ;$E6 DEC
     dw      SNERR                 ;$E7 KEY
     dw      SNERR                 ;$E8 DEEK
-    dw      SNERR                 ;$E9 ERR
+    dw      ST_ERR                ;$E9 ERR OR
     dw      SNERR                 ;$EA STRING
     dw      SNERR                 ;$EB XOR
     dw      ST_MENU               ;$EC MENU

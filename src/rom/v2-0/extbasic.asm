@@ -573,6 +573,31 @@ FN_ERRS:
         call    dos__lookup_error ; Get DOS Error Message
         jp      TIMSTR            ; Return as String
         
+        
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## ERROR
+;;; Trigger a BASIC Error
+;;; ### FORMAT:
+;;;  - ERROR < error >
+;;;    - Action: Triggers a BASIC Error.
+;;;      - < error > is the error number of the error to trigger (see ERR function)
+;;;      - FC Error results if < error > is not between 0 and 255, inclusive
+;;;      - if <error> is 0, no error is triggered
+;;; ### EXAMPLES:
+;----------------------------------------------------------------------------
+
+ST_ERR:
+    rst     SYNCHR                ; Require OR Tokem
+    db      ORTK                  ;   for ERROR
+    call    GETBYT                ; Get < error >
+    or      a                     ; If it's zero
+    ret     z                     ;   Proceed with next statement
+    dec     a                     ; Else 
+    add     a                     ;   convert to error OFFSET
+    ld      e,a                   ;   Put it in E
+    jp      ERROR                 ;   and trigger error
+
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CLEAR
