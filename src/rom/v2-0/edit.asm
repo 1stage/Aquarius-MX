@@ -214,7 +214,11 @@ EDITLINE:
     jp    z,.cntlg        ;   Remap to '|'
     cp    $15             ; If CTL-U (^U)
     jp    z,.cntlu        ;   Remap to '}'
-.cntlx:                    ; Must be Ctrl-X
+    cp    $18             ; If CTL-X
+    jp    z,.cntlx        ;   Remap to '~'
+.cntls:                   ; Remap CTL-S to 'S'
+    sub   a,'X'-'S'+1
+.cntlx:                    
     sub   a,'X'-'U'-1
 .cntlu:
     sub   a,'U'-'G'-1
