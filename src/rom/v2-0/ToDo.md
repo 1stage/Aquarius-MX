@@ -10,9 +10,10 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [ ] Modify dos.asm and CH376.asm to write USB file timestamp
 
-- [ ] Add MKDIR. RMDIR, and RENAME to dos.asm
-  - [ ] Verify this is feasible
-  - [ ] Add accompanying routines to CH376.asm
+- [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
+  - [X] MKDIR and usb__create_dir
+  - [ ] RMDIR and usb__delete_dir
+  - [ ] RENAME and ??? (most likely the same routine that will write the USB timestamp)
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9

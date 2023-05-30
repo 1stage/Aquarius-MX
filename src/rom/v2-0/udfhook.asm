@@ -9,7 +9,7 @@ endif
 
 HOOKTABLE:                    ; ## caller   addr  performing function
     dw      ERRORX            ;  0 ERROR    03DB  Initialize Stack, Display Error, and Stop Program
-    dw      HOOK1+1           ;  1 ERRCRD   03E0 
+    dw      ERRCRX            ;  1 ERRCRD   03E0  Print Error Message
     dw      AQMAIN            ;  2 READY    0402  BASIC command line (immediate mode)
     dw      HOOK3+1           ;  3 EDENT    0428  Tokenize Entered Line  
     dw      HOOK4+1           ;  4 FINI     0480  Finish Adding/Removing Line or Loading Program

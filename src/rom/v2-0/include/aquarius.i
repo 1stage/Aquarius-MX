@@ -382,7 +382,8 @@ ERRST  =    $1E             ; WT String formula too complex
 ERRCN  =    $20             ; CN Cant CONTinue
 ERRUF  =    $22             ; UF UnDEFined FN function
 ERRMO  =    $24             ; MO Missing operand
-
+ERRIO  =    $26             ; IO Disk I/O Error
+ERRUE  =    $28             ; Unprintable Error
 
 ;----------------------------------------------------------------------------
 ;     jump addresses for BASIC errors (returns to command prompt)

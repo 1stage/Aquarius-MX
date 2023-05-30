@@ -475,6 +475,7 @@ Error Status
         - Returns 65535 if the error occured in immediate mode.
       - If < number > is 3, returns the number corresponding to the last DOS error.
         - Returns 0 if the last DOS command completed successfully.
+      - If < number > is 4, returns the status code of the last CH376 operation.
 
 ### Basic Error Numbers
 | Err# | Code | Description                  |
@@ -703,6 +704,17 @@ Display and execute menu.
 ### EXAMPLES:
 
 ---
+## MKDIR
+Create directory in current path
+### FORMAT: MKDIR <dirname>
+   - Action: Create directory < dirname > in the current directory (see CD).
+     - Returns without error if directory already exists.
+     - Returns Disk I/O Error "file exists" if a file with the same name is in the current directory.
+### EXAMPLES:
+` MKDIR "mydir" `
+> Creates new directory MYDIR in the current directory.
+
+---
 ## ON ERROR
 BASIC error handling function and codes
 ### FORMAT:
@@ -883,11 +895,7 @@ Set DateTime
 Pause program execution.
 ### FORMAT:
  - SLEEP < number >
-<<<<<<< HEAD
    - Action: Causes BASIC to pause for approximately <number> milliseconds.
-=======
-   - Action: Causes BASIC to pause for approximately <number> microseconds.
->>>>>>> 7798df9bf24d9bae04d74895f8ad3912be7534a4
      - If < number > is less than zero, pauses 65536 - <number> seconds
      - Returns FC Error if <number> is not between -32768 and 65535, inclusive.
      - Ctrl-C will interrupt the SLEEP command and the BASIC Program

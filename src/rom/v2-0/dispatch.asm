@@ -124,8 +124,8 @@ STJUMPS:
     dw      ST_MENU               ;$EC MENU
     dw      SNERR                 ;$ED EVAL
     dw      ST_SLEEP              ;$EE SLEEP
-    dw      SNERR                 ;$EF
-    dw      SNERR                 ;$F0
+    dw      ST_MKDIR              ;$EF MKDIR
+    dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1
     dw      SNERR                 ;$F2
     dw      SNERR                 ;$F3
@@ -149,7 +149,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$B3 INT     
     dw      HOOK27+1              ;$B4 ABS     
     dw      HOOK27+1              ;$B5 USR  
-    dw      HOOK27+1              ;$B6 FRE     
+    dw      FN_FRE                ;$B6 FRE     
     dw      HOOK27+1              ;$B7 LPOS    
     dw      HOOK27+1              ;$B8 POS     
     dw      HOOK27+1              ;$B9 SQR     
@@ -160,11 +160,11 @@ FNJUMPS:
     dw      HOOK27+1              ;$BE SIN     
     dw      HOOK27+1              ;$BF TAN     
     dw      HOOK27+1              ;$C0 ATN     
-    dw      HOOK27+1              ;$C1 PEEK    
+    dw      FN_PEEK               ;$C1 PEEK    
     dw      HOOK27+1              ;$C2 LEN     
     dw      HOOK27+1              ;$C3 STR$     
     dw      HOOK27+1              ;$C4 VAL     
-    dw      HOOK27+1              ;$C5 ASC     
+    dw      FN_ASC                ;$C5 ASC     
     dw      HOOK27+1              ;$C6 CHR$     
     dw      HOOK27+1              ;$C7 LEFT$    
     dw      HOOK27+1              ;$C8 RIGHT$   
@@ -207,8 +207,8 @@ FNJUMPS:
     dw      SNERR                 ;$EC MENU
     dw      FN_EVAL               ;$ED EVAL
     dw      SNERR                 ;$EE SLEEP
-    dw      SNERR                 ;$EF
-    dw      SNERR                 ;$F0
+    dw      SNERR                 ;$EF MKDIR
+    dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1
     dw      SNERR                 ;$F2
     dw      SNERR                 ;$F3
@@ -224,6 +224,35 @@ FNJUMPS:
     dw      SNERR                 ;$FD
     dw      SNERR                 ;$FE
     dw      SNERR                 ;$FF
+
+
+; These are here so they don't cross a page boundary
+; Pointers into err_table
+ERRMSG: dw      MSGNF             ; 0
+        dw      MSGSN             ; 2
+        dw      MSGRG             ; 4
+        dw      MSGOD             ; 6
+        dw      MSGFC             ; 8
+        dw      MSGOV             ; 10
+        dw      MSGOM             ; 12
+        dw      MSGUS             ; 14
+        dw      MSGBS             ; 16
+        dw      MSGDD             ; 18
+        dw      MSGDV0            ; 20
+        dw      MSGID             ; 22
+        dw      MSGTM             ; 24
+        dw      MSGSO             ; 26
+        dw      MSGLS             ; 28
+        dw      MSGST             ; 30
+        dw      MSGCN             ; 32
+        dw      MSGUF             ; 34
+        dw      MSGMO             ; 36
+        dw      MSGIO             ; 38
+        dw      MSGUE             ; 40
+
+; Extended Two Letter Error Messages
+ERRTAX: db     "IO"               ; Disk I/O Error
+        db     "UE"               ; Unprintable Error
 
 STATEMENT:
     exx                         ; save BC,DE,HL
@@ -306,7 +335,9 @@ CDTK    = $E0
     db      $80 + 'X', "OR"         ; $eb - PUT Operator and Bitwise XOR 
     db      $80 + 'M', "ENU"        ; $ec - Display and Execute Menu
     db      $80 + 'E', "VAL"        ; $ed - Display and Execute Menu
-    db      $80 + 'S', "LEEP"       ; $ed - Display and Execute Menu
+    db      $80 + 'S', "LEEP"       ; $ee - Display and Execute Menu
+    db      $80 + 'M', "KDIR"       ; $ef - Create Directory
+    db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA
@@ -350,3 +381,27 @@ PEXPBAB:
     ld      c,a                 ; C = offset to AquBASIC command
     ld      de,TBLCMDS          ; DE = table of AquBASIC command names
     jp      $05a8               ; Print keyword indexed by C
+
+; Long Error Descriptions
+err_table:
+MSGNF:  db      "NEXT without FOR",0
+MSGSN:  db      "Syntax error",0
+MSGRG:  db      "RETURN without GOSUB",0
+MSGOD:  db      "Out of DATA",0
+MSGFC:  db      "Illegal function call",0
+MSGOV:  db      "Overflow",0
+MSGOM:  db      "Out of memory",0
+MSGUS:  db      "Undefined line number",0
+MSGBS:  db      "Subscript out of range",0
+MSGDD:  db      "Duplicate Definition",0
+MSGDV0: db      "Division by zero",0
+MSGID:  db      "Illegal direct",0
+MSGTM:  db      "Type mismatch",0
+MSGSO:  db      "Out of string space",0
+MSGLS:  db      "String too long",0
+MSGST:  db      "String formula too complex",0
+MSGCN:  db      "Can't continue",0
+MSGUF:  db      "Undefined user function",0
+MSGMO:  db      "Missing operand",0
+MSGIO:  db      "Disk I/O error",0
+MSGUE:  db      "Unprintable error",0

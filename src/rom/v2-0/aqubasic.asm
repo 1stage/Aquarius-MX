@@ -131,6 +131,7 @@ LineBufLen = 128
  STRUCTURE _sysvars,0
     STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
     STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
+    BYTE   _chstatus            ; status after last CH368 command
     BYTE   _doserror            ; file type BASIC/array/binary/etc.
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
@@ -146,6 +147,7 @@ SysVars  = RAMEND-_sysvars.size
 PathName = sysvars+_pathname
 FileName = sysvars+_filename
 DosError = sysvars+_doserror
+ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags

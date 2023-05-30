@@ -373,6 +373,13 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
         jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
 
 ;----------------------------------------------------------------------------
+; Print Error Message Hook Routine
+;----------------------------------------------------------------------------
+
+ERRCRX: jp      HOOK1+1
+        
+ 
+;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ERR
 ;;; Error Status
@@ -388,6 +395,7 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 ;;;         - Returns 65535 if the error occured in immediate mode.
 ;;;       - If < number > is 3, returns the number corresponding to the last DOS error.
 ;;;         - Returns 0 if the last DOS command completed successfully.
+;;;       - If < number > is 4, returns the status code of the last CH376 operation.
 ;;;
 ;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
@@ -445,6 +453,8 @@ FN_ERR: rst     CHRGET
         jr      z,.errlin         ;    Return Error Line Number
         dec      a                ; If 3
         jr      z,.doserr         ;    Return Error Line Number
+        dec      a                ; If 4
+        jr      z,.chstatus       ;    Return CH376 Status
         jp      FCERR             ; Else FC Error
 .onelin:
         ld      hl,(ONELIN)       ; Get Error Line Pointer
@@ -463,52 +473,12 @@ FN_ERR: rst     CHRGET
 .doserr:
         ld      a,(DosError)      ; Get DOS Error Number
         jr      .ret_a
+.chstatus:
+        ld      a,(ChStatus)      ; Get DOS Error Number
+        jr      .ret_a
 
-fnerr_message:
-        ret
 
 
-ERRMSG: DW      MSGNF 
-        DW      MSGSN   
-        DW      MSGRG 
-        DW      MSGOD 
-        DW      MSGFC 
-        DW      MSGOV 
-        DW      MSGOM 
-        DW      MSGUS 
-        DW      MSGBS 
-        DW      MSGDD 
-        DW      MSGDV0
-        DW      MSGID 
-        DW      MSGTM 
-        DW      MSGSO 
-        DW      MSGLS 
-        DW      MSGST 
-        DW      MSGCN 
-        DW      MSGUF 
-        DW      MSGMO 
-        DW      MSGUE 
-  
-MSGNF:  DB      "NEXT without FOR",0
-MSGSN:  DB      "Syntax error",0
-MSGRG:  DB      "RETURN without GOSUB",0
-MSGOD:  DB      "Out of DATA",0
-MSGFC:  DB      "Illegal function call",0
-MSGOV:  DB      "Overflow",0
-MSGOM:  DB      "Out of memory",0
-MSGUS:  DB      "Undefined line number",0
-MSGBS:  DB      "Subscript out of range",0
-MSGDD:  DB      "Duplicate Definition",0
-MSGDV0: DB      "Division by zero",0
-MSGID:  DB      "Illegal direct",0
-MSGTM:  DB      "Type mismatch",0
-MSGSO:  DB      "Out of string space",0
-MSGLS:  DB      "String too long",0
-MSGST:  DB      "String formula too complex",0
-MSGCN:  DB      "Can''t continue",0
-MSGUF:  DB      "Undefined user function",0
-MSGMO:  DB      "Missing operand",0
-MSGUE:  DB      "Unprintable error",0
 
 ;----------------------------------------------------------------------------
 ;;; ---
