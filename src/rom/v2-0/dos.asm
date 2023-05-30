@@ -1412,7 +1412,7 @@ set_dos_File_datetime:
     ld      bc,RTC_SHADOW           ; setup BC to RTC_SHADOW
     ld      hl,DTM_BUFFER           ; Setup HL to DTM_BUFFER
     call    rtc_read                ; get current Date/time into DTM_Buffer
-    jr      z,_sdfdt_ErrorOrNoCLK   ; exit if no clock
+    jr      z,._sdfdt_ErrorOrNoCLK   ; exit if no clock
     ld      hl,FileName             ; get current filename
     call    usb__read_dir_Info      ; try to open file and read DIR info
     jr      nz,._sdfdt_ErrorOrNoCLK ; got an error - goto handler
