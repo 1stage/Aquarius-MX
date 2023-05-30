@@ -626,6 +626,24 @@ Read Z80 I/O Port
 > Set variable S to Printer Ready status
 
 ---
+## INSTR
+Create string of repeating characters.
+### FORMAT: INSTR ( [ *offset* , ] *string1* , *string2* )
+   - Action: Searches for the first occurrence of *string2* in *string1* and returns the position at which the match is found.
+     - Optional *offset* sets the position for starting the search.
+       - Must be in the range 1 to 255 or an FC Error results.
+     - If *offset* > LEN(*string1*) or if *string1* is null or if *string2* cannot be found, INSTR returns 0.
+     - If *string2* is null, INSTR returns *offset* or 1.
+     - *string1* and *string2* may be string variables, string expressions or string literals.
+### EXAMPLES:
+```
+  10 X$ = "ABCDEB"
+  20 Y$ = "B"
+  30 PRINT INSTR(X$,Y$) ;INSTR(4,X$,y$)
+```
+> Prints the numbers 2 and 6.
+
+---
 ## JOY
 Read AY-3-8910 Control Pad Inputs
 ### FORMAT:

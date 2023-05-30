@@ -171,7 +171,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$C9 MID$     
     dw      HOOK27+1              ;$CA POINT
 ;MX BASIC Statements and Functions
-    dw      SNERR                 ;$CB INSTR
+    dw      FN_INSTR              ;$CB INSTR
     dw      SNERR                 ;$CC PUT    
     dw      SNERR                 ;$CD GET    
     dw      SNERR                 ;$CE DRAW   

@@ -852,6 +852,25 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
         djnz    SPLP              ;KEEP STORING CHAR
         jp      FINBCK            ;PUT TEMP DESC WHEN DONE
 
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## INSTR
+;;; Create string of repeating characters.
+;;; ### FORMAT: INSTR ( [ *offset* , ] *string1* , *string2* )
+;;;    - Action: Searches for the first occurrence of *string2* in *string1* and returns the position at which the match is found. 
+;;;      - Optional *offset* sets the position for starting the search.
+;;;        - Must be in the range 1 to 255 or an FC Error results.
+;;;      - If *offset* > LEN(*string1*) or if *string1* is null or if *string2* cannot be found, INSTR returns 0.
+;;;      - If *string2* is null, INSTR returns *offset* or 1.
+;;;      - *string1* and *string2* may be string variables, string expressions or string literals.
+;;; ### EXAMPLES:
+;;; ```
+;;;   10 X$ = "ABCDEB"
+;;;   20 Y$ = "B"
+;;;   30 PRINT INSTR(X$,Y$) ;INSTR(4,X$,y$)
+;;; ```
+;;; > Prints the numbers 2 and 6.
+;----------------------------------------------------------------------------
 ; THIS IS THE INSTR FUCNTION. IT TAKES ONE OF TWO FORMS: INSTR(I%,S1$,S2$) OR INSTR(S1$,S2$)
 ; IN THE FIRST FORM THE STRING S1$ IS SEARCHED FOR THE CHARACTER S2$ STARTING AT CHARACTER POSITION I%.
 ; THE SECOND FORM IS IDENTICAL, EXCEPT THAT THE SEARCH STARTS AT POSITION 1. INSTR RETURNS THE CHARACTER
@@ -860,65 +879,65 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 FN_INSTR:  
         rst     CHRGET            ;EAT FIRST CHAR
         call    FRMPRN            ;EVALUATE FIRST ARG
-        call    GETYPR            ;SET ZERO IF ARG A STRING.
-        ld      a,1               ;IF SO, ASSUME, SEARCH STARTS AT FIRST CHAR
-        push    af                ;SAVE OFFSET IN CASE STRING
-        jp      z,WUZSTR          ;WAS A STRING
-        pop     af                ;GET RID OF SAVED OFFSET
-        call    CONINT            ;FORCE ARG1 (I%) TO BE INTEGER
-        or      a                 ;DONT ALLOW ZERO OFFSET
-        jp      z,FCERR           ;KILL HIM.
-        push    af                ;SAVE FOR LATER
-        SYNCHK  ','               ;EAT THE COMMA
-        call    FRMEVL            ;EAT FIRST STRING ARG
-        call    CHKSTR            ;BLOW UP IF NOT STRING
-WUZSTR: SYNCHK  ','               ;EAT COMMA AFTER ARG
-        push    hl                ;SAVE THE TEXT POINTER
-        ld      hl,(FACLO)        ;GET DESCRIPTOR POINTER
-        ex      (sp),hl           ;PUT ON STACK & GET BACK TEXT PNT.
-        call    FRMEVL            ;GET LAST ARG
-        SYNCHK  ')'               ;EAT RIGHT PAREN
-        push    hl                ;SAVE TEXT POINTER
-        call    FRESTR            ;FREE UP TEMP & CHECK STRING
-        ex      de,hl             ;SAVE 2ND DESC. POINTER IN [D,E]
-        pop     bc                ;GET TEXT POINTER IN B
-        pop     hl                ;DESC. POINTER FOR S1$
-        pop     af                ;OFFSET
-        push    bc                ;PUT TEXT POINTER ON BOTTOM
-        ld      bc,POPHRT         ;PUT ADDRESS OF POP H, RET ON
-        push    bc                ;PUSH IT
-        ld      bc,SNGFLT         ;NOW ADDRESS OF [A] RETURNER
-        push    bc                ;ONTO STACK
-        push    af                ;SAVE OFFSET BACK
-        push    de                ;SAVE DESC. OF S2
-        call    FRETM2            ;FREE UP S1 DESC.
-        pop     de                ;RESTORE DESC. S2
-        pop     af                ;GET BACK OFFSET
-        ld      b,a               ;SAVE UNMODIFIED OFFSET
-        dec     a                 ;MAKE OFFSET OK
-        ld      c,a               ;SAVE IN C
-        cp      (hl)              ;IS IT BEYOND LENGTH OF S1?
-        ld      a,0               ;IF SO, RETURN ZERO. (ERROR)
-        ret     nc    
-        ld      a,(de)            ;GET LENGTH OF S2$
-        or      a                 ;NULL??
-        ld      a,b               ;GET OFFSET BACK
-        ret     z                 ;ALL IF S2 NULL, RETURN OFFSET
-        ld      a,(hl)            ;GET LENGTH OF S1$
-        inc     hl                ;BUMP POINTER
-        ld      b,(hl)            ;GET 1ST BYTE OF ADDRESS
-        inc     hl                ;BUMP POINTER
-        inc     hl                
-        ld      h,(hl)            ;GET 2ND BYTE
-        ld      l,b               ;GET 1ST BYTE SET UP
-        ld      b,0               ;GET READY FOR DAD
-        add     hl,bc             ;NOW INDEXING INTO STRING
-        sub     c                 ;MAKE LENGTH OF STRING S1$ RIGHT
-        ld      b,a               ;SAVE LENGTH OF 1ST STRING IN [B]
-        push    bc                ;SAVE COUNTER, OFFSET
-        push    de                ;PUT 2ND DESC (S2$) ON STACK
-        ex      (sp),hl           ;GET 2ND DESC. POINTER
-        ld      c,(hl)            ;SET UP LENGTH
+        call    GETYPR            ;SET ZERO IF ARG A STRING.                    AF     BC     DE     HL     Stack
+        ld      a,1               ;IF SO, ASSUME, SEARCH STARTS AT FIRST CHAR   1                    TxtPtr 
+        push    af                ;SAVE OFFSET IN CASE STRING                                               Offset
+        jp      z,WUZSTR          ;WAS A STRING                                                             
+        pop     af                ;GET RID OF SAVED OFFSET                      1                           --
+        call    CONINT            ;FORCE ARG1 (I%) TO BE INTEGER                Offset               --            
+        or      a                 ;DONT ALLOW ZERO OFFSET                                                   
+        jp      z,FCERR           ;KILL HIM.                                                                
+        push    af                ;SAVE FOR LATER                                                           Offset
+        SYNCHK  ','               ;EAT THE COMMA                                --                            
+        call    FRMEVL            ;EAT FIRST STRING ARG                                                     
+        call    CHKSTR            ;BLOW UP IF NOT STRING                                                    
+WUZSTR: SYNCHK  ','               ;EAT COMMA AFTER ARG                                                      
+        push    hl                ;SAVE THE TEXT POINTER                                                    TxtPtr,Offset
+        ld      hl,(FACLO)        ;GET DESCRIPTOR POINTER                                            Desc1  
+        ex      (sp),hl           ;PUT ON STACK & GET BACK TEXT PNT.                                 TxtPtr Desc1, Offset
+        call    FRMEVL            ;GET LAST ARG                                                       ----       
+        SYNCHK  ')'               ;EAT RIGHT PAREN                                                          
+        push    hl                ;SAVE TEXT POINTER                                                        TxtPtr,Desc1, Offset
+        call    FRESTR            ;FREE UP TEMP & CHECK STRING                   ----   ----   ----  Desc2       
+        ex      de,hl             ;SAVE 2ND DESC. POINTER IN [D,E]                            Desc2   ----              
+        pop     bc                ;GET TEXT POINTER IN B                               TxtPtr               Desc1, Offset
+        pop     hl                ;DESC. POINTER FOR S1$                                             Desc1  Offset
+        pop     af                ;OFFSET                                       Offset                      --
+        push    bc                ;PUT TEXT POINTER ON BOTTOM                                               TxtPtr
+        ld      bc,POPHRT         ;PUT ADDRESS OF POP H, RET ON                        POPHRT                     
+        push    bc                ;PUSH IT                                                                  POPHRT, TxtPtr
+        ld      bc,SNGFLT         ;NOW ADDRESS OF [A] RETURNER                         SNGGLT                     
+        push    bc                ;ONTO STACK                                                               SNGFLT, POPHRT. TxtPtr
+        push    af                ;SAVE OFFSET BACK                                                         Offset, SNGFLT, POPHRT. TxtPtr
+        push    de                ;SAVE DESC. OF S2                                                         Desc2, Offset, SNGFLT, POPHRT. TxtPtr
+        call    FRETM2            ;FREE UP S1 DESC.                              ----   ----   ----  Desc1
+        pop     de                ;RESTORE DESC. S2                                           Desc2
+        pop     af                ;GET BACK OFFSET                              Offset
+        ld      b,a               ;SAVE UNMODIFIED OFFSET                              Of,O-1
+        dec     a                 ;MAKE OFFSET OK                               
+        ld      c,a               ;SAVE IN C                                    
+        cp      (hl)              ;IS IT BEYOND LENGTH OF S1?                   
+        ld      a,0               ;IF SO, RETURN ZERO. (ERROR)                    0
+        ret     nc                                                              
+        ld      a,(de)            ;GET LENGTH OF S2$                            Len_D2
+        or      a                 ;NULL??                                       
+        ld      a,b               ;GET OFFSET BACK                              Offset
+        ret     z                 ;ALL IF S2 NULL, RETURN OFFSET                
+        ld      a,(hl)            ;GET LENGTH OF S1$                            
+        inc     hl                ;BUMP POINTER                                 
+        inc     hl                ;BUMP POINTER                                 
+        ld      b,(hl)            ;GET 1ST BYTE OF ADDRESS                      
+        inc     hl                                                              
+        ld      h,(hl)            ;GET 2ND BYTE                                 
+        ld      l,b               ;GET 1ST BYTE SET UP                          
+        ld      b,0               ;GET READY FOR DAD                            
+        add     hl,bc             ;NOW INDEXING INTO STRING                     
+        sub     c                 ;MAKE LENGTH OF STRING S1$ RIGHT              
+        ld      b,a               ;SAVE LENGTH OF 1ST STRING IN [B]             
+        push    bc                ;SAVE COUNTER, OFFSET                         
+        push    de                ;PUT 2ND DESC (S2$) ON STACK                  
+        ex      (sp),hl           ;GET 2ND DESC. POINTER                        
+        ld      c,(hl)            ;SET UP LENGTH                                
         inc     hl                ;BUMP POINTER
         inc     hl                
         ld      e,(hl)            ;GET FIRST BYTE OF ADDRESS
