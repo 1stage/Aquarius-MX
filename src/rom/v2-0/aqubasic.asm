@@ -136,6 +136,7 @@ LineBufLen = 128
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
     BYTE   _dosflags            ; DOS flags
+    BYTE   _keyflags            ; Keyclick Enable Flag
     BYTE   _sysflags            ; system flags
     VECTOR _break               ; Debugger Break
     VECTOR _godebug             ; Start Debugger
@@ -151,6 +152,7 @@ ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 DosFlags = sysvars+_dosflags
+KeyFlags = sysvars+_keyflags
 SysFlags = sysvars+_sysflags
 Break    = sysvars+_break
 GoDebug  = sysvars+_godebug
@@ -262,6 +264,8 @@ SF_NTSC  = 1       ; 1 = NTSC, 0 = PAL
 SF_RETYP = 1       ; 1 = CTRL-O is retype
 SF_DEBUG = 7       ; 1 = Debugger available
 
+;keyboard flags
+KF_CLICK  = 0     ; Key Click Enabled
 
 ;=======================================
 ;             ROM Code
@@ -520,6 +524,9 @@ ROM_ENTRY:
     set     SF_NTSC,a
 .set_sysflags:
     ld      (Sysflags),a
+; set keyflags
+    ld      a,1<<KF_CLICK     ; Key Click Enabled, Not Muted
+    ld      (KeyFlags),a
 
 ; init Debugger Vectors
     ld      hl,debug_defs      ;default jumps for Break and GoDebug
@@ -701,7 +708,7 @@ AQMAIN:
 
 IMMEDIATE:
     ld      hl,SysFlags
-    SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active
+    SET     SF_RETYP,(HL)       ; CRTL-R (RETYP) active    
     ld      hl,-1
     ld      (CURLIN),hl         ; Current BASIC line number is -1 (immediate mode)
     ld      hl,LineBuf          ; HL = line input buffer

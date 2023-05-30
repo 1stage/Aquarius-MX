@@ -389,23 +389,41 @@ EDITLINE:
 ;
 _clr_key_wait:
     xor     a
-    ld      (CHARC),a ; clear last key pressed
+    ld      (CHARC),a             ; clear last key pressed
 _key_wait:
-    call    $1e7e       ; get last key pressed
-    jr      z,_key_wait ; loop until key pressed
-    push af
-    ld   a,$FF          ; speaker ON
-    out  ($fc),a
-.click_wait:
-    push af
-    pop  af             ; delay 6 cycles * 256
-    dec  a
-    jr   nz,.click_wait
-    out  ($fc),a        ; speaker OFF
-    pop  af
+    call    $1e7e                 ; get last key pressed
+    jr      z,_key_wait           ; loop until key pressed
+    push    af         
+    push    hl                    
+    ld      a,(KeyFlags)          ; Get Key Flags
+    bit     KF_CLICK,a            ; If Key Click Enabled
+    jr      z,.no_click
+    ld      hl,(RESPTR)           ;   Check for Keyword Expansion
+    ld      a,h
+    or      a
+    jr      z,.click              ;   If Expanding
+    inc     hl                         
+    ld      a,(hl)                ;     If Next Character Doesn't Have High Bit Set
+    or      a                     ;       Not at End of Word
+    jp      p,.no_click           ;       So Don't Click
+.click  
+    call    key_click             ;     DoKey Click
+.no_click
+    pop     hl
+    pop     af
     ret
 
-
+key_click:
+    ld   a,$FF                    ;   speaker ON
+    out  ($fc),a                      
+.click_wait:                          
+    push af                           
+    pop  af                       ;   delay 6 cycles * 256
+    dec  a                            
+    jr   nz,.click_wait               
+    out  ($fc),a                  ;   speaker OFF
+    ret
+    
 ;--------------------------------------------------------------------
 ;         Print String to screen without moving cursor
 ;--------------------------------------------------------------------
