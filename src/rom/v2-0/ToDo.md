@@ -15,6 +15,15 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] RMDIR and usb__delete_dir
   - [ ] RENAME and ??? (most likely the same routine that will write the USB timestamp)
 
+- [ ] Turn debugger into separate ROM option
+
+- [ ] MOD(dividend, divisor) function for modulus/remainder
+  - No hook 
+  
+- [ ] Full Error Messages
+  - Example:
+    - ` Syntax Error ` instead of ` SN Error `
+
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
 
@@ -24,17 +33,6 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
 ## UNDER CONSIDERATION / WISH LIST
-- Turn debugger into separate ROM option
-
-- MOD(dividend, divisor) function for modulus/remainder
-  - No hook 
-
-- XOR logical function/operator
-  
-- Full Error Messages
-  - Example:
-    - ` Syntax Error ` instead of ` SN Error `
-
 - RPL$(source string, match string, replacement string) replace string function
   - Example 1:
     - ` 10 NM$ = "JOHN JAMES SMITH" `
@@ -138,6 +136,8 @@ This file is for recording upcoming changes and features that are being added, a
  - [x] Also rewrote statement and function dispatch routines to improve speed and flexibility
 
 - [x] SLEEP microseconds command
+
+- [x] XOR logical function/operator
 
 ### AquaLite
 
