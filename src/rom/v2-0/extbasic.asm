@@ -45,7 +45,7 @@ DEFX:   call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         ld      e,(hl)          
         pop     hl              
         call    CHKNUM          
-        SYNCHK  ')'              ;{M80} MUST BE FOLLOWED BY )
+        SYNCHK  ')'               ;{M80} MUST BE FOLLOWED BY )
         rst      SYNCHR
         db      EQUATK
         ld      b,h              
@@ -56,25 +56,25 @@ DEFX:   call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         ld      (hl),b          
         jp      STRADX           
 
-FNDOEX: call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
-        push    de                
-        call    PARCHK          ; RECURSIVELY EVALUATE THE FORMULA
-        call    CHKNUM          ; MUST BE NUMBER
-        ex      (sp),hl         ; SAVE THE TEXT POINTER THAT POINTS PAST THE 
-                                ; FUNCTION NAME IN THE CALL
-        ld      e,(hl)          ; [H,L]=VALUE OF THE FUNCTION
-        inc     hl              
-        ld      d,(hl)          
-        inc     hl              ; WHICH IS A TEXT POINTER AT THE FORMAL
-        ld      a,d             ; PARAMETER LIST IN THE DEFINITION
-        or      e               ; A ZERO TEXT POINTER MEANS THE FUNCTION 
-                                ; WAS NEVER DEFINED
-        jp      z,UFERR         ; IF SO, GIVEN AN "UNDEFINED FUNCTION" ERROR
+FNDOEX: call    GETFNM            ; GET A POINTER TO THE FUNCTION NAME
+        push    de                  
+        call    PARCHK            ; RECURSIVELY EVALUATE THE FORMULA
+        call    CHKNUM            ; MUST BE NUMBER
+        ex      (sp),hl           ; SAVE THE TEXT POINTER THAT POINTS PAST THE 
+                                  ; FUNCTION NAME IN THE CALL
+        ld      e,(hl)            ; [H,L]=VALUE OF THE FUNCTION
+        inc     hl                
+        ld      d,(hl)            
+        inc     hl                ; WHICH IS A TEXT POINTER AT THE FORMAL
+        ld      a,d               ; PARAMETER LIST IN THE DEFINITION
+        or      e                 ; A ZERO TEXT POINTER MEANS THE FUNCTION 
+                                  ; WAS NEVER DEFINED
+        jp      z,UFERR           ; IF SO, GIVEN AN "UNDEFINED FUNCTION" ERROR
         ld      a,(hl)          
         inc     hl              
         ld      h,(hl)          
         ld      l,a              
-        push    hl              ; SAVE THE NEW VALUE FOR PRMSTK
+        push    hl                ; SAVE THE NEW VALUE FOR PRMSTK
         ld      hl,(VARNAM)       
         ex      (sp),hl          
         ld      (VARNAM),hl       
@@ -86,29 +86,29 @@ FNDOEX: call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         push    de              
         call    MOVMF            
         pop      hl              
-        call    FRMNUM          ; AND EVALUATE THE DEFINITION FORMULA
-        dec     hl              ; CAN HAVE RECURSION AT THIS POINT
-        rst     CHRGET          ; SEE IF THE STATEMENT ENDED RIGHT
-        jp      nz,SNERR        ; THIS IS A CHEAT, SINCE THE LINE 
-                                ; NUMBER OF THE ERROR WILL BE THE CALLERS
-                                ; LINE # INSTEAD OF THE DEFINITIONS LINE #
+        call    FRMNUM            ; AND EVALUATE THE DEFINITION FORMULA
+        dec     hl                ; CAN HAVE RECURSION AT THIS POINT
+        rst     CHRGET            ; SEE IF THE STATEMENT ENDED RIGHT
+        jp      nz,SNERR          ; THIS IS A CHEAT, SINCE THE LINE 
+                                  ; NUMBER OF THE ERROR WILL BE THE CALLERS
+                                  ; LINE # INSTEAD OF THE DEFINITIONS LINE #
         pop     hl              
         ld      (VARPNT),hl       
         pop     hl              
         ld      (FNPARM),hl       
         pop     hl              
         ld      (VARNAM),hl       
-        pop     hl              ;GET BACK THE TEXT POINTER
+        pop     hl                ; GET BACK THE TEXT POINTER
         ret                      
 
 ; SUBROUTINE TO GET A POINTER TO A FUNCTION NAME
 ; 
 GETFNM: rst     SYNCHR  
-        db      FNTK            ; MUST START WITH "FN"
-        ld      a,128           ; DONT ALLOW AN ARRAY
-        ld      (SUBFLG),a      ; DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
-        or      (hl)            ; PUT FUNCTION BIT ON
-        ld      c,a             ; GET FIRST CHARACTER INTO [C]
+        db      FNTK              ; MUST START WITH "FN"
+        ld      a,128             ; DONT ALLOW AN ARRAY
+        ld      (SUBFLG),a        ; DON'T RECOGNIZE THE "(" AS THE START OF AN ARRAY REFEREENCE
+        or      (hl)              ; PUT FUNCTION BIT ON
+        ld      c,a               ; GET FIRST CHARACTER INTO [C]
         call    PTRGT2          
         jp      CHKNUM          
 
@@ -130,36 +130,36 @@ GETFNM: rst     SYNCHR
 ATN1:   ;pop      bc
         ;pop      af
         ;pop      hl
-        rst     FSIGN           ; SEE IF ARG IS NEGATIVE
-        call    m,PSHNEG        ; IF ARG IS NEGATIVE, USE:
-        call    m,NEG           ;     ARCTAN(X)=-ARCTAN(-X
-        ld      a,(FAC)         ; SEE IF FAC .GT. 1
-        cp      129             
-        jp      c,ATN2         
-
-        ld      bc,$8100        ; GET THE CONSTANT 1
-        ld      d,c              
-        ld      e,c             ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
-        call    FDIV            ;    ARCTAN(X)=PI/2-ARCTAN(1/X)
-        ld      hl,FSUBS        ; PUT FSUBS ON THE STACK SO WE WILL RETURN       
-        push    hl              ;   TO IT AND SUBTRACT THE REULT FROM PI/2
-ATN2:   ld      hl,ATNCON       ; EVALUATE APPROXIMATION POLYNOMIAL
-
-        call    POLYX            
-        ld      hl,PI2          ; GET POINTER TO PI/2 IN CASE WE HAVE TO
-        ret                     ;   SUBTRACT THE RESULT FROM PI/2
-
-;CONSTANTS FOR ATN
-ATNCON: db    9                 ;DEGREE
-        db    $4A,$D7,$3B,$78   ; .002866226
-        db    $02,$6E,$84,$7B   ; -.01616574
-        db    $FE,$C1,$2F,$7C   ; .04290961
-        db    $74,$31,$9A,$7D   ; -.07528964
-        db    $84,$3D,$5A,$7D   ; .1065626
-        db    $C8,$7F,$91,$7E   ; -.142089
-        db    $E4,$BB,$4C,$7E   ; .1999355
-        db    $6C,$AA,$AA,$7F   ; -.3333315
-        db    $00,$00,$00,$81   ; 1.0
+        rst     FSIGN             ; SEE IF ARG IS NEGATIVE
+        call    m,PSHNEG          ; IF ARG IS NEGATIVE, USE:
+        call    m,NEG             ;     ARCTAN(X)=-ARCTAN(-X
+        ld      a,(FAC)           ; SEE IF FAC .GT. 1
+        cp      129               
+        jp      c,ATN2          
+  
+        ld      bc,$8100          ; GET THE CONSTANT 1
+        ld      d,c                
+        ld      e,c               ; COMPUTE RECIPROCAL TO USE THE IDENTITY:
+        call    FDIV              ;    ARCTAN(X)=PI/2-ARCTAN(1/X)
+        ld      hl,FSUBS          ; PUT FSUBS ON THE STACK SO WE WILL RETURN       
+        push    hl                ;   TO IT AND SUBTRACT THE REULT FROM PI/2
+ATN2:   ld      hl,ATNCON         ; EVALUATE APPROXIMATION POLYNOMIAL
+  
+        call    POLYX              
+        ld      hl,PI2            ; GET POINTER TO PI/2 IN CASE WE HAVE TO
+        ret                       ;   SUBTRACT THE RESULT FROM PI/2
+  
+;CONSTANTS FOR ATN  
+ATNCON: db    9                   ;DEGREE
+        db    $4A,$D7,$3B,$78     ; .002866226
+        db    $02,$6E,$84,$7B     ; -.01616574
+        db    $FE,$C1,$2F,$7C     ; .04290961
+        db    $74,$31,$9A,$7D     ; -.07528964
+        db    $84,$3D,$5A,$7D     ; .1065626
+        db    $C8,$7F,$91,$7E     ; -.142089
+        db    $E4,$BB,$4C,$7E     ; .1999355
+        db    $6C,$AA,$AA,$7F     ; -.3333315
+        db    $00,$00,$00,$81     ; 1.0
 
 
 ;----------------------------------------------------------------------------
@@ -173,110 +173,110 @@ ATNCON: db    9                 ;DEGREE
 ;----------------------------------------------------------------------------
 ; This Statement appears to be unique to the Aquarius
 ST_MENU:
-        cp      '@'               ;{GWB} ALLOW MEANINGLESS "@"
-        call    z,CHRGTR          ;{GWB} BY SKIPPING OVER IT
-        call    SCANX             ;;Scan Coordinates into [D,E]
-        push    de                ;;Push Coordinates onto Stack
-        ld      e,1               ;;Default Spacing (1) into [E]
-        ld      a,(hl)            ;;
-        cp      ','               ;;If Next Character is a Comma
-        jr      nz,MENU2          ;;  Scan Optional Spacing Parameter
-        rst     CHRGET            ;;  Eat Comma
-        call    GETBYT            ;;  Scan Spacing in [E]
-        push    de                ;;  Push Options onto Stack
-        SYNCHK  ';'               ;;  Require a Semicolon
-        pop     de                ;;  Pop Options into [D,E]
-MENU2:  ld      c,e               ;;Copy Spacing into [C]
-        ld      b,1               ;;Init Counter to 1 ino B
-        pop     de                ;;Pop Coordinates into [D,E]
-        push    de                ;;Push Coordinates back onto Stack
-        push    bc                ;;Push Options onto Stack
-        ;;Evaluate and Print String
-MENUS:  push    hl                ;;Push Text Pointer onto Stack
-        ex      de,hl             ;;Swap Coordinates into [H,L]
-        push    hl                ;;Push Coordinates onto Stack
-        call    MOVEIT            ;;Move Cursor to Coordinates [H,L]
+        cp      '@'               ; ALLOW MEANINGLESS "@"
+        call    z,CHRGTR          ; BY SKIPPING OVER IT
+        call    SCANX             ; Scan Coordinates into [D,E]
+        push    de                ; Push Coordinates onto Stack
+        ld      e,1               ; Default Spacing (1) into [E]
+        ld      a,(hl)            ; 
+        cp      ','               ; If Next Character is a Comma
+        jr      nz,MENU2          ;   Scan Optional Spacing Parameter
+        rst     CHRGET            ;   Eat Comma
+        call    GETBYT            ;   Scan Spacing in [E]
+        push    de                ;   Push Options onto Stack
+        SYNCHK  ';'               ;   Require a Semicolon
+        pop     de                ;   Pop Options into [D,E]
+MENU2:  ld      c,e               ; Copy Spacing into [C]
+        ld      b,1               ; Init Counter to 1 ino B
+        pop     de                ; Pop Coordinates into [D,E]
+        push    de                ; Push Coordinates back onto Stack
+        push    bc                ; Push Options onto Stack
+        ; Evaluate and Print String
+MENUS:  push    hl                ; Push Text Pointer onto Stack
+        ex      de,hl             ; Swap Coordinates into [H,L]
+        push    hl                ; Push Coordinates onto Stack
+        call    MOVEIT            ; Move Cursor to Coordinates [H,L]
         ld      a,'.'
-        rst     OUTCHR            ;;Print a Period
-        pop     hl                ;;HL = Coords, Stack = Text Pointer, Options. Coords
-        ex      (sp),hl           ;;HL = Text Pointer, Stack = Coordinates
-        call    FRMEVL            ;;Evaluate a String
-        push    hl                ;;Stack = Text Pointer, Coords, Options. Coords
+        rst     OUTCHR            ; Print a Period
+        pop     hl                ; HL = Coords, Stack = Text Pointer, Options. Coords
+        ex      (sp),hl           ; HL = Text Pointer, Stack = Coordinates
+        call    FRMEVL            ; Evaluate a String
+        push    hl                ; Stack = Text Pointer, Coords, Options. Coords
         call    FRESTR            ;[M80] FREE UP TEMP POINTED TO BY FACLO
-        call    STRPRT            ;;Print the String
-        pop     hl                ;;HL = Text Pointer, Stack =  Coords, Options. Coords
-        pop     de                ;;DE = Coords, Stack = Options. Coords
-        pop     bc                ;;BC = Options, Stack = Coords
+        call    STRPRT            ; Print the String
+        pop     hl                ; HL = Text Pointer, Stack =  Coords, Options. Coords
+        pop     de                ; DE = Coords, Stack = Options. Coords
+        pop     bc                ; BC = Options, Stack = Coords
         ld      a,(hl)
-        cp      ','               ;;Is Next Character a Comma?
-        jr      nz,MENU3          ;;If So
-        ex      de,hl             ;;  HL = Coords, DE = Text Pointer
-        inc     b                 ;;  Increment Option Counter
-        call    ADDLC             ;;  Add Spacing to Y
-        push    bc                ;;  Stack = Options, Coords
-        push    hl                ;;  Stack = Coords, Options, Coords
-        ex      de,hl             ;;  HL = Text Pointer, DE = Coords
-        rst     CHRGET            ;;  Eat Comma
-        pop     de                ;;  Get Back Coordinates
-        jr      MENUS             ;;  Scane Next String
+        cp      ','               ; Is Next Character a Comma?
+        jr      nz,MENU3          ; If So
+        ex      de,hl             ;   HL = Coords, DE = Text Pointer
+        inc     b                 ;   Increment Option Counter
+        call    ADDLC             ;   Add Spacing to Y
+        push    bc                ;   Stack = Options, Coords
+        push    hl                ;   Stack = Coords, Options, Coords
+        ex      de,hl             ;   HL = Text Pointer, DE = Coords
+        rst     CHRGET            ;   Eat Comma
+        pop     de                ;   Get Back Coordinates
+        jr      MENUS             ;   Scane Next String
 
 ;;BC = Options, DE = Coords, HL = Text Pointer, Stack = Coords
-MENU3:  cp      GOTOTK            ;;If Not GOTO
-        jp      nz,SNERR          ;;Syntax Error
-        ex      (sp),hl           ;;HL = Coords, Stack = Text Pointer
-MENUT:  push    hl                ;;Stack = Coords, Text Pointer
-        push    bc                ;;Stack = Options, Coorda, Text Pointer
-        ld      e,0               ;;Option Number = 0
-MENUN:  call    MENUK             ;;Get C/R or Space from Keyboard
-        inc     e                 ;;Increment Option Number
-        jr      c,MENUG           ;;If Space
-        call    ADDLC             ;;  Y = Y + Spacing
-        dec     b                 ;;  Decrement Option Count
-        jr      nz,MENUN          ;;  If Not Zero, Move to Next Optionb
-        pop     bc                ;;    BC = Options, HL = Coords
-        pop     hl                ;;    Stack = Text Pointer
-        jr      MENUT             ;;    Start Iver ar Top
-MENUG:  pop     hl                ;;Discard Options
-        pop     hl                ;;Discard Coords
-        pop     hl                ;;Restore Text Pointer
-        jp      OMGOTO            ;;Do ON [E] GOTO
+MENU3:  cp      GOTOTK            ; If Not GOTO
+        jp      nz,SNERR          ; Syntax Error
+        ex      (sp),hl           ; HL = Coords, Stack = Text Pointer
+MENUT:  push    hl                ; Stack = Coords, Text Pointer
+        push    bc                ; Stack = Options, Coorda, Text Pointer
+        ld      e,0               ; Option Number = 0
+MENUN:  call    MENUK             ; Get C/R or Space from Keyboard
+        inc     e                 ; Increment Option Number
+        jr      c,MENUG           ; If Space
+        call    ADDLC             ;   Y = Y + Spacing
+        dec     b                 ;   Decrement Option Count
+        jr      nz,MENUN          ;   If Not Zero, Move to Next Optionb
+        pop     bc                ;     BC = Options, HL = Coords
+        pop     hl                ;     Stack = Text Pointer
+        jr      MENUT             ;     Start Iver ar Top
+MENUG:  pop     hl                ; Discard Options
+        pop     hl                ; Discard Coords
+        pop     hl                ; Restore Text Pointer
+        jp      OMGOTO            ; Do ON [E] GOTO
 
 ;;Wait for C/R or Space, Return Carry Set if Return
-MENUK:  push    bc                ;;Save BC
-        call    MOVEIT            ;;Move Cursor to H,L
-MENUL:  call    TRYIN             ;;Get Character from Keyboard
-        cp      13                ;;If Carriage Return
-        scf                       ;;  Return Carry Set
-        jr      z,MENUR
-        cp      ' '               ;;If Not Space
-        jr      nz,MENUL          ;;  Loop
-MENUR:  pop     bc                ;;Restore BC
+MENUK:  push    bc                ; Save BC
+        call    MOVEIT            ; Move Cursor to H,L
+MENUL:  call    TRYIN             ; Get Character from Keyboard
+        cp      13                ; If Carriage Return
+        scf                       ;   Return Carry Set
+        jr      z,MENUR             
+        cp      ' '               ; If Not Space
+        jr      nz,MENUL          ;   Loop
+MENUR:  pop     bc                ; Restore BC
         ret
 
 ;;Get Coordinates for MENU Statement
 ;;Syntax: Coords
-SCANX:  SYNCHK  '('               ;{GWB} SKIP OVER OPEN PAREN
-        call    GETBYT            ;{GWB} SCAN X INTO [A]
-        cp      38                ;;If X > 38
-        jr      nc,SCANX2         ;;  Function Call Error`
-        inc     a                 ;;Bump X Past First Column
-        push    af                ;{GWB} SAVE WHILE SCANNING Y
-        SYNCHK  ','               ;{GWB} SCAN COMMA
-        call    GETBYT            ;{GWB} GET Y INTO [A]
-        cp      37                ;;If Y > 37
-SCANX2: jp      nc,FCERR          ;;  Function Call Error`
-        pop     de                ;;Get X into D
-        inc     a                 ;;Bump Y Past First Line
-        ld      e,a               ;;Put Y into E
-        SYNCHK  ')'               ;{GWB} SKIP OVER CLOSE PAREN
+SCANX:  SYNCHK  '('               ; SKIP OVER OPEN PAREN
+        call    GETBYT            ; SCAN X INTO [A]
+        cp      38                ; If X > 38
+        jr      nc,SCANX2         ;   Function Call Error`
+        inc     a                 ; Bump X Past First Column
+        push    af                ; SAVE WHILE SCANNING Y
+        SYNCHK  ','               ; SCAN COMMA
+        call    GETBYT            ; GET Y INTO [A]
+        cp      37                ; If Y > 37
+SCANX2: jp      nc,FCERR          ;   Function Call Error`
+        pop     de                ; Get X into D
+        inc     a                 ; Bump Y Past First Line
+        ld      e,a               ; Put Y into E
+        SYNCHK  ')'               ; SKIP OVER CLOSE PAREN
         ret
 
-ADDLC:  ld      a,l               ;;L = L + C
+ADDLC:  ld      a,l               ; L = L + C
         add     a,c
         ld      l,a
         cp      24
-        ret     c                 ;;If L >= 24
-        ld      l,23              ;;L = 23
+        ret     c                 ; If L >= 24
+        ld      l,23              ; L = 23
         ret
 
 ;====================================================================
@@ -345,32 +345,32 @@ RESTRP: ld      (ONELIN),de       ; SAVE POINTER TO LINE OR ZERO IF 0.
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
 ;----------------------------------------------------------------------------
 
-ERRORX: ld      hl,(CURLIN)      ; GET CURRENT LINE NUMBER
-        ld      (ERRLIN),hl      ; SAVE IT FOR ERL VARIABLE
-        ld      a,e              ; Get Error Table Offset
-        ld      c,e              ; ALSO SAVE IT FOR LATER RESTORE
+ERRORX: ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
+        ld      (ERRLIN),hl       ; SAVE IT FOR ERL VARIABLE
+        ld      a,e               ; Get Error Table Offset
+        ld      c,e               ; ALSO SAVE IT FOR LATER RESTORE
         srl      a                ; Divide by 2 and add 1 so
         inc      a                ; [A]=ERROR NUMBER
-        ld      (ERRFLG),a      ; Save it for ERR() Function
-        ld      hl,(ERRLIN)      ; GET ERROR LINE #
-        ld      a,h              ; TEST IF DIRECT LINE
+        ld      (ERRFLG),a        ; Save it for ERR() Function
+        ld      hl,(ERRLIN)       ; GET ERROR LINE #
+        ld      a,h               ; TEST IF DIRECT LINE
         and      l                ; SET CC'S
         inc      a                ; SETS ZERO IF DIRECT LINE (65535)
-        ld      hl,(ONELIN)      ; SEE IF WE ARE TRAPPING ERRORS.
-        ld      a,h              ; BY CHECKING FOR LINE ZERO.
+        ld      hl,(ONELIN)       ; SEE IF WE ARE TRAPPING ERRORS.
+        ld      a,h               ; BY CHECKING FOR LINE ZERO.
         ORA      l                ; IS IT?
-        ex      de,hl            ; PUT LINE TO GO TO IN [D,E]
-        ld      hl,ONEFLG        ; POINT TO ERROR FLAG
-        jr      z,NOTRAP        ; SORRY, NO TRAPPING...
-        and      (hl)            ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
-        jr      nz,NOTRAP        ; IF FLAG ALREADY SET, FORCE ERROR
-        dec      (hl)            ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
-        ex      de,hl            ; GET LINE POINTER IN [H,L]
-        jp      GONE4            ; GO DIRECTLY TO NEWSTT CODE
+        ex      de,hl             ; PUT LINE TO GO TO IN [D,E]
+        ld      hl,ONEFLG         ; POINT TO ERROR FLAG
+        jr      z,NOTRAP          ; SORRY, NO TRAPPING...
+        and      (hl)             ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
+        jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERROR
+        dec      (hl)             ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
+        ex      de,hl             ; GET LINE POINTER IN [H,L]
+        jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE
 NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
-        ld      (hl),a          ; RESET 3
-        ld      e,c              ; GET BACK ERROR CODE
-        jp      ERRCRD          ; FORCE THE ERROR TO HAPPEN
+        ld      (hl),a            ; RESET 3
+        ld      e,c               ; GET BACK ERROR CODE
+        jp      ERRCRD            ; FORCE THE ERROR TO HAPPEN
 
 ;----------------------------------------------------------------------------
 ; Print Error Message Hook Routine
