@@ -466,16 +466,16 @@ Error Status
 ### FORMAT:
   - ERROR ( < number > )
     - Action: Returns error status values.
-      - If < number > is 0, returns the line number to GOTO when an error occures.
+      - If < number > is -1, returns the line number to GOTO when an error occures.
         - Returns 0 if no error trapping is disabled.
-      - If < number > is 1, returns the number corresponding to the last error.
+      - If < number > is 0, returns the number corresponding to the last error.
         - - Returns 0 if no error has occured.
-      - If < number > is 2, returns the line number the last error occured on.
+      - If < number > is 1, returns the line number the last error occured on.
         - Returns 0 if no error has occured.
         - Returns 65535 if the error occured in immediate mode.
-      - If < number > is 3, returns the number corresponding to the last DOS error.
+      - If < number > is 2, returns the number corresponding to the last DOS error.
         - Returns 0 if the last DOS command completed successfully.
-      - If < number > is 4, returns the status code of the last CH376 operation.
+      - If < number > is 3, returns the status code of the last CH376 operation.
 
 ### Basic Error Numbers
 | Err# | Code | Description                  |

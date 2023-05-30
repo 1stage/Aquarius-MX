@@ -363,7 +363,7 @@ ERRORX: ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
         ld      hl,ONEFLG         ; POINT TO ERROR FLAG
         jr      z,NOTRAP          ; SORRY, NO TRAPPING...
         and      (hl)             ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
-        jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERROR
+        jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERRO R
         dec      (hl)             ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
         ex      de,hl             ; GET LINE POINTER IN [H,L]
         jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE
@@ -376,8 +376,20 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 ; Print Error Message Hook Routine
 ;----------------------------------------------------------------------------
 
-ERRCRX: jp      HOOK1+1
-        
+ERRCRX: ld      a,e
+        sub     EXTERR            ; Change Offset for Extended Error Table
+        jr      nc,.ext_offset    ; If regular error
+        xor     a                 ;   Set A to 0 so ADD HL,DE works as expected
+        jp      HOOK1+1           ;   and continue with regular BASIC error routine
+.ext_offset
+        cp      LSTERR-EXTERR     ; Check Extended Table Offset
+        jr      c,.ext_error      ; If past end of table
+        ld      a,ERRUE           ;   Display "UE" - Unprintable Error
+.ext_error
+        add     low(ERRTAX)       ; Add offset to Error Table address
+        ld      l,a
+        ld      h,high(ERRTAX)    ; Put address in HL
+        jp      ERRPRT            ; Display Error and Return to Immediate Mode
  
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -386,16 +398,16 @@ ERRCRX: jp      HOOK1+1
 ;;; ### FORMAT:
 ;;;   - ERROR ( < number > )
 ;;;     - Action: Returns error status values.
-;;;       - If < number > is 0, returns the line number to GOTO when an error occures.
+;;;       - If < number > is -1, returns the line number to GOTO when an error occures.
 ;;;         - Returns 0 if no error trapping is disabled.
-;;;       - If < number > is 1, returns the number corresponding to the last error.
+;;;       - If < number > is 0, returns the number corresponding to the last error.
 ;;;         - - Returns 0 if no error has occured.
-;;;       - If < number > is 2, returns the line number the last error occured on.
+;;;       - If < number > is 1, returns the line number the last error occured on.
 ;;;         - Returns 0 if no error has occured.
 ;;;         - Returns 65535 if the error occured in immediate mode.
-;;;       - If < number > is 3, returns the number corresponding to the last DOS error.
+;;;       - If < number > is 2, returns the number corresponding to the last DOS error.
 ;;;         - Returns 0 if the last DOS command completed successfully.
-;;;       - If < number > is 4, returns the status code of the last CH376 operation.
+;;;       - If < number > is 3, returns the status code of the last CH376 operation.
 ;;;
 ;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
@@ -444,16 +456,17 @@ FN_ERR: rst     CHRGET
         push    hl
         ld      bc,LABBCK
         push    bc
-        call    CONINT            ; Convert to Byte
-        or      a                 ; If 0
+        call    FRCINT            ; Convert to Signed Integer
+        ld      a,e               ; Get LSB into A
+        inc     a                 ; If -1
         jr      z,.onelin         ;    Return Error Trap Line Number
-        dec      a                ; If 1
+        dec     a                 ; If 0
         jr      z,.errno          ;    Return Error Number
-        dec      a                ; If 2
+        dec     a                 ; If 1
         jr      z,.errlin         ;    Return Error Line Number
-        dec      a                ; If 3
+        dec     a                 ; If 2
         jr      z,.doserr         ;    Return Error Line Number
-        dec      a                ; If 4
+        dec     a                 ; If 3
         jr      z,.chstatus       ;    Return CH376 Status
         jp      FCERR             ; Else FC Error
 .onelin:
@@ -461,8 +474,8 @@ FN_ERR: rst     CHRGET
         ld      a,h 
         or      a,l               ; If 0
         jr      z,.ret_a          ;    Return 0
-        inc      hl               ; Point to Line Number
-        inc      hl   
+        inc     hl                ; Point to Line Number
+        inc     hl   
         jp      FLOAT_M           ; Float Word at [HL] and Return
 .errno:
         ld      a,(ERRFLG)        ; Get Error Table Offset

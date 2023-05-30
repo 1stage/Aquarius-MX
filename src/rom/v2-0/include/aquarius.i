@@ -209,8 +209,10 @@ SCROLL  = $1DFE   ; scroll the screen up 1 line
 TTYSAV  = $1E3E   ; save cursor position (HL = address, A = column)
 
 LINEDONE    = $19e5  ; line entered (CR pressed)
+ERROR   = $03DB   ; Generate Error with Error Code in E
 ERRCRD  = $03E0   ; Print Error Message and Return to Immediate Mode
 ERRCRH  = $03E6   ; ERRCRD rst $30
+ERRPRT  = $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
 FNDLIN  = $049f   ; Find address of BASIC line (DE = line number)
 
 DATA    = $071C   ; Execute DATA statement
@@ -383,7 +385,10 @@ ERRCN  =    $20             ; CN Cant CONTinue
 ERRUF  =    $22             ; UF UnDEFined FN function
 ERRMO  =    $24             ; MO Missing operand
 ERRIO  =    $26             ; IO Disk I/O Error
-ERRUE  =    $28             ; Unprintable Error
+ERRUE  =    $28             ; UE Unprintable Error
+
+EXTERR =    ERRIO           ; The First Extended BASIC Error
+LSTERR =    $30             ; End of Error List
 
 ;----------------------------------------------------------------------------
 ;     jump addresses for BASIC errors (returns to command prompt)
@@ -404,9 +409,6 @@ STERR    = $0E97  ;   string formula too complex
 CNERR    = $0C51  ;   cant continue
 UFERR    = $03D0  ;   undefined function
                      
-; process error code, E = code (offset to 2 char error name)
-ERROR    = $03db  ; The canonical name is ERROR - close enough!
-
 ; Standard BASIC Tokens
 DIMTK       = $85   ; DIM Token
 GOTOTK      = $88   ; GOTO Token
