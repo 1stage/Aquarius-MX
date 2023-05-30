@@ -167,7 +167,7 @@ ATNCON: db    9                   ;DEGREE
 ;;; ## MENU
 ;;; Display and execute menu.
 ;;; ### FORMAT:
-;;;   - MENU ( <xpos>,<ypos>) [, <spacing>;] <string> [,<string>,...] GOTO <line>, [,<line>...]
+;;;   - MENU ( < xpos >,< ypos >) [, < spacing >;] < string > [,< string >,...] GOTO < line >, [,< line >...]
 ;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------

@@ -1575,9 +1575,9 @@ ST_CALL:
 ;;; Pause program execution.
 ;;; ### FORMAT:
 ;;;  - SLEEP < number >
-;;;    - Action: Causes BASIC to pause for approximately <number> milliseconds.
-;;;      - If < number > is less than zero, pauses 65536 - <number> seconds
-;;;      - Returns FC Error if <number> is not between -32768 and 65535, inclusive.
+;;;    - Action: Causes BASIC to pause for approximately < number > milliseconds.
+;;;      - If < number > is less than zero, pauses 65536 - < number > seconds
+;;;      - Returns FC Error if < number > is not between -32768 and 65535, inclusive.
 ;;;      - Ctrl-C will interrupt the SLEEP command and the BASIC Program
 ;;; ### EXAMPLES:
 ;;; ` SLEEP 250 `

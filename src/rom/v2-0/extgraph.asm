@@ -237,12 +237,12 @@ XCHGX:  push    hl
 ;;; ## LINE
 ;;; Draw line or box on screen.
 ;;; ### FORMAT:
-;;;   - LINE [ (< x-coord >,< y-coord >) ] - ( <x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
+;;;   - LINE [ (< x-coord >,< y-coord >) ] - ( < x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
 ;;;     - Action: Draws line from the first specified point to the second specified point.
 ;;;       - If the first (< x-coord >,< y-coord >) is ommited, the line starts at the last referenced point.
 ;;;       - B (box) draws a box with the specified points at opposite corners.
 ;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
-;;;       - If <color> is not specified, the current screen colors are maintained and two commas must be used before B or BF
+;;;       - If < color > is not specified, the current screen colors are maintained and two commas must be used before B or BF
 ;;; ### EXAMPLES:
 ;;; ` LINE (0,36)-(79,36) `
 ;;; > Draws a horizontal line which divides the screen in half from top to bottom.
@@ -1061,7 +1061,7 @@ GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
 ;;; ## DRAW
 ;;; Draws a figure.
 ;;; ### FORMAT:
-;;;   - DRAW <string expression>
+;;;   - DRAW < string expression >
 ;;;     - Action: The DRAW statement combines most of the capabilities of the other graphics statements into an object definition language called Graphics Macro Language (GML). A GML command is a single character within a string, optionally followed by one or more arguments.
 ;;; #### Commands:
 ;;; Each of the movement commands begins movement from the current graphics position. 
