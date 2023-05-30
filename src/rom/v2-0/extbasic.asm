@@ -306,10 +306,7 @@ ADDLC:  ld      a,l               ; L = L + C
 ;----------------------------------------------------------------------------
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MACm
-ONGOTX: ;pop      hl              ; Discard Hook Return Addres
-        ;pop      af              ; Restore Accumulator
-        ;pop      hl              ; Restore Text Pointer
-        cp      ERRTK             ; "ON...ERROR"?
+ONGOTX: cp      ERRTK             ; "ON...ERROR"?
         jr      nz,.noerr         ; NO. Do ON GOTO
         inc      hl               ; Check Following Byte
         ld      a,(hl)            ; Don't Skip Spaces
@@ -376,27 +373,27 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 ; Print Error Message Hook Routine
 ;----------------------------------------------------------------------------
 
-ERRCRX: ld      a,e
-        sub     EXTERR            ; Change Offset for Extended Error Table
-        jr      nc,.ext_offset    ; If regular error
-        xor     a                 ;   Set A to 0 so ADD HL,DE works as expected
-        jp      HOOK1+1           ;   and continue with regular BASIC error routine
-.ext_offset
-        cp      LSTERR-EXTERR     ; Check Extended Table Offset
-        jr      c,.ext_error      ; If past end of table
+ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
+        jp      ERRPRT            ; Display Error and Return to Immediate Mode
+
+get_errcode_ptr:
+        ld      a,e               ; Get Error Table Offset into A
+        cp      LSTERR            ; Compare to End of Table
+        jr      c,.ext_error      ; If Past End of Table
         ld      a,ERRUE           ;   Display "UE" - Unprintable Error
 .ext_error
-        add     low(ERRTAX)       ; Add offset to Error Table address
-        ld      l,a
-        ld      h,high(ERRTAX)    ; Put address in HL
-        jp      ERRPRT            ; Display Error and Return to Immediate Mode
- 
+        add     low(ERR_CODES)    ; Add offset to Error Table address
+        ld      l,a               
+        ld      h,high(ERR_CODES) ; Put address in HL
+        ret
+
+
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ERR
 ;;; Error Status
 ;;; ### FORMAT:
-;;;   - ERROR ( < number > )
+;;;   - ERR ( < number > )
 ;;;     - Action: Returns error status values.
 ;;;       - If < number > is -1, returns the line number to GOTO when an error occures.
 ;;;         - Returns 0 if no error trapping is disabled.
@@ -408,6 +405,8 @@ ERRCRX: ld      a,e
 ;;;       - If < number > is 2, returns the number corresponding to the last DOS error.
 ;;;         - Returns 0 if the last DOS command completed successfully.
 ;;;       - If < number > is 3, returns the status code of the last CH376 operation.
+;;;         - This may not be directly related to the DOS error number.
+;;;       - Returns FC Error if <number> is none of the above
 ;;;
 ;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
@@ -427,10 +426,12 @@ ERRCRX: ld      a,e
 ;;; |  13  |  TM  | Type mismatch                |
 ;;; |  14  |  OS  | Out of String space          |
 ;;; |  15  |  LS  | String too Long              |
-;;; |  16  |  WT  | String formula too complex   |
+;;; |  16  |  ST  | String formula too complex   |
 ;;; |  17  |  CN  | Cant CONTinue                |
 ;;; |  18  |  UF  | UnDEFined FN function        |
 ;;; |  19  |  MO  | Missing operand              |
+;;; |  20  |  IO` | Disk I/O error               |
+;;; |  21  |  UE  | Unprintable error            |
 ;;;
 ;;; ### DOS Error Numbers
 ;;; | Err# | Error Message       | Description                    |
@@ -451,24 +452,22 @@ ERRCRX: ld      a,e
 ;;; |  14  | disk error #xx      | Other disk error               |
 ;;;
 ;----------------------------------------------------------------------------
-FN_ERR: rst     CHRGET
-        call    PARCHK
-        push    hl
-        ld      bc,LABBCK
-        push    bc
+FN_ERR: rst     CHRGET            ; Skip ERR Token
+        cp      '$'               ; If Next Character is $
+        jr      z,FN_ERRS      ;   Do ERR$() instead
+        call    PARCHK            ; Evaluate Argument
+        push    hl                ; Save Test Pointer
+        ld      bc,LABBCK         ; Put Return Address for FLOAT routine
+        push    bc                ;   on Stack
         call    FRCINT            ; Convert to Signed Integer
         ld      a,e               ; Get LSB into A
-        inc     a                 ; If -1
-        jr      z,.onelin         ;    Return Error Trap Line Number
-        dec     a                 ; If 0
-        jr      z,.errno          ;    Return Error Number
-        dec     a                 ; If 1
+        or      a                 ; If Negative
+        jp      m,.onelin         ;    Return Error Trap Line Number
+        cp      1                 ; Else If 1
         jr      z,.errlin         ;    Return Error Line Number
-        dec     a                 ; If 2
-        jr      z,.doserr         ;    Return Error Line Number
-        dec     a                 ; If 3
-        jr      z,.chstatus       ;    Return CH376 Status
-        jp      FCERR             ; Else FC Error
+        call    get_errno         ; Else get the correspoding Error Number
+.ret_a:
+        jp      SNGFLT            ; and Float it
 .onelin:
         ld      hl,(ONELIN)       ; Get Error Line Pointer
         ld      a,h 
@@ -477,22 +476,103 @@ FN_ERR: rst     CHRGET
         inc     hl                ; Point to Line Number
         inc     hl   
         jp      FLOAT_M           ; Float Word at [HL] and Return
-.errno:
-        ld      a,(ERRFLG)        ; Get Error Table Offset
-.ret_a  jp      SNGFLT            ; and Float it
 .errlin:
         ld      de,(ERRLIN)       ; Get Error Line Number
         jp      FLOAT_DE          ; Float It
-.doserr:
-        ld      a,(DosError)      ; Get DOS Error Number
-        jr      .ret_a
-.chstatus:
+; Get Error # corresponding to ERR() or ERR$() argument
+get_errno:     
+        or      a                 ; Test Error Index
+        ld      c,a               ; and copy into C
+        ld      a,(ERRFLG)        ; Return Error Number
+        ret     z                 ; if Index is 0
+        dec     c                 ; or Index is 1
+        ret     z                 ; 
+        ld      a,(DosError)      ; Return DOS Error Number
+        dec     c                 ; or Index is 2
+        ret     z                 ; 
         ld      a,(ChStatus)      ; Get DOS Error Number
-        jr      .ret_a
-
-
-
-
+        dec     c                 ; or Index is 3
+        ret     z                 ; 
+        jp      FCERR             ; FCERR if none of the above
+        
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## ERR$
+;;; Error Status
+;;; ### FORMAT:
+;;;   - ERR$ ( < number > [, < error >] )
+;;;     - Action: Returns string containing description of error
+;;;       - If < number > is 0, returns a two character BASIC error code.
+;;;       - If < number > is 1, returns a BASIC error description
+;;;       - If < number > is 2, returns a DOS error description
+;;;     - If second argument <error> is included, prints the description for that error number.
+;;;       - Otherwise, prints the description corresponding to the value returned by ERR(<number>).
+;;;       - Returns an empty string if <error> or ERR(<number>) is 0.
+;;;       - Returns FC Error if <error> or ERR(<number>) is less than 0.
+;----------------------------------------------------------------------------
+FN_ERRS:
+        rst     CHRGET            ; Skip $
+        call    FRMPRN            ; Evaluate formula after left parenthesis
+        push    hl                ; Stack = Text Pointer
+        call    CONINT            ; Convert Argument to Byte
+        pop     hl                ; HL = Text Pointer`
+        push    af                ; Stack = First Arg
+        ld      b,a               ; B = First Arg
+        ld      a,(hl)            ; Get Next Character
+        cp      ','               ; Check It
+        jr      nz,.notcomma      ; If it's a commaa
+        call    GTBYTC            ;   Skip it and Evaluate Formula into A
+        jr      .err_offset       ;
+.notcomma                         ; Else
+        ld      a,b               ;   Get First Arg Back
+        call    get_errno         ;   Get Error Number correspoding to Argument
+.err_offset
+        pop     bc                ; B = First Arg
+        ld      c,a               ; E = Error #
+        rst     SYNCHR            ; Require Right Parenthesis
+        db      ')'               
+        push    hl                ; Stack = Text Pointer
+        push    bc                ; Stack = Dummy Return Address, Text Pointer
+        ld      a,c               ; Get Error Number
+        or      a                 ; If 0
+        jp      z,null_string     ;   Return Null String
+        dec     a                 ; Change Error Number to Byte Offset
+        add     a,a               ; Turn Byte Offset Into Word Offset
+        ld      e,a               ; Save Offset in E
+        ld      d,0               
+        ld      a,b               ; Get First Arg
+        or      a                 ; If 0
+        jr      z,.err_code       ;   Return Error Code
+        dec     a                 ; If 1
+        jr      z,.err_message    ;   Return Error Message
+        dec     a                 ; If 2
+        jr      z,.dos_error      ;   Return Dos Error Message
+        jp      FCERR             ; Else FC Error
+.err_code
+        ld      (FBUFFR+2),a      ; Preload String Terminator into Buffer
+        call    get_errcode_ptr   ; Get Pointer to Error Code for E
+        ld      a,(hl)            ; Copy First Character
+        ld      (FBUFFR),a        ; to Buffer
+        inc     hl
+        ld      a,(hl)            ; Copy Second Character
+        ld      (FBUFFR+1),a      ; to Buffer
+        ld      hl,FBUFFR         ; Get Buffer Address for TIMSTR
+        jp      TIMSTR            ; Return It
+.err_message
+        call    get_errcode_ptr   ; Get Pointer to Error Code for E
+        add     ERRMSG-ERR_CODES  ; Convert to Pointer into Error Messages Table
+        ld      l,a
+        ld      h,high(errmsg)
+        ld      a,(hl)            ; Read Address from Error Message Table
+        inc     hl
+        ld      h,(hl)
+        ld      l,a
+        jp      TIMSTR            ; Return Error Message String
+.dos_error:
+        ld      a,c               ; Get Back Error Number
+        call    dos__lookup_error ; Get DOS Error Message
+        jp      TIMSTR            ; Return as String
+        
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CLEAR

@@ -227,6 +227,30 @@ FNJUMPS:
 
 
 ; These are here so they don't cross a page boundary
+; Extended Error Code List
+ERR_CODES: 
+        db     "NF"               ; NEXT without FOR
+        db     "SN"               ; Syntax error
+        db     "RG"               ; RETURN without GOSUB
+        db     "OD"               ; Out of DATA
+        db     "FC"               ; Illegal function call
+        db     "OV"               ; Overflow
+        db     "OM"               ; Out of memory
+        db     "UL"               ; Undefined line number
+        db     "BS"               ; Subscript out of range
+        db     "DD"               ; Duplicate Definit  ion
+        db     "/0"               ; Division by zero
+        db     "ID"               ; Illegal direct
+        db     "TM"               ; Type mismatch
+        db     "OS"               ; Out of string space
+        db     "LS"               ; String too long
+        db     "ST"               ; String formula too complex
+        db     "CN"               ; Can't continue
+        db     "UF"               ; Undefined user function
+        db     "MO"               ; Missing operand
+        db     "IO"               ; Disk I/O Error
+        db     "UE"               ; Unprintable Error
+
 ; Pointers into err_table
 ERRMSG: dw      MSGNF             ; 0
         dw      MSGSN             ; 2
@@ -249,10 +273,6 @@ ERRMSG: dw      MSGNF             ; 0
         dw      MSGMO             ; 36
         dw      MSGIO             ; 38
         dw      MSGUE             ; 40
-
-; Extended Two Letter Error Messages
-ERRTAX: db     "IO"               ; Disk I/O Error
-        db     "UE"               ; Unprintable Error
 
 STATEMENT:
     exx                         ; save BC,DE,HL
@@ -383,7 +403,7 @@ PEXPBAB:
     jp      $05a8               ; Print keyword indexed by C
 
 ; Long Error Descriptions
-err_table:
+ERR_TABLE:
 MSGNF:  db      "NEXT without FOR",0
 MSGSN:  db      "Syntax error",0
 MSGRG:  db      "RETURN without GOSUB",0

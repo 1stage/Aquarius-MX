@@ -329,30 +329,41 @@ ERROR_FILE_EXISTS equ  14 ; file with name exists
 ERROR_UNKNOWN     equ  15 ; other disk error
 
 _show_error:
-    ld      (DosError),a         ; save error number
-    cp      ERROR_UNKNOWN        ; known error?
-    jr      c,.index             ; yes,
+    ld      (DosError),a          ; save error number
+    call    dos__lookup_error     ; look up error message
+    jr      nc,_show_error_hex    ;   if unknown error, show hex code show hex code
+    call    prtstr                ; print error message
+    jp      CRDO
+
+_show_error_hex:
     push    af                   ; no, push error code
-    ld      hl,unknown_error_msg
+    ld      hl,disk_error_msg
     call    prtstr               ; print "disk error $"
     pop     af                   ; pop error code
     call    printhex
     jp      CRDO
-.index:
+
+
+dos__lookup_error:
     ld      hl,_error_messages
-    dec     a
-    add     a,a
-    add     l
+    cp      ERROR_UNKNOWN         ; check error number
+    push    af                    ; save error number and flags
+    jr      c,.index              ; if unnown error
+    ld      a,ERROR_UNKNOWN       ;   return unknown_error message
+.index
+    dec     a 
+    add     a,a 
+    add     l 
+    ld      l,a 
+    ld      a,h 
+    adc     0 
+    ld      h,a                   ; index into error message list
+    ld      a,(hl)  
+    inc     hl  
+    ld      h,(hl)                ; hl = error message
     ld      l,a
-    ld      a,h
-    adc     0
-    ld      h,a                  ; index into error message list
-    ld      a,(hl)
-    inc     hl
-    ld      h,(hl)               ; hl = error message
-    ld      l,a
-    call    prtstr               ; print error message
-    jp      CRDO
+    pop     af                    ; restore error number and flags
+    ret
 
 _error_messages:
     dw      no_376_msg           ; 1
@@ -369,6 +380,7 @@ _error_messages:
     dw      open_dir_error_msg   ;12
     dw      path_too_long_msg    ;13
     dw      file_exists_msg      ;14
+    dw      other_error_msg      ;15
 
 no_376_msg:
     db      "no CH376",0
@@ -398,7 +410,10 @@ path_too_long_msg:
     db      "path too long",0
 file_exists_msg:
     db      "file exists",0
-unknown_error_msg:
+other_error_msg:
+    db      "other dos error",0
+
+disk_error_msg:
     db      "disk error $",0
 
 ;--------------------------------------------------------------------

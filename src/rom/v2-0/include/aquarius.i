@@ -237,6 +237,7 @@ GIVINT  = $0B21   ; Float Integer MSB=[A], LSB=[C] into Floating Point Accumulat
 FLOATB  = $0B22   ; Float Integer MSB=[A], LSB=[B] into Floating Point Accumulator
 FLOATD  = $0B23   ; Float Integer MSB=[A], LSB=[D] into Floating Point Accumulator
 SNGFLT  = $0B36   ; Float Unsigned Byte in A
+GTBYTC  = $0B53   ; Skip Character and Evaluate Byte into A
 CONINT  = $0B57   ; Convert Floating Point Accumulator to Byte in A
 FLOATR  = $14FB   ; Float Signed Number in B,A,D,E
 GETINT  = $1AD0   ; Parse an Integer
@@ -386,9 +387,7 @@ ERRUF  =    $22             ; UF UnDEFined FN function
 ERRMO  =    $24             ; MO Missing operand
 ERRIO  =    $26             ; IO Disk I/O Error
 ERRUE  =    $28             ; UE Unprintable Error
-
-EXTERR =    ERRIO           ; The First Extended BASIC Error
-LSTERR =    $30             ; End of Error List
+LSTERR =    $2A             ; End of Error List
 
 ;----------------------------------------------------------------------------
 ;     jump addresses for BASIC errors (returns to command prompt)

@@ -464,7 +464,7 @@ Edit BASIC Line
 ## ERR
 Error Status
 ### FORMAT:
-  - ERROR ( < number > )
+  - ERR ( < number > )
     - Action: Returns error status values.
       - If < number > is -1, returns the line number to GOTO when an error occures.
         - Returns 0 if no error trapping is disabled.
@@ -476,6 +476,8 @@ Error Status
       - If < number > is 2, returns the number corresponding to the last DOS error.
         - Returns 0 if the last DOS command completed successfully.
       - If < number > is 3, returns the status code of the last CH376 operation.
+        - This may not be directly related to the DOS error number.
+      - Returns FC Error if <number> is none of the above
 
 ### Basic Error Numbers
 | Err# | Code | Description                  |
@@ -495,10 +497,12 @@ Error Status
 |  13  |  TM  | Type mismatch                |
 |  14  |  OS  | Out of String space          |
 |  15  |  LS  | String too Long              |
-|  16  |  WT  | String formula too complex   |
+|  16  |  ST  | String formula too complex   |
 |  17  |  CN  | Cant CONTinue                |
 |  18  |  UF  | UnDEFined FN function        |
 |  19  |  MO  | Missing operand              |
+|  20  |  IO` | Disk I/O error               |
+|  21  |  UE  | Unprintable error            |
 
 ### DOS Error Numbers
 | Err# | Error Message       | Description                    |
@@ -518,6 +522,20 @@ Error Status
 |  13  | path too long       | Path is too long               |
 |  14  | disk error #xx      | Other disk error               |
 
+
+---
+## ERR$
+Error Status
+### FORMAT:
+  - ERR$ ( < number > [, < error >] )
+    - Action: Returns string containing description of error
+      - If < number > is 0, returns a two character BASIC error code.
+      - If < number > is 1, returns a BASIC error description
+      - If < number > is 2, returns a DOS error description
+    - If second argument <error> is included, prints the description for that error number.
+      - Otherwise, prints the description corresponding to the value returned by ERR(<number>).
+      - Returns an empty string if <error> or ERR(<number>) is 0.
+      - Returns FC Error if <error> or ERR(<number>) is less than 0.
 
 ---
 ## EVAL
