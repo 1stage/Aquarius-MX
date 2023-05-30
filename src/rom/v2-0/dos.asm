@@ -1412,9 +1412,10 @@ set_dos_File_datetime:
     ld      bc,RTC_SHADOW           ; setup BC to RTC_SHADOW
     ld      hl,DTM_BUFFER           ; Setup HL to DTM_BUFFER
     call    rtc_read                ; get current Date/time into DTM_Buffer
+    jr      z,_sdfdt_ErrorOrNoCLK   ; exit if no clock
     ld      hl,FileName             ; get current filename
     call    usb__read_dir_Info      ; try to open file and read DIR info
-    jr      nz,._sdfdt_Error        ; got an error - goto handler
+    jr      nz,._sdfdt_ErrorOrNoCLK ; got an error - goto handler
 .sdfdt_Process_Entry
     LD      A,CH376_CMD_RD_USB_DATA ; No error - so will read the 32 bytes 
     OUT     (CH376_CONTROL_PORT),A  ; command: read USB data
@@ -1422,7 +1423,7 @@ set_dos_File_datetime:
     IN      A,(C)                   ; A = number of bytes in CH376 buffer
     ld      b,a                     ; copy into B (for the inir loop later)
     CP      32                      ; must be 32 bytes!
-    jr      nz,._sdfdt_Error        ; got an error - goto handler
+    jr      nz,._sdfdt_ErrorOrNoCLK ; got an error - goto handler
     LD      HL,-32
     ADD     HL,SP                   ; allocate 32 bytes on stack
     LD      SP,HL
@@ -1457,7 +1458,7 @@ set_dos_File_datetime:
    LD      HL,32
    ADD     HL,SP                   ; clean up stack
    LD      SP,HL
-._sdfdt_Error
+._sdfdt_ErrorOrNoCLK
     pop     de
     pop     bc
     pop     hl

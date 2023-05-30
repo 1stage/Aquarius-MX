@@ -21,7 +21,7 @@ ds1244addr: EQU $4000
 ;  causing following reads to return RTC Not Found
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
+;Returns: A=$FF, NZ if Successful, A=$00, Z if not
 ;         BC, DE, HL unchanged
 rtc_init:
     xor     a
@@ -33,7 +33,7 @@ rtc_init:
 ;Read Real Time Clock
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=0, Z=1 if Successful, A=$FF, Z=0 if not
+;Returns: A=0$FF, NZ if Successful, A=0, Z if not
 ;         BC, DE, HL unchanged
 rtc_read:
     ld      a,(bc)            ;Check RTC Found flag
@@ -45,7 +45,7 @@ rtc_read:
 ;Read Real Time Clock
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=$FF, Z=0 if Successful, A=$00, Z=1 if not
+;Returns: A=$FF, NZ if Successful, A=$00, Z if not
 ;         BC, DE, HL unchanged
 do_rtc_read:
     ld      a,(ds1244addr)  ; save byte at control address
