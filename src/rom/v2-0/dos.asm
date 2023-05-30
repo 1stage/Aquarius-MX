@@ -540,6 +540,7 @@ _sts_error:
     pop     hl
     jp      ERROR            ; return to BASIC with error code in E
 _sts_done:
+    call    set_dos_File_datetime
     pop     hl                  ; restore BASIC text pointer
     ret
 
@@ -1345,3 +1346,76 @@ PRINTHEX:
     pop     bc
     jp      TTYOUT
 
+
+;------------------------------------------------------------------------------
+;              Sets File Date time stamp on Write
+;------------------------------------------------------------------------------
+;  Input:  DE = Address of Time Stamp
+;       :  HL = Address of FileName
+; Output:  A = MDOS compatible char
+;
+; converts:-
+;     lowercase to upppercase
+;     '=' -> '~' (in case we cannot type '~' on the keyboard!)
+;
+
+
+set_dos_File_datetime:
+    push    hl                      ; Save Registers
+    push    bc
+    push    de
+    ld      bc,RTC_SHADOW           ; setup BC to RTC_SHADOW
+    ld      hl,DTM_BUFFER           ; Setup HL to DTM_BUFFER
+    call    rtc_read                ; get current Date/time into DTM_Buffer
+    ld      hl,FileName             ; get current filename
+    call    usb__read_dir_Info      ; try to open file and read DIR info
+    jr      nz,._sdfdt_Error        ; got an error - goto handler
+.sdfdt_Process_Entry
+    LD      A,CH376_CMD_RD_USB_DATA ; No error - so will read the 32 bytes 
+    OUT     (CH376_CONTROL_PORT),A  ; command: read USB data
+    LD      C,CH376_DATA_PORT
+    IN      A,(C)                   ; A = number of bytes in CH376 buffer
+    ld      b,a                     ; copy into B (for the inir loop later)
+    CP      32                      ; must be 32 bytes!
+    jr      nz,._sdfdt_Error        ; got an error - goto handler
+
+  ;  LD      HL,-32
+   ; ADD     HL,SP                   ; allocate 32 bytes on stack
+   ; LD      SP,HL
+    LD      HL,$5000
+    PUSH    HL
+    INIR                            ; read directory info onto stack
+    POP     HL
+    ld      bc,14                     
+    add     hl,bc                   ; move to Create Date Time byte
+    ex      de,hl                   ; swap de & hl - de now contains pointer to DateTime
+    ld      hl,DTM_BUFFER           ; HL to DTM_Buffer 
+    call    dtm_to_fts              ; convert DTM_Buffer to FS Timestamp 
+    ld      h,d                     ; copy DE into HL
+    ld      l,e
+    push    hl                      ; save hl for later (writing the data to the ch)
+    ld      bc,8                    ; Add 8
+    add     hl,bc                   ; HL points to Modified Timestamp
+    ex      de,hl                   ; Swap HL DE
+    ld      bc,4                    ; want to copy 4 bytes
+    ldir                            ; copy create time to modified time
+    pop     hl
+    LD      A,CH376_CMD_WR_OFS_DATA ; So Now send the command to write the FS data back to the CH376
+    OUT     (CH376_CONTROL_PORT),A  ; 
+    ld      a,14                    ; start writing from byte 14
+    LD      C,CH376_DATA_PORT       ;
+    OUT     (C),a                   ; Send to CH376
+    ld      a,12                    ; going to write 12 bytes
+    OUT     (C),a                   ; Send to Ch376
+    ld      b,a                     ; so we write created & modified
+    otir                            ; write the 12 bytes (pointed to by HL)
+    call    usb__Write_dir_Info     ; actually write the data back to the CH376
+.sdfd_cleanup:
+   ;     LD      HL,32
+   ;     ADD     HL,SP                   ; clean up stack
+   ;     LD      SP,HL
+._sdfdt_Error
+    pop     de
+    pop     bc
+    pop     hl
+    ret

@@ -139,6 +139,7 @@ CH376_CMD_FILE_ENUM_GO  equ     $33     ; get next file info
 CH376_CMD_FILE_CREATE   equ     $34     ; create new file
 CH376_CMD_FILE_ERASE    equ     $35     ; delete file
 CH376_CMD_FILE_CLOSE    equ     $36     ; close opened file
+CH376_CMD_DIR_INFO_READ equ     $37    ; Read file directory info
 CH376_CMD_DIR_INFO_SAVE equ     $38     ; Save file directory info
 CH376_CMD_BYTE_LOCATE   equ     $39     ; seek into file
 CH376_CMD_BYTE_READ     equ     $3A     ; start reading bytes
@@ -966,4 +967,42 @@ usb__wildcard:
     pop  de
     pop  hl
     ret
+;------------------------------------------------------------------------------
+;                      Read a File directory Info (FAT_DIR_INFO)
+;------------------------------------------------------------------------------
+; Input:   HL = filename (null-terminated)
+;
+; Output:   Z = OK
+;          NZ = fail, A = error code
+;                         $1D (INT_DISK_READ) too many subdirectories
+;                         $41 (ERR_OPEN_DIR) 'filename'is a directory
+;                         $42 (CH376_ERR_MISS_FILE) file not found
+;
+usb__read_dir_Info:
+        LD      HL,Filename             ; save filename pointer
+        CALL    usb__open_path          ; enter current directory
+        RET     NZ
+        CALL    usb__set_filename       ; send filename to CH376
+        RET     NZ                      ; abort if error
+        LD      A,CH376_CMD_DIR_INFO_READ
+        OUT     (CH376_CONTROL_PORT),A  ; command: read DIR Info
+        LD      A,$FF                   ; Current Open File indicator
+        OUT     (CH376_DATA_PORT),A     ; Send to Data Port        
+        JP      usb__wait_int
 
+;------------------------------------------------------------------------------
+;                      Write File directory Info (FAT_DIR_INFO)
+;------------------------------------------------------------------------------
+; Input:   None
+;
+; Output:   Z = OK
+;          NZ = fail, A = error code
+;                         $1D (INT_DISK_READ) too many subdirectories
+;                         $41 (ERR_OPEN_DIR) 'filename'is a directory
+;                         $42 (CH376_ERR_MISS_FILE) file not found
+;
+usb__Write_dir_Info:
+
+        LD      A,CH376_CMD_DIR_INFO_SAVE
+        OUT     (CH376_CONTROL_PORT),A  ; command: Write DIR Info (it's already been sent to the CH376)
+        JP      usb__wait_int
