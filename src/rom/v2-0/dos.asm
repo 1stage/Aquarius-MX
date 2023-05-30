@@ -1422,11 +1422,9 @@ set_dos_File_datetime:
     ld      b,a                     ; copy into B (for the inir loop later)
     CP      32                      ; must be 32 bytes!
     jr      nz,._sdfdt_Error        ; got an error - goto handler
-
-  ;  LD      HL,-32
-   ; ADD     HL,SP                   ; allocate 32 bytes on stack
-   ; LD      SP,HL
-    LD      HL,$5000
+    LD      HL,-32
+    ADD     HL,SP                   ; allocate 32 bytes on stack
+    LD      SP,HL
     PUSH    HL
     INIR                            ; read directory info onto stack
     POP     HL
@@ -1455,9 +1453,9 @@ set_dos_File_datetime:
     otir                            ; write the 12 bytes (pointed to by HL)
     call    usb__Write_dir_Info     ; actually write the data back to the CH376
 .sdfd_cleanup:
-   ;     LD      HL,32
-   ;     ADD     HL,SP                   ; clean up stack
-   ;     LD      SP,HL
+   LD      HL,32
+   ADD     HL,SP                   ; clean up stack
+   LD      SP,HL
 ._sdfdt_Error
     pop     de
     pop     bc
