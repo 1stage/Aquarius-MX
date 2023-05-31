@@ -11,38 +11,29 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
   - [X] MKDIR and usb__create_dir
   - [ ] RMDIR and usb__delete_dir
-  - [ ] RENAME and ??? (most likely the same routine that will write the USB timestamp)
 
 - [ ] Turn debugger into separate ROM option
-
-- [ ] MOD(dividend, divisor) function for modulus/remainder
-  - No hook 
   
 - [ ] Full Error Messages
   - Example:
     - ` Syntax Error ` instead of ` SN Error `
 
+- [ ] MID$(<string expl> ,n [,m] ) = <string exp2>
+
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
+  - Will address once REAL hardware exists
 
 - [ ] Fix LOAD/RUN of *.ROM files... shouldn't behave differently than hardware.
 
 ### Other
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
 
-## UNDER CONSIDERATION / WISH LIST
-- RPL$(source string, match string, replacement string) replace string function
-  - Example 1:
-    - ` 10 NM$ = "JOHN JAMES SMITH" `
-    - ` 20 NM$ = RPL$(NM$, "JAMES ", "") `
-    - ` 30 PRINT NM$ `
-      - "JOHN SMITH"
-  - Example 2:
-    - ` PRINT RPL$("Suzy Saves Stuff","S","Sh") `
-      - "Shuzy Shaves Shtuff"
-  - Out of Scope, although left hand MID$ is a possibility
-    - ` MID$(<string expl> ,n [,m] ) = <str ing exp2> `
+### Nice to Have
+- [ ] MOD(dividend, divisor) function for modulus/remainder
+- [ ] MIN() MAX()
 
+---
 ## COMPLETE:
 - [X] Modify dos.asm and CH376.asm to write USB file timestamp
 
@@ -126,9 +117,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Debug statement prints "Debugger not installed"
   - [x] Option commented out of splash screen - 
 
-- [x] Screen copy from MSX BASIC - Extended BASIC GET/PUT does this and has been added
-  - COPY (X1,Y1) - (X2,Y2) TO < array variable name >
-  - COPY < array variable name > TO (X1,Y1) - (X2,Y2)  
+- [x] Screen copy from MSX BASIC - Implemented as GET/PUT does this and has been added
 
 - [x] Implement remaining set of Extended BASIC routines (LINE, CIRCLE, DRAW, MENU, etc.)
 
@@ -147,3 +136,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
   - [x] Add option for RTC installed or not
 
+---
+## OUT OF SCOPE
+- RPL$(source string, match string, replacement string) replace string function
+- RENAME - doesn't work with CH376
