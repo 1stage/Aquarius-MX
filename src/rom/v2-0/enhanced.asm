@@ -232,12 +232,14 @@ FN_PEEK:
 ;;; ### FORMAT:
 ;;;  - PEEK( *address*, *length* )
 ;;;    - Action: Returns a string containing *length* bytes from memory starting at location *address*.
+;;;      - Length must be between 0 and 255, inclusive.
+;;;      - If length is 0, an empty string is returned.
 ;;; ### EXAMPLES:
-;;; ` PRINT CHR$(PEEK(12288)) `
-;;; > Print the current border character
-;;;
-;;; ` PRINT PEEK($3400) `
-;;; > Print the current border color value
+;;; ` PRINT PEEK$(12328,40) `
+;;; > Print the contents of screen line 1.
+;;; ` PRINT HEX$(PEEK$(&A,4)) `
+;;; > Print the binary value floating point number in variable A as a hexadecimal number.
+
 ;----------------------------------------------------------------------------
 
 FN_PEEKS:
