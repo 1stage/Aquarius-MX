@@ -474,7 +474,7 @@ FN_XOR:
 ;;; Swap MSB and LSB
 ;;; ### FORMAT:
 ;;;  - XOR( < number >
-;;;    - Action: Returns <number> with the least significant and most significant bytes swapped.
+;;;    - Action: Returns < number > with the least significant and most significant bytes swapped.
 ;;;      - < number > must be between -32768 and 65535.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(SWAP($ABCD)) `

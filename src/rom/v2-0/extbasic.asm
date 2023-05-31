@@ -406,7 +406,7 @@ get_errcode_ptr:
 ;;;         - Returns 0 if the last DOS command completed successfully.
 ;;;       - If < number > is 3, returns the status code of the last CH376 operation.
 ;;;         - This may not be directly related to the DOS error number.
-;;;       - Returns FC Error if <number> is none of the above
+;;;       - Returns FC Error if < number > is none of the above
 ;;;
 ;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
@@ -506,9 +506,9 @@ get_errno:
 ;;;       - If < number > is 1, returns a BASIC error description
 ;;;       - If < number > is 2, returns a DOS error description
 ;;;     - If second argument <error> is included, prints the description for that error number.
-;;;       - Otherwise, prints the description corresponding to the value returned by ERR(<number>).
-;;;       - Returns an empty string if <error> or ERR(<number>) is 0.
-;;;       - Returns FC Error if <error> or ERR(<number>) is less than 0.
+;;;       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
+;;;       - Returns an empty string if <error> or ERR(< number >) is 0.
+;;;       - Returns FC Error if <error> or ERR(< number >) is less than 0.
 ;----------------------------------------------------------------------------
 FN_ERRS:
         rst     CHRGET            ; Skip $
