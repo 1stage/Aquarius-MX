@@ -823,11 +823,24 @@ Write to Z80 I/O Port
 > Send a value of 14 to the Cassette sound port
 
 ---
-## PEEK (Extended)
-Read from Memory
+## PEEK Function
+Read Byte from Memory
 ### FORMAT:
- - PEEK(< address >)
-   - Action: Reads a byte from memory location < address >.
+ - PEEK( *address* )
+   - Action: Returns contents of memory location *address*.
+### EXAMPLES:
+` PRINT CHR$(PEEK(12288)) `
+> Print the current border character
+
+` PRINT PEEK($3400) `
+> Print the current border color value
+
+---
+## PEEK$ Function
+Read String from Memory
+### FORMAT:
+ - PEEK( *address*, *length* )
+   - Action: Returns a string containing *length* bytes from memory starting at location *address*.
 ### EXAMPLES:
 ` PRINT CHR$(PEEK(12288)) `
 > Print the current border character

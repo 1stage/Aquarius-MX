@@ -267,6 +267,7 @@ TIMSTR  = $0E2F   ; Return string in HL from function
 STRINI  = $0E50   ; Create string with length in A
 STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
+PUTNEW  = $0E7E   ; Return Temporary String
 GETSPA  = $0EB3   ; Allocate Space for Temporary String
 STRLTI  = $0E60   ; Create string (HL = text starting with '"')
 GARBA2  = $0EDB   ; Force Garbage Collection

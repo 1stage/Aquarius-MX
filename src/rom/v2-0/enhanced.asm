@@ -29,7 +29,6 @@ FN_ASC:
     rst     CHRGET          ; Eat $ and Skip Spaces
     call    PARCHK          ; Parse Argument in Parentheses
     push    hl              ; Save Text Pointer
-    push    bc              ; Dummy Return Address for FINBCK to discard
     call    CHKSTR          ; TM Error if Not a String
     call    STRLENADR       ; Get Arg Length in A, Address in HL
     sra     a               ; Divide Length by 2
@@ -51,7 +50,7 @@ FN_ASC:
     ld      (de),a          ; Store in Result String
     inc     de              ; Bump Result Pointer
     djnz    .asc_loop
-    jp      FINBCK          ; Return Result String
+    jp      PUTNEW          ; Return Result String
 
 get_hex:
     ld      a,(hl)          ; Get Hex Digit 
@@ -201,11 +200,11 @@ FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point n
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PEEK (Extended)
-;;; Read from Memory
+;;; ## PEEK Function
+;;; Read Byte from Memory
 ;;; ### FORMAT:
-;;;  - PEEK(< address >)
-;;;    - Action: Reads a byte from memory location < address >.
+;;;  - PEEK( *address* )
+;;;    - Action: Returns contents of memory location *address*.
 ;;; ### EXAMPLES:
 ;;; ` PRINT CHR$(PEEK(12288)) `
 ;;; > Print the current border character
@@ -215,7 +214,9 @@ FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point n
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
-    rst     CHRGET
+    rst     CHRGET            ; Skip PEEK Token and Spaces
+    cp      '$'               ; If followed by dollar sign
+    jr      z,FN_PEEKS        ;   Do PEEK$()
     call    PARCHK
     push    hl
     ld      bc,LABBCK         ; Return Address for SGNFLT
@@ -223,6 +224,39 @@ FN_PEEK:
     call    FRCADR            ; Convert to Arg to Address
     ld      a,(de)            ; Read byte at Address
     jp      SNGFLT            ; and Float it
+    
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## PEEK$ Function
+;;; Read String from Memory
+;;; ### FORMAT:
+;;;  - PEEK( *address*, *length* )
+;;;    - Action: Returns a string containing *length* bytes from memory starting at location *address*.
+;;; ### EXAMPLES:
+;;; ` PRINT CHR$(PEEK(12288)) `
+;;; > Print the current border character
+;;;
+;;; ` PRINT PEEK($3400) `
+;;; > Print the current border color value
+;----------------------------------------------------------------------------
+
+FN_PEEKS:
+    call    PARADR            ; Parse '(' Address
+    push    de                ; Stack = Address
+    SYNCHK  ','               ; Require ','
+    call    GETBYT            ; Parse Length into [DE] (a)
+    SYNCHK  ')'               ; Require ')'
+    ex      (sp),hl           ; HL = Address, Stack = TxtPtr
+    ld      a,e               ; Get *length* into A
+    or      a                 ; If *length* is 0
+    jp      z,null_string     ;   Return Empty String
+    push    hl                ; Stack = Address, TxtPtr
+    push    de                ; Stack = Length, Address, TxtPtr
+    call    STRINI            ; Make String with Length [A], HL=StrDsc, DE=StrTxt
+    pop     bc                ; BC = Length, Stack = Address, TxtPtr
+    pop     hl                ; HL = Address, Stack = TxtPtr
+    ldir                      ; Copy from Memory to String
+    jp      PUTNEW            ; Return the Temporary String
     
 ;----------------------------------------------------------------------------
 ;;; ---
