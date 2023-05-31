@@ -526,10 +526,10 @@ Error Status
       - If < number > is 0, returns a two character BASIC error code.
       - If < number > is 1, returns a BASIC error description
       - If < number > is 2, returns a DOS error description
-    - If second argument <error> is included, prints the description for that error number.
+    - If second argument < error > is included, prints the description for that error number.
       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
-      - Returns an empty string if <error> or ERR(< number >) is 0.
-      - Returns FC Error if <error> or ERR(< number >) is less than 0.
+      - Returns an empty string if < error > or ERR(< number >) is 0.
+      - Returns FC Error if < error > or ERR(< number >) is less than 0.
 
 ---
 ## ERROR
@@ -539,7 +539,7 @@ Trigger a BASIC Error
    - Action: Triggers a BASIC Error.
      - < error > is the error number of the error to trigger (see ERR function)
      - FC Error results if < error > is not between 0 and 255, inclusive
-     - if <error> is 0, no error is triggered
+     - if < error > is 0, no error is triggered
 ### EXAMPLES:
 
 ---
@@ -757,6 +757,23 @@ Display and execute menu.
   - MENU ( < xpos >,< ypos >) [, < spacing >;] < string > [,< string >,...] GOTO < line >, [,< line >...]
     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ### EXAMPLES:
+
+---
+## MID$ Statement
+  Replace a portion of one string with another string.
+### FORMAT: MID$ ( *var$* , *pos* [ , *len*] ) = *string*
+   - Action: The contents of string variable *var$*, beginning at position *pos*, are replaced by the characters in *string*
+     - if *pos* is less than 1 or more than 255, an FC error results
+     - The optional *len* refers to the number of characters from *string* that will be used in the replacement
+     - If *len* is omitted, all of *string* is used.
+     - Regardless of whether *len* is omitted or included, the replacement of characters never goes beyond the original length of *var$*.
+### EXAMPLES:
+```
+10 A$="KANSAS CITY, MO"
+20 MID$(A$,14) ="KS"
+30 PRINT A$
+```
+> Prints ` KANSAS CITY, KS `
 
 ---
 ## MKDIR
