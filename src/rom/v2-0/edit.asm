@@ -397,25 +397,38 @@ _clr_key_wait:
 _key_wait:
     call    $1e7e                 ; get last key pressed
     jr      z,_key_wait           ; loop until key pressed
-    push    af         
     push    hl                    
+    push    af         
     ld      a,(KeyFlags)          ; Get Key Flags
     bit     KF_CLICK,a            ; If Key Click Enabled
     jr      z,.no_click
-    ld      hl,(RESPTR)           ;   Check for Keyword Expansion
+    ld      hl,(RESPTR)           ;   Check For Keyword Expansion
     ld      a,h
     or      a
     jr      z,.click              ;   If Expanding
-    inc     hl                         
-    ld      a,(hl)                ;     If Next Character Doesn't Have High Bit Set
-    or      a                     ;       Not at End of Word
+    ld      a,(hl)                ;     If Character Doesn't Have High Bit Set
+    or      a                     ;       Not at Beginning of Word
     jp      p,.no_click           ;       So Don't Click
+    ld      a,l
+    cp      $AE                   ;     If CLOAD
+    jr      z,.fix_it            
+    cp      $B3                   ;     or CSAVE
+    jr      nz,.no_fix
+.fix_it
+    inc     hl                    ;       Bump RESPTR to Second Character
+    ld      (RESPTR),hl           ;       and Save it
+    pop     af                    ;         Replace Saved Key 
+    ld      a,(hl)                ;         with Second Character of Reserved Word
+    push    af
+.no_fix    
 .click  
     call    key_click             ;     DoKey Click
 .no_click
-    pop     hl
     pop     af
+    pop     hl
     ret
+
+
 
 key_click:
     ld   a,$FF                    ;   speaker ON
