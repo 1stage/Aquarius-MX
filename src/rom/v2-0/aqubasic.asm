@@ -1057,7 +1057,7 @@ clearscreen:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## KEY
+;;; ## KEY Statemenr
 ;;; Controls keyboard functions
 ;;; ### FORMAT:
 ;;;  - KEY SOUND [ON | OFF]

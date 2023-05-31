@@ -854,8 +854,8 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## INSTR
-;;; Create string of repeating characters.
+;;; ## INSTR Function
+;;; Search for string in another string
 ;;; ### FORMAT: INSTR ( [ *offset* , ] *string1* , *string2* )
 ;;;    - Action: Searches for the first occurrence of *string2* in *string1* and returns the position at which the match is found. 
 ;;;      - Optional *offset* sets the position for starting the search.

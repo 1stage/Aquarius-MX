@@ -698,6 +698,19 @@ ASCII:  158  143  159  142   $C6   255     160        134
 > Continously decrement or increment X as long as the A or S key, respectively, is pressed.
 
 ---
+## KEY Statemenr
+Controls keyboard functions
+### FORMAT:
+ - KEY SOUND [ON | OFF]
+   - Turns key click ON or OFF
+
+### EXAMPLES:
+` KEY SOUND OFF `
+> Turns key click off.
+` KEY SOUND ON `
+> Turns key click on.
+
+---
 ## LINE
 Draw line or box on screen.
 ### FORMAT:
