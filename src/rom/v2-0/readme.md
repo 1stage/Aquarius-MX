@@ -626,8 +626,8 @@ Read Z80 I/O Port
 > Set variable S to Printer Ready status
 
 ---
-## INSTR
-Create string of repeating characters.
+## INSTR Function
+Search for string in another string
 ### FORMAT: INSTR ( [ *offset* , ] *string1* , *string2* )
    - Action: Searches for the first occurrence of *string2* in *string1* and returns the position at which the match is found.
      - Optional *offset* sets the position for starting the search.
@@ -698,20 +698,21 @@ ASCII:  158  143  159  142   $C6   255     160        134
 > Continously decrement or increment X as long as the A or S key, respectively, is pressed.
 
 ---
-## KEY Statemenr
+## KEY Statement
 Controls keyboard functions
 ### FORMAT:
  - KEY SOUND [ON | OFF]
-   - Turns key click ON or OFF
+   - Action: Turns key click ON or OFF
 
 ### EXAMPLES:
 ` KEY SOUND OFF `
 > Turns key click off.
+
 ` KEY SOUND ON `
 > Turns key click on.
 
 ---
-## LINE
+## LINE Statement
 Draw line or box on screen.
 ### FORMAT:
   - LINE [ (< x-coord >,< y-coord >) ] - ( < x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
@@ -732,13 +733,13 @@ Draw line or box on screen.
 
 ` LINE (10,10)-(20,20),2 `
 > Draws a line in color 2.
+
 ```
-  10 CLS
-  20 LINE -(RND*80,RND*72),RND*16
-  30 GOTO 20
+10 CLS
+20 LINE -(RND*80,RND*72),RND*16
+30 GOTO 20
 ```
-?  Draw lines forever using random attributes.;;; `  `
->
+>  Draw lines forever using random attributes.
 
 ---
 ## LOCATE
@@ -1015,6 +1016,23 @@ Returns 16 bit integer value of MX BASIC ROM version
 
 ` PRINT HEX$(VER(0)) `
 > Prints `0200`, the HEX value of version 2, rev 0
+
+---
+## WAIT
+Suspend program execution while inonitoring the status of a Z80 input port.
+### FORMAT:
+ - WAIT *address*, *byte1* [, *byte2*]
+   - Action: Causes execution to be suspended until a Z80 port develops a specified bit pattern.
+     - The I/O port to read is specified by the LSB of *address*
+     - The data read at the port is Exclusive OR'ed with *byte2*, then AND'ed with *byte1*.
+     - If the result is zero, MX BASIC loops back and reads the data at the port again.
+     - If the result is nonzero, execution continues with the next statement.
+     - If J is omitted, it is assumed to be zero
+   - Advanced: During the read, < address > is put on the Z80 address bus.
+   - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
+### EXAMPLES:
+` WAIT $FF,$3F,$FF `
+> Wait for any key to be pressed.
 
 ---
 ## XOR

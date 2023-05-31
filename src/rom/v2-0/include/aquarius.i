@@ -195,6 +195,8 @@ CHRGT2  = $066C   ; Alternate CHRGOT for CALL
 NTOERR  = $0782   ; Execute ON ... GOTO
 OMGOTO  = $0785   ; Execute GOTO part of ON ... GOTO
 
+INPDIR  = $0898   ; INPUT Statement, bypassing Hook and Direct Mode Check
+
 STROUT  = $0E9D   ; Print null or quote terminated string
 STRPRT  = $0EA0   ; Print String with Descriptor in Floating Point Accumulator
 LINPRT  = $1675   ; Print line number in HL

@@ -234,7 +234,7 @@ XCHGX:  push    hl
 ; E672
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## LINE
+;;; ## LINE Statement
 ;;; Draw line or box on screen.
 ;;; ### FORMAT:
 ;;;   - LINE [ (< x-coord >,< y-coord >) ] - ( < x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
@@ -255,13 +255,13 @@ XCHGX:  push    hl
 ;;;  
 ;;; ` LINE (10,10)-(20,20),2 `
 ;;; > Draws a line in color 2.
+;;;
 ;;; ```
-;;;   10 CLS
-;;;   20 LINE -(RND*80,RND*72),RND*16
-;;;   30 GOTO 20
+;;; 10 CLS
+;;; 20 LINE -(RND*80,RND*72),RND*16
+;;; 30 GOTO 20
 ;;; ```
-;;; ?  Draw lines forever using random attributes.;;; `  `
-;;; > 
+;;; >  Draw lines forever using random attributes.
 ;----------------------------------------------------------------------------
 ; LINE COMMAND
 ; LINE [(X1,Y1)]-(X2,Y2) [,ATTRIBUTE[,B[F]]]

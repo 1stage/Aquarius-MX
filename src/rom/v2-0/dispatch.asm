@@ -127,7 +127,7 @@ STJUMPS:
     dw      ST_MKDIR              ;$EF MKDIR
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
-    dw      SNERR                 ;$F2
+    dw      ST_WAIT               ;$F2 WAIT
     dw      SNERR                 ;$F3
     dw      SNERR                 ;$F4
     dw      SNERR                 ;$F5
@@ -210,7 +210,7 @@ FNJUMPS:
     dw      SNERR                 ;$EF MKDIR
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
-    dw      SNERR                 ;$F2
+    dw      SNERR                 ;$F2 WAIT
     dw      SNERR                 ;$F3
     dw      SNERR                 ;$F4
     dw      SNERR                 ;$F5
@@ -359,6 +359,7 @@ CDTK    = $E0
     db      $80 + 'M', "KDIR"       ; $ef - Create Directory
     db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
     db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
+    db      $80 + 'W', "AIT"        ; $f1 - Special Keyword OFF
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA

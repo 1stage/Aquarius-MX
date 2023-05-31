@@ -34,7 +34,7 @@ HOOKTABLE:                    ; ## caller   addr  performing function
     dw      STATEMENT         ; 23 GONE2    064B  interpreting next BASIC statement
     dw      RUNPROG           ; 24 RUN      06BE  starting BASIC program
     dw      ONGOTX            ; 25 ONGOTO   0780  ON statement
-    dw      HOOK26+1          ; 26 INPUT    0893  Execute INPUT Statement 
+    dw      INPDIR            ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      FUNCTION          ; 27 ISFUN    0A5F  Executing a Function
     dw      HOOK28+1          ; 28 DATBK    08F1
 

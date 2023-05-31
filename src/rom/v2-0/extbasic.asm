@@ -1017,3 +1017,101 @@ FN_EVAL:
         call    FRMEVL            ; Evaluate Formula
         pop     hl                ; Restore Text Pointer
         ret
+
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## OUT
+;;; Write to Z80 I/O Port
+;;; ### FORMAT:
+;;;  - OUT < address >,< byte >
+;;;    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
+;;;    - Advanced: During the write, < address > is put on the Z80 address bus.
+;;; ### EXAMPLES:
+;;; ` OUT 246, 12 `
+;;; > Send a value of 12 to the SOUND chip
+;;;
+;;; ` 10 X=14:OUT $FC, X `
+;;; > Send a value of 14 to the Cassette sound port
+;----------------------------------------------------------------------------
+
+ST_OUT:
+    call    GETADR                ; get/evaluate port
+    push    de                    ; stored to be used in BC
+    SYNCHK  ','                   ; Compare RAM byte with following byte
+    call    GETBYT                ; get/evaluate data
+    pop     bc                    ; BC = port
+    out     (c),a                 ; out data to port
+    ret
+
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## IN
+;;; Read Z80 I/O Port
+;;; ### FORMAT:
+;;;  - IN(< address >)
+;;;    - Action: Reads a byte from the I/O port specified by LSB of < address >.
+;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;; ### EXAMPLES:
+;;; ` PRINT IN(252) `
+;;; > Prints cassette port input status
+;;;
+;;; ` S=IN($FE) `
+;;; > Set variable S to Printer Ready status
+;----------------------------------------------------------------------------
+; This is INP() in BASIC80
+FN_IN:
+    rst     CHRGET                ; Skip Token and Eat Spaces
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
+    call    FRCADR                ; convert argument to 16 bit integer in DE
+    ld      b,d
+    ld      c,e                   ; bc = port
+    in      a,(c)                 ; a = in(port)
+    jp      SNGFLT                ; return with 8 bit input value in variable var
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## WAIT
+;;; Suspend program execution while inonitoring the status of a Z80 input port.
+;;; ### FORMAT:
+;;;  - WAIT *address*, *byte1* [, *byte2*]
+;;;    - Action: Causes execution to be suspended until a Z80 port develops a specified bit pattern. 
+;;;      - The I/O port to read is specified by the LSB of *address*
+;;;      - The data read at the port is Exclusive OR'ed with *byte2*, then AND'ed with *byte1*. 
+;;;      - If the result is zero, MX BASIC loops back and reads the data at the port again. 
+;;;      - If the result is nonzero, execution continues with the next statement.
+;;;      - If J is omitted, it is assumed to be zero
+;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;;    - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
+;;; ### EXAMPLES:
+;;; ` WAIT $FF,$3F,$FF `
+;;; > Wait for any key to be pressed.
+;----------------------------------------------------------------------------
+; THE WAIT CHANNEL#,MASK,MASK2 WAITS UNTIL THE STATUS
+; RETURNED BY CHANNEL# IS NON ZERO WHEN XORED WITH MASK2
+; AND THEN ANDED WITH MASK. IF MASK2 IS NOT PRESENT IT IS ASSUMED
+; TO BE ZERO.
+ST_WAIT:  
+        call    GETADR            ; get/evaluate port
+        push    de                ; stored to be used in BC
+        SYNCHK  ','               ; Compare RAM byte with following byte
+        call    GETBYT            ; get/evaluate data
+        push    af                ; SAVE THE MASK
+        call    CHRGT2            ; SEE IF THE STATEMENT ENDED
+        jr      z,NOTTHR          ; IF NO THIRD ARGUMENT SKIP THIS
+        SYNCHK  ','               ; MAKE SURE THERE IS A ","
+        CALL    GETBYT            ; Get XOR mask into E
+NOTTHR: pop     de                ; REGET THE "AND" MASK in D
+        ld      e,a               ; Put the XOR mask in E
+        pop     bc                ; Get back the Port #
+LOPINP: in      a,(c)             ; THE INPUT INSTR
+        xor     e                 ; XOR WITH MASK2
+        and     d                 ; AND WITH MASK
+        jr      z,LOPINP          ; LOOP UNTIL RESULT IS NON-ZERO
+                                  ; NOTE: THIS LOOP CANNOT BE CONTROL-C'ED
+                                  ; HOWEVER A RESTART AT 0 IS OK.
+        ret  
