@@ -28,19 +28,13 @@ Bitwise AND
 > Prints 65535
 
 ---
-## ASC (Extended)
-Read from Memory
+## ASC$ Function
+Convert Hexadecimal String to ASCII String
 ### FORMAT:
- - ASC (< string >)
-   - Action: Returns a numerical value that is the ASCII code of the first character of < string >. If < string > is null, an FC error is returned.
-     - See the CHR$ function for ASCII-to-string conversion.
  - ASC$ (< string >)
    - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in < string >.
      - See the HEX$ function for string-to-hex conversion.
 ### EXAMPLES:
-` PRINT ASC("TEST") `
-> Prints the number 84.
-
 ` PRINT ASC$("414243") `
 > Prints the string "ABC".
 
