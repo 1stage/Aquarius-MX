@@ -100,7 +100,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Modified dos__directory to convert and print last write date and time
   - [x] Modify dos.asm to call rtc_read and dtm_lib.asm routines
 
-- [x]EDIT and Immediate Mode
+- [x] EDIT and Immediate Mode
   - [x] remap unused control keys to ASCII characters not on keyboard
   - [x] increase line buffer length to 127
 
