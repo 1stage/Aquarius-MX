@@ -505,10 +505,10 @@ get_errno:
 ;;;       - If < number > is 0, returns a two character BASIC error code.
 ;;;       - If < number > is 1, returns a BASIC error description
 ;;;       - If < number > is 2, returns a DOS error description
-;;;     - If second argument <error> is included, prints the description for that error number.
+;;;     - If second argument < error > is included, prints the description for that error number.
 ;;;       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
-;;;       - Returns an empty string if <error> or ERR(< number >) is 0.
-;;;       - Returns FC Error if <error> or ERR(< number >) is less than 0.
+;;;       - Returns an empty string if < error > or ERR(< number >) is 0.
+;;;       - Returns FC Error if < error > or ERR(< number >) is less than 0.
 ;----------------------------------------------------------------------------
 FN_ERRS:
         rst     CHRGET            ; Skip $
@@ -583,7 +583,7 @@ FN_ERRS:
 ;;;    - Action: Triggers a BASIC Error.
 ;;;      - < error > is the error number of the error to trigger (see ERR function)
 ;;;      - FC Error results if < error > is not between 0 and 255, inclusive
-;;;      - if <error> is 0, no error is triggered
+;;;      - if < error > is 0, no error is triggered
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------
 
