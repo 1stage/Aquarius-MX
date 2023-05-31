@@ -411,10 +411,12 @@ UFERR    = $03D0  ;   undefined function
 ; Standard BASIC Tokens
 DIMTK       = $85   ; DIM Token
 GOTOTK      = $88   ; GOTO Token
+ONTK        = $90   ; ON Token
 COPYTK      = $92   ; COPY Token
 POKETK      = $94   ; POKE Token
 PSETTK      = $9C   ; PSET Token
 PRESTK      = $9D   ; PRESET Token
+SOUNDTK     = $9E   ; SOUND Token
 TOTK        = $A1   ; TO Token
 FNTK        = $A2   ; FN Token
 NOTTK       = $A6   ; NOT Token

@@ -116,7 +116,7 @@ STJUMPS:
     dw      SNERR                 ;$E4 VER
     dw      SNERR                 ;$E5 DTM
     dw      SNERR                 ;$E6 DEC
-    dw      SNERR                 ;$E7 KEY
+    dw      ST_KEY                ;$E7 KEY
     dw      SNERR                 ;$E8 DEEK
     dw      ST_ERR                ;$E9 ERR OR
     dw      SNERR                 ;$EA STRING
@@ -126,7 +126,7 @@ STJUMPS:
     dw      ST_SLEEP              ;$EE SLEEP
     dw      ST_MKDIR              ;$EF MKDIR
     dw      SNERR                 ;$F0 RMDIR
-    dw      SNERR                 ;$F1
+    dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2
     dw      SNERR                 ;$F3
     dw      SNERR                 ;$F4
@@ -209,7 +209,7 @@ FNJUMPS:
     dw      SNERR                 ;$EE SLEEP
     dw      SNERR                 ;$EF MKDIR
     dw      SNERR                 ;$F0 RMDIR
-    dw      SNERR                 ;$F1
+    dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2
     dw      SNERR                 ;$F3
     dw      SNERR                 ;$F4
@@ -358,11 +358,12 @@ CDTK    = $E0
     db      $80 + 'S', "LEEP"       ; $ee - Display and Execute Menu
     db      $80 + 'M', "KDIR"       ; $ef - Create Directory
     db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
+    db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
     db      $80                     ; End of table marker
 ERRTK     = $E9
 STRINGTK  = $EA
 XORTK     = $EB
-
+OFFTK     = $F1
 
 ;-------------------------------------
 ;         Replace Command

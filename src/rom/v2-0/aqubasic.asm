@@ -1054,6 +1054,44 @@ clearscreen:
     pop     hl
     ret
 
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## KEY
+;;; Controls keyboard functions
+;;; ### FORMAT:
+;;;  - KEY SOUND [ON | OFF]
+;;;    - Turns key click ON or OFF
+;;;
+;;; ### EXAMPLES:
+;;; ` KEY SOUND OFF `
+;;; > Turns key click off.
+;;; ` KEY SOUND ON `
+;;; > Turns key click on.
+;----------------------------------------------------------------------------
+ST_KEY:
+    cp      SOUNDTK               ; If Next Character
+    jp      nz,.notsound          ; is SOUND Token
+    ld      iy,KeyFlags
+    rst     CHRGET                ;   Skip to Next Character
+    ld      c,a                   ;   Save Character
+    rst     CHRGET                ;   Advance Text Pointer
+    ld      a,c                   ;   Restore Character
+    cp      ONTK                  ;   
+    jr      nz,.not_ontk          ;   If ON Token
+    set     KF_CLICK,(iy+0)       ;     Turn Key Click On
+    ret                           ;     and Return
+.not_ontk:
+    cp      OFFTK                 ;   
+    jr      nz,.fcerr             ;   If OFF Token 
+    res     KF_CLICK,(iy+0)       ;     Turn Key Click On
+    ret
+.notsound                         ; Else
+.fcerr
+    jp      FCERR                 ;   FC Error (for now)
+
+
+
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## OUT
