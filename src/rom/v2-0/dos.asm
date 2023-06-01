@@ -143,12 +143,10 @@ FN_CD:
     SYNCHK  '$'               ; Require $
     push    hl                ; Text Pointer on Stack
     ex      (sp),hl           ; Swap Text Pointer with Return Address
-    ld      de,LABBCK         ; return address for SNGFLT, etc.
-    push    de                ; on stack
+    push    bc                ; put dummy return address on stack
     call    usb__get_path     ; Get pointer to current path in HL
     jp      TIMSTR
-
-
+  
 ;------------------------------------------------------------------------------
 ;;; ---
 ;;; ## MKDIR
@@ -385,28 +383,7 @@ Init_BASIC:
         ld      (VARNAM),hl       ; Clear Variable Name
 _link_lines:
         ld      de,(TXTTAB)       ; DE = start of BASIC program
-_ibl_next_line:
-        ld      h,d
-        ld      l,e                ; HL = DE
-        ld      a,(hl)
-        inc     hl                 ; test nextline address
-        or      (hl)
-        jr      z,_ibl_done        ; if $0000 then done
-        inc     hl
-        inc     hl                 ; skip line number
-        inc     hl
-        xor     a                  ; end of line = $00
-_ibl_find_eol:
-        cp      (hl)               ; search for end of line
-        inc     hl
-        jr      nz,_ibl_find_eol
-        ex      de,hl              ; HL = current line, DE = next line
-        ld      (hl),e
-        inc     hl                 ; set address of next line
-        ld      (hl),d
-        jr      _ibl_next_line
-_ibl_done:
-        ret
+        jp      link_lines        ; rebuild line links and return
 
 ;------------------------------------------------------------------------------
 ;;; ---
@@ -856,12 +833,7 @@ dos__prtDirInfo:
         bit     DF_SDTM,a
         jr      z,.dir_skip_datetime
 .dir_time_stamp:
-        push    hl                      ; Save Pointer
-        ex      de,hl                   ; DE = DIR_WrtTime
-        ld      hl,dtm_buffer
-        call    fts_to_dtm              ; Convert TimeStamp to DateTime
-        ld      de,DTM_STRING
-        call    dtm_to_fmt              ; Convert to Formatted String
+        call    format_fts              ; Convert FTS at (HL) to formatted date string
         ld      b,16
 .dir_datetime:
         ld      a,(de)                  ; get next char of extension
@@ -870,7 +842,6 @@ dos__prtDirInfo:
         djnz    .dir_datetime
         LD      A,' '                   ; print ' '
         CALL    TTYOUT
-        pop     hl
 .dir_skip_datetime:
         pop     af
         AND     ATTR_DIRECTORY          ; directory bit set?
