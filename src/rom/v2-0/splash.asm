@@ -167,15 +167,11 @@ BootMenuPrint:
 ;------------------------------------------------------------------------------
 ;
 SPL_DATETIME:
-    ld      bc,RTC_SHADOW
-    ld      hl,DTM_BUFFER
-    call    rtc_read
-    ld      de,DTM_STRING
-    call    dtm_to_fmt    ;Convert to Formatted String   
+    call    format_rtc        ; Read RTC into formatted string in DE
+    ex      de,hl             ; HL = Formatted Date
     ld      d,2                
     ld      e,16              
     call    WinSetCursor
-    ld      hl,DTM_STRING
     call    WinPrtStr
     ret    
     

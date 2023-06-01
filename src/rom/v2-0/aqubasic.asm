@@ -373,13 +373,23 @@ RTC_STR_TO_DTM    jp  str_to_dtm
 RTC_DTM_TO_FTS    jp  dtm_to_fts
 RTC_FTS_TO_DTM    jp  fts_to_dtm
 
+; room for 9 more JP's before crossing $C100
+
 ;---------------------------------------------------------------------
-;                          UDF Hook Routine
+;                        UDF Hook Routine
+;      starts with Hook Table, aligned to page boundary ($C100)
 ;---------------------------------------------------------------------
     include "udfhook.asm"
 
 ;---------------------------------------------------------------------
-;                Dispatch and Keyword Tables and Routines
+;                       string functions
+;   no more than 180 bytes, to fit between UDF Hook and Dispatch
+;---------------------------------------------------------------------
+    include "strings.asm"
+
+;---------------------------------------------------------------------
+;              Dispatch and Keyword Tables and Routines
+;      starts with Jump Tables, aligned to page boundary ($C200)
 ;---------------------------------------------------------------------
     include "dispatch.asm" 
 
@@ -413,11 +423,6 @@ RTC_FTS_TO_DTM    jp  fts_to_dtm
 ;---------------------------------------------------------------------
     include "dtm_lib.asm"
     include "ds1244rtc.asm" 
-
-;---------------------------------------------------------------------
-;                       string functions
-;---------------------------------------------------------------------
-    include "strings.asm"
 
 ;---------------------------------------------------------------------
 ;                       keyboard scan
@@ -809,20 +814,22 @@ ENTERLINE:
     jr      nz,.mloopr          ;
 .fini:
     call    RUNC                ; DO CLEAR & SET UP STACK 
-    jr      link_lines
-
+; Hook 5 (LINKER) comes here to force MX BASIC immediate Mode
+; It shouldn't get hit anymore, but left in just in casy
 LINKLINES:
-    Call    Break ;THIS HOOK SHOULD NEVER GET HIT!!!
-link_lines
+    ld      bc,immediate          ; When done linking
+    push    bc                    ; Enter MX BASIC immediate mode
     inc     hl
     ex      de,hl              ; DE = start of BASIC program
-.chead:
+; Rebuild BASIC Line Links
+; In: DE = Start of BASIC Program
+link_lines
     ld      h,d
     ld      l,e                ; HL = DE
     ld      a,(hl)
     inc     hl                 ; get address of next line
     or      (hl)
-    jp      z,immediate        ; if next line = 0 then done so return to immediate mode
+    ret     z                  ; if next line = 0 then done so return to immediate mode
     inc     hl
     inc     hl                 ; skip line number
     inc     hl
@@ -835,7 +842,7 @@ link_lines
     ld      (hl),e
     inc     hl                 ; update address of next line
     ld      (hl),d
-    jr      .chead              ; next line
+    jr      link_lines         ; next line
 
 
 ;----------------------------------------------------------------------------
@@ -1712,23 +1719,13 @@ FN_DTM:
     push    hl
     ld      bc,LABBCK
     push    bc
-    call    CHKNUM
-    ld      a,(FAC)          ;  
-    or      a
-    push    af
-    ld      bc,RTC_SHADOW
-    ld      hl,DTM_BUFFER
-    call    rtc_read
-    ld      de,DTM_STRING
-    call    dtm_to_str       ; Convert to String
-    pop     af 
-    call    nz,dtm_fmt_str   ; If arg <> 0 Format Date
-    ld      hl,DTM_STRING
-return_string:
-    ld      a,1              ; Set Value Type to String
+    call    CONINT                ; Convert Argument to Byte in A
+    call    get_rtc               ; Read RTCm returning String in DE
+    ex      de,hl                 ; HL = DateTime String
+return_string:       
+    ld      a,1                   ; Set Value Type to String
     ld      (VALTYP),a
     jp      TIMSTR
-
 
 ;-------------------------------------------------------------------------
 ; EVAL Extension - Hook 9

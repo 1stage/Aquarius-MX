@@ -363,6 +363,22 @@ CLK_SOFT    = $80
 CLK_WRITE   = $7F
 CLK_NONE    = $00
 
+ERROR_NO_CH376    equ   1 ; CH376 not responding
+ERROR_NO_USB      equ   2 ; not in USB mode
+ERROR_MOUNT_FAIL  equ   3 ; drive mount failed
+ERROR_BAD_NAME    equ   4 ; bad name
+ERROR_NO_FILE     equ   5 ; no file
+ERROR_FILE_EMPTY  equ   6 ; file empty
+ERROR_BAD_FILE    equ   7 ; file header mismatch
+ERROR_RMDIR_FAIL  equ   8 ; can't remove directory
+ERROR_READ_FAIL   equ   9 ; read error
+ERROR_WRITE_FAIL  equ  10 ; write error
+ERROR_CREATE_FAIL equ  11 ; can't create file
+ERROR_NO_DIR      equ  12 ; can't open directory
+ERROR_PATH_LEN    equ  13 ; path too long
+ERROR_FILE_EXISTS equ  14 ; file with name exists
+ERROR_UNKNOWN     equ  15 ; other disk error
+
 ;----------------------------------------------------------------------------
 ;                         BASIC Error Codes
 ;----------------------------------------------------------------------------
@@ -393,7 +409,7 @@ ERRUE  =    $28             ; UE Unprintable Error
 LSTERR =    $2A             ; End of Error List
 
 ;----------------------------------------------------------------------------
-;     jump addresses for BASIC errors (returns to command prompt)
+;      jump addresses for BASIC errors (loads E and jumps to ERROR)
 ;----------------------------------------------------------------------------
 SNERR    = $03C4  ; Syntax Error
 FCERR    = $0697  ; Function Call Error

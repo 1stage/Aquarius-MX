@@ -346,25 +346,25 @@ ERRORX: ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
         ld      (ERRLIN),hl       ; SAVE IT FOR ERL VARIABLE
         ld      a,e               ; Get Error Table Offset
         ld      c,e               ; ALSO SAVE IT FOR LATER RESTORE
-        srl      a                ; Divide by 2 and add 1 so
-        inc      a                ; [A]=ERROR NUMBER
+        srl     a                 ; Divide by 2 and add 1 so
+        inc     a                 ; [A]=ERROR NUMBER
         ld      (ERRFLG),a        ; Save it for ERR() Function
         ld      hl,(ERRLIN)       ; GET ERROR LINE #
         ld      a,h               ; TEST IF DIRECT LINE
-        and      l                ; SET CC'S
-        inc      a                ; SETS ZERO IF DIRECT LINE (65535)
+        and     l                 ; SET CC'S
+        inc     a                 ; SETS ZERO IF DIRECT LINE (65535)
         ld      hl,(ONELIN)       ; SEE IF WE ARE TRAPPING ERRORS.
         ld      a,h               ; BY CHECKING FOR LINE ZERO.
-        ORA      l                ; IS IT?
+        or      l                 ; IS IT?
         ex      de,hl             ; PUT LINE TO GO TO IN [D,E]
         ld      hl,ONEFLG         ; POINT TO ERROR FLAG
         jr      z,NOTRAP          ; SORRY, NO TRAPPING...
-        and      (hl)             ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
+        and     (hl)              ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
         jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERRO R
-        dec      (hl)             ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
+        dec     (hl)              ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
         ex      de,hl             ; GET LINE POINTER IN [H,L]
         jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE
-NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
+NOTRAP: xor     a                 ; A MUST BE ZERO FOR CONTRO
         ld      (hl),a            ; RESET 3
         ld      e,c               ; GET BACK ERROR CODE
         jp      ERRCRD            ; FORCE THE ERROR TO HAPPEN
@@ -375,18 +375,6 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 
 ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
         jp      ERRPRT            ; Display Error and Return to Immediate Mode
-
-get_errcode_ptr:
-        ld      a,e               ; Get Error Table Offset into A
-        cp      LSTERR            ; Compare to End of Table
-        jr      c,.ext_error      ; If Past End of Table
-        ld      a,ERRUE           ;   Display "UE" - Unprintable Error
-.ext_error
-        add     low(ERR_CODES)    ; Add offset to Error Table address
-        ld      l,a               
-        ld      h,high(ERR_CODES) ; Put address in HL
-        ret
-
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -500,15 +488,15 @@ get_errno:
 ;;; ## ERR$
 ;;; Error Status
 ;;; ### FORMAT:
-;;;   - ERR$ ( < number > [, < error >] )
+;;;   - ERR$ ( < number > [, *error*] )
 ;;;     - Action: Returns string containing description of error
 ;;;       - If < number > is 0, returns a two character BASIC error code.
 ;;;       - If < number > is 1, returns a BASIC error description
 ;;;       - If < number > is 2, returns a DOS error description
-;;;     - If second argument < error > is included, prints the description for that error number.
+;;;     - If second argument *error* is included, prints the description for that error number.
 ;;;       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
-;;;       - Returns an empty string if < error > or ERR(< number >) is 0.
-;;;       - Returns FC Error if < error > or ERR(< number >) is less than 0.
+;;;       - Returns an empty string if *error* or ERR(< number >) is 0.
+;;;       - Returns FC Error if *error* or ERR(< number >) is less than 0.
 ;----------------------------------------------------------------------------
 FN_ERRS:
         rst     CHRGET            ; Skip $
@@ -559,14 +547,7 @@ FN_ERRS:
         ld      hl,FBUFFR         ; Get Buffer Address for TIMSTR
         jp      TIMSTR            ; Return It
 .err_message
-        call    get_errcode_ptr   ; Get Pointer to Error Code for E
-        add     ERRMSG-ERR_CODES  ; Convert to Pointer into Error Messages Table
-        ld      l,a
-        ld      h,high(errmsg)
-        ld      a,(hl)            ; Read Address from Error Message Table
-        inc     hl
-        ld      h,(hl)
-        ld      l,a
+        call    get_errmsg_ptr    ; Get Pointer to Error Message String
         jp      TIMSTR            ; Return Error Message String
 .dos_error:
         ld      a,c               ; Get Back Error Number
@@ -579,18 +560,18 @@ FN_ERRS:
 ;;; ## ERROR
 ;;; Trigger a BASIC Error
 ;;; ### FORMAT:
-;;;  - ERROR < error >
+;;;  - ERROR *error*
 ;;;    - Action: Triggers a BASIC Error.
-;;;      - < error > is the error number of the error to trigger (see ERR function)
-;;;      - FC Error results if < error > is not between 0 and 255, inclusive
-;;;      - if < error > is 0, no error is triggered
+;;;      - *error* is the error number of the error to trigger (see ERR function)
+;;;      - FC Error results if *error* is not between 0 and 255, inclusive
+;;;      - if *error* is 0, no error is triggered
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------
 
 ST_ERR:
     rst     SYNCHR                ; Require OR Tokem
     db      ORTK                  ;   for ERROR
-    call    GETBYT                ; Get < error >
+    call    GETBYT                ; Parse error number
     or      a                     ; If it's zero
     ret     z                     ;   Proceed with next statement
     dec     a                     ; Else 
