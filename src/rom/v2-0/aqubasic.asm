@@ -137,6 +137,7 @@ KeyBufLen = 16
     BYTE   _doserror            ; file type BASIC/array/binary/etc.
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
+    WORD   _binofs              ; offset into binary file on disk
     BYTE   _dosflags            ; DOS flags
     BYTE   _keyflags            ; Keyclick Enable Flag
     BYTE   _sysflags            ; system flags
@@ -1714,13 +1715,12 @@ ST_SDTM:
 ;---------------------------------------------------------------------------
 
 FN_DTM:
-    rst     CHRGET            ; Skip Token and Eat Spaces
+    rst     CHRGET                ; Skip Token and Eat Spaces
     call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
+    push    hl                    ; Save Text Pointer
+    push    bc                    ; Push Dummy Return Address
     call    CONINT                ; Convert Argument to Byte in A
-    call    get_rtc               ; Read RTCm returning String in DE
+    call    get_rtc               ; Read RTC returning String in DE
     ex      de,hl                 ; HL = DateTime String
 return_string:       
     ld      a,1                   ; Set Value Type to String
