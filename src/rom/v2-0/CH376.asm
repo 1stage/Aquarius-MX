@@ -328,16 +328,22 @@ usb__file_exist:
 ; Output:    Z = success
 ;           NZ = fail, A = error code
 ;
+usb__open_rewrite:
+        CALL    usb__open_read          ; try to open existing file
+        JR      NZ,_open_create         ; check error, try to create
+        RET
+
 usb__open_write:
         CALL    usb__open_read          ; try to open existing file
-        JR      Z,.file_exists
+        JR      Z,_file_exists
+_open_create:
         CP      CH376_ERR_MISS_FILE     ; error = file missing?
         RET     NZ                      ; no, some other error so abort
         LD      A,CH376_CMD_FILE_CREATE
         OUT     (CH376_CONTROL_PORT),A  ; command: create new file
         JP      usb__wait_int           ; and return
 ; file exists, set size to 1 byte (forgets existing data in file)
-.file_exists:
+_file_exists:
         LD      A,CH376_CMD_SET_FILE_SIZE
         OUT     (CH376_CONTROL_PORT),A  ; command: set file size
         LD      A,$68

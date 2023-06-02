@@ -130,11 +130,11 @@ KeyBufLen = 16
 
 ; high RAM usage
  STRUCTURE _sysvars,0
+    STRUCT _keybuf,KeyBufLen    ; KEY Statement Buffer
     STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
     STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
-    STRUCT _keybuf,KeyBufLen    ; KEY Statement Buffer
-    BYTE   _chstatus            ; status after last CH368 command
     BYTE   _doserror            ; file type BASIC/array/binary/etc.
+    BYTE   _chstatus            ; status after last CH368 command
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
     WORD   _binofs              ; offset into binary file on disk
@@ -148,13 +148,14 @@ KeyBufLen = 16
  ENDSTRUCT _sysvars
 
 SysVars  = RAMEND-_sysvars.size
+KeyBuf   = sysvars+_keybuf
 PathName = sysvars+_pathname
 FileName = sysvars+_filename
-KeyBuf   = sysvars+_keybuf
 DosError = sysvars+_doserror
 ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
+BinOfs   = sysvars+_binofs
 DosFlags = sysvars+_dosflags
 KeyFlags = sysvars+_keyflags
 SysFlags = sysvars+_sysflags
@@ -1084,19 +1085,19 @@ clearscreen:
 ST_KEY:
     cp      SOUNDTK               ; If Next Character
     jp      nz,.notsound          ; is SOUND Token
-    ld      iy,KeyFlags
+    ld      ix,KeyFlags
     rst     CHRGET                ;   Skip to Next Character
     ld      c,a                   ;   Save Character
     rst     CHRGET                ;   Advance Text Pointer
     ld      a,c                   ;   Restore Character
     cp      ONTK                  ;   
     jr      nz,.not_ontk          ;   If ON Token
-    set     KF_CLICK,(iy+0)       ;     Turn Key Click On
+    set     KF_CLICK,(ix+0)       ;     Turn Key Click On
     ret                           ;     and Return
 .not_ontk:
     cp      OFFTK                 ;   If Not OFF Token
     jp      nz,FCERR              ;     FC Error
-    res     KF_CLICK,(iy+0)       ;   Turn Key Click On
+    res     KF_CLICK,(ix+0)       ;   Turn Key Click On
     ret
 .notsound                         ; Else
     call    FRMEVL                ;   Evaluate Argument
@@ -1629,9 +1630,11 @@ ST_SLEEP:
 
 ; Require Open Parenthesis and Read Address
 PARADR:
-    rst     CHRGET
-    SYNCHK  '('             ; Require Parenthesis
-
+        rst     CHRGET
+        SYNCHK  '('               ; Require Parenthesis
+        db      $3E               ; LD A, over RST CHRGET
+; Advance Text Pointer and Parse Address
+CHKADR: rst     CHRGET
 ; Parse an Address (-32676 to 65535 in 16 bit integer)  
 GETADR: call    FRMEVL      ; Evaluate Formula
 ; Convert FAC to Address or Signed Integer and Return in DE

@@ -136,6 +136,17 @@ format_fts:
     pop     hl                      ; Restore Pointer to FTS
     ret
 
+
+;--------------------------
+;   print hex word
+;--------------------------
+; in: DE = word
+;
+print_word:
+    ld      a,d
+    call    print_hex
+    ld      a,a
+
 ;--------------------------
 ;   print hex byte
 ;--------------------------

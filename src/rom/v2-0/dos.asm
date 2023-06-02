@@ -51,8 +51,11 @@
 
 ; bits in dosflags
 DF_ADDR   = 0      ; set = address specified
+DF_LEN    = 1      ; set = length specified
+DF_OFS    = 2      ; set = offset specified
 DF_SDTM   = 6      ; set = show file date/time
 DF_ARRAY  = 7      ; set = numeric array
+
 
 ;------------------------------------------------------------------------------
 ;;; ---
@@ -162,7 +165,7 @@ FN_CD:
 ;------------------------------------------------------------------------------
 ST_MKDIR:
     call    dos__getfilename      ; parse directory name
-    jp      nz,_dos_badname_error
+    jp      nz,_badname_error
     push    hl                    ; save BASIC text pointer
     call    dos__clearError
     call    usb__ready            ; check for USB disk (may reset path to root!)
@@ -183,53 +186,46 @@ _dos_file_exists:
     ld      a,ERROR_FILE_EXISTS
     jp      _dos_do_error
 
-;--------------------------------------------------------------------
-;                             LOAD
-;--------------------------------------------------------------------
-;
-;  LOAD "filename"        load BASIC program, binary executable
-;  LOAD "filename",12345  load file as raw binary to address 12345
-;  LOAD "filename",*A     load data into numeric array A
-;
-;  in: HL = BASIC text pointer
-;
-; out: HL = BASIC text pointer
-;       Z = loaded OK, A = filetype
-;
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## LOAD
+;;; Load File from USB Drive
+;;; ### FORMAT:
+;;;  - LOAD *filespec* 
+;;;    - Action: Load BASIC program *filespec* into memory
+;;;  - LOAD *filespec* , \**arrayname*
+;;;    - Action: Load contents of array file *filespec* into array *arrayname*
+;;;  - LOAD *filespec* , *address* [ , *length* [, *offset*]]
+;;;    - Action: Load contents of binary file *filespec* into memot
+;;;      - *length* specifies the number of bytes to load from the file
+;;;      - *offset* specifies the position in the file to start loading from
+;;; ### EXAMPLES:
+;;; ` LOAD "progname.bas" `
+;;; > Load basic program into memory.
+;;;
+;;; ` LOAD "array.caq",\*A `
+;;; > Load contents of file into array A().
+;;;
+;;; ` LOAD "capture.scr",12288 `
+;;; > 
+;------------------------------------------------------------------------------
 ST_LOAD:
-    call    dos__getfilename      ; filename -> FileName
-    jp      z,_stl_load           ; good filename?
-    push    hl                    ; push BASIC text pointer
-    ld      e,a
-    cp      ERRFC                 ; if Function Call error then show DOS error
-    jp      nz,_stl_do_error      ; else show BASIC error code
-    ld      a,ERROR_BAD_NAME
-    jp      _stl_show_error       ; break with bad filename error
-_stl_load:
-    xor     a
-    ld      (DOSFLAGS),a          ; clear all DOS flags
-_stl_getarg:
-    ld      a,(hl)                ; get next non-space character
-    cp      ','
-    jr      nz,_stl_start         ; if not ',' then no arg
-    rst     CHRGET
-    cp      MULTK                 ; token for '*'
-    jr      nz,_stl_addr
-    call    _get_array_arg        ; parse array argument
-    jr      _stl_start
-_stl_addr:
-    call    _get_addr_arg         ; parse address argument
-_stl_start:
+    call    _get_file_args        ; Set Up SysVars and Get LOAD Arguments
     push    hl                    ; >>>> push BASIC text pointer
     ld      hl,FileName
     call    usb__open_read        ; try to open file
     jp      nz,_stl_no_file
-; unknown filetype
     ld      a,(DOSFLAGS)
     bit     DF_ADDR,a             ; address specified?
     jr      z,_stl_caq            ; no, load CAQ file
 ; load binary file to address
 _stl_load_bin:
+    bit     DF_OFS,(iy+0)
+    jr      z,.no_ofs
+    ld      de,(BINOFS)
+    call    usb__seek
+    jp      nz,_dos_do_error
+.no_ofs
     ld      hl,(BINSTART)         ; HL = address
     jr      _stl_read             ; read file into RAM
 ; load BASIC Program with filename in FileName
@@ -283,6 +279,9 @@ _stl_bas_end:
 ; HL = load address
 _stl_read:
     ld      de,$ffff              ; set length to max (will read to end of file)
+    bit     DF_LEN,(iy+0)           
+    jr      z,_stl_read_len       ; if length was specified
+    ld      de,(BINLEN)           ;   read that length
 _stl_read_len:
     call    usb__read_bytes       ; read file into RAM
     jr      z,_stl_done           ; if good load then done
@@ -392,7 +391,7 @@ _link_lines:
 ;;; ### FORMAT:
 ;;;  - SAVE < filespec >
 ;;;  - SAVE < filespec >,*< arrayname >
-;;;  - SAVE < filespec >,< address >,< size >
+;;;  - SAVE < filespec > , < address > , < length > [, < offset >]
 ;;;    - Action: Save BASIC program, array, or range of memory.
 ;;; ### EXAMPLES:
 ;;; ` SAVE "progname.bas" `
@@ -406,37 +405,11 @@ _link_lines:
 ;------------------------------------------------------------------------------
 
 ST_SAVE:
-    call    dos__clearError     ; returns A = 0
-    ld      (DOSFLAGS),a        ; clear all flags
-    call    dos__getfilename    ; filename -> FileName
-    jr      z,ST_SAVEFILE
-    push    hl                  ; push BASIC text pointer
-    ld      e,a                 ; E = error code
-    cp      ERRFC
-    jp      nz,_sts_error       ; if not FC error then show BASIC error code
-    ld      a,ERROR_BAD_NAME
-    jp      ERROR               ; bad filename, quit to BASIC
-; save with filename in FileName
-ST_SAVEFILE:
-    call    CHRGOT              ; get current char (skipping spaces)
-    cp      ','
-    jr      nz,_sts_open        ; if not ',' then no args so saving BASIC program
-    rst     CHRGET
-    cp      MULTK               ; '*' token?
-    jr      nz,_sts_num         ; no, parse binary address & length
-    call    _get_array_arg      ; parse array argument
-    jr      _sts_open
-; parse address, length
-_sts_num:
-    call    _get_addr_arg       ; parse address argument
-    call    CHRGOT              ; get next char from text, skipping spaces
-    SYNCHK  ","                 ; skip ',' (syntax error if not ',')
-    call    GETADR              ; get length
-    ld      (BINLEN),de         ; store length
-; create new file
-_sts_open:
+    call    _get_file_args      ; Get Filename, Address, Length, Offset
     push    hl                  ; PUSH BASIC text pointer
     ld      hl,FileName
+    bit     DF_OFS,(iy+0)       ; If Offset was specified
+    jr      _sts_offset         ;   Write to that Position in File
     call    usb__open_write     ; create/open new file
     jr      nz,_sts_open_error
     ld      a,(DOSFLAGS)
@@ -479,6 +452,12 @@ _sts_tail
     djnz    _sts_tail
     jr      _sts_write_done
 ; saving BINARY
+_sts_offset:
+    call    usb__open_rewrite     ; create/open new file
+    jr      nz,_sts_open_error
+    ld      de,(BINOFS)
+    call    usb__seek
+    jp      nz,_dos_do_error
 _sts_binary:
     ld      hl,(BINSTART)       ; raw binary file - no header, no tail
     ld      de,(BINLEN)
@@ -506,15 +485,38 @@ _sts_done:
     pop     hl                  ; restore BASIC text pointer
     ret
 
-
 ;----------------------------------------------------------------------------
-; Parse and Store LOAD/SAVE Address Argument
+; Parse LOAD/SAVE Arguments
 ;----------------------------------------------------------------------------
-_get_addr_arg:
-    call    GETADR              ; get address
-    ld      (BINSTART),de       ; set address
-    ld      a,1<<DF_ADDR
-    ld      (DOSFLAGS),a        ; flag load address present
+_get_file_args:
+    ld      iy,DosFlags           
+    call    dos__getfilename      ; Clear DOS SysVars, Parse FileName
+    jp      nz,_badname_error     ; 
+    call    CHRGT2                ; Check character after FIlename
+    cp      ','                   ; If not a comma
+    ret     nz                    ;   Return with No DOS Flags Set
+    rst     CHRGET                ; Get character after comma
+    cp      MULTK                 ; If it's the '*' token?
+    jr      z,_get_array_arg      ;   Parse Array arg, set flag, Return
+    call    GETADR                ; Parse Address
+    ld      (BINSTART),de         ; Store It
+    set     DF_ADDR,(iy+0)        ; Set Flag
+    call    CHRGT2                ; Check character after Address
+    cp      ','                   ; If not a comma
+    ret     nz                    ;   Return
+    rst     CHRGET                ; Get character after comma
+    cp      ','                   ; If a comma
+    jr      z,.nolen              ;   Go Straight to Offset
+    call    GETADR                ; Skip Comma and Parse Length
+    ld      (BINLEN),de           ; Store It
+    set     DF_LEN,(iy+0)         ; Set Flag
+    call    CHRGT2                ; Check character after Length
+    cp      ','                   ; If not a comma
+    ret     nz                    ;   Return
+.nolen:
+    call    CHKADR                ; Skip Comma and Parse Offset
+    ld      (BINOFS),de           ; Store It
+    set     DF_OFS,(iy+0)         ; Set Flag
     ret
 
 ;----------------------------------------------------------------------------
@@ -972,7 +974,7 @@ dos__prtDirInfo:
 ST_DEL:
     call   dos__getfilename  ; filename -> FileName
     push   hl                ; push BASIC text pointer
-    jr     nz,_dos_badname_error
+    jr     nz,_badname_error
     ld     hl,FileName
     call   usb__delete       ; delete file
     jr     z,_pop_hl_ret
@@ -983,7 +985,7 @@ _dos_do_error:
 _pop_hl_ret:
     pop    hl                ; pop BASIC text pointer
     ret
-_dos_badname_error:
+_badname_error:
     ld     a,ERROR_BAD_NAME
     jr     _dos_do_error
 
@@ -1104,7 +1106,7 @@ dos__set_path:
 ; uses: BC,DE
 ;
 dos__getfilename:
-    call    dos__clearError   ; clear DOS error code
+    call    dos__clearVars    ; Set All DOS SysVars to 0
     call    FRMEVL            ; evaluate expression
     push    hl                ; save BASIC text pointer
     call    CHKSTR
@@ -1224,12 +1226,21 @@ dos__char:
         RET
 
 ;------------------------------------------------------------------------------
-;              Set DosError to 0
+;              Set DosError and ChStatus to 0
+;              Set all DOS SysVars to 0
 ;------------------------------------------------------------------------------
 ; Ouput: A = 0, with flags set
 dos__clearError:
+    ld      b,2               ; Clear first two bytes
+    db      $11               ; LD DE, over following LD B,
+dos__clearVars:
+    ld      b,9                   ; Clear 9 Bytes
     xor     a
-    ld      (DosError),a
+    ld      de,DosError           
+.loop
+    ld      (de),a
+    inc     de
+    djnz    .loop
     ret
 
 ;------------------------------------------------------------------------------

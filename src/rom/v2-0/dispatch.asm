@@ -241,13 +241,13 @@ STATEMENT:
     ld      l,a
     ld      h,high(STJUMPS)
     ld      a,(hl)
-    ld      iyl,a
+    ld      ixl,a
     inc     hl
     ld      a,(hl)
-    ld      iyh,a
+    ld      ixh,a
     exx                         ; Restore BC,DE,HL
     rst     CHRGET              ; Skip Token and Eat Spaces
-    jp      (iy)                ; Go Do It
+    jp      (ix)                ; Go Do It
 
 FUNCTION:
     push    af
@@ -256,13 +256,13 @@ FUNCTION:
     ld      l,a
     ld      h,high(FNJUMPS)
     ld      a,(hl)
-    ld      iyl,a
+    ld      ixl,a
     inc     hl
     ld      a,(hl)
-    ld      iyh,a
+    ld      ixh,a
     exx                         ; Restore BC,DE,HL
     pop     af
-    jp      (iy)                ; Go Do It
+    jp      (ix)                ; Go Do It
 
 ; ------------------------------------------------------------------------------
 ;  Error Message Lookup Routines`

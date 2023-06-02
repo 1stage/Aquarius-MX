@@ -55,12 +55,12 @@ FASTHOOK:
     ld      l,a
     ld      h,high(HOOKTABLE)
     ld      a,(hl)
-    ld      iyl,a
+    ld      ixl,a
     inc     hl
     ld      a,(hl)
-    ld      iyh,a
+    ld      ixh,a
     exx                         ; Restore BC,DE,HL
     ex      af,af'              ; Restore AF
-    jp      (iy)
+    jp      (ix)
 
 
