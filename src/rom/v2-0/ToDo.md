@@ -18,7 +18,7 @@ This file is for recording upcoming changes and features that are being added, a
   - Example:
     - ` Syntax Error ` instead of ` SN Error `
 
-- [ ] MID$(<string expl> ,n [,m] ) = <string exp2>
+- [ ] MID$(< string expl > ,n [,m] ) = < string exp2 >
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
