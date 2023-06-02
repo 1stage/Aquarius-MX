@@ -81,21 +81,26 @@ MAKINT: push    hl                ; Save Registers
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## GET
-;;; Copy a rectangle of screen data (byte values) from CHARRAM and COLRAM to a numeric array
+;;; Copy a rectangle of screen data to a numeric array.
 ;;; ### FORMAT:
-;;;  - GET (X1,X2)-(Y1,Y2),< numeric array >
-;;;    - Action: CHARRAM and COLRAM from the defined rectangle is copied as bytes into the < numeric array >.
-;;;      - The < numeric array > must have already been DIMensioned to a size large enough to hold the data.
-;;;      - Typically used in combination with SET, which moves data from a numeric array into a rectangular location in screen memory.
+;;;  - GET (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
+;;;    - Action: Copies a rectangle of screen characters and colors to numeric array *arrayname*.
+;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column 
+;;;      - *array* must already be DIMensioned to a size large enough to hold the data.
+;;;        - To calculate the size of an array needed to store the elements in a rectangle:
+;;;          - Multply the width of the rectangle in rows by the height in LINES
+;;;          - Round up to an even number
+;;;          - Divide by two
 ;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
+;;;      - See PUT statement for copying from array to screen.
+;;;  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
 ;;; ### EXAMPLE:
 ;;; ```
 ;;; 10 DIM A(16)
-;;; 20 GET(1,4)-(1-4),A
-;;; 30 SAVE"CURSOR.SPR",A*
+;;; 20 GET (1,4)-(1-4),A
+;;; 30 SAVE "CURSOR.SPR",A*
 ;;; ```
-;;; > Save the contents of a 4x4 character/color grid at the upper right of the screen to a file.
-;;;
+;;; > Saves the contents of a 4x4 character/color grid at the upper left of the screen to file CURSOR.SPR.
 ;----------------------------------------------------------------------------
 ST_PUT: ld      a,1               ;;Mode = GET
         jr      GGPUTG
