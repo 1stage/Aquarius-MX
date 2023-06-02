@@ -203,7 +203,7 @@ _dos_file_exists:
 ;;; ` LOAD "progname.bas" `
 ;;; > Load basic program into memory.
 ;;;
-;;; ` LOAD "array.caq",\*A `
+;;; ` LOAD "array.caq",*A `
 ;;; > Load contents of file into array A().
 ;;;
 ;;; ` LOAD "capture.scr",12288 `
