@@ -18,8 +18,8 @@
 ;;; ## EDIT
 ;;; Edit BASIC Line
 ;;; ### FORMAT:
-;;;  - EDIT < line number >
-;;;    - Action: Displays BASIC line < line number > on screen and enters edit mode. While editing a line, the following control keys are available:
+;;;  - EDIT *line number*
+;;;    - Action: Displays BASIC line *line number* on screen and enters edit mode. While editing a line, the following control keys are available:
 ;;; ```
 ;;;   CTL - P   Move cursor left
 ;;;   CTL - /   Move cursor right
