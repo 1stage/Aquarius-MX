@@ -852,12 +852,14 @@ link_lines
 ;;; ## RUN
 ;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
 ;;; ### FORMAT:
-;;;  - RUN < filename >
+;;;  - RUN *filename*
 ;;;    - Action: Loads program into memory and runs it.
+;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
+;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
 ;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
 ;;;      - Wildcards and paths cannot be used.
 ;;; ### EXAMPLES:
-;;; ` RUN "RUN-ME.BAS" `
+;;; ` RUN "RUN-ME" `
 ;;; > Loads and runs the file named `RUN-ME.BAS`. Note the program must exist within the current folder path.
 ;;;
 ;;; ` 10 PRINT "Loading Program..." `
@@ -879,44 +881,6 @@ RUNPROG:
     ld      bc,$062c
     jp      $06db              ;    GOTO line number
 _run_file:
-    call    dos__getfilename   ; convert filename, store in FileName
-    push    hl                 ; save BASIC text pointer
-    ld      hl,FileName
-    call    usb__open_read     ; try to open file
-    jr      z,.load_run
-    cp      CH376_ERR_MISS_FILE ; error = file not found?
-    jp      nz,.nofile         ; no, break
-    ld      b,9                ; max 9 chars in name (including '.' or NULL)
-.instr:
-    ld      a,(hl)             ; get next name char
-    inc     hl
-    cp      '.'                ; if already has '.' then cannot extend
-    jp      z,.nofile
-    cp      ' '
-    jr      z,.extend          ; until SPACE or NULL
-    or      a
-    jr      z,.extend
-    djnz    .instr
-.nofile:
-    ld      hl,.nofile_msg
-    call    STROUT
-    pop     hl                 ; restore BASIC text pointer
-.extend:
-    dec     hl
-    push    hl                 ; save extn address
-    ld      de,.bas_extn
-    call    strcat             ; append ".BAS"
-    ld      hl,FileName
-    call    usb__open_read     ; try to open file
-    pop     hl                 ; restore extn address
-    jr      z,.load_run
-    cp      CH376_ERR_MISS_FILE ; error = file not found?
-    jp      nz,.nofile         ; no, break
-    ld      de,.caq_extn
-    ld      (hl),0             ; remove extn
-    call    strcat             ; append ".BIN"
-.load_run:
-    pop     hl                 ; restore BASIC text pointer
     call    ST_LOADFILE        ; load file from disk, name in FileName
     jp      RUNC               ; run loaded BASIC program
 

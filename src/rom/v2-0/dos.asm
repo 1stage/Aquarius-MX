@@ -193,8 +193,13 @@ _dos_file_exists:
 ;;; ### FORMAT:
 ;;;  - LOAD *filespec* 
 ;;;    - Action: Load BASIC program *filespec* into memory
+;;;      - *filename* can be any string expression
+;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
+;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
 ;;;  - LOAD *filespec* , \**arrayname*
 ;;;    - Action: Load contents of array file *filespec* into array *arrayname*
+;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
+;;;      - File on USB drive mus be in CAQ format with the internal filename "######".
 ;;;  - LOAD *filespec* , *address* [ , *length* [, *offset*]]
 ;;;    - Action: Load contents of binary file *filespec* into memot
 ;;;      - *length* specifies the number of bytes to load from the file
@@ -213,13 +218,13 @@ ST_LOAD:
     call    _get_file_args        ; Set Up SysVars and Get LOAD Arguments
     push    hl                    ; >>>> push BASIC text pointer
     ld      hl,FileName
-    call    usb__open_read        ; try to open file
-    jp      nz,_stl_no_file
     ld      a,(DOSFLAGS)
     bit     DF_ADDR,a             ; address specified?
     jr      z,_stl_caq            ; no, load CAQ file
 ; load binary file to address
 _stl_load_bin:
+    call    usb__open_read        ; try to open file
+    jp      nz,_stl_no_file
     bit     DF_OFS,(iy+0)
     jr      z,.no_ofs
     ld      de,(BINOFS)
@@ -229,22 +234,13 @@ _stl_load_bin:
     ld      hl,(BINSTART)         ; HL = address
     jr      _stl_read             ; read file into RAM
 ; load BASIC Program with filename in FileName
-ST_LOADFILE:
-    push    hl                    ; save text pointer
-    xor     a
-    ld      (DOSFLAGS),a          ; clear all DOS flags
 ; BASIC program or array, has CAQ header
 _stl_caq:
-    call    st_read_sync          ; no, read 1st CAQ sync sequence
-    jr      nz,_stl_bad_file
-    ld      hl,FileName
-    ld      de,6                  ; read internal tape name
-    call    usb__read_bytes
-    jr      nz,_stl_bad_file
-    ld      a,(DOSFLAGS)
     bit     DF_ARRAY,a            ; loading into array?
     jr      z,_stl_basprog
 ; Loading array
+    ld      de,dos_caq_ext        ; default extension ".CAQ"
+    call    _sts_open_caqfile     ; open file, read sync and filename
     ld      hl,FileName
     ld      b,6                   ; 6 chars in name
     ld      a,'#'                 ; all chars should be '#'
@@ -257,8 +253,9 @@ _stl_array_id:
     jr      _stl_read_len         ; read file into array
 ; loading BASIC program
 _stl_basprog:
-    call    st_read_sync          ; read 2nd CAQ sync sequence
-    jr      nz,_stl_bad_file
+    ld      de,dos_bas_ext        ; default extension ".BAS"
+    call    _sts_open_caqfile     ; open file, read sync and filename
+    call    st_read_sync          ; read seoond sync sequence
     ld      hl,(TXTTAB)           ; HL = start of BASIC program
     ld      de,$ffff              ; DE = read to end of file
     call    usb__read_bytes       ; read BASIC program into RAM
@@ -307,6 +304,28 @@ _stl_done:
     call    usb__close_file       ; close file
     pop     hl                    ; restore BASIC text pointer
     ret
+
+_sts_open_caqfile:
+    ld      hl,FileName
+    call    dos_append_ext
+    call    usb__open_read        ; open file for read
+    jp      nz,_stl_no_file
+    call    st_read_sync          ; no, read 1st CAQ sync sequence
+    jr      nz,_stl_bad_file
+    ld      de,6                  ; read internal tape name
+    call    usb__read_bytes
+    jr      nz,_stl_bad_file
+    ret
+
+; Called from RUNROG
+ST_LOADFILE:
+    call    _convert_filename     ; get filename from parsed arg
+    jp      nz,_badname_error
+    push    hl                    ; save text pointer
+    ld      iy,DosFlags
+    xor     a
+    ld      (iy+0),a              ; clear all DOS flags
+    jp      _stl_basprog          ; Load BASIC program
 
 ;-------------------------------------------------
 ;           Print DOS error message
@@ -389,16 +408,29 @@ _link_lines:
 ;;; ## SAVE (Updated)
 ;;; Save File to USB Drive
 ;;; ### FORMAT:
-;;;  - SAVE < filespec >
+;;;  - SAVE *filename*
+;;;    - Action: Save BASIC programt to file *filename* on USB drive.
+;;;      - *filename* can be any string expression
+;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
+;;;      - File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
 ;;;  - SAVE < filespec >,*< arrayname >
-;;;  - SAVE < filespec > , < address > , < length > [, < offset >]
-;;;    - Action: Save BASIC program, array, or range of memory.
+;;;    - Action: Save BASIC programt to file *filename* on USB drive.
+;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
+;;;      - File on USB drive will be in CAQ format with the internal filename set to "######".
+;;;  - SAVE *filespec*,*address*,*length*[,*offset*]
+;;;    - Action: Saves *length* bytes of memory starting at *address* to file *filename* on USB drive.
 ;;; ### EXAMPLES:
-;;; ` SAVE "progname.bas" `
-;;; > Save current program as BASIC file
+;;; ` SAVE "progname" `
+;;; > Save current program to USB drive with file name "PROGNAME.BAS"
 ;;;
-;;; ` SAVE "array.caq",*A `
-;;; > Save contents of array A() as CAQ file
+;;; ` SAVE "progname." `
+;;; > Save current program to USB drive with file name "PROGNAME"
+;;;
+;;; ` SAVE "progname.caq" `
+;;; > Save current program to USB drive with file name "PROGNAME.CAQ"
+;;;
+;;; ` SAVE "array",*A `
+;;; > Save contents of array A() to USB drive with file name "ARRAY.CAQ"
 ;;;
 ;;; ` SAVE "capture.src",12288,2048 `
 ;;; > Save Screen and Color RAM as raw binary file
@@ -409,19 +441,15 @@ ST_SAVE:
     push    hl                  ; PUSH BASIC text pointer
     ld      hl,FileName
     bit     DF_OFS,(iy+0)       ; If Offset was specified
-    jr      _sts_offset         ;   Write to that Position in File
-    call    usb__open_write     ; create/open new file
-    jr      nz,_sts_open_error
-    ld      a,(DOSFLAGS)
-    bit     DF_ADDR,a
+    jr      nz,_sts_offset      ;   Write to that Position in File
+    bit     DF_ADDR,(iy+0)
     jr      nz,_sts_binary
 ; saving BASIC program or array
-    call    st_write_sync       ; write caq sync 12 x $FF, $00
-    jr      nz,_sts_write_error
-    ld      a,(DOSFLAGS)
-    bit     DF_ARRAY,a          ; saving array?
+    bit     DF_ARRAY,(iy+0)     ; saving array?
     jr      z,_sts_bas
 ; saving array
+    ld      de,dos_caq_ext
+    call    _sts_open_wrsync
     ld      hl,dos_array_name   ; "######"
     ld      de,6
     call    usb__write_bytes
@@ -431,6 +459,8 @@ ST_SAVE:
     jr      _sts_write_data 
 ; saving BASIC program
 _sts_bas:
+    ld      de,dos_bas_ext
+    call    _sts_open_wrsync
     ld      hl,FileName
     ld      de,6                ; write 1st 6 chars of filename
     call    usb__write_bytes
@@ -484,6 +514,15 @@ _sts_done:
     call    set_dos_File_datetime
     pop     hl                  ; restore BASIC text pointer
     ret
+
+_sts_open_wrsync:
+    call    dos_append_ext
+    call    usb__open_write     ; create/open new file
+    jr      nz,_sts_open_error
+    call    st_write_sync       ; write caq sync 12 x $FF, $00
+    jr      nz,_sts_write_error
+    ret
+
 
 ;----------------------------------------------------------------------------
 ; Parse LOAD/SAVE Arguments
@@ -548,6 +587,52 @@ _get_array_parms:
     ld      (DOSFLAGS),a          ; set 'loading to array' flag
     pop     hl                    ; POP text pointer
     ret
+
+
+
+;--------------------------------------------------------------------
+;             Check for Extension, Add if Not Found
+;--------------------------------------------------------------------
+; in: HL = FileName
+;     DE = Extension
+; our: HL = FileName
+dos_append_ext:
+    push    hl                    ; Save FileName Pointer
+    call    dos_find_ext          ; Find Position of '.' or NUL
+    jp      nz,_pop_hl_ret        ; Return if Extension Found
+    ld      a,b                   ; Check Position of Terminator
+    cp      9                     ;   If greater than 8
+    jp      nc,_pop_hl_ret        ;   return
+    ex      de,hl                 ; Appending Extension to FileName
+    ld      bc,5                  ; 5 characters total
+    ldir
+    pop     hl
+    ret
+
+;--------------------------------------------------------------------
+;             Find Position of File Extension in FileName
+;--------------------------------------------------------------------
+; in: HL = Address of FileName
+; out: HL = Address of Dot or Null Terminator
+;      A = character at (HL), Flags Set Accordingly
+;      B = Position of Dot or Null Terminator
+dos_find_ext:
+    ld      b,0
+.loop:
+    ld      a,(HL)                ; Get Next Character
+    or      a                     ; If ASCII Null
+    ret     z                     ;   Return
+    cp      '.'                   ; 
+    jr      z,_ora_ret            ; If Not Period
+    inc     hl                    ;   Increment Pointer
+    inc     b                     ;   Increment Position
+    jr      .loop
+_ora_ret:
+    or      a                     ; Else Set Flags
+    ret                           ;   and Return
+
+
+
 
 ;--------------------------------------------------------------------
 ;             Write CAQ Sync Sequence  12x$FF, $00
@@ -1108,6 +1193,7 @@ dos__set_path:
 dos__getfilename:
     call    dos__clearVars    ; Set All DOS SysVars to 0
     call    FRMEVL            ; evaluate expression
+_convert_filename:
     push    hl                ; save BASIC text pointer
     call    CHKSTR
     call    LEN1              ; get string and its length

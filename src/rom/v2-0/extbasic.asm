@@ -670,7 +670,8 @@ SCRTCX: call    CLNERR
 CLNERR: exx                       ; Save Registers
         ld      b,6               ; Clear ERRLIN,ERRFLG,ONEFLG,ONELIN
 CLERR:  ex      af,af'  
-        call    dos__clearError   ; returns A = 0
+        xor     a
+        ld      (DosError),a
         ld      hl,ERRLIN 
 .zloop: ld      (hl),a  
         inc      hl 

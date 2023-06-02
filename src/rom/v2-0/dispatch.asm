@@ -314,8 +314,8 @@ dos__lookup_error:
 
 dos_dir_msg:      db  "<dir>",0     ; Shown in place of file size in DIR listing
 dos_array_name:   db  "######"      ; Tape FileName in CAQ file for Arrays
-dos_extensions:   db  "BAS",0       ; BASIC Program in CAQ Format
-                  db  "CAQ",0       ; BASIC Program or Array in CAQ Format
+dos_bas_ext:      db  ".BAS",0      ; BASIC Program in CAQ Format
+dos_caq_ext:      db  ".CAQ",0      ; BASIC Program or Array in CAQ Format
 
 ; ------------------------------------------------------------------------------
 ;  Error Message Lookup Tables
