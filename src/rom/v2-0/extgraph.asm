@@ -80,7 +80,7 @@ MAKINT: push    hl                ; Save Registers
 ;E3F6
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## GET
+;;; ## GET Statement
 ;;; Copy a rectangle of screen data to a numeric array.
 ;;; ### FORMAT:
 ;;;  - GET (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
@@ -96,9 +96,9 @@ MAKINT: push    hl                ; Save Registers
 ;;;  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
 ;;; ### EXAMPLE:
 ;;; ```
-;;; 10 DIM A(16)
-;;; 20 GET (1,4)-(1-4),A
-;;; 30 SAVE "CURSOR.SPR",A*
+;;; 10 DIM A(8)
+;;; 20 GET (1,1)-(4,4),A
+;;; 30 SAVE "CURSOR.SPR",*A
 ;;; ```
 ;;; > Saves the contents of a 4x4 character/color grid at the upper left of the screen to file CURSOR.SPR.
 ;----------------------------------------------------------------------------
