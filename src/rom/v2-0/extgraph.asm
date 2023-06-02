@@ -501,7 +501,7 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CIRCLE
-;;; Draw line or box on screen.
+;;; Draw circle or ellipse on screen.
 ;;; ### FORMAT:
 ;;;   - CIRCLE(< xcenter >, < ycenter >), < radius >[,[< color >][,[< start >],[< end >][,< aspect >]]]
 ;;;     - Action: Draws circle, elipse, or arc with radius < radius > and centered at < xcenter >, < ycenter >.
@@ -514,6 +514,12 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;;;         - If the aspect ratio is less than 1, then the radius is given in x-pixels. If it is greater than 1, the radius is given in y-pixels. 
 ;;;         - In many cases, an aspect ratio of 1 gives better ellipses. This also causes the ellipse to be drawn faster. 
 ;;; ### EXAMPLES:
+;;; ` CIRCLE(40,36),10,8 `
+;;; > Draws a grey circle in the center of the screen.
+;;;
+;;; ` CIRCLE(40,36),10,3,-0.75,-5.7,0.75 `
+;;; > Draws a popular arcade character in the middle of the screen
+; ------------------------------------------------------------
 ST_CIRCLE:  
         call    SCAN1             ; GET (X,Y) OF CENTER INTO GRPACX,Y
         SYNCHK  ','               ; EAT COMMA

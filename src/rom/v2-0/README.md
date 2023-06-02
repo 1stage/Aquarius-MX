@@ -23,7 +23,7 @@ Bitwise AND
    - Action: Returns the bitwise AND of two numbers.
      - Each < number > must be between -32768 and 65535.
      - Can be used instead of AND operator which only allows operands between -32768 and 32767.
-### EXAMPLES:
+### EXAMPLE:
 ` PRINT AND(-1,$FFFF) `
 > Prints 65535
 
@@ -34,7 +34,7 @@ Convert Hexadecimal String to ASCII String
  - ASC$ (< string >)
    - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in < string >.
      - See the HEX$ function for string-to-hex conversion.
-### EXAMPLES:
+### EXAMPLE:
 ` PRINT ASC$("414243") `
 > Prints the string "ABC".
 
@@ -75,7 +75,7 @@ Catalog disk (quick DIR listing)
    - Action: Show a brief listing of all files and folders in the current directory.
      - File size, date, and time are not shown.
      - Directory names are shown in < >.
-### EXAMPLES:
+### EXAMPLE:
 ` CAT `
 > List all files and folders in current directory in a 3-across format
 
@@ -115,7 +115,7 @@ Get Current Directory path as a string
 
 ---
 ## CIRCLE
-Draw line or box on screen.
+Draw circle or ellipse on screen.
 ### FORMAT:
   - CIRCLE(< xcenter >, < ycenter >), < radius >[,[< color >][,[< start >],[< end >][,< aspect >]]]
     - Action: Draws circle, elipse, or arc with radius < radius > and centered at < xcenter >, < ycenter >.
@@ -128,6 +128,11 @@ Draw line or box on screen.
         - If the aspect ratio is less than 1, then the radius is given in x-pixels. If it is greater than 1, the radius is given in y-pixels.
         - In many cases, an aspect ratio of 1 gives better ellipses. This also causes the ellipse to be drawn faster.
 ### EXAMPLES:
+` CIRCLE(40,36),10,8 `
+> Draws a grey circle in the center of the screen.
+
+` CIRCLE(40,36),10,3,-0.75,-5.7,0.75 `
+> Draws a popular arcade character in the middle of the screen
 
 ---
 ## CLEAR
