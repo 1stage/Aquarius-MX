@@ -85,8 +85,8 @@ MAKINT: push    hl                ; Save Registers
 ;;; ### FORMAT:
 ;;;  - GET (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
 ;;;    - Action: Copies a rectangle of screen characters and colors to numeric array *arrayname*.
-;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column 
-;;;      - *array* must already be DIMensioned to a size large enough to hold the data.
+;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
+;;;      - *arrayname* must already be DIMensioned to a size large enough to hold the data.
 ;;;        - To calculate the size of an array needed to store the elements in a rectangle:
 ;;;          - Multply the width of the rectangle in rows by the height in LINES
 ;;;          - Round up to an even number
@@ -107,9 +107,27 @@ ST_PUT: ld      a,1               ;;Mode = GET
 ;E3FA
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PUT
-;;; 
+;;; ## PUT Statement
+;;; Copy data from a numeric array into a rectangle of screen data.
 ;;; ### FORMAT:
+;;;  - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
+;;;    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
+;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
+;;;      - *arrayname* must already be DIMensioned to a size large enough to hold the data, and populated with data.
+;;;        - To calculate the size of an array needed to store the elements in a rectangle:
+;;;          - Multply the width of the rectangle in rows by the height in LINES
+;;;          - Round up to an even number
+;;;          - Divide by two
+;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
+;;;      - See GET statement for copying from screen to array.
+;;;  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
+;;; ### EXAMPLE:
+;;; ```
+;;; 10 DIM A(8)
+;;; 20 LOAD "CURSORE,SPR",*A
+;;; 30 PUT (1,1)-(4,4),A
+;;; ```
+;;; > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
 ;----------------------------------------------------------------------------
 ST_GET: xor     a                 ;;Mode = PUT
 GGPUTG: jp      GPUTG
