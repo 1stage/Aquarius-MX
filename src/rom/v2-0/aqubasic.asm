@@ -126,31 +126,36 @@ RAMEND = $C000           ; we are in ROM, 32k expansion RAM available
 path.size = 37           ; length of file path buffer
 
 LineBufLen = 128
+KeyBufLen = 16
 
 ; high RAM usage
  STRUCTURE _sysvars,0
+    STRUCT _keybuf,KeyBufLen    ; KEY Statement Buffer
     STRUCT _pathname,path.size  ; file path eg. "/root/subdir1/subdir2",0
     STRUCT _filename,13         ; USB file name 1-11 chars + '.', NULL
-    BYTE   _chstatus            ; status after last CH368 command
     BYTE   _doserror            ; file type BASIC/array/binary/etc.
+    BYTE   _chstatus            ; status after last CH368 command
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
+    WORD   _binofs              ; offset into binary file on disk
     BYTE   _dosflags            ; DOS flags
     BYTE   _keyflags            ; Keyclick Enable Flag
     BYTE   _sysflags            ; system flags
     VECTOR _break               ; Debugger Break
     VECTOR _godebug             ; Start Debugger
-    STRUCT _linebuf,128         ; Line Input/Edit Buffer
-    STRUCT _retypbuf,128        ; BASIC command line history
+    STRUCT _linebuf,LineBufLen  ; Line Input/Edit Buffer
+    STRUCT _retypbuf,LineBufLen ; BASIC command line history
  ENDSTRUCT _sysvars
 
 SysVars  = RAMEND-_sysvars.size
+KeyBuf   = sysvars+_keybuf
 PathName = sysvars+_pathname
 FileName = sysvars+_filename
 DosError = sysvars+_doserror
 ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
+BinOfs   = sysvars+_binofs
 DosFlags = sysvars+_dosflags
 KeyFlags = sysvars+_keyflags
 SysFlags = sysvars+_sysflags
@@ -370,13 +375,23 @@ RTC_STR_TO_DTM    jp  str_to_dtm
 RTC_DTM_TO_FTS    jp  dtm_to_fts
 RTC_FTS_TO_DTM    jp  fts_to_dtm
 
+; room for 9 more JP's before crossing $C100
+
 ;---------------------------------------------------------------------
-;                          UDF Hook Routine
+;                        UDF Hook Routine
+;      starts with Hook Table, aligned to page boundary ($C100)
 ;---------------------------------------------------------------------
     include "udfhook.asm"
 
 ;---------------------------------------------------------------------
-;                Dispatch and Keyword Tables and Routines
+;                       string functions
+;   no more than 180 bytes, to fit between UDF Hook and Dispatch
+;---------------------------------------------------------------------
+    include "strings.asm"
+
+;---------------------------------------------------------------------
+;              Dispatch and Keyword Tables and Routines
+;      starts with Jump Tables, aligned to page boundary ($C200)
 ;---------------------------------------------------------------------
     include "dispatch.asm" 
 
@@ -410,11 +425,6 @@ RTC_FTS_TO_DTM    jp  fts_to_dtm
 ;---------------------------------------------------------------------
     include "dtm_lib.asm"
     include "ds1244rtc.asm" 
-
-;---------------------------------------------------------------------
-;                       string functions
-;---------------------------------------------------------------------
-    include "strings.asm"
 
 ;---------------------------------------------------------------------
 ;                       keyboard scan
@@ -806,20 +816,22 @@ ENTERLINE:
     jr      nz,.mloopr          ;
 .fini:
     call    RUNC                ; DO CLEAR & SET UP STACK 
-    jr      link_lines
-
+; Hook 5 (LINKER) comes here to force MX BASIC immediate Mode
+; It shouldn't get hit anymore, but left in just in casy
 LINKLINES:
-    Call    Break ;THIS HOOK SHOULD NEVER GET HIT!!!
-link_lines
+    ld      bc,immediate          ; When done linking
+    push    bc                    ; Enter MX BASIC immediate mode
     inc     hl
     ex      de,hl              ; DE = start of BASIC program
-.chead:
+; Rebuild BASIC Line Links
+; In: DE = Start of BASIC Program
+link_lines
     ld      h,d
     ld      l,e                ; HL = DE
     ld      a,(hl)
     inc     hl                 ; get address of next line
     or      (hl)
-    jp      z,immediate        ; if next line = 0 then done so return to immediate mode
+    ret     z                  ; if next line = 0 then done so return to immediate mode
     inc     hl
     inc     hl                 ; skip line number
     inc     hl
@@ -832,7 +844,7 @@ link_lines
     ld      (hl),e
     inc     hl                 ; update address of next line
     ld      (hl),d
-    jr      .chead              ; next line
+    jr      link_lines         ; next line
 
 
 ;----------------------------------------------------------------------------
@@ -988,10 +1000,12 @@ ST_DOKE:
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CLS (Extended)
-;;; Clear Screen
+;;; Clear Screen / Clear Screen with specified foreground and background colors
 ;;; ### FORMAT:
+;;;  - CLS
+;;;    - Action: Clear the screen with defaut BLACK characters on CYAN background.
 ;;;  - CLS [ < colors > ]
-;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
+;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
 ;;; >
 ;;;     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
 ;;;     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 
@@ -1057,65 +1071,49 @@ clearscreen:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## KEY Statemenr
+;;; ## KEY Statement
 ;;; Controls keyboard functions
 ;;; ### FORMAT:
 ;;;  - KEY SOUND [ON | OFF]
-;;;    - Turns key click ON or OFF
+;;;    - Action: Turns key click ON or OFF
 ;;;
 ;;; ### EXAMPLES:
 ;;; ` KEY SOUND OFF `
 ;;; > Turns key click off.
+;;;
 ;;; ` KEY SOUND ON `
 ;;; > Turns key click on.
 ;----------------------------------------------------------------------------
 ST_KEY:
     cp      SOUNDTK               ; If Next Character
     jp      nz,.notsound          ; is SOUND Token
-    ld      iy,KeyFlags
+    ld      ix,KeyFlags
     rst     CHRGET                ;   Skip to Next Character
     ld      c,a                   ;   Save Character
     rst     CHRGET                ;   Advance Text Pointer
     ld      a,c                   ;   Restore Character
     cp      ONTK                  ;   
     jr      nz,.not_ontk          ;   If ON Token
-    set     KF_CLICK,(iy+0)       ;     Turn Key Click On
+    set     KF_CLICK,(ix+0)       ;     Turn Key Click On
     ret                           ;     and Return
 .not_ontk:
-    cp      OFFTK                 ;   
-    jr      nz,.fcerr             ;   If OFF Token 
-    res     KF_CLICK,(iy+0)       ;     Turn Key Click On
+    cp      OFFTK                 ;   If Not OFF Token
+    jp      nz,FCERR              ;     FC Error
+    res     KF_CLICK,(ix+0)       ;   Turn Key Click On
     ret
 .notsound                         ; Else
-.fcerr
-    jp      FCERR                 ;   FC Error (for now)
-
-
-
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## OUT
-;;; Write to Z80 I/O Port
-;;; ### FORMAT:
-;;;  - OUT < address >,< byte >
-;;;    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
-;;;    - Advanced: During the write, < address > is put on the Z80 address bus.
-;;; ### EXAMPLES:
-;;; ` OUT 246, 12 `
-;;; > Send a value of 12 to the SOUND chip
-;;;
-;;; ` 10 X=14:OUT $FC, X `
-;;; > Send a value of 14 to the Cassette sound port
-;----------------------------------------------------------------------------
-
-ST_OUT:
-    call    GETADR              ; get/evaluate port
-    push    de                  ; stored to be used in BC
-    rst     $08                 ; Compare RAM byte with following byte
-    db      $2c                 ; character ',' byte used by RST 08
-    call    GETBYT              ; get/evaluate data
-    pop     bc                  ; BC = port
-    out     (c),a               ; out data to port
+    call    FRMEVL                ;   Evaluate Argument
+    push    hl                    ;   Save Text Pointer
+    call    STRLENADR             ;   Get Length and Address, TM Error if not string
+    cp      KeyBufLen             ;   If Not Shorter than Key Buffer
+    jp      nc,LSERR              ;      String Too Long error
+    ld      de,KeyBuf-1           ;   Get Key Buffer Address
+    ld      (RESPTR),de           ;   and Make it the Keyword to Expand
+    inc     de
+    ldir                          ;   Copy String to Key Buffer
+    ld      a,$80                 ;   Put Reserved Word Terminator
+    ld      (de),a                ;   at end of Key Buffer
+    pop     hl                    ;   Restore Text Pointer
     ret
 
 ;----------------------------------------------------------------------------
@@ -1281,34 +1279,6 @@ FLOAT_M:
     inc     hl
     ld      d,(hl)
     jp      FLOAT_DE          ; Float and Return
-    
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## IN
-;;; Read Z80 I/O Port
-;;; ### FORMAT:
-;;;  - IN(< address >)
-;;;    - Action: Reads a byte from the I/O port specified by LSB of < address >.
-;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
-;;; ### EXAMPLES:
-;;; ` PRINT IN(252) `
-;;; > Prints cassette port input status
-;;;
-;;; ` S=IN($FE) `
-;;; > Set variable S to Printer Ready status
-;----------------------------------------------------------------------------
-
-FN_IN:
-    rst     CHRGET            ; Skip Token and Eat Spaces
-    call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    call    FRCADR            ; convert argument to 16 bit integer in DE
-    ld      b,d
-    ld      c,e              ; bc = port
-    in      a,(c)            ; a = in(port)
-    jp      SNGFLT          ; return with 8 bit input value in variable var
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -1662,9 +1632,11 @@ ST_SLEEP:
 
 ; Require Open Parenthesis and Read Address
 PARADR:
-    rst     CHRGET
-    SYNCHK  '('             ; Require Parenthesis
-
+        rst     CHRGET
+        SYNCHK  '('               ; Require Parenthesis
+        db      $3E               ; LD A, over RST CHRGET
+; Advance Text Pointer and Parse Address
+CHKADR: rst     CHRGET
 ; Parse an Address (-32676 to 65535 in 16 bit integer)  
 GETADR: call    FRMEVL      ; Evaluate Formula
 ; Convert FAC to Address or Signed Integer and Return in DE
@@ -1748,28 +1720,17 @@ ST_SDTM:
 ;---------------------------------------------------------------------------
 
 FN_DTM:
-    rst     CHRGET            ; Skip Token and Eat Spaces
+    rst     CHRGET                ; Skip Token and Eat Spaces
     call    PARCHK
-    push    hl
-    ld      bc,LABBCK
-    push    bc
-    call    CHKNUM
-    ld      a,(FAC)          ;  
-    or      a
-    push    af
-    ld      bc,RTC_SHADOW
-    ld      hl,DTM_BUFFER
-    call    rtc_read
-    ld      de,DTM_STRING
-    call    dtm_to_str       ; Convert to String
-    pop     af 
-    call    nz,dtm_fmt_str   ; If arg <> 0 Format Date
-    ld      hl,DTM_STRING
-return_string:
-    ld      a,1              ; Set Value Type to String
+    push    hl                    ; Save Text Pointer
+    push    bc                    ; Push Dummy Return Address
+    call    CONINT                ; Convert Argument to Byte in A
+    call    get_rtc               ; Read RTC returning String in DE
+    ex      de,hl                 ; HL = DateTime String
+return_string:       
+    ld      a,1                   ; Set Value Type to String
     ld      (VALTYP),a
     jp      TIMSTR
-
 
 ;-------------------------------------------------------------------------
 ; EVAL Extension - Hook 9

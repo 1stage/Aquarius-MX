@@ -195,6 +195,8 @@ CHRGT2  = $066C   ; Alternate CHRGOT for CALL
 NTOERR  = $0782   ; Execute ON ... GOTO
 OMGOTO  = $0785   ; Execute GOTO part of ON ... GOTO
 
+INPDIR  = $0898   ; INPUT Statement, bypassing Hook and Direct Mode Check
+
 STROUT  = $0E9D   ; Print null or quote terminated string
 STRPRT  = $0EA0   ; Print String with Descriptor in Floating Point Accumulator
 LINPRT  = $1675   ; Print line number in HL
@@ -227,7 +229,8 @@ CLEARS  = $0CEB   ; Set VARTAB, TOPMEM, and MEMSIZ
 FRMNUM  = $0972   ; Evaluate Numeric Formula
 FRMEQL  = $0980   ; Evaluate Formula Preceded by Equal Sign
 FRMPRN  = $0983   ; Evaluate Formula Preceded by Left Parenthesis
-FRMEVL  = $0985   ; Evaluate Formula
+FRMEVL  = $0985   ; Evaluate Formula starting at Text Pointer
+FRMCHK  = $0986   ; Evaluate Formula starting at Next Character
 EVAL    = $09FD   ; Evaluate Variable, Constant, or Function Call
 QDOT    = $0A14   ; EVAL - Check for Decimal Point
 PARCHK  = $0A37   ; Evaluate Formula in Parentheses
@@ -265,6 +268,7 @@ TIMSTR  = $0E2F   ; Return string in HL from function
 STRINI  = $0E50   ; Create string with length in A
 STRLIT  = $0E5F   ; Create string (HL = text ending with NULL)
 STRADX  = $0E59   ; Entry into end of STRCPY
+PUTNEW  = $0E7E   ; Return Temporary String
 GETSPA  = $0EB3   ; Allocate Space for Temporary String
 STRLTI  = $0E60   ; Create string (HL = text starting with '"')
 GARBA2  = $0EDB   ; Force Garbage Collection
@@ -360,6 +364,22 @@ CLK_SOFT    = $80
 CLK_WRITE   = $7F
 CLK_NONE    = $00
 
+ERROR_NO_CH376    equ   1 ; CH376 not responding
+ERROR_NO_USB      equ   2 ; not in USB mode
+ERROR_MOUNT_FAIL  equ   3 ; drive mount failed
+ERROR_BAD_NAME    equ   4 ; bad name
+ERROR_NO_FILE     equ   5 ; no file
+ERROR_FILE_EMPTY  equ   6 ; file empty
+ERROR_BAD_FILE    equ   7 ; file header mismatch
+ERROR_RMDIR_FAIL  equ   8 ; can't remove directory
+ERROR_READ_FAIL   equ   9 ; read error
+ERROR_WRITE_FAIL  equ  10 ; write error
+ERROR_CREATE_FAIL equ  11 ; can't create file
+ERROR_NO_DIR      equ  12 ; can't open directory
+ERROR_PATH_LEN    equ  13 ; path too long
+ERROR_FILE_EXISTS equ  14 ; file with name exists
+ERROR_UNKNOWN     equ  15 ; other disk error
+
 ;----------------------------------------------------------------------------
 ;                         BASIC Error Codes
 ;----------------------------------------------------------------------------
@@ -390,7 +410,7 @@ ERRUE  =    $28             ; UE Unprintable Error
 LSTERR =    $2A             ; End of Error List
 
 ;----------------------------------------------------------------------------
-;     jump addresses for BASIC errors (returns to command prompt)
+;      jump addresses for BASIC errors (loads E and jumps to ERROR)
 ;----------------------------------------------------------------------------
 SNERR    = $03C4  ; Syntax Error
 FCERR    = $0697  ; Function Call Error

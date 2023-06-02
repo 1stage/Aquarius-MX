@@ -1,6 +1,11 @@
-;===============================================================================
-;  Statement/Function Dispatch and Keyword Tables and Related Routines
-;===============================================================================
+;=====================================================================================
+; Statement/Function Dispatch, Keyword, and Error Message Tables and Related Routines
+; Dispatch and Lookup Tables are all aligned to not cross boundaries
+;======================================================================================
+
+; ------------------------------------------------------------------------------
+;  Statement and Function Dispatch Tables
+; ------------------------------------------------------------------------------
 
 if $ & $FF00
     org ($ & $FF00) + 256
@@ -85,7 +90,7 @@ STJUMPS:
     dw      SNERR                 ;$C6 CHR$     
     dw      SNERR                 ;$C7 LEFT$    
     dw      SNERR                 ;$C8 RIGHT$   
-    dw      SNERR                 ;$C9 MID$     
+    dw      ST_MID                 ;$C9 MID$     
     dw      SNERR                 ;$CA POINT
 ;MX BASIC Statements and Functions
     dw      SNERR                 ;$CB INSTR
@@ -127,7 +132,7 @@ STJUMPS:
     dw      ST_MKDIR              ;$EF MKDIR
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
-    dw      SNERR                 ;$F2
+    dw      ST_WAIT               ;$F2 WAIT
     dw      SNERR                 ;$F3
     dw      SNERR                 ;$F4
     dw      SNERR                 ;$F5
@@ -210,7 +215,7 @@ FNJUMPS:
     dw      SNERR                 ;$EF MKDIR
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
-    dw      SNERR                 ;$F2
+    dw      SNERR                 ;$F2 WAIT
     dw      SNERR                 ;$F3
     dw      SNERR                 ;$F4
     dw      SNERR                 ;$F5
@@ -225,54 +230,9 @@ FNJUMPS:
     dw      SNERR                 ;$FE
     dw      SNERR                 ;$FF
 
-
-; These are here so they don't cross a page boundary
-; Extended Error Code List
-ERR_CODES: 
-        db     "NF"               ; NEXT without FOR
-        db     "SN"               ; Syntax error
-        db     "RG"               ; RETURN without GOSUB
-        db     "OD"               ; Out of DATA
-        db     "FC"               ; Illegal function call
-        db     "OV"               ; Overflow
-        db     "OM"               ; Out of memory
-        db     "UL"               ; Undefined line number
-        db     "BS"               ; Subscript out of range
-        db     "DD"               ; Duplicate Definit  ion
-        db     "/0"               ; Division by zero
-        db     "ID"               ; Illegal direct
-        db     "TM"               ; Type mismatch
-        db     "OS"               ; Out of string space
-        db     "LS"               ; String too long
-        db     "ST"               ; String formula too complex
-        db     "CN"               ; Can't continue
-        db     "UF"               ; Undefined user function
-        db     "MO"               ; Missing operand
-        db     "IO"               ; Disk I/O Error
-        db     "UE"               ; Unprintable Error
-
-; Pointers into err_table
-ERRMSG: dw      MSGNF             ; 0
-        dw      MSGSN             ; 2
-        dw      MSGRG             ; 4
-        dw      MSGOD             ; 6
-        dw      MSGFC             ; 8
-        dw      MSGOV             ; 10
-        dw      MSGOM             ; 12
-        dw      MSGUS             ; 14
-        dw      MSGBS             ; 16
-        dw      MSGDD             ; 18
-        dw      MSGDV0            ; 20
-        dw      MSGID             ; 22
-        dw      MSGTM             ; 24
-        dw      MSGSO             ; 26
-        dw      MSGLS             ; 28
-        dw      MSGST             ; 30
-        dw      MSGCN             ; 32
-        dw      MSGUF             ; 34
-        dw      MSGMO             ; 36
-        dw      MSGIO             ; 38
-        dw      MSGUE             ; 40
+; ------------------------------------------------------------------------------
+;  Statement and Function Dispatch Tables
+; ------------------------------------------------------------------------------
 
 STATEMENT:
     exx                         ; save BC,DE,HL
@@ -281,13 +241,13 @@ STATEMENT:
     ld      l,a
     ld      h,high(STJUMPS)
     ld      a,(hl)
-    ld      iyl,a
+    ld      ixl,a
     inc     hl
     ld      a,(hl)
-    ld      iyh,a
+    ld      ixh,a
     exx                         ; Restore BC,DE,HL
     rst     CHRGET              ; Skip Token and Eat Spaces
-    jp      (iy)                ; Go Do It
+    jp      (ix)                ; Go Do It
 
 FUNCTION:
     push    af
@@ -296,112 +256,139 @@ FUNCTION:
     ld      l,a
     ld      h,high(FNJUMPS)
     ld      a,(hl)
-    ld      iyl,a
+    ld      ixl,a
     inc     hl
     ld      a,(hl)
-    ld      iyh,a
+    ld      ixh,a
     exx                         ; Restore BC,DE,HL
     pop     af
-    jp      (iy)                ; Go Do It
+    jp      (ix)                ; Go Do It
 
-; Our Commands and Functions
-;
-; - Any more commands will need to be added after the functions
-;
-BTOKEN       equ $cb                ; our first token number
-TBLCMDS:
-; Squeezed in before IN funcvtion
-    db      $80 + 'IN', "STR"       ; $cb - String Position Function    
-; MX BASIC Commands
-    db      $80 + 'P', "UT"         ; $cc - Put Pixels
-    db      $80 + 'G', "ET"         ; $cd - Get Pixels
-    db      $80 + 'D', "RAW"        ; $ce - Graphic Macro Language
-    db      $80 + 'C', "IRCLE"      ; $cf - Draw Circle
-    db      $80 + 'L', "INE"        ; $d0 - Draw Line
-    db      $80 + 'S', "WAP"        ; $d1 - Double Poke
-    db      $80 + 'D', "OKE"        ; $d2 - Double Poke
-    db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
-    db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line (advanced editor)
-    db      $80 + 'C', "LS"         ; $d5 - Clear screen
-    db      $80 + 'L', "OCATE"      ; $d6 - Move cursor to position on screen
-    db      $80 + 'O', "UT"         ; $d7 - Read data from serial device
-    db      $80 + 'P', "SG"         ; $d8 - Send data to Programmable Sound Generator
-    db      $80 + 'D', "EBUG"       ; $d9 - Run debugger
-    db      $80 + 'C', "ALL"        ; $da - Call routine in memory
-    db      $80 + 'L', "OAD"        ; $db - Load file
-    db      $80 + 'S', "AVE"        ; $dc - Save file
-    db      $80 + 'D', "IR"         ; $dd - Directory, full listing
-    db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
-    db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
-    db      $80 + 'C', "D"          ; $e0 - Change directory
-SDTMTK  = $D3
-CDTK    = $E0
+; ------------------------------------------------------------------------------
+;  Error Message Lookup Routines`
+; ------------------------------------------------------------------------------
 
-; - New functions get added to the END of the functions list.
-;   They also get added at the END of the TBLFNJP list.
-;
-; MX BASIC Functions Functions list
+get_errcode_ptr:
+    ld      a,e               ; Get Error Table Offset into A
+    cp      LSTERR            ; Compare to End of Table
+    jr      c,_load_ptr       ; If Past End of Table
+    ld      a,ERRUE           ;   Display "UE" - Unprintable Error
+_load_ptr
+    ld      l,a               ; Table Starts at page boundaru
+    ld      h,high(ERR_CODES) ; Put address in HL
+    ret
 
-    db      $80 + 'I', "N"          ; $e1 - Input function
-    db      $80 + 'J', "OY"         ; $e2 - Joystick function
-    db      $80 + 'H', "EX$"        ; $e3 - Hex value function
-    db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
-    db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
-    db      $80 + 'D', "EC"         ; $e6 - Decimal value function
-    db      $80 + 'K', "EY"         ; $e7 - Key function
-    db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
-    db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
-    db      $80 + 'S', "TRING$"     ; $ea - Create String function
-    db      $80 + 'X', "OR"         ; $eb - PUT Operator and Bitwise XOR 
-    db      $80 + 'M', "ENU"        ; $ec - Display and Execute Menu
-    db      $80 + 'E', "VAL"        ; $ed - Display and Execute Menu
-    db      $80 + 'S', "LEEP"       ; $ee - Display and Execute Menu
-    db      $80 + 'M', "KDIR"       ; $ef - Create Directory
-    db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
-    db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
-    db      $80                     ; End of table marker
-ERRTK     = $E9
-STRINGTK  = $EA
-XORTK     = $EB
-OFFTK     = $F1
+; Get Pointer to Long Error Message
+; E = Offset into Error Table - 0=NF, 2=SN, etc.
+get_errmsg_ptr:
+    call    get_errcode_ptr       ; Get Pointer to Error Code for E
+    add     a,low(ERRMSG)         ; Convert to Pointer into Error Messages Table
+deref_ptr:
+    ld      l,a                   ; H already contains MSB
+    ld      a,(hl)                ; Read Address from Error Message Table
+    inc     hl
+    ld      h,(hl)
+    ld      l,a
+    ret
 
-;-------------------------------------
-;         Replace Command
-;-------------------------------------
-; Called from $0536 by RST $30,$0a
-; Replaces keyword with token.
+; in: A = DOS Error Number
+; out: A = DOS Eror Number
+;      HL = Error Message
+;      Carry Set if Unknown Error
+dos__lookup_error:
+    cp      ERROR_UNKNOWN         ; check error number
+    push    af                    ; save Error Code and Result of CP
+    jr      c,.index              ; if unnown error
+    ld      a,ERROR_UNKNOWN       ;   return unknown_error message
+.index
+    dec     a 
+    add     a,a 
+    add     a,low(dos_errors)     ; Add offset from Page Boundary
+    ld      l,a                   ;
+    ld      h,high(dos_errors)    ; Put address in HL
+    call    deref_ptr
+    pop     af
+    ret
 
-REPLCMD:
-    ld      a,b                ; A = current index
-    cp      $cb                ; if < $CB then keyword was found in BASIC table
-    ld      IX,HOOK10+1        ;   CRUNCX will also return here when done
-    push    IX
-    ret     nz                 ;   so return
-;     pop     bc                 ; get return address from stack
-;     pop     af                 ; restore AF
-;     pop     hl                 ; restore HL
-;     push    bc                 ; put return address back onto stack
-    ex      de,hl              ; HL = Line buffer
-    ld      de,TBLCMDS-1       ; DE = our keyword table
-    ld      b,BTOKEN-1         ; B = our first token
-    jp      CRUNCX             ; continue searching using our keyword table
+; Just enough bytes for some DOS strings
 
-;-------------------------------------
-;             PEXPAND
-;-------------------------------------
-; Called from $0598 by RST $30,$16
-; Expand token to keyword
+dos_dir_msg:      db  "<dir>",0     ; Shown in place of file size in DIR listing
+dos_array_name:   db  "######"      ; Tape FileName in CAQ file for Arrays
+dos_extensions:   db  "BAS",0       ; BASIC Program in CAQ Format
+                  db  "CAQ",0       ; BASIC Program or Array in CAQ Format
 
-PEXPAND:
-    cp      BTOKEN              ; is it one of our tokens?
-    jr      nc,PEXPBAB          ; yes, expand it
-    jp      HOOK22+1
+; ------------------------------------------------------------------------------
+;  Error Message Lookup Tables
+;  Aligned to Occupy a Single Page
+; ------------------------------------------------------------------------------
 
-PEXPBAB:
-    sub     BTOKEN - 1
-    ld      c,a                 ; C = offset to AquBASIC command
-    ld      de,TBLCMDS          ; DE = table of AquBASIC command names
-    jp      $05a8               ; Print keyword indexed by C
+; Extended Error Code List - 
+if $ & $FF00
+    org ($ & $FF00) + 256
+endif
+ERR_CODES: 
+    db     "NF"               ; NEXT without FOR
+    db     "SN"               ; Syntax error
+    db     "RG"               ; RETURN without GOSUB
+    db     "OD"               ; Out of DATA
+    db     "FC"               ; Illegal function call
+    db     "OV"               ; Overflow
+    db     "OM"               ; Out of memory
+    db     "UL"               ; Undefined line number
+    db     "BS"               ; Subscript out of range
+    db     "DD"               ; Duplicate Definit  ion
+    db     "/0"               ; Division by zero
+    db     "ID"               ; Illegal direct
+    db     "TM"               ; Type mismatch
+    db     "OS"               ; Out of string space
+    db     "LS"               ; String too long
+    db     "ST"               ; String formula too complex
+    db     "CN"               ; Can't continue
+    db     "UF"               ; Undefined user function
+    db     "MO"               ; Missing operand
+    db     "IO"               ; Disk I/O Error
+    db     "UE"               ; Unprintable Error
+
+; Pointers into err_table
+ERRMSG: 
+    dw      MSGNF             ; 0
+    dw      MSGSN             ; 2
+    dw      MSGRG             ; 4
+    dw      MSGOD             ; 6
+    dw      MSGFC             ; 8
+    dw      MSGOV             ; 10
+    dw      MSGOM             ; 12
+    dw      MSGUS             ; 14
+    dw      MSGBS             ; 16
+    dw      MSGDD             ; 18
+    dw      MSGDV0            ; 20
+    dw      MSGID             ; 22
+    dw      MSGTM             ; 24
+    dw      MSGSO             ; 26
+    dw      MSGLS             ; 28
+    dw      MSGST             ; 30
+    dw      MSGCN             ; 32
+    dw      MSGUF             ; 34
+    dw      MSGMO             ; 36
+    dw      MSGIO             ; 38
+    dw      MSGUE             ; 40
+
+dos_errors:
+    dw      no_376_msg           ; 1
+    dw      no_disk_msg          ; 2
+    dw      no_mount_msg         ; 3
+    dw      bad_name_msg         ; 4
+    dw      no_file_msg          ; 5
+    dw      file_empty_msg       ; 6
+    dw      bad_file_msg         ; 7
+    dw      rmdir_error_msg      ; 8
+    dw      read_error_msg       ; 9
+    dw      write_error_msg      ;10
+    dw      create_error_msg     ;11
+    dw      open_dir_error_msg   ;12
+    dw      path_too_long_msg    ;13
+    dw      file_exists_msg      ;14
+    dw      other_error_msg      ;15
 
 ; Long Error Descriptions
 ERR_TABLE:
@@ -426,3 +413,112 @@ MSGUF:  db      "Undefined user function",0
 MSGMO:  db      "Missing operand",0
 MSGIO:  db      "Disk I/O error",0
 MSGUE:  db      "Unprintable error",0
+
+; DOS Error Messages
+no_376_msg:           db  "no CH376",0
+no_disk_msg:          db  "no USB",0
+no_mount_msg:         db  "no disk",0
+bad_name_msg:         db  "invalid name",0
+no_file_msg:          db  "file not found",0
+file_empty_msg        db  "file empty",0
+bad_file_msg:         db  "filetype mismatch",0
+rmdir_error_msg:      db  "remove dir error",0
+read_error_msg:       db  "read error",0
+write_error_msg:      db  "write error",0
+create_error_msg:     db  "file create error",0
+open_dir_error_msg:   db  "directory not found",0
+path_too_long_msg:    db  "path too long",0
+file_exists_msg:      db  "file exists",0
+other_error_msg:      db  "other dos error",0
+disk_error_msg:       db  "disk error $",0
+
+
+; MSX Basic Statements and Functions
+; New dispatch code allows Statements and Functions to be freely mixed
+BTOKEN       equ $cb                ; our first token number
+TBLCMDS:
+    db      $80 + 'IN', "STR"       ; $cb - String Position Function    
+    db      $80 + 'P', "UT"         ; $cc - Put Pixels
+    db      $80 + 'G', "ET"         ; $cd - Get Pixels
+    db      $80 + 'D', "RAW"        ; $ce - Graphic Macro Language
+    db      $80 + 'C', "IRCLE"      ; $cf - Draw Circle
+    db      $80 + 'L', "INE"        ; $d0 - Draw Line
+    db      $80 + 'S', "WAP"        ; $d1 - Double Poke
+    db      $80 + 'D', "OKE"        ; $d2 - Double Poke
+    db      $80 + 'S', "DTM"        ; $d3 - Set DateTime
+    db      $80 + 'E', "DIT"        ; $d4 - Edit BASIC line (advanced editor)
+    db      $80 + 'C', "LS"         ; $d5 - Clear screen
+    db      $80 + 'L', "OCATE"      ; $d6 - Move cursor to position on screen
+    db      $80 + 'O', "UT"         ; $d7 - Read data from serial device
+    db      $80 + 'P', "SG"         ; $d8 - Send data to Programmable Sound Generator
+    db      $80 + 'D', "EBUG"       ; $d9 - Run debugger
+    db      $80 + 'C', "ALL"        ; $da - Call routine in memory
+    db      $80 + 'L', "OAD"        ; $db - Load file
+    db      $80 + 'S', "AVE"        ; $dc - Save file
+    db      $80 + 'D', "IR"         ; $dd - Directory, full listing
+    db      $80 + 'C', "AT"         ; $de - Catalog, brief directory listing
+    db      $80 + 'D', "EL"         ; $df - Delete file/folder (previously KILL)
+    db      $80 + 'C', "D"          ; $e0 - Change directory
+    db      $80 + 'I', "N"          ; $e1 - Input function
+    db      $80 + 'J', "OY"         ; $e2 - Joystick function
+    db      $80 + 'H', "EX$"        ; $e3 - Hex value function
+    db      $80 + 'V', "ER"         ; $e4 - USB BASIC ROM Version function
+    db      $80 + 'D', "TM$"        ; $e5 - GET/SET DateTime function
+    db      $80 + 'D', "EC"         ; $e6 - Decimal value function
+    db      $80 + 'K', "EY"         ; $e7 - Key function
+    db      $80 + 'D', "EEK"        ; $e8 - Double Peek function
+    db      $80 + 'E', "RR"         ; $e9 - Error Number (and Line?)
+    db      $80 + 'S', "TRING$"     ; $ea - Create String function
+    db      $80 + 'X', "OR"         ; $eb - PUT Operator and Bitwise XOR 
+    db      $80 + 'M', "ENU"        ; $ec - Display and Execute Menu
+    db      $80 + 'E', "VAL"        ; $ed - Display and Execute Menu
+    db      $80 + 'S', "LEEP"       ; $ee - Display and Execute Menu
+    db      $80 + 'M', "KDIR"       ; $ef - Create Directory
+    db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
+    db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
+    db      $80 + 'W', "AIT"        ; $f1 - Special Keyword OFF
+    db      $80                     ; End of table marker
+
+; Tokens used in external routines
+SDTMTK    = $D3
+CDTK      = $E0
+ERRTK     = $E9
+STRINGTK  = $EA
+XORTK     = $EB
+OFFTK     = $F1
+
+
+;-------------------------------------
+;         Replace Command
+;-------------------------------------
+; Called from $0536 by RST $30,$0a
+; Replaces keyword with token.
+
+REPLCMD:
+    ld      a,b                ; A = current index
+    cp      $cb                ; if < $CB then keyword was found in BASIC table
+    ld      IX,HOOK10+1        ;   CRUNCX will also return here when done
+    push    IX
+    ret     nz                 ;   so return
+    ex      de,hl              ; HL = Line buffer
+    ld      de,TBLCMDS-1       ; DE = our keyword table
+    ld      b,BTOKEN-1         ; B = our first token
+    jp      CRUNCX             ; continue searching using our keyword table
+
+;-------------------------------------
+;             PEXPAND
+;-------------------------------------
+; Called from $0598 by RST $30,$16
+; Expand token to keyword
+
+PEXPAND:
+    cp      BTOKEN              ; is it one of our tokens?
+    jr      nc,PEXPBAB          ; yes, expand it
+    jp      HOOK22+1
+
+PEXPBAB:
+    sub     BTOKEN - 1
+    ld      c,a                 ; C = offset to AquBASIC command
+    ld      de,TBLCMDS          ; DE = table of AquBASIC command names
+    jp      $05a8               ; Print keyword indexed by C
+

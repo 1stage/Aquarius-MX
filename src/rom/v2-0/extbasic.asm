@@ -346,25 +346,25 @@ ERRORX: ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
         ld      (ERRLIN),hl       ; SAVE IT FOR ERL VARIABLE
         ld      a,e               ; Get Error Table Offset
         ld      c,e               ; ALSO SAVE IT FOR LATER RESTORE
-        srl      a                ; Divide by 2 and add 1 so
-        inc      a                ; [A]=ERROR NUMBER
+        srl     a                 ; Divide by 2 and add 1 so
+        inc     a                 ; [A]=ERROR NUMBER
         ld      (ERRFLG),a        ; Save it for ERR() Function
         ld      hl,(ERRLIN)       ; GET ERROR LINE #
         ld      a,h               ; TEST IF DIRECT LINE
-        and      l                ; SET CC'S
-        inc      a                ; SETS ZERO IF DIRECT LINE (65535)
+        and     l                 ; SET CC'S
+        inc     a                 ; SETS ZERO IF DIRECT LINE (65535)
         ld      hl,(ONELIN)       ; SEE IF WE ARE TRAPPING ERRORS.
         ld      a,h               ; BY CHECKING FOR LINE ZERO.
-        ORA      l                ; IS IT?
+        or      l                 ; IS IT?
         ex      de,hl             ; PUT LINE TO GO TO IN [D,E]
         ld      hl,ONEFLG         ; POINT TO ERROR FLAG
         jr      z,NOTRAP          ; SORRY, NO TRAPPING...
-        and      (hl)             ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
+        and     (hl)              ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
         jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERRO R
-        dec      (hl)             ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
+        dec     (hl)              ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
         ex      de,hl             ; GET LINE POINTER IN [H,L]
         jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE
-NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
+NOTRAP: xor     a                 ; A MUST BE ZERO FOR CONTRO
         ld      (hl),a            ; RESET 3
         ld      e,c               ; GET BACK ERROR CODE
         jp      ERRCRD            ; FORCE THE ERROR TO HAPPEN
@@ -375,18 +375,6 @@ NOTRAP: xor      a                ; A MUST BE ZERO FOR CONTRO
 
 ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
         jp      ERRPRT            ; Display Error and Return to Immediate Mode
-
-get_errcode_ptr:
-        ld      a,e               ; Get Error Table Offset into A
-        cp      LSTERR            ; Compare to End of Table
-        jr      c,.ext_error      ; If Past End of Table
-        ld      a,ERRUE           ;   Display "UE" - Unprintable Error
-.ext_error
-        add     low(ERR_CODES)    ; Add offset to Error Table address
-        ld      l,a               
-        ld      h,high(ERR_CODES) ; Put address in HL
-        ret
-
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -406,7 +394,7 @@ get_errcode_ptr:
 ;;;         - Returns 0 if the last DOS command completed successfully.
 ;;;       - If < number > is 3, returns the status code of the last CH376 operation.
 ;;;         - This may not be directly related to the DOS error number.
-;;;       - Returns FC Error if <number> is none of the above
+;;;       - Returns FC Error if < number > is none of the above
 ;;;
 ;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
@@ -500,15 +488,15 @@ get_errno:
 ;;; ## ERR$
 ;;; Error Status
 ;;; ### FORMAT:
-;;;   - ERR$ ( < number > [, < error >] )
+;;;   - ERR$ ( < number > [, *error*] )
 ;;;     - Action: Returns string containing description of error
 ;;;       - If < number > is 0, returns a two character BASIC error code.
 ;;;       - If < number > is 1, returns a BASIC error description
 ;;;       - If < number > is 2, returns a DOS error description
-;;;     - If second argument <error> is included, prints the description for that error number.
-;;;       - Otherwise, prints the description corresponding to the value returned by ERR(<number>).
-;;;       - Returns an empty string if <error> or ERR(<number>) is 0.
-;;;       - Returns FC Error if <error> or ERR(<number>) is less than 0.
+;;;     - If second argument *error* is included, prints the description for that error number.
+;;;       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
+;;;       - Returns an empty string if *error* or ERR(< number >) is 0.
+;;;       - Returns FC Error if *error* or ERR(< number >) is less than 0.
 ;----------------------------------------------------------------------------
 FN_ERRS:
         rst     CHRGET            ; Skip $
@@ -559,14 +547,7 @@ FN_ERRS:
         ld      hl,FBUFFR         ; Get Buffer Address for TIMSTR
         jp      TIMSTR            ; Return It
 .err_message
-        call    get_errcode_ptr   ; Get Pointer to Error Code for E
-        add     ERRMSG-ERR_CODES  ; Convert to Pointer into Error Messages Table
-        ld      l,a
-        ld      h,high(errmsg)
-        ld      a,(hl)            ; Read Address from Error Message Table
-        inc     hl
-        ld      h,(hl)
-        ld      l,a
+        call    get_errmsg_ptr    ; Get Pointer to Error Message String
         jp      TIMSTR            ; Return Error Message String
 .dos_error:
         ld      a,c               ; Get Back Error Number
@@ -579,18 +560,18 @@ FN_ERRS:
 ;;; ## ERROR
 ;;; Trigger a BASIC Error
 ;;; ### FORMAT:
-;;;  - ERROR < error >
+;;;  - ERROR *error*
 ;;;    - Action: Triggers a BASIC Error.
-;;;      - < error > is the error number of the error to trigger (see ERR function)
-;;;      - FC Error results if < error > is not between 0 and 255, inclusive
-;;;      - if <error> is 0, no error is triggered
+;;;      - *error* is the error number of the error to trigger (see ERR function)
+;;;      - FC Error results if *error* is not between 0 and 255, inclusive
+;;;      - if *error* is 0, no error is triggered
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------
 
 ST_ERR:
     rst     SYNCHR                ; Require OR Tokem
     db      ORTK                  ;   for ERROR
-    call    GETBYT                ; Get < error >
+    call    GETBYT                ; Parse error number
     or      a                     ; If it's zero
     ret     z                     ;   Proceed with next statement
     dec     a                     ; Else 
@@ -856,7 +837,8 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 ;;; ---
 ;;; ## INSTR Function
 ;;; Search for string in another string
-;;; ### FORMAT: INSTR ( [ *offset* , ] *string1* , *string2* )
+;;; ### FORMAT: 
+;;;  - INSTR ( [ *offset* , ] *string1* , *string2* )
 ;;;    - Action: Searches for the first occurrence of *string2* in *string1* and returns the position at which the match is found. 
 ;;;      - Optional *offset* sets the position for starting the search.
 ;;;        - Must be in the range 1 to 255 or an FC Error results.
@@ -893,15 +875,15 @@ FN_INSTR:
         call    CHKSTR            ;BLOW UP IF NOT STRING                                                    
 WUZSTR: SYNCHK  ','               ;EAT COMMA AFTER ARG                                                      
         push    hl                ;SAVE THE TEXT POINTER                                                    TxtPtr,Offset
-        ld      hl,(FACLO)        ;GET DESCRIPTOR POINTER                                            Desc1  
-        ex      (sp),hl           ;PUT ON STACK & GET BACK TEXT PNT.                                 TxtPtr Desc1, Offset
+        ld      hl,(FACLO)        ;GET DESCRIPTOR POINTER                                             Dsc1  
+        ex      (sp),hl           ;PUT ON STACK & GET BACK TEXT PNT.                                 TxtPtr  Dsc1, Offset
         call    FRMEVL            ;GET LAST ARG                                                       ----       
         SYNCHK  ')'               ;EAT RIGHT PAREN                                                          
-        push    hl                ;SAVE TEXT POINTER                                                        TxtPtr,Desc1, Offset
-        call    FRESTR            ;FREE UP TEMP & CHECK STRING                   ----   ----   ----  Desc2       
-        ex      de,hl             ;SAVE 2ND DESC. POINTER IN [D,E]                            Desc2   ----              
-        pop     bc                ;GET TEXT POINTER IN B                               TxtPtr               Desc1, Offset
-        pop     hl                ;DESC. POINTER FOR S1$                                             Desc1  Offset
+        push    hl                ;SAVE TEXT POINTER                                                        TxtPtr,Dsc1, Offset
+        call    FRESTR            ;FREE UP TEMP & CHECK STRING                   ----   ----   ----   Dsc2       
+        ex      de,hl             ;SAVE 2ND DESC. POINTER IN [D,E]                             Dsc2   ----              
+        pop     bc                ;GET TEXT POINTER IN B                               TxtPtr                Dsc1, Offset
+        pop     hl                ;DESC. POINTER FOR S1$                                              Dsc1  Offset
         pop     af                ;OFFSET                                       Offset                      --
         push    bc                ;PUT TEXT POINTER ON BOTTOM                                               TxtPtr
         ld      bc,POPHRT         ;PUT ADDRESS OF POP H, RET ON                        POPHRT                     
@@ -909,9 +891,9 @@ WUZSTR: SYNCHK  ','               ;EAT COMMA AFTER ARG
         ld      bc,SNGFLT         ;NOW ADDRESS OF [A] RETURNER                         SNGGLT                     
         push    bc                ;ONTO STACK                                                               SNGFLT, POPHRT. TxtPtr
         push    af                ;SAVE OFFSET BACK                                                         Offset, SNGFLT, POPHRT. TxtPtr
-        push    de                ;SAVE DESC. OF S2                                                         Desc2, Offset, SNGFLT, POPHRT. TxtPtr
-        call    FRETM2            ;FREE UP S1 DESC.                              ----   ----   ----  Desc1
-        pop     de                ;RESTORE DESC. S2                                           Desc2
+        push    de                ;SAVE DESC. OF S2                                                          Dsc2, Offset, SNGFLT, POPHRT. TxtPtr
+        call    FRETM2            ;FREE UP S1 DESC.                              ----   ----   ----   Dsc1
+        pop     de                ;RESTORE DESC. S2                                            Dsc2
         pop     af                ;GET BACK OFFSET                              Offset
         ld      b,a               ;SAVE UNMODIFIED OFFSET                              Of,O-1
         dec     a                 ;MAKE OFFSET OK                               
@@ -988,12 +970,137 @@ GETYPR: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
         dec     a               
         ret
         
-
+        
+        
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## MID$ Statement
+;;;   Replace a portion of one string with another string.
+;;; ### FORMAT:
+;;;  - MID$ ( *var$* , *pos* [ , *len*] ) = *string*
+;;;    - Action: The contents of string variable *var$*, beginning at position *pos*, are replaced by the characters in *string*
+;;;      - if *pos* is less than 1 or more than 255, an FC error results
+;;;      - The optional *len* refers to the number of characters from *string* that will be used in the replacement
+;;;      - If *len* is omitted, all of *string* is used. 
+;;;      - Regardless of whether *len* is omitted or included, the replacement of characters never goes beyond the original length of *var$*.
+;;; ### EXAMPLES:
+;;; ```
+;;; 10 A$="KANSAS CITY, MO"
+;;; 20 MID$(A$,14) ="KS"
+;;; 30 PRINT A$
+;;; ```
+;;; > Prints ` KANSAS CITY, KS `
+;----------------------------------------------------------------------------
+; STRING FUNCTIONS - LEFT HAND SIDE MID$
+ST_MID: SYNCHK  '('               ; MUST HAVE (                                      AF     BC     DE     HL   Stack
+        call    PTRGET            ; GET A STRING VAR                               ------ ------  Dsc1  TxtPtr 
+        call    CHKSTR            ; MAKE SURE IT WAS A STRING                         
+        push    hl                ; SAVE TEXT POINTER                                                          TxtPtr
+        push    de                ; SAVE DESC. POINTER                                                          Dsc1,TxtPtr
+        ex      de,hl             ; PUT DESC. POINTER IN [H,L]                                   TxtPtr  Dsc1
+        inc     hl                ; MOVE TO ADDRESS FIELD                                                 ++
+        inc     hl                ; MOVE TO ADDRESS FIELD                                                 ++
+        ld      e,(hl)            ; GET ADDRESS OF LHS IN [D,E]                                           
+        inc     hl                ; BUMP DESC. POINTER                                                    ++
+        ld      d,(hl)            ; PICK UP HIGH BYTE OF ADDRESS                                 Addr1
+        ld      hl,(STREND)       ; SEE IF LHS STRING IS IN STRING SPACE                               (STREND)
+        rst     COMPAR            ; BY COMPARING IT WITH STKTOP                     
+        jr      c,NCPMID          ; IF ALREADY IN STRING SPACE DONT COPY.           
+        pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
+        push    hl                ; SAVE BACK ON STACK                                                          Dsc1,TxtPtr
+        call    STRCPY            ; COPY THE STRING LITERAL INTO STRING SPACE                    DSCTMP  ~~
+        pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
+        push    hl                ; BACK ON STACK AGAIN                                                         Dsc1,TxtPtr
+        call    VMOVE             ; MOVE NEW DESC. INTO OLD SLOT.                                  ~~    ~~
+NCPMID: pop     hl                ; GET DESC. POINTER                                                    Dsc1  TxtPtr
+        ex      (sp),hl           ; GET TEXT POINTER TO [H,L] DESC. TO STACK                            TxtPtr  Dsc1
+        SYNCHK  ','               ; MUST HAVE COMMA
+        call    GETBYT            ; GET ARG#2 (OFFSET INTO STRING)                 Arg2
+        or      a                 ; MAKE SURE NOT ZERO
+        jp      z,FCERR           ; BLOW HIM UP IF ZERO
+        push    af                ; SAVE ARG#2 ON STACK                                                        Arg2,Dsc1
+        ld      a,(hl)            ; RESTORE CURRENT CHAR                         (TxtPtr)
+        ld      e,255             ; IF TWO ARG GUY, TRUNCATE.                                     255
+        cp      ')'               ; [E] SAYS USE ALL CHARS 
+        jp      z,.MID2           ; IF ONE ARGUMENT THIS IS CORRECT
+        SYNCHK ','  
+        call    GETBYT            ; GET ARGUMENT  IN  [E]                          Arg3           Arg3
+.MID2:  SYNCHK  ')'               ; MUST BE FOLLOWED BY )                           ~~                         Arg3,Arg2,Dsc1
+        push    de                ; SAVE THIRD ARG ([E]) ON STACK                 
+                                  ; MUST HAVE = SIGN
+        call    FRMEQL            ; EVALUATE RHS OF THING.
+        push    hl                ; SAVE TEXT POINTER.                                                         TxtPtr,Arg3,Arg2,Dsc1
+        call    FRESTR            ; FREE UP TEMP RHS IF ANY.                        ~~             ~~    Dsc2
+        ex      de,hl             ; PUT RHS DESC. POINTER IN [D,E]                                Dsc2    ~~
+        pop     hl                ; TEXT POINTER TO [H,L]                                               TxtPtr Arg3,Arg2,Dsc1
+        pop     bc                ; ARG #3 TO C.                                           Arg3                Arg2,Dsc1
+        pop     af                ; ARG #2 TO A.                                    Arg2                       Dsc1
+        ld      b,a               ; AND [B]                                               A2  A3
+        ex      (sp),hl           ; GET LHS DESC. POINTER TO [H,L]                                       Dsc1  TxtPtr    
+                                  ; TEXT POINTER TO STACK                                 
+        push    hl                ;                                                                            Dsc1,TxtPtr
+        ld      hl,POPHRT         ; GET ADDR TO RETURN TO                                               POPHRT 
+        ex      (sp),hl           ; SAVE ON STACK & GET BACK TXT PTR.                                    Dsc1  POPHRT,TxtPtr
+        ld      a,c               ; GET ARG #3                                      Arg3
+        or      a                 ; SET CC'S
+        ret     z                 ; IF ZERO, DO NOTHING
+        ld      a,(hl)            ; GET LENGTH OF LHS                              (Dsc1)
+        sub     b                 ; SEE HOW MANY CHARS IN REMAINDER OF STRING
+        jp      c,FCERR           ; CANT ASSIGN PAST LEN(LHS)!
+        inc     a                 ; MAKE PROPER COUNT
+        cp      c                 ; SEE IF # OF CHARS IS .GT. THIRD ARG
+        jr      c,BIGLEN          ; IF SO, DONT TRUNCATE
+        ld      a,c               ; TRUNCATE BY USING 3RD ARG.                      Arg3
+BIGLEN: ld      c,b               ; GET OFFSET OF STRING IN [C]
+        dec     c                 ; MAKE PROPER OFFSET                                    Arg2
+        ld      b,0               ; SET UP [B,C] FOR LATER DAD B.
+        push    de                ; SAVE [D,E]                                                                 Dsc2,POPHRT,TxtPtr
+        inc     hl                                                                              
+        inc     hl                ; POINTER TO ADDRESS FIELD.                                                      
+        ld      e,(hl)            ; GET LOW BYTE IN [E]
+        inc     hl                ; BUMP POINTER
+        ld      h,(hl)            ; GET HIGH BYTE IN [H]
+        ld      l,e               ; NOW COPY LOW BYTE BACK TO [L]                                        Txt1
+        add     hl,bc             ; ADD OFFSET                                                          + Arg2
+        ld      b,a               ; SET COUNT OF LHS IN [B]
+        pop     de                ; RESTORE [D,E]                                                 Dsc2        POPHRT,TxtPtr  
+        ex      de,hl             ; MOVE RHS. DESC. POINTER TO [H,L]
+        ld      c,(hl)            ; GET LEN(RHS) IN [C]
+        inc     hl                ; MOVE POINTER
+        inc     hl                ; MOVE POINTER
+        ld      a,(hl)            ; GET LOW BYTE OF ADDRESS IN [A]
+        inc     hl                ; BUMP POINTER.
+        ld      h,(hl)            ; GET HIGH BYTE OF ADDRESS IN [H]
+        ld      l,a               ; COPY LOW BYTE TO [L]
+        ex      de,hl             ; ADDRESS OF RHS NOW IN [D,E]
+        ld      a,c               ; IS RHS NULL?
+        or      a                 ; TEST
+        ret     z                 ; THEN ALL DONE.
+; NOW ALL SET UP FOR ASSIGNMENT.
+; [H,L] = LHS POINTER
+; [D,E] = RHS POINTER
+; C = LEN(RHS)
+; B = LEN(LHS)
+.MIDLP: ld      a,(de)            ; GET BYTE FROM RHS.
+        ld      (hl),a            ; STORE IN LHS
+        inc     de                ; BUMP RHS POINTER
+        inc     hl                ; BUMP LHS POINTER.
+        dec     c                 ; BUMP DOWN COUNT OF RHS.
+        ret     z                 ; IF ZERO, ALL DONE. IF LHS ENDED, ALSO DONE.
+        djnz    .MIDLP            ; IF NOT DONE, MORE COPYING.
+        ret                       ; BACK TO NEWSTT
+  
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## EVAL
 ;;; Evaluate a formula in a string.
 ;;; ### FORMAT: 
+;;;  - EVAL(< formula >)
+;;;    - Action: Outputs the formula as a string
+;;; ### EXAMPLES:
+;;; ` PRINT EVAL("7 + 4") `
+;;; > Prints "11"
+;;;
 ;----------------------------------------------------------------------------
 FN_EVAL:
         call    ERRDIR            ; Issue Error if in Direct Mode
@@ -1017,3 +1124,101 @@ FN_EVAL:
         call    FRMEVL            ; Evaluate Formula
         pop     hl                ; Restore Text Pointer
         ret
+
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## OUT
+;;; Write to Z80 I/O Port
+;;; ### FORMAT:
+;;;  - OUT < address >,< byte >
+;;;    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
+;;;    - Advanced: During the write, < address > is put on the Z80 address bus.
+;;; ### EXAMPLES:
+;;; ` OUT 246, 12 `
+;;; > Send a value of 12 to the SOUND chip
+;;;
+;;; ` 10 X=14:OUT $FC, X `
+;;; > Send a value of 14 to the Cassette sound port
+;----------------------------------------------------------------------------
+
+ST_OUT:
+    call    GETADR                ; get/evaluate port
+    push    de                    ; stored to be used in BC
+    SYNCHK  ','                   ; Compare RAM byte with following byte
+    call    GETBYT                ; get/evaluate data
+    pop     bc                    ; BC = port
+    out     (c),a                 ; out data to port
+    ret
+
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## IN
+;;; Read Z80 I/O Port
+;;; ### FORMAT:
+;;;  - IN(< address >)
+;;;    - Action: Reads a byte from the I/O port specified by LSB of < address >.
+;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;; ### EXAMPLES:
+;;; ` PRINT IN(252) `
+;;; > Prints cassette port input status
+;;;
+;;; ` S=IN($FE) `
+;;; > Set variable S to Printer Ready status
+;----------------------------------------------------------------------------
+; This is INP() in BASIC80
+FN_IN:
+    rst     CHRGET                ; Skip Token and Eat Spaces
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK
+    push    bc
+    call    FRCADR                ; convert argument to 16 bit integer in DE
+    ld      b,d
+    ld      c,e                   ; bc = port
+    in      a,(c)                 ; a = in(port)
+    jp      SNGFLT                ; return with 8 bit input value in variable var
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## WAIT
+;;; Suspend program execution while inonitoring the status of a Z80 input port.
+;;; ### FORMAT:
+;;;  - WAIT *address*, *byte1* [, *byte2*]
+;;;    - Action: Causes execution to be suspended until a Z80 port develops a specified bit pattern. 
+;;;      - The I/O port to read is specified by the LSB of *address*
+;;;      - The data read at the port is Exclusive OR'ed with *byte2*, then AND'ed with *byte1*. 
+;;;      - If the result is zero, MX BASIC loops back and reads the data at the port again. 
+;;;      - If the result is nonzero, execution continues with the next statement.
+;;;      - If J is omitted, it is assumed to be zero
+;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;;    - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
+;;; ### EXAMPLES:
+;;; ` WAIT $FF,$3F,$FF `
+;;; > Wait for any key to be pressed.
+;----------------------------------------------------------------------------
+; THE WAIT CHANNEL#,MASK,MASK2 WAITS UNTIL THE STATUS
+; RETURNED BY CHANNEL# IS NON ZERO WHEN XORED WITH MASK2
+; AND THEN ANDED WITH MASK. IF MASK2 IS NOT PRESENT IT IS ASSUMED
+; TO BE ZERO.
+ST_WAIT:  
+        call    GETADR            ; get/evaluate port
+        push    de                ; stored to be used in BC
+        SYNCHK  ','               ; Compare RAM byte with following byte
+        call    GETBYT            ; get/evaluate data
+        push    af                ; SAVE THE MASK
+        call    CHRGT2            ; SEE IF THE STATEMENT ENDED
+        jr      z,NOTTHR          ; IF NO THIRD ARGUMENT SKIP THIS
+        SYNCHK  ','               ; MAKE SURE THERE IS A ","
+        CALL    GETBYT            ; Get XOR mask into E
+NOTTHR: pop     de                ; REGET THE "AND" MASK in D
+        ld      e,a               ; Put the XOR mask in E
+        pop     bc                ; Get back the Port #
+LOPINP: in      a,(c)             ; THE INPUT INSTR
+        xor     e                 ; XOR WITH MASK2
+        and     d                 ; AND WITH MASK
+        jr      z,LOPINP          ; LOOP UNTIL RESULT IS NON-ZERO
+                                  ; NOTE: THIS LOOP CANNOT BE CONTROL-C'ED
+                                  ; HOWEVER A RESTART AT 0 IS OK.
+        ret  

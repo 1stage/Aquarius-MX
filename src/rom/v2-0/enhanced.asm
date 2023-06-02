@@ -4,21 +4,16 @@
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## ASC (Extended)
-;;; Read from Memory
+;;; ## ASC$ Function
+;;; Convert Hexadecimal String to ASCII String
 ;;; ### FORMAT:
-;;;  - ASC (< string >)
-;;;    - Action: Returns a numerical value that is the ASCII code of the first character of < string >. If < string > is null, an FC error is returned.
-;;;      - See the CHR$ function for ASCII-to-string conversion.
 ;;;  - ASC$ (< string >)
 ;;;    - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in < string >.
 ;;;      - See the HEX$ function for string-to-hex conversion.
 ;;; ### EXAMPLES:
-;;; ` PRINT ASC("TEST") `
-;;; > Prints the number 84.
-;;;
 ;;; ` PRINT ASC$("414243") `
 ;;; > Prints the string "ABC".
+;----------------------------------------------------------------------------
 ;----------------------------------------------------------------------------
 
 FN_ASC:
@@ -29,7 +24,6 @@ FN_ASC:
     rst     CHRGET          ; Eat $ and Skip Spaces
     call    PARCHK          ; Parse Argument in Parentheses
     push    hl              ; Save Text Pointer
-    push    bc              ; Dummy Return Address for FINBCK to discard
     call    CHKSTR          ; TM Error if Not a String
     call    STRLENADR       ; Get Arg Length in A, Address in HL
     sra     a               ; Divide Length by 2
@@ -51,7 +45,7 @@ FN_ASC:
     ld      (de),a          ; Store in Result String
     inc     de              ; Bump Result Pointer
     djnz    .asc_loop
-    jp      FINBCK          ; Return Result String
+    jp      PUTNEW          ; Return Result String
 
 get_hex:
     ld      a,(hl)          ; Get Hex Digit 
@@ -84,10 +78,15 @@ ABORT_FN:
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## COPY (Extended)
-;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
+;;; Copy screen to Line Printer / Copy memory
 ;;; ### FORMAT:
+;;;   - COPY
+;;;     - Action: Sends screen contents to line printer (legacy command)
 ;;;   - COPY < source >, < dest >, < count >
 ;;; ### EXAMPLES:
+;;; ` COPY ` (no parameters)
+;;; > Send contents of screen to line printer
+;;;
 ;;; ` COPY 12368,12328,920 `
 ;;; > Scroll Screen Up One Line
 ;;;
@@ -142,7 +141,7 @@ ST_COPY:
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## FRE (Extended)
-;;; Read from Memory
+;;; Show available Memory / Show memory details
 ;;; ### FORMAT:
 ;;;  - FRE ( 0 )
 ;;;    - Action: Returns the number of bytes in memory not being used by BASlC.
@@ -157,6 +156,12 @@ ST_COPY:
 ;;;      - BASIC will not initiate garbage collection until all free memory has been used up. 
 ;;;      - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
 ;;;   - Any other argument returns an FC error.
+;;; ### EXAMPLE:
+;;; ` PRINT FRE(0) `
+;;; > Displays amount of free remaining memory available to BASIC.
+;;;
+;;; ` PRINT HEX$(FRE(2)) `
+;;; > Displays the current top address of BASIC memory as a hexadecimal format address.
 ;----------------------------------------------------------------------------
 FN_FRE:
     rst     CHRGET
@@ -201,11 +206,11 @@ FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point n
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PEEK (Extended)
-;;; Read from Memory
+;;; ## PEEK Function
+;;; Read Byte from Memory
 ;;; ### FORMAT:
-;;;  - PEEK(< address >)
-;;;    - Action: Reads a byte from memory location < address >.
+;;;  - PEEK( *address* )
+;;;    - Action: Returns contents of memory location *address*.
 ;;; ### EXAMPLES:
 ;;; ` PRINT CHR$(PEEK(12288)) `
 ;;; > Print the current border character
@@ -215,7 +220,9 @@ FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point n
 ;----------------------------------------------------------------------------
 
 FN_PEEK:
-    rst     CHRGET
+    rst     CHRGET            ; Skip PEEK Token and Spaces
+    cp      '$'               ; If followed by dollar sign
+    jr      z,FN_PEEKS        ;   Do PEEK$()
     call    PARCHK
     push    hl
     ld      bc,LABBCK         ; Return Address for SGNFLT
@@ -223,6 +230,41 @@ FN_PEEK:
     call    FRCADR            ; Convert to Arg to Address
     ld      a,(de)            ; Read byte at Address
     jp      SNGFLT            ; and Float it
+    
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## PEEK$ Function
+;;; Read String from Memory
+;;; ### FORMAT:
+;;;  - PEEK( *address*, *length* )
+;;;    - Action: Returns a string containing *length* bytes from memory starting at location *address*.
+;;;      - Length must be between 0 and 255, inclusive.
+;;;      - If length is 0, an empty string is returned.
+;;; ### EXAMPLES:
+;;; ` PRINT PEEK$(12328,40) `
+;;; > Print the contents of screen line 1.
+;;; ` PRINT HEX$(PEEK$(&A,4)) `
+;;; > Print the binary value floating point number in variable A as a hexadecimal number.
+
+;----------------------------------------------------------------------------
+
+FN_PEEKS:
+    call    PARADR            ; Parse '(' Address
+    push    de                ; Stack = Address
+    SYNCHK  ','               ; Require ','
+    call    GETBYT            ; Parse Length into [DE] (a)
+    SYNCHK  ')'               ; Require ')'
+    ex      (sp),hl           ; HL = Address, Stack = TxtPtr
+    ld      a,e               ; Get *length* into A
+    or      a                 ; If *length* is 0
+    jp      z,null_string     ;   Return Empty String
+    push    hl                ; Stack = Address, TxtPtr
+    push    de                ; Stack = Length, Address, TxtPtr
+    call    STRINI            ; Make String with Length [A], HL=StrDsc, DE=StrTxt
+    pop     bc                ; BC = Length, Stack = Address, TxtPtr
+    pop     hl                ; HL = Address, Stack = TxtPtr
+    ldir                      ; Copy from Memory to String
+    jp      PUTNEW            ; Return the Temporary String
     
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -440,7 +482,7 @@ FN_XOR:
 ;;; Swap MSB and LSB
 ;;; ### FORMAT:
 ;;;  - XOR( < number >
-;;;    - Action: Returns <number> with the least significant and most significant bytes swapped.
+;;;    - Action: Returns < number > with the least significant and most significant bytes swapped.
 ;;;      - < number > must be between -32768 and 65535.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(SWAP($ABCD)) `
