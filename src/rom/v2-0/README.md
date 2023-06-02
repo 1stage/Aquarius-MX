@@ -787,7 +787,6 @@ Load File from USB Drive
 ### FORMAT:
  - LOAD "*filespec*"
    - Action: Load BASIC program *filespec* into memory
-<<<<<<< Updated upstream
      - *filename* can be any string expression
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
      - File on USB drive must be in CAQ format. The internal filename is ignored.
@@ -796,11 +795,9 @@ Load File from USB Drive
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
      - File on USB drive mus be in CAQ format with the internal filename "######".
  - LOAD *filespec* , *address* [ , *length* [, *offset*]]
-=======
  - LOAD "*filespec*" , \**arrayname*
    - Action: Load contents of array file *filespec* into array *arrayname*
  - LOAD "*filespec*" , *address* [ , *length* [, *offset*]]
->>>>>>> Stashed changes
    - Action: Load contents of binary file *filespec* into memot
      - *length* specifies the number of bytes to load from the file
      - *offset* specifies the position in the file to start loadin from
@@ -1029,15 +1026,12 @@ Copy data from a numeric array into a rectangle of screen data.
 ## RUN
 Loads and runs BASIC programs (*.CAQ or *.BAS)
 ### FORMAT:
-<<<<<<< Updated upstream
  - RUN *filename*
    - Action: Loads program into memory and runs it.
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
      - File on USB drive must be in CAQ format. The internal filename is ignored.
-=======
  - RUN "*filename*"
    - Action: Loads program named *filename* into memory and runs it.
->>>>>>> Stashed changes
      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
      - Wildcards and paths cannot be used.
 ### EXAMPLES:
@@ -1053,25 +1047,17 @@ Loads and runs BASIC programs (*.CAQ or *.BAS)
 ## SAVE (Updated)
 Save File to USB Drive
 ### FORMAT:
-<<<<<<< Updated upstream
- - SAVE *filename*
+ - SAVE "*filename*"
    - Action: Save BASIC programt to file *filename* on USB drive.
      - *filename* can be any string expression
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
      - File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
- - SAVE < filespec >,*< arrayname >
+ - SAVE "*filespec*",* *arrayname*
    - Action: Save BASIC programt to file *filename* on USB drive.
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
      - File on USB drive will be in CAQ format with the internal filename set to "######".
  - SAVE *filespec*,*address*,*length*[,*offset*]
    - Action: Saves *length* bytes of memory starting at *address* to file *filename* on USB drive.
-=======
- - SAVE "*filespec*"
- - SAVE "*filespec*",\* *address*
- - SAVE "*filespec*" , *address* , *length* [, *offset*]
-   - Action: Save BASIC program, array, or range of memory.
-   - Final quotation mark at end of *filespec* is optional.
->>>>>>> Stashed changes
 ### EXAMPLES:
 ` SAVE "progname" `
 > Save current program to USB drive with file name "PROGNAME.BAS"
