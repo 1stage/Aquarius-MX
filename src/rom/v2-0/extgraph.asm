@@ -20,7 +20,7 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## PSET / PRESET
-;;; Set or Reset Pixel
+;;; Draw or Erase a pixel
 ;;; ### FORMAT:
 ;;;   - PSET | PRESET [STEP] ( < x-coord > , < y-coord > ) [ , color ]
 ;;;     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
@@ -81,8 +81,21 @@ MAKINT: push    hl                ; Save Registers
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## GET
-;;; 
+;;; Copy a rectangle of screen data (byte values) from CHARRAM and COLRAM to a numeric array
 ;;; ### FORMAT:
+;;;  - GET (X1,X2)-(Y1,Y2),< numeric array >
+;;;    - Action: CHARRAM and COLRAM from the defined rectangle is copied as bytes into the < numeric array >.
+;;;      - The < numeric array > must have already been DIMensioned to a size large enough to hold the data.
+;;;      - Typically used in combination with SET, which moves data from a numeric array into a rectangular location in screen memory.
+;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
+;;; ### EXAMPLE:
+;;; ```
+;;; 10 DIM A(16)
+;;; 20 GET(1,4)-(1-4),A
+;;; 30 SAVE"CURSOR.SPR",A*
+;;; ```
+;;; > Save the contents of a 4x4 character/color grid at the upper right of the screen to a file.
+;;;
 ;----------------------------------------------------------------------------
 ST_PUT: ld      a,1               ;;Mode = GET
         jr      GGPUTG

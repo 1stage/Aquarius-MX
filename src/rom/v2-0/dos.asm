@@ -188,7 +188,7 @@ _dos_file_exists:
 
 ;------------------------------------------------------------------------------
 ;;; ---
-;;; ## LOAD
+;;; ## LOAD (Updated)
 ;;; Load File from USB Drive
 ;;; ### FORMAT:
 ;;;  - LOAD *filespec* 
@@ -386,7 +386,7 @@ _link_lines:
 
 ;------------------------------------------------------------------------------
 ;;; ---
-;;; ## SAVE
+;;; ## SAVE (Updated)
 ;;; Save File to USB Drive
 ;;; ### FORMAT:
 ;;;  - SAVE < filespec >

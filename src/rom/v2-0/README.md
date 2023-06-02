@@ -171,10 +171,12 @@ Clear Variables and/or Error Code
 
 ---
 ## CLS (Extended)
-Clear Screen
+Clear Screen / Clear Screen with specified foreground and background colors
 ### FORMAT:
+ - CLS
+   - Action: Clear the screen with defaut BLACK characters on CYAN background.
  - CLS [ < colors > ]
-   - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
+   - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
 >
     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN
@@ -205,10 +207,15 @@ Clear Screen
 
 ---
 ## COPY (Extended)
-Copy Memory (overloads legacy COPY command which lineprints screen output)
+Copy screen to Line Printer / Copy memory
 ### FORMAT:
+  - COPY
+    - Action: Sends screen contents to line printer (legacy command)
   - COPY < source >, < dest >, < count >
 ### EXAMPLES:
+` COPY ` (no parameters)
+> Send contents of screen to line printer
+
 ` COPY 12368,12328,920 `
 > Scroll Screen Up One Line
 
@@ -555,7 +562,7 @@ Evaluate a formula in a string.
 
 ---
 ## FRE (Extended)
-Read from Memory
+Show available Memory / Show memory details
 ### FORMAT:
  - FRE ( 0 )
    - Action: Returns the number of bytes in memory not being used by BASlC.
@@ -570,11 +577,30 @@ Read from Memory
      - BASIC will not initiate garbage collection until all free memory has been used up.
      - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
   - Any other argument returns an FC error.
+### EXAMPLE:
+` PRINT FRE(0) `
+> Displays amount of free remaining memory available to BASIC.
+
+` PRINT HEX$(FRE(2)) `
+> Displays the current top address of BASIC memory as a hexadecimal format address.
 
 ---
 ## GET
-
+Copy a rectangle of screen data (byte values) from CHARRAM and COLRAM to a numeric array
 ### FORMAT:
+ - GET (X1,X2)-(Y1,Y2),< numeric array >
+   - Action: CHARRAM and COLRAM from the defined rectangle is copied as bytes into the < numeric array >.
+     - The < numeric array > must have already been DIMensioned to a size large enough to hold the data.
+     - Typically used in combination with SET, which moves data from a numeric array into a rectangular location in screen memory.
+     - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
+### EXAMPLE:
+```
+10 DIM A(16)
+20 GET(1,4)-(1-4),A
+30 SAVE"CURSOR.SPR",A*
+```
+> Save the contents of a 4x4 character/color grid at the upper right of the screen to a file.
+
 
 ---
 ## HEX$
@@ -743,7 +769,7 @@ Draw line or box on screen.
 >  Draw lines forever using random attributes.
 
 ---
-## LOAD
+## LOAD (Updated)
 Load File from USB Drive
 ### FORMAT:
  - LOAD *filespec*
@@ -922,7 +948,7 @@ Writes byte(s) to memory location(s)
 
 ---
 ## PSET / PRESET
-Set or Reset Pixel
+Draw or Erase a pixel
 ### FORMAT:
   - PSET | PRESET [STEP] ( < x-coord > , < y-coord > ) [ , color ]
     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
@@ -974,7 +1000,7 @@ Loads and runs BASIC programs (*.CAQ or *.BAS)
 > Displays "Loading Program..." on screen and then immediately loads and runs the `NEXTPRG.CAQ` program.
 
 ---
-## SAVE
+## SAVE (Updated)
 Save File to USB Drive
 ### FORMAT:
  - SAVE < filespec >

@@ -1000,10 +1000,12 @@ ST_DOKE:
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CLS (Extended)
-;;; Clear Screen
+;;; Clear Screen / Clear Screen with specified foreground and background colors
 ;;; ### FORMAT:
+;;;  - CLS
+;;;    - Action: Clear the screen with defaut BLACK characters on CYAN background.
 ;;;  - CLS [ < colors > ]
-;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG. The default combination is 6 (BLACK on CYAN):
+;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
 ;;; >
 ;;;     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
 ;;;     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 

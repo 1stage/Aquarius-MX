@@ -78,10 +78,15 @@ ABORT_FN:
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## COPY (Extended)
-;;; Copy Memory (overloads legacy COPY command which lineprints screen output)
+;;; Copy screen to Line Printer / Copy memory
 ;;; ### FORMAT:
+;;;   - COPY
+;;;     - Action: Sends screen contents to line printer (legacy command)
 ;;;   - COPY < source >, < dest >, < count >
 ;;; ### EXAMPLES:
+;;; ` COPY ` (no parameters)
+;;; > Send contents of screen to line printer
+;;;
 ;;; ` COPY 12368,12328,920 `
 ;;; > Scroll Screen Up One Line
 ;;;
@@ -136,7 +141,7 @@ ST_COPY:
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## FRE (Extended)
-;;; Read from Memory
+;;; Show available Memory / Show memory details
 ;;; ### FORMAT:
 ;;;  - FRE ( 0 )
 ;;;    - Action: Returns the number of bytes in memory not being used by BASlC.
@@ -151,6 +156,12 @@ ST_COPY:
 ;;;      - BASIC will not initiate garbage collection until all free memory has been used up. 
 ;;;      - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
 ;;;   - Any other argument returns an FC error.
+;;; ### EXAMPLE:
+;;; ` PRINT FRE(0) `
+;;; > Displays amount of free remaining memory available to BASIC.
+;;;
+;;; ` PRINT HEX$(FRE(2)) `
+;;; > Displays the current top address of BASIC memory as a hexadecimal format address.
 ;----------------------------------------------------------------------------
 FN_FRE:
     rst     CHRGET
