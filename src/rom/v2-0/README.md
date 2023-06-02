@@ -1052,7 +1052,7 @@ Save File to USB Drive
      - *filename* can be any string expression
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
      - File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
- - SAVE "*filespec*",* *arrayname*
+ - SAVE "*filespec*",\**arrayname*
    - Action: Save BASIC programt to file *filename* on USB drive.
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
      - File on USB drive will be in CAQ format with the internal filename set to "######".
