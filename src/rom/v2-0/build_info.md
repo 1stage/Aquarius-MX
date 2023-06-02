@@ -6,19 +6,23 @@ NEEDS UPDATING BEFORE 2.0 LAUNCH! - SPH
 | file         |    purpose   |
 |------------------|-----------------------------------------------------------|
 | aqubasic.asm        | ROM initialisation, boot menu, extended BASIC commands |
-| aqubug.asm          | Aqubug debugger |
+| aqubug.asm          | Legacy Micro Expander debugger |
 | ch376.asm           | USB driver |
 | debug.asm           | 'lite' debugger (see notes below) |
+| dispatch.asm        | Statement and function dispatch tables |
 | dos.asm             | Interface between BASIC and USB driver |
 | ds1244rtc.asm       | Interface to the Dallas DS1244 RTC (Real Time Clock) chip |
 | dtm_lib.asm         | DateTime formatting and caluculation functions |
 | edit.asm            | BASIC command line editor |
-| extbasic.asm        | Extended BASIC commands  |
+| enhanced.asm        | Existing Aquarius BASIC commands that have been reworked |
+| extbasic.asm        | Aquarius Extended BASIC commands (non-graphical) |
+| extgraph.asm        | Aquarius Extended BASIC graphics commands |
 | filerequest.asm     | Select file from list  |
 | keycheck.asm        | Keyboard scan |
 | load_rom.asm        | ROM loader  |
-| softclock.asm       | Virtual interface to the RTC (Real Time Clock) |
+| splash.asm          | MX BASIC splash / boot screen code |
 | strings.asm         | String functions |
+| udfhook.asm         | UDF Hook table and dispatch routine |
 | windows.asm         | Windowed text |
 | include/aquarius.i  | Aquarius system defines |
 | include/macros.i    | Structure macros etc. |
