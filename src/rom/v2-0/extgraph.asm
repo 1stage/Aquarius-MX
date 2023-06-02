@@ -85,8 +85,8 @@ MAKINT: push    hl                ; Save Registers
 ;;; ### FORMAT:
 ;;;  - GET (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
 ;;;    - Action: Copies a rectangle of screen characters and colors to numeric array *arrayname*.
-;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column 
-;;;      - *array* must already be DIMensioned to a size large enough to hold the data.
+;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
+;;;      - *arrayname* must already be DIMensioned to a size large enough to hold the data.
 ;;;        - To calculate the size of an array needed to store the elements in a rectangle:
 ;;;          - Multply the width of the rectangle in rows by the height in LINES
 ;;;          - Round up to an even number
@@ -107,9 +107,27 @@ ST_PUT: ld      a,1               ;;Mode = GET
 ;E3FA
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PUT
-;;; 
+;;; ## PUT Statement
+;;; Copy data from a numeric array into a rectangle of screen data.
 ;;; ### FORMAT:
+;;;  - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
+;;;    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
+;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
+;;;      - *arrayname* must already be DIMensioned to a size large enough to hold the data, and populated with data.
+;;;        - To calculate the size of an array needed to store the elements in a rectangle:
+;;;          - Multply the width of the rectangle in rows by the height in LINES
+;;;          - Round up to an even number
+;;;          - Divide by two
+;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
+;;;      - See GET statement for copying from screen to array.
+;;;  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
+;;; ### EXAMPLE:
+;;; ```
+;;; 10 DIM A(8)
+;;; 20 LOAD "CURSOR,SPR",*A
+;;; 30 PUT (1,1)-(4,4),A
+;;; ```
+;;; > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
 ;----------------------------------------------------------------------------
 ST_GET: xor     a                 ;;Mode = PUT
 GGPUTG: jp      GPUTG
@@ -483,7 +501,7 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CIRCLE
-;;; Draw line or box on screen.
+;;; Draw circle or ellipse on screen.
 ;;; ### FORMAT:
 ;;;   - CIRCLE(< xcenter >, < ycenter >), < radius >[,[< color >][,[< start >],[< end >][,< aspect >]]]
 ;;;     - Action: Draws circle, elipse, or arc with radius < radius > and centered at < xcenter >, < ycenter >.
@@ -496,6 +514,12 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;;;         - If the aspect ratio is less than 1, then the radius is given in x-pixels. If it is greater than 1, the radius is given in y-pixels. 
 ;;;         - In many cases, an aspect ratio of 1 gives better ellipses. This also causes the ellipse to be drawn faster. 
 ;;; ### EXAMPLES:
+;;; ` CIRCLE(40,36),10,8 `
+;;; > Draws a grey circle in the center of the screen.
+;;;
+;;; ` CIRCLE(40,36),10,3,-0.75,-5.7,0.75 `
+;;; > Draws a popular arcade character in the middle of the screen
+; ------------------------------------------------------------
 ST_CIRCLE:  
         call    SCAN1             ; GET (X,Y) OF CENTER INTO GRPACX,Y
         SYNCHK  ','               ; EAT COMMA

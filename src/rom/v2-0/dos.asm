@@ -658,7 +658,7 @@ st_write_sync:
 ;;;    - Action: Show a brief listing of all files and folders in the current directory.
 ;;;      - File size, date, and time are not shown.
 ;;;      - Directory names are shown in < >.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` CAT `
 ;;; > List all files and folders in current directory in a 3-across format
 ;------------------------------------------------------------------------------

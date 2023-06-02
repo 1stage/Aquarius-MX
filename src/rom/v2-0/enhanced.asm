@@ -10,7 +10,7 @@
 ;;;  - ASC$ (< string >)
 ;;;    - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in < string >.
 ;;;      - See the HEX$ function for string-to-hex conversion.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` PRINT ASC$("414243") `
 ;;; > Prints the string "ABC".
 ;----------------------------------------------------------------------------
@@ -396,7 +396,7 @@ STRLENADR:
 ;;;    - Action: Returns the bitwise AND of two numbers.
 ;;;      - Each < number > must be between -32768 and 65535.
 ;;;      - Can be used instead of AND operator which only allows operands between -32768 and 32767.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` PRINT AND(-1,$FFFF) `
 ;;; > Prints 65535
 ;----------------------------------------------------------------------------

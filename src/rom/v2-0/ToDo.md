@@ -13,12 +13,6 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] RMDIR and usb__delete_dir
 
 - [ ] Turn debugger into separate ROM option
-  
-- [ ] Full Error Messages
-  - Example:
-    - ` Syntax Error ` instead of ` SN Error `
-
-- [ ] MID$(<string expl> ,n [,m] ) = <string exp2>
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -127,6 +121,11 @@ This file is for recording upcoming changes and features that are being added, a
 - [x] SLEEP microseconds command
 
 - [x] XOR logical function/operator
+  
+- [x] Full Error Messages
+  - Availble using ERR$(1)
+
+- [x] MID$(< string expl > ,n [,m] ) = < string exp2 >
 
 ### AquaLite
 

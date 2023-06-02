@@ -497,6 +497,8 @@ get_errno:
 ;;;       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
 ;;;       - Returns an empty string if *error* or ERR(< number >) is 0.
 ;;;       - Returns FC Error if *error* or ERR(< number >) is less than 0.
+;;; ### EXAMPLES:
+;;; ` 
 ;----------------------------------------------------------------------------
 FN_ERRS:
         rst     CHRGET            ; Skip $
