@@ -124,7 +124,7 @@ ST_PUT: ld      a,1               ;;Mode = GET
 ;;; ### EXAMPLE:
 ;;; ```
 ;;; 10 DIM A(8)
-;;; 20 LOAD "CURSORE,SPR",*A
+;;; 20 LOAD "CURSOR,SPR",*A
 ;;; 30 PUT (1,1)-(4,4),A
 ;;; ```
 ;;; > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
