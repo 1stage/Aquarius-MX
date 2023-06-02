@@ -24370,14 +24370,14 @@ Source: &lt;a href="https://datasheet.datasheetarchive.com/originals/distributor
 <text x="104.14" y="-63.5" size="2.54" layer="97" align="center">Sound MIX/AMP</text>
 <text x="-106.68" y="60.96" size="2.54" layer="97" align="center">Address Buffers</text>
 <text x="-101.6" y="96.52" size="2.54" layer="97" align="center">Balance/Filter Capacitors</text>
-<text x="-101.6" y="-111.76" size="2.286" layer="97" align="center">Aquarius MX v1-6-0, REV A</text>
+<text x="-101.6" y="-111.76" size="2.286" layer="97" align="center">Aquarius MX v1-6-0, REV B</text>
 <text x="-101.6" y="-106.68" size="2.54" layer="97" align="center">Project</text>
 <wire x1="-134.62" y1="-114.3" x2="-134.62" y2="-109.22" width="0.1524" layer="97"/>
 <wire x1="-134.62" y1="-109.22" x2="-134.62" y2="-104.14" width="0.1524" layer="97"/>
 <wire x1="-134.62" y1="-104.14" x2="-68.58" y2="-104.14" width="0.1524" layer="97"/>
 <wire x1="-68.58" y1="-114.3" x2="-134.62" y2="-114.3" width="0.1524" layer="97"/>
 <wire x1="-134.62" y1="-109.22" x2="-68.58" y2="-109.22" width="0.1524" layer="97"/>
-<text x="-43.18" y="-111.76" size="2.54" layer="97" align="center">15 MAY 2023</text>
+<text x="-43.18" y="-111.76" size="2.54" layer="97" align="center">02 JUN 2023</text>
 <text x="-43.18" y="-106.68" size="2.54" layer="97" align="center">Revision Date</text>
 <wire x1="-68.58" y1="-114.3" x2="-68.58" y2="-109.22" width="0.1524" layer="97"/>
 <wire x1="-68.58" y1="-109.22" x2="-68.58" y2="-104.14" width="0.1524" layer="97"/>

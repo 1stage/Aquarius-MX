@@ -852,8 +852,8 @@ link_lines
 ;;; ## RUN
 ;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
 ;;; ### FORMAT:
-;;;  - RUN < filename >
-;;;    - Action: Loads program into memory and runs it.
+;;;  - RUN "*filename*"
+;;;    - Action: Loads program named *filename* into memory and runs it.
 ;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
 ;;;      - Wildcards and paths cannot be used.
 ;;; ### EXAMPLES:
@@ -963,8 +963,8 @@ no_debug_msg:
 ;;; ## DOKE
 ;;; Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 ;;; ### FORMAT:
-;;;  - DOKE < address >, < word >, [, < word > ...]
-;;;    - Action: Writes < word > to memory starting at < address >.
+;;;  - DOKE *address*, *word*, [, *word* ...]
+;;;    - Action: Writes *word* to memory starting at *address*.
 ;;; ### EXAMPLES:
 ;;; ` DOKE 14340, 1382 `
 ;;; > Set USR() function address
@@ -1004,8 +1004,8 @@ ST_DOKE:
 ;;; ### FORMAT:
 ;;;  - CLS
 ;;;    - Action: Clear the screen with defaut BLACK characters on CYAN background.
-;;;  - CLS [ < colors > ]
-;;;    - Action: Clears the screen. The optional parameter < colors > is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
+;;;  - CLS [ *colors* ]
+;;;    - Action: Clears the screen. The optional *colors* parameter is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
 ;;; >
 ;;;     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
 ;;;     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 
@@ -1121,10 +1121,10 @@ ST_KEY:
 ;;; ## LOCATE
 ;;; Move the cursor to a specific column and row on the screen
 ;;; ### FORMAT:
-;;;  - LOCATE < column >,< row >
+;;;  - LOCATE *column*,*row*
 ;;;    - Action: Moves the cursor to the specified spot on the screen
-;;;      - Column can be 1-38 (leftmost and rightmost columns cannot be used)
-;;;      - Row can be 1-23 (topmost and bottommost rows cannot be used)
+;;;      - *column* can be 1-38 (leftmost and rightmost columns cannot be used)
+;;;      - *row* can be 1-23 (topmost and bottommost rows cannot be used)
 ;;; ### EXAMPLES:
 ;;; ` LOCATE 1, 1:print"Hello" `
 ;;; > Prints `Hello` at top left of screen
@@ -1184,10 +1184,10 @@ GOTO_HL:
 ;;; ## PSG
 ;;; Write to Programmable Sound Generator(s)
 ;;; ### FORMAT:
-;;;  - PSG register, value [, ...]
-;;;    - Action: Writes a pair of values to either PSG1 or PSG2
-;;;      - registers  0-15 go to PSG1 at $F7 (register) and $F6 (data)
-;;;      - registers 16-31 go to PSG2 at $F9 (register) and $F8 (data)
+;;;  - PSG *register*, *value* [, ...]
+;;;    - Action: Writes a *register* *value* pair to either PSG1 or PSG2
+;;;      - *register*  0-15 goes to PSG1 at $F7 (register) and $F6 (data)
+;;;      - *register* 16-31 goes to PSG2 at $F9 (register) and $F8 (data)
 ;;; ### EXAMPLES:
 ;;; ` PSG 8,15,0,148,1,1,7,56 `
 ;;; > Play a Db4 note on PSG1 channel A, continuously
@@ -1253,9 +1253,8 @@ psg2:
 ;;; ## DEEK
 ;;; Read 16 bit word from Memory
 ;;; ### FORMAT:
-;;; - DEEK(< address >)
-;;;   - Action: Reads a word from memory location < address >, returning a number
-;;; between 0 and 65535.
+;;; - DEEK(*address*)
+;;;   - Action: Reads a word from memory location *address*, returning a number between 0 and 65535.
 ;;;
 ;;; ### EXAMPLES:
 ;;; ` POKE DEEK(14337),PEEK(14349) `
@@ -1285,8 +1284,8 @@ FLOAT_M:
 ;;; ## JOY
 ;;; Read AY-3-8910 Control Pad Inputs
 ;;; ### FORMAT:
-;;;  - JOY(< stick >)
-;;;    - Action: Reads integer input value from < stick >, where:
+;;;  - JOY(*stick*)
+;;;    - Action: Reads integer input value from *stick*, where:
 ;;;      - `0` will read left or right control pad
 ;;;      - `1` will read left control pad only
 ;;;      - `2` will read right control pad only
@@ -1353,11 +1352,11 @@ joy05:
 ;;; ## KEY
 ;;; Read Keyboard
 ;;; ### FORMAT:
-;;;  - KEY(< number >)
+;;;  - KEY(*number*)
 ;;;    - Action: Checks for a key press and returns the ASCII code of the key.
-;;;      - If < number > is 0, waits for a key to be pressed then returns it's ASCII code.
-;;;      - If < number > is positive, checks to see if a key has been pressed, returning the key's ASCII code (or 0 if no key was pressed). A key press will only be detected once, returning 0 on subsequent calls until the key is released and pressed again.
-;;;      - If < number > is negative, returns the ASCII code of the key currently being pressed (or 0 if no keys are being pressed). Subsequent calls will continue to return the key's ASCII code if the key remains pressed.
+;;;      - If *number* is 0, waits for a key to be pressed then returns it's ASCII code.
+;;;      - If *number* is positive, checks to see if a key has been pressed, returning the key's ASCII code (or 0 if no key was pressed). A key press will only be detected once, returning 0 on subsequent calls until the key is released and pressed again.
+;;;      - If *number* is negative, returns the ASCII code of the key currently being pressed (or 0 if no keys are being pressed). Subsequent calls will continue to return the key's ASCII code if the key remains pressed.
 ;;;      - KEY() does not expand control-key combinations to keywords. Instead CTRL-A through CTRL-Z generate ASCII 1 through 27 (^A-^Z) The rest of the control characters are assigned as follows:
 ;;; ```
 ;;;   KEY:  ;   =   0   :   /   -  8   9   7   ,   1   .   2  <--
@@ -1424,8 +1423,8 @@ FN_KEY:
 ;;; ## DEC
 ;;; Hexadecimal to integer conversion
 ;;; ### FORMAT:
-;;;  - DEC(< hexadecimal string >)
-;;;    - Action: Returns the DECimal value of the hexadecimal number in < hexadecimal string >.
+;;;  - DEC(*hexadecimal string*)
+;;;    - Action: Returns the DECimal value of the hexadecimal number in *hexadecimal string*.
 ;;;      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
 ;;;      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
 ;;;      - See the HEX function for number-to-hex conversion.
@@ -1697,9 +1696,9 @@ ST_SDTM:
 ;;; ## DTM$
 ;;; Get DateTime
 ;;; ### FORMAT:
-;;;  - DTM$(< number >)
+;;;  - DTM$(*number*)
 ;;;    - Action: If a Real Time Clock is installed:
-;;;      - If < number > is 0, returns a DateTime string "YYMMDDHHmmsscc"
+;;;      - If *number* is 0, returns a DateTime string "YYMMDDHHmmsscc"
 ;;;      - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
 ;;;      - Returns "" if a Real Time Clock is not detected.
 ;;; ### EXAMPLES:
@@ -1823,8 +1822,8 @@ EVAL_HEX:
 ;;; ## & Operator
 ;;; Get Variable Address
 ;;; ### FORMAT:
-;;;  - &< variable name >
-;;;    - Action: Returns the address of the first byte of data identified with < variable name >. 
+;;;  - &*variable name*
+;;;    - Action: Returns the address of the first byte of data identified with *variable name*. 
 ;;;      - Any type variable name maybe used (numeric, string, array), and the address returned will be an integer in the range of 0 and 65535.
 ;;;      - Note: Care should be taken when working with an array, because the addresses of arrays change whenever a new simple variable is assigned.
 ;;; ### EXAMPLE:
