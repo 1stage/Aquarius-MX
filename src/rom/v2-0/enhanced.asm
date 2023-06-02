@@ -7,8 +7,8 @@
 ;;; ## ASC$ Function
 ;;; Convert Hexadecimal String to ASCII String
 ;;; ### FORMAT:
-;;;  - ASC$ (< string >)
-;;;    - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in < string >.
+;;;  - ASC$ ("*string*")
+;;;    - Action: Returns string whose characters ASCII values match the series of two digit hexadecimal numbers in *string*.
 ;;;      - See the HEX$ function for string-to-hex conversion.
 ;;; ### EXAMPLE:
 ;;; ` PRINT ASC$("414243") `
@@ -82,7 +82,7 @@ ABORT_FN:
 ;;; ### FORMAT:
 ;;;   - COPY
 ;;;     - Action: Sends screen contents to line printer (legacy command)
-;;;   - COPY < source >, < dest >, < count >
+;;;   - COPY *source*, *dest*, *count*
 ;;; ### EXAMPLES:
 ;;; ` COPY ` (no parameters)
 ;;; > Send contents of screen to line printer
@@ -151,7 +151,7 @@ ST_COPY:
 ;;;    - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
 ;;;  - FRE ( 3 ) 
 ;;;    - Action: Returns the top of user memory (the highest value allowed for CLEAR).
-;;;  - FRE ( < string > )
+;;;  - FRE ( *string* )
 ;;;    - Action: Forces a garbage collection before returning the number of free bytes of string space. 
 ;;;      - BASIC will not initiate garbage collection until all free memory has been used up. 
 ;;;      - Therefore, using FRE("") periodically will result in shorter delays for each garbage collection.
@@ -271,10 +271,10 @@ FN_PEEKS:
 ;;; ## POKE (Extended)
 ;;; Writes byte(s) to memory location(s)
 ;;; ### FORMAT:
-;;;  - POKE < address >, [ < byte or string >, < byte or string >... ] [,STEP count, < byte or string >...]
-;;;    - Action: Writes < byte or string > to < address >, followed by < address > STEP counts away...
-;;;  - POKE < address > TO < address >, < byte >
-;;;    - Action: Writes < byte > to memory from < address > TO < address >.
+;;;  - POKE *address*, [ *byte or string*, *byte or string*... ] [,STEP *count*, *byte or string*...]
+;;;    - Action: Writes *byte or string* to *address*, followed by *address* STEP *count* addresses away...
+;;;  - POKE *address1* TO *address2*, *byte*
+;;;    - Action: Writes *byte* to memory from *address1* TO *address2*.
 ;;; ### EXAMPLES:
 ;;; ` POKE $3000+500,64 `
 ;;; > Display `@` at screen center
@@ -389,12 +389,12 @@ STRLENADR:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## AND 
+;;; ## AND
 ;;; Bitwise AND
 ;;; ### FORMAT:
-;;;  - AND( < number >, < number > )
+;;;  - AND( *number1*, *number2* )
 ;;;    - Action: Returns the bitwise AND of two numbers.
-;;;      - Each < number > must be between -32768 and 65535.
+;;;      - Both *number1* and *number2* must be between -32768 and 65535.
 ;;;      - Can be used instead of AND operator which only allows operands between -32768 and 32767.
 ;;; ### EXAMPLE:
 ;;; ` PRINT AND(-1,$FFFF) `
@@ -419,13 +419,13 @@ FN_AND:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## OR 
+;;; ## OR
 ;;; Bitwise OR
 ;;; ### FORMAT:
-;;;  - OR( < number >, < number > )
+;;;  - OR( *number1*, *number2* > )
 ;;;    - Action: Returns the bitwise OR of two numbers.
-;;;      - Each < number > must be between -32768 and 65535.
-;;;      - Can be used instead of OR   operator which only allows operands between -32768 and 32767.
+;;;      - Both *number1* and *number2* must be between -32768 and 65535.
+;;;      - Can be used instead of OR operator which only allows operands between -32768 and 32767.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(OR($8080,$0808)) `
 ;;; > Prints 8888
@@ -452,9 +452,9 @@ FN_OR:
 ;;; ## XOR 
 ;;; Bitwise Exclusive OR
 ;;; ### FORMAT:
-;;;  - XOR( < number >, < number > )
+;;;  - XOR( *number1*, *number2* )
 ;;;    - Action: Returns the bitwise Exlusive OR of two numbers.
-;;;      - Each < number > must be between -32768 and 65535.
+;;;      - Both *number1* and *number2* must be between -32768 and 65535.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(XOR($FFFF,$0808)) `
 ;;; > Prints F7F7
@@ -481,9 +481,9 @@ FN_XOR:
 ;;; ## SWAP 
 ;;; Swap MSB and LSB
 ;;; ### FORMAT:
-;;;  - XOR( < number >
-;;;    - Action: Returns < number > with the least significant and most significant bytes swapped.
-;;;      - < number > must be between -32768 and 65535.
+;;;  - SWAP(*number*)
+;;;    - Action: Returns *number* with the least significant and most significant bytes swapped.
+;;;      - *number* must be between -32768 and 65535.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(SWAP($ABCD)) `
 ;;; > Prints CDAB

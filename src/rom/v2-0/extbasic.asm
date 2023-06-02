@@ -7,10 +7,10 @@
 ;;; ## DEF FN / FN
 ;;; Define User Function
 ;;; ### FORMAT:
-;;;   - DEF FN < name > ( < variable > ) = < expression >
+;;;   - DEF FN *name* ( *variable* ) = *expression*
 ;;;     - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
 ;;;       - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
-;;;       - The parametern < variable > represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in < expression >, the value of that program variable is used.
+;;;       - The parametern *variable* represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in *expression*, the value of that program variable is used.
 ;;;       - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
 ;;;       - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
 ;;;       - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
@@ -117,7 +117,7 @@ GETFNM: rst     SYNCHR
 ;;; ## ATN
 ;;; Arctangent
 ;;; ### FORMAT:
-;;;   - ATN ( < number > )
+;;;   - ATN ( *number* )
 ;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ;;; ### EXAMPLES:
 ;;; ` PRINT ATN(1) `
@@ -167,7 +167,7 @@ ATNCON: db    9                   ;DEGREE
 ;;; ## MENU
 ;;; Display and execute menu.
 ;;; ### FORMAT:
-;;;   - MENU ( < xpos >,< ypos >) [, < spacing >;] < string > [,< string >,...] GOTO < line >, [,< line >...]
+;;;   - MENU ( *xpos*,*ypos*) [, *spacing*;] *string* [,*string*,...] GOTO *line*, [,*line*...]
 ;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ;;; ### EXAMPLES:
 ;----------------------------------------------------------------------------
@@ -288,7 +288,7 @@ ADDLC:  ld      a,l               ; L = L + C
 ;;; ## ON ERROR
 ;;; BASIC error handling function and codes
 ;;; ### FORMAT:
-;;;   - ON ERROR GOTO < line number >
+;;;   - ON ERROR GOTO *line number*
 ;;;     - Action: details
 ;;; ### EXAMPLE:
 ;;; ` 10 ON ERROR GOTO 100 `
@@ -381,20 +381,20 @@ ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
 ;;; ## ERR
 ;;; Error Status
 ;;; ### FORMAT:
-;;;   - ERR ( < number > )
+;;;   - ERR ( *number* )
 ;;;     - Action: Returns error status values.
-;;;       - If < number > is -1, returns the line number to GOTO when an error occures.
+;;;       - If *number* is -1, returns the line number to GOTO when an error occures.
 ;;;         - Returns 0 if no error trapping is disabled.
-;;;       - If < number > is 0, returns the number corresponding to the last error.
+;;;       - If *number* is 0, returns the number corresponding to the last error.
 ;;;         - - Returns 0 if no error has occured.
-;;;       - If < number > is 1, returns the line number the last error occured on.
+;;;       - If *number* is 1, returns the line number the last error occured on.
 ;;;         - Returns 0 if no error has occured.
 ;;;         - Returns 65535 if the error occured in immediate mode.
-;;;       - If < number > is 2, returns the number corresponding to the last DOS error.
+;;;       - If *number* is 2, returns the number corresponding to the last DOS error.
 ;;;         - Returns 0 if the last DOS command completed successfully.
-;;;       - If < number > is 3, returns the status code of the last CH376 operation.
+;;;       - If *number* is 3, returns the status code of the last CH376 operation.
 ;;;         - This may not be directly related to the DOS error number.
-;;;       - Returns FC Error if < number > is none of the above
+;;;       - Returns FC Error if *number* is none of the above
 ;;;
 ;;; ### Basic Error Numbers
 ;;; | Err# | Code | Description                  |
@@ -488,15 +488,15 @@ get_errno:
 ;;; ## ERR$
 ;;; Error Status
 ;;; ### FORMAT:
-;;;   - ERR$ ( < number > [, *error*] )
+;;;   - ERR$ ( *number* [, *error*] )
 ;;;     - Action: Returns string containing description of error
-;;;       - If < number > is 0, returns a two character BASIC error code.
-;;;       - If < number > is 1, returns a BASIC error description
-;;;       - If < number > is 2, returns a DOS error description
+;;;       - If *number* is 0, returns a two character BASIC error code.
+;;;       - If *number* is 1, returns a BASIC error description
+;;;       - If *number* is 2, returns a DOS error description
 ;;;     - If second argument *error* is included, prints the description for that error number.
-;;;       - Otherwise, prints the description corresponding to the value returned by ERR(< number >).
-;;;       - Returns an empty string if *error* or ERR(< number >) is 0.
-;;;       - Returns FC Error if *error* or ERR(< number >) is less than 0.
+;;;       - Otherwise, prints the description corresponding to the value returned by ERR(*number*).
+;;;       - Returns an empty string if *error* or ERR(*number*) is 0.
+;;;       - Returns FC Error if *error* or ERR(*number*) is less than 0.
 ;;; ### EXAMPLES:
 ;;; ` 
 ;----------------------------------------------------------------------------
@@ -586,18 +586,18 @@ ST_ERR:
 ;;; ## CLEAR
 ;;; Clear Variables and/or Error Code
 ;;; ### FORMAT:
-;;;   - CLEAR [ < number >, [ < address > ] ]
+;;;   - CLEAR [ *number*, [ *address* ] ]
 ;;;     - Action: Clears all variables and arrays, last arror number and line. 
-;;;       - If < number > is specified allocates string space.
+;;;       - If *number* is specified allocates string space.
 ;;;         - BASIC starts with 1024 bytes of string space allocated.
-;;;       - If < address > is specified, sets top of BASIC memory.
+;;;       - If *address* is specified, sets top of BASIC memory.
 ;;;         - If 0, set to start of system variables minus one
 ;;;         - FC Error if less than end of BASIC program plus 40 bytes
 ;;;         - FC Error if greater than or equal to start of system variables
 ;;;   - CLEAR ERR
 ;;;     - Action: Clears last error number and line.
 ;;;       - Leaves variables and arrays intact.
-;;;   - CLEAR DIM < array > [, < array > ...]
+;;;   - CLEAR DIM *array* [, *array* ...]
 ;;;    - Action: Eliminates array from program.
 ;;;      - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes. 
 ;;;      - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
@@ -687,7 +687,7 @@ CLERR:  ex      af,af'
 ;;; ## SWAP
 ;;; Swap variable contents.
 ;;; ### FORMAT:
-;;;  - SWAP < variable >, < variable >
+;;;  - SWAP *variable1*, *variable2*
 ;;;    - Action: Exchanges the values of two variables.
 ;;;      - The variables must be of the same type or a TM error results.
 ;;; ### EXAMPLE:
@@ -782,12 +782,12 @@ ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ;;; ## STRING$
 ;;; Create string of repeating characters.
 ;;; ### FORMAT: 
-;;;  - STRING$ (< length >)
-;;;    - Action: Returns a string of length < length > whose characters all spaces (ASCII code 32).
-;;;  - STRING$ (< length >, < byte > )
-;;;    - Action: Returns a string of length < length > whose characters all have ASCII code < byte >.
-;;;  - STRING$ (< length >, < string > )
-;;;    - Action: Returns a string of length < length > whose characters are all r the first character of < string >.
+;;;  - STRING$ (*length*)
+;;;    - Action: Returns a string of *length* whose characters all spaces (ASCII code 32).
+;;;  - STRING$ (*length*, *byte* )
+;;;    - Action: Returns a string of *length* whose characters all have ASCII code *byte*.
+;;;  - STRING$ (*length*, *string* )
+;;;    - Action: Returns a string of *length* whose characters are all r the first character of *string*.
 ;;; ### EXAMPLES:
 ;;; ```
 ;;;   10 X$ = STRING$ (10 , 45) 
@@ -1098,8 +1098,8 @@ BIGLEN: ld      c,b               ; GET OFFSET OF STRING IN [C]
 ;;; ## EVAL
 ;;; Evaluate a formula in a string.
 ;;; ### FORMAT: 
-;;;  - EVAL(< formula >)
-;;;    - Action: Outputs the formula as a string
+;;;  - EVAL(*formula*)
+;;;    - Action: Outputs the results of *formula* as a string
 ;;; ### EXAMPLES:
 ;;; ` PRINT EVAL("7 + 4") `
 ;;; > Prints "11"
@@ -1134,9 +1134,9 @@ FN_EVAL:
 ;;; ## OUT
 ;;; Write to Z80 I/O Port
 ;;; ### FORMAT:
-;;;  - OUT < address >,< byte >
-;;;    - Action: Writes < byte > to the I/O port specified by LSB of < address >.
-;;;    - Advanced: During the write, < address > is put on the Z80 address bus.
+;;;  - OUT *address*,*byte*
+;;;    - Action: Writes *byte* to the I/O port specified by LSB of *address*.
+;;;    - Advanced: During the write, *address* is put on the Z80 address bus.
 ;;; ### EXAMPLES:
 ;;; ` OUT 246, 12 `
 ;;; > Send a value of 12 to the SOUND chip
@@ -1160,9 +1160,9 @@ ST_OUT:
 ;;; ## IN
 ;;; Read Z80 I/O Port
 ;;; ### FORMAT:
-;;;  - IN(< address >)
-;;;    - Action: Reads a byte from the I/O port specified by LSB of < address >.
-;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;;  - IN(*address*)
+;;;    - Action: Reads a byte from the I/O port specified by LSB of *address*.
+;;;    - Advanced: During the read, *address* is put on the Z80 address bus.
 ;;; ### EXAMPLES:
 ;;; ` PRINT IN(252) `
 ;;; > Prints cassette port input status
@@ -1195,7 +1195,7 @@ FN_IN:
 ;;;      - If the result is zero, MX BASIC loops back and reads the data at the port again. 
 ;;;      - If the result is nonzero, execution continues with the next statement.
 ;;;      - If J is omitted, it is assumed to be zero
-;;;    - Advanced: During the read, < address > is put on the Z80 address bus.
+;;;    - Advanced: During the read, *address* is put on the Z80 address bus.
 ;;;    - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
 ;;; ### EXAMPLES:
 ;;; ` WAIT $FF,$3F,$FF `

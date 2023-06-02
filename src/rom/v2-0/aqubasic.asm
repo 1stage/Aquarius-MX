@@ -1417,14 +1417,14 @@ FN_DEC:
 ;;; ## HEX$
 ;;; Integer to hexadecimal conversion
 ;;; ### FORMAT:
-;;;  - HEX$(< number >)
-;;;    - Action: Returns string containing < number > in two-byte hexadecimal format. 
-;;;      - FC Error if < number > is not in the range -32676 through 65535.
+;;;  - HEX$(*number*)
+;;;    - Action: Returns string containing *number* in two-byte hexadecimal format. 
+;;;      - FC Error if *number* is not in the range -32676 through 65535.
 ;;;      - See the DEC function for hex-to-number conversion.
-;;;  - HEX$(< string >)
-;;;    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in < string >.
-;;;      - Length of returned string is twice that < string >.
-;;;      - LS Error results if length of < string > is greater than 127.
+;;;  - HEX$("*string*")
+;;;    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in *string*.
+;;;      - Length of returned string is twice that *string*.
+;;;      - LS Error results if length of *string* is greater than 127.
 ;;;      - See the ASC$ function for hex-to-string conversion.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(1) `
@@ -1533,9 +1533,9 @@ FN_VER:
 ;;; ## CALL
 ;;; Jump to and run machine code at specified address
 ;;; ### FORMAT:
-;;;  - CALL < address >
+;;;  - CALL *address*
 ;;;    - Action: Causes Z80 to jump from it's current instruction location to the specified one. Note that there must be valid code at the specified address, or the Aquarius will crash.
-;;;    - < address > can be a 16 bit signed or unsigned integer or hex value 
+;;;    - *address* can be a 16 bit signed or unsigned integer or hex value 
 ;;; ### EXAMPLES:
 ;;; ` CALL $A000 `
 ;;; > Begin executing machine code stored at upper half of middle 32k expansion RAM
@@ -1556,10 +1556,10 @@ ST_CALL:
 ;;; ## SLEEP
 ;;; Pause program execution.
 ;;; ### FORMAT:
-;;;  - SLEEP < number >
-;;;    - Action: Causes BASIC to pause for approximately < number > milliseconds.
-;;;      - If < number > is less than zero, pauses 65536 - < number > seconds
-;;;      - Returns FC Error if < number > is not between -32768 and 65535, inclusive.
+;;;  - SLEEP *number*
+;;;    - Action: Causes BASIC to pause for approximately *number* milliseconds.
+;;;      - If *number* is less than zero, pauses 65536 - *number* seconds
+;;;      - Returns FC Error if *number* is not between -32768 and 65535, inclusive.
 ;;;      - Ctrl-C will interrupt the SLEEP command and the BASIC Program
 ;;; ### EXAMPLES:
 ;;; ` SLEEP 250 `
@@ -1620,7 +1620,7 @@ FRCADR: call    CHKNUM      ; Make sure it's a number
 ;;; ## SDTM
 ;;; Set DateTime
 ;;; ### FORMAT:
-;;;  - SDTM < string >
+;;;  - SDTM "*string*"
 ;;;    - Action: If a Real Time Clock is installed, allows user to set the time on the Dallas DS1244Y RTC. DateTime string must be listed in "YYMMDDHHMMSS" format:
 ;;;         - Improperly formatted string causes FC Error
 ;;;         - DateTime is set by default to 24 hour mode,

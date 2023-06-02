@@ -22,7 +22,7 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 ;;; ## PSET / PRESET
 ;;; Draw or Erase a pixel
 ;;; ### FORMAT:
-;;;   - PSET | PRESET [STEP] ( < x-coord > , < y-coord > ) [ , color ]
+;;;   - PSET | PRESET [STEP] (*x-coord*,*y-coord*) [ , color ]
 ;;;     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
 ;;; ### EXAMPLES:
 ;;; `  `
@@ -273,12 +273,12 @@ XCHGX:  push    hl
 ;;; ## LINE Statement
 ;;; Draw line or box on screen.
 ;;; ### FORMAT:
-;;;   - LINE [ (< x-coord >,< y-coord >) ] - ( < x-coord >,< y-coord >) [ ,[ < color > ] [,B[F] ]
+;;;   - LINE [ (*x-coord1*,*y-coord1*) ] - ( *x-coord2*,*y-coord2*) [ ,[ *color* ] [,B[F] ]
 ;;;     - Action: Draws line from the first specified point to the second specified point.
-;;;       - If the first (< x-coord >,< y-coord >) is ommited, the line starts at the last referenced point.
+;;;       - If the first (*x-coord1*,*y-coord1*) is ommited (starts with a dash), the line starts at the last referenced point.
 ;;;       - B (box) draws a box with the specified points at opposite corners.
 ;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
-;;;       - If < color > is not specified, the current screen colors are maintained and two commas must be used before B or BF
+;;;       - If *color* is not specified, the current screen colors are maintained and two commas must be used before B or BF
 ;;; ### EXAMPLES:
 ;;; ` LINE (0,36)-(79,36) `
 ;;; > Draws a horizontal line which divides the screen in half from top to bottom.
@@ -503,13 +503,13 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;;; ## CIRCLE
 ;;; Draw circle or ellipse on screen.
 ;;; ### FORMAT:
-;;;   - CIRCLE(< xcenter >, < ycenter >), < radius >[,[< color >][,[< start >],[< end >][,< aspect >]]]
-;;;     - Action: Draws circle, elipse, or arc with radius < radius > and centered at < xcenter >, < ycenter >.
-;;;       - If < color > is not specified, the screen colors are maintained. 
-;;;       - The < start > and < end > angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end. 
+;;;   - CIRCLE(*xcenter*, *ycenter*), *radius*[,[*color*][,[*start*],[*end*][,*aspect*]]]
+;;;     - Action: Draws circle, elipse, or arc with given *radius* centered at *xcenter*, *ycenter*.
+;;;       - If *color* is not specified, the screen colors are maintained. 
+;;;       - The *start* and *end* angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end. 
 ;;;         - If start or end is negative, the ellipse is connected to the center point with a line, and the angles are treated as if they are positive (note that this is different from adding 2π).
 ;;;         - The start angle may be less than the end angle.
-;;;       - The option < aspect > describes the ratio of the x radius to the y radius (x:y). 
+;;;       - The option *aspect* describes the ratio of the x radius to the y radius (x:y). 
 ;;;         - The default aspect ratio gives a visual circle, assuming a standard monitor screen aspect ratio of 4:3. 
 ;;;         - If the aspect ratio is less than 1, then the radius is given in x-pixels. If it is greater than 1, the radius is given in y-pixels. 
 ;;;         - In many cases, an aspect ratio of 1 gives better ellipses. This also causes the ellipse to be drawn faster. 
@@ -1103,7 +1103,7 @@ GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
 ;;; ## DRAW
 ;;; Draws a figure.
 ;;; ### FORMAT:
-;;;   - DRAW < string expression >
+;;;   - DRAW *string expression*
 ;;;     - Action: The DRAW statement combines most of the capabilities of the other graphics statements into an object definition language called Graphics Macro Language (GML). A GML command is a single character within a string, optionally followed by one or more arguments.
 ;;; #### Commands:
 ;;; Each of the movement commands begins movement from the current graphics position. 
@@ -1139,9 +1139,9 @@ GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
 ;;; - n may range from 1 to 255. n is divided by 4 to derive the scale factor. 
 ;;; - The scale factor is multiplied by the distances given with U, D, L, R, E, F, G, H, or relative M commands to get the actual distance traveled. 
 ;;; - The default for S is 4.
-;;; `x<string> ` Execute substring. 
+;;; `x*string* ` Execute substring. 
 ;;; - This command executes a second substring from a string, much like GOSUB. One string executes another, which executes a third, and so on.
-;;; - < string > is a variable assigned to a string of movement commands.
+;;; - *string* is a variable assigned to a string of movement commands.
 ;;; #### Numeric Arguments:
 ;;; - Numeric arguments can be constants like "123" or "=variable;", where variable is the name of a variable.
 ;;; - When you use the second syntax, "=variable;", the semicolon must be used. Otherwise, the semicolon is optional between commands.

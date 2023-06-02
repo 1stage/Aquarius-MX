@@ -64,8 +64,8 @@ DF_ARRAY  = 7      ; set = numeric array
 ;;; ### FORMAT:
 ;;;  - CD
 ;;;    - Action: show current path
-;;;  - CD < dirname >
-;;;    - Move into directory indicated by < dirname >
+;;;  - CD "*dirname*"
+;;;    - Move into directory indicated by *dirname*
 ;;; ### EXAMPLES:
 ;;; ` CD "songs3" `
 ;;; > Move into `songs3` (add `songs3` to current path)
@@ -155,8 +155,8 @@ FN_CD:
 ;;; ## MKDIR
 ;;; Create directory in current path
 ;;; ### FORMAT: 
-;;;  - MKDIR < dirname >
-;;;    - Action: Create directory < dirname > in the current directory (see CD).
+;;;  - MKDIR "*dirname*"
+;;;    - Action: Create directory *dirname* in the current directory (see CD).
 ;;;      - Returns without error if directory already exists.
 ;;;      - Returns Disk I/O Error "file exists" if a file with the same name is in the current directory.
 ;;; ### EXAMPLES:
@@ -191,8 +191,9 @@ _dos_file_exists:
 ;;; ## LOAD (Updated)
 ;;; Load File from USB Drive
 ;;; ### FORMAT:
-;;;  - LOAD *filespec* 
+;;;  - LOAD "*filespec*" 
 ;;;    - Action: Load BASIC program *filespec* into memory
+<<<<<<< Updated upstream
 ;;;      - *filename* can be any string expression
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
 ;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
@@ -201,9 +202,15 @@ _dos_file_exists:
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
 ;;;      - File on USB drive mus be in CAQ format with the internal filename "######".
 ;;;  - LOAD *filespec* , *address* [ , *length* [, *offset*]]
+=======
+;;;  - LOAD "*filespec*" , \**arrayname*
+;;;    - Action: Load contents of array file *filespec* into array *arrayname*
+;;;  - LOAD "*filespec*" , *address* [ , *length* [, *offset*]]
+>>>>>>> Stashed changes
 ;;;    - Action: Load contents of binary file *filespec* into memot
 ;;;      - *length* specifies the number of bytes to load from the file
-;;;      - *offset* specifies the position in the file to start loading from
+;;;      - *offset* specifies the position in the file to start loadin from
+;;;      - If no parameters other than filename are used, the second quotation mark after *filespec* is optional.
 ;;; ### EXAMPLES:
 ;;; ` LOAD "progname.bas" `
 ;;; > Load basic program into memory.
@@ -408,6 +415,7 @@ _link_lines:
 ;;; ## SAVE (Updated)
 ;;; Save File to USB Drive
 ;;; ### FORMAT:
+<<<<<<< Updated upstream
 ;;;  - SAVE *filename*
 ;;;    - Action: Save BASIC programt to file *filename* on USB drive.
 ;;;      - *filename* can be any string expression
@@ -419,6 +427,13 @@ _link_lines:
 ;;;      - File on USB drive will be in CAQ format with the internal filename set to "######".
 ;;;  - SAVE *filespec*,*address*,*length*[,*offset*]
 ;;;    - Action: Saves *length* bytes of memory starting at *address* to file *filename* on USB drive.
+=======
+;;;  - SAVE "*filespec*"
+;;;  - SAVE "*filespec*",\* *address*
+;;;  - SAVE "*filespec*" , *address* , *length* [, *offset*]
+;;;    - Action: Save BASIC program, array, or range of memory.
+;;;    - Final quotation mark at end of *filespec* is optional.
+>>>>>>> Stashed changes
 ;;; ### EXAMPLES:
 ;;; ` SAVE "progname" `
 ;;; > Save current program to USB drive with file name "PROGNAME.BAS"
@@ -760,10 +775,11 @@ ST_CAT:
 ;;; ## DIR
 ;;; Get a listing of the files on the current USB directory
 ;;; ### FORMAT:
-;;;  - DIR [ < wildcard > ]
+;;;  - DIR [ "*wildcard*" ]
 ;;;    - Action: Show files in current directory with size, with an optional wildcard on filename
-;;;  - DIR SDTM [ < wildcard > ]
-;;;    - Action: Show files in current directory with size, date, and time, with optional wildcard on filename
+;;;  - DIR SDTM [ "*wildcard*" ]
+;;;    - Action: Show files in current directory with size, date, and time, with optional *wildcard* on filename
+;;;    - Final quotation mark at end of *wildcard* string is optional.
 ;;; ### EXAMPLES:
 ;;; ` DIR `
 ;;; > Show all files in current directory
@@ -1044,10 +1060,11 @@ dos__prtDirInfo:
 ;;; ## DEL
 ;;; Delete a file
 ;;; ### FORMAT:
-;;;  - DEL < filename >
-;;;    - Action: Deletes the file named < filename > from the current directory.
+;;;  - DEL "*filename*"
+;;;    - Action: Deletes the file named *filename* from the current directory.
 ;;;      - No warnings are given.
 ;;;      - Wildcards and paths cannot be used.
+;;;      - Final quotation mark after string is optional.
 ;;; ### EXAMPLES:
 ;;; ` DEL "THISFILE.BAS" `
 ;;; > Deletes the file named `THISFILE.BAS` from the current directory.
