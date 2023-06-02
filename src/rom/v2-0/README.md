@@ -546,6 +546,12 @@ Trigger a BASIC Error
 ## EVAL
 Evaluate a formula in a string.
 ### FORMAT:
+ - EVAL(< formula >)
+   - Action: Outputs the formula as a string
+### EXAMPLES:
+` PRINT EVAL("7 + 4") `
+> Prints "11"
+
 
 ---
 ## FRE (Extended)
@@ -622,7 +628,8 @@ Read Z80 I/O Port
 ---
 ## INSTR Function
 Search for string in another string
-### FORMAT: INSTR ( [ *offset* , ] *string1* , *string2* )
+### FORMAT:
+ - INSTR ( [ *offset* , ] *string1* , *string2* )
    - Action: Searches for the first occurrence of *string2* in *string1* and returns the position at which the match is found.
      - Optional *offset* sets the position for starting the search.
        - Must be in the range 1 to 255 or an FC Error results.
@@ -783,7 +790,8 @@ Display and execute menu.
 ---
 ## MID$ Statement
   Replace a portion of one string with another string.
-### FORMAT: MID$ ( *var$* , *pos* [ , *len*] ) = *string*
+### FORMAT:
+ - MID$ ( *var$* , *pos* [ , *len*] ) = *string*
    - Action: The contents of string variable *var$*, beginning at position *pos*, are replaced by the characters in *string*
      - if *pos* is less than 1 or more than 255, an FC error results
      - The optional *len* refers to the number of characters from *string* that will be used in the replacement
