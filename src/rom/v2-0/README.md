@@ -987,9 +987,6 @@ Erase a pixel
 > Erases the pixel at the last referenced coordinates.
 
 ---
-## PRINT USING
-
----
 ## PSET
 Draw a pixel
 ### FORMAT:
