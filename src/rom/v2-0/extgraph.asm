@@ -214,19 +214,15 @@ ATRFIN: ld      a,e               ; GET ATTRIBUTE INTO [A]
         pop     de                ; GET BACK CURRENT POINT
         pop     bc              
         jp      CHRGT2          
-; E63C 
+
 ; XDELT SETS [H,L]=ABS(GXPOS-[B,C]) AND SETS CARRY IF [B,C].GT.GXPOS
 ; ALL REGISTERS EXCEPT [H,L] AND [A,PSW] ARE PRESERVED
 ; NOTE: [H,L] WILL BE A DELTA BETWEEN GXPOS AND [B,C] - ADD 1 FOR AN X "COUNT"
-XDELT:  ld      hl,(GXPOS)      ; GET ACCUMULATOR POSITION
-        ld      a,l             
-        sub     c               ; DO SUBTRACT INTO [H,L]
-        ld      l,a             
-        ld      a,h             
-        sbc     a,b             
-        ld      h,a             
+XDELT:  ld      hl,(GXPOS)        ; GET ACCUMULATOR POSITION
+        or      a
+        sbc     hl,bc             ; DO SUBTRACT INTO [H,L]
 CNEGHL: ret     nc              
-; E646
+
 NEGHL:  xor       a             ; STANDARD [H,L] NEGATE
         sub       l
         ld        l,a
@@ -239,12 +235,8 @@ NEGHL:  xor       a             ; STANDARD [H,L] NEGATE
 ; YDELT SETS [H,L]=ABS(GYPOS-[D,E]) AND SETS CARRY IF [D,E].GT.GYPOS
 ; ALL REGISTERS EXCEPT [H,L] AND [A,PSW] ARE PRESERVED
 YDELT:  ld      hl,(GYPOS)
-        ld      a,l
-        sub     e
-        ld      l,a
-        ld      a,h
-        sbc     a,d
-        ld      h,a
+        or      a
+        sbc     hl,de
         jr      CNEGHL
 ; E659 
 ; Register Exchange Routines
@@ -479,25 +471,17 @@ LINLP3: call    SETC              ; SET CURRENT POINT
         ret     z                 
         call    MINUPD            ; ADVANCE MINOR AXIS           
         jr      LINLOP            ; CONTINUE UNTIL COUNT EXHAUSTED
-; E77B                            
-HLFDE:  ld      a,d               ; DE = DE/2
-        or      a
-        rra
-        ld      d,a
-        ld      a,e
-        rra
-        ld      e,a
-        ret
-; E783
+
+HLFDE:  srl     d                 ; DE = DE/2
+        rr      e
+        ret 
 ;Restore Text Pointer and Return
 POPTRT: pop     hl
         ret
-; E785
 NEGDE:  ex      de,hl           ; DE = 0 - DE
         call    NEGHL
         ex      de,hl
         ret
-;E78B
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## CIRCLE
