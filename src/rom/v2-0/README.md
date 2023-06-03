@@ -977,7 +977,7 @@ Writes byte(s) to memory location(s)
 ## PSET / PRESET
 Draw or Erase a pixel
 ### FORMAT:
-  - PSET | PRESET [STEP] (*x-coord*,*y-coord*) [ , color ]
+  - PSET | PRESET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
 ### EXAMPLES:
 `  `
@@ -1163,7 +1163,7 @@ Returns 16 bit integer value of MX BASIC ROM version
 
 ---
 ## WAIT
-Suspend program execution while inonitoring the status of a Z80 input port.
+Suspend program execution while monitoring the status of a Z80 input port.
 ### FORMAT:
  - WAIT *address*, *byte1* [, *byte2*]
    - Action: Causes execution to be suspended until a Z80 port develops a specified bit pattern.
