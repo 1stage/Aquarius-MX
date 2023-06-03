@@ -19,16 +19,31 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PSET / PRESET
-;;; Draw or Erase a pixel
+;;; ## PSET 
+;;; Draw a pixel
 ;;; ### FORMAT:
-;;;   - PSET | PRESET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
-;;;     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
+;;;   - PSET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
+;;;     - Action: Draws a pixel on the screen.
 ;;; ### EXAMPLES:
-;;; `  `
-;;; > 
+;;; ` PSET (20,10) `
+;;; > Draws a pixel at x-coordinate 20 and y-coordinate 10.
+;;; ` PSET (40,36),3 `
+;;; > Draws a yellow pixel at the center of the screen.
+;;; ` PSET (-10,8) `
+;;; > Draws a pixel at 10 points to the left of and 10 points below the last referenced Coordinates.
 ;----------------------------------------------------------------------------
-; E1F0
+;;; ---
+;;; ## PRESET
+;;; Erase a pixel
+;;; ### FORMAT:
+;;;   - PRESET [STEP] (*x-coord*,*y-coord*)
+;;;     - Action: Erases a pixel from the screen.
+;;; ### EXAMPLES:
+;;; ` PRESET (20,10) `
+;;; > Erases the pixel at column 20 of line 10.
+;;; ` PRESET STEP (0,0) `
+;;; > Erases the pixel at the last referenced coordinates.
+;----------------------------------------------------------------------------
 ; Extended PSET or PRESET
 ; Reads Coordinates and saves them for subsequent LINE -(X,Y) or LINE -STEP(X,Y) statement then executes standard basic PSET/PRESET code
 ST_PRESET: 
