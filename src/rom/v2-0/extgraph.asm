@@ -32,25 +32,29 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 ; Extended PSET or PRESET
 ; Reads Coordinates and saves them for subsequent LINE -(X,Y) or LINE -STEP(X,Y) statement then executes standard basic PSET/PRESET code
 ST_PRESET: 
-        xor     a               ; PRESET FLAG
-        jr      PPRSEX            
-ST_PSET:  
-        ld      a,1             ; PSET FLAG
-PPRSEX: push    af              ; Save PSET/PRESET flag
-        call    SCANDX          ; Scan Coordinates as [STEP] (X,Y)
-        pop     af              ; Restore PSET/PRESET flag
-        ex      af,af'          ; Put it in AF'
-        jp      PPRSDO          ; Go Do PSET/PRESET
+        call    SCANDX            ; Scan Coordinates as [STEP] (X,Y)
+        xor     a                 ; PRESET FLAG
+PPRSEX: ex      af,af'            ; Put it in AF'
+        jp      PPRSDO            ; Go Do PSET/PRESET
+        
+ST_PSET:                          
+        call    SCANDX            ; Scan Coordinates as [STEP] (X,Y)
+        call    CHRGT2            ; Get Character at Text Pointer
+        jr      nz,PPSETC         ; If End of Statement
+        ld      a,1               ; PSET Flag
+        jr      PPRSEX            ; Go Do Standard PSET
+PPSETC: SYNCHK  ','               ; Else Require Comma
+        call    ATRGET            ; Read Attribute Byte
+        call    SCLXYX            ; SEE IF POINT OFF SCREEN
+        jp      nc,FCERR          ; NC IF POINT OFF SCREEN - FC Error
+        call    MAPXYP  
+        jp      SETC              ; PLOT THE POINT
 
-;possibe extension - , attribute        
-        call    CHRGT2          ; Get Character at Text Pointer
-        ret     z               ; If End of Statement, Return
-        SYNCHK  ','             ; Else Require Comma
-        push    bc              
-        push    de
-        call    ATRGET          ; Read Attribute Byte
-        jp      SETC
-      
+        
+ATRGET: push    bc                ; Save Current Point
+        push    de                
+        jp      ATRSCB            ; Jump Into ATRSCN`
+
 ; E38F
 ;;Convert FAC to Integer and Return in [H,L]
 FRCINX: rst     FSIGN             ;[M80] GET THE SIGN OF THE FAC IN A
@@ -208,7 +212,7 @@ ATRENT: push    bc                ; SAVE THE CURRENT POINT
         SYNCHK  ','               ;  INSIST ON COMMA
         cp      ','               ; ANOTHER COMMA FOLLOWS?
         jr      z,ATRFIN          ; IF SO, NULL ARGUMENT SO USE DEFAULT
-ATRGET: call    GETBYT            ; GET THE BYTE
+ATRSCB: call    GETBYT            ; GET THE BYTE
 ATRFIN: ld      a,e               ; GET ATTRIBUTE INTO [A]
         push    hl                ; SAVE THE TEXT POINTER
         call    SETATR            ; SET THE ATTRIBUTE AS THE CURRENT ONE
@@ -1634,7 +1638,7 @@ SETC:   push    hl                ; Save [HL]
 SETC2:  call    GETMSK            ; Get Bit Mask for Pixel to set
         or      (hl)              ; Set it
         ld      (hl),a            ; Write Character back to Screen Matrix
-        ld      de,COLRAM-CHRRAM  ; Add Offset into Color Matrix to
+SETCLR: ld      de,COLRAM-CHRRAM  ; Add Offset into Color Matrix to
         add     hl,de             ; Screen Address to Get Color Address
         ld      a,(ATRBYT)        ; Get Color Byte
         add     a,a               ; Now multiply by 16,

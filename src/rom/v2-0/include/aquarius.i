@@ -322,6 +322,7 @@ GETSTK  = $0BA0   ; Check for stack space (in: C = number of words required)
 POPHRT  = $141A   ; Pop HL and Return
 
 PPRSDO  = $1A55   ; Execute PSET/PRESET: BC = X-coord, DE = Y-coord, A = 0 for PRESET, else PSET
+SCALXY  = $1A8E   ; Convert PSET Coordinates to Screen Position and Character Mask
 BITTAB  = $1ACA   ; Semigraphic Pixel Index to Bit Mask Table
 COPY    = $1B15   ; COPY statement
 
