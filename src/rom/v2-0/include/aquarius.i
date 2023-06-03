@@ -117,7 +117,7 @@ TEMPPT  = $38AF ; 14511 - 14512
 TEMPST  = $38B1 ; 14513 -               
 DSCTMP  = $38BD ;       - 14528         
 FRETOP  = $38C1 ; 14529 - 14530   Pointer to top of string space
-TENP3   = $38C3 ; 14531 - 14532   temp space used by FOR etc.
+TEMP3   = $38C3 ; 14531 - 14532   temp space used by FOR etc.
 TEMP8   = $38C5 ; 14533 - 14534
 ENDFOR  = $38C7 ; 14535 - 14536
 DATLIN  = $38C9 ; 14537 - 14538   Address of current DATA line
@@ -159,7 +159,7 @@ PROGST   = $3900 ; 14592           NULL before start of BASIC program
 ; buffer lengths
 BUFLEN   = ENDBUF-BUF-1
 STRBUFLEN   = FRETOP-TEMPPT
-SYSTEMPLEN  = DATLIN-TENP3
+SYSTEMPLEN  = DATLIN-TEMP3
 SAVTXTLEN  = OLDLIN-SAVTXT
 FBUFFRLEN   = RESHO-FBUFFR
 
@@ -195,11 +195,15 @@ CHRGT2  = $066C   ; Alternate CHRGOT for CALL
 NTOERR  = $0782   ; Execute ON ... GOTO
 OMGOTO  = $0785   ; Execute GOTO part of ON ... GOTO
 
+FINPRT  = $0866   ; Finish up PRINT
 INPDIR  = $0898   ; INPUT Statement, bypassing Hook and Direct Mode Check
 
 STROUT  = $0E9D   ; Print null or quote terminated string
 STRPRT  = $0EA0   ; Print String with Descriptor in Floating Point Accumulator
 LINPRT  = $1675   ; Print line number in HL
+LINOUT  = $1679   ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
+FOUT2   = $168C   ; Alternate entry into FOUT
+
 CRDONZ  = $19DE   ; Print CR/LF if not at beginning of line
 CRDO    = $19EA   ; Print CR+LF
 FINLPT  = $19BE   ; Terminate Printer Output
@@ -275,6 +279,7 @@ GARBA2  = $0EDB   ; Force Garbage Collection
 LEN1    = $0FF7   ; get string length (in: FACLO = string block; out: HL = string block, A = length)
 ASC2    = $1006   ; Get pointer to string text (out: DE = filename, A = 1st char)
 FINBCK  = $101D   ; Skip CHKNUM and Return to Higher Level
+LEFT2   = $1027   ; Entry into LEFT$ from MID$
 FRE     = $10A8   ; FRE Function
 
 FRESTR  = $0FC6   ; Free up Temporary String
@@ -291,7 +296,6 @@ FRCIN1  = $068A   ; Alternate entry point into FRCINT
 SCNLIN  = $069C   ; Back up and scan line number into DE
 LINGET  = $069D   ; DE = value of decimal number string at HL
 QINT    = $1586   ; Convert Floating Point Accumulator to Signed Integer in C,DE
-LINOUT  = $1679   ; convert 16 bit ingeter in HL to text at FPSTR (starts with ' ')
 
 PTRGET  = $10D1   ; Get Pointer to Variable
 PTRGT2  = $10D6   ; Get Pointer to Variable after reading first char
@@ -307,9 +311,10 @@ PSHNEG  = $1770   ; Push address of NEG routine on Stack
 POLYX   = $1837   ; Polynomial Evaluator
 PI2     = $1953   ; Floating Point Constant Pi/2  
 
+OUTDO   = $198A   ; Execute OUTCHR
+INCHR   = $19DA   ; Flush keyboard buffer and wait for keypress
 ISCNTC  = $1A25   ; Check for ^C and ^S
 CONIN   = $1A33   ; Wait for keypress (out: A = key)
-INCHR   = $19DA   ; Flush keyboard buffer and wait for keypress
 INCHRH  = $1E7E   ; Get current key pressed (through UDF)
 INCHRC  = $1E80   ; Get current key pressed (direct)
 

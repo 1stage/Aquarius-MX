@@ -133,7 +133,7 @@ STJUMPS:
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
     dw      ST_WAIT               ;$F2 WAIT
-    dw      SNERR                 ;$F3
+    dw      SNERR                 ;$F3 USING
     dw      SNERR                 ;$F4
     dw      SNERR                 ;$F5
     dw      SNERR                 ;$F6
@@ -216,7 +216,7 @@ FNJUMPS:
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2 WAIT
-    dw      SNERR                 ;$F3
+    dw      SNERR                 ;$F3 USING
     dw      SNERR                 ;$F4
     dw      SNERR                 ;$F5
     dw      SNERR                 ;$F6
@@ -476,7 +476,8 @@ TBLCMDS:
     db      $80 + 'M', "KDIR"       ; $ef - Create Directory
     db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
     db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
-    db      $80 + 'W', "AIT"        ; $f1 - Special Keyword OFF
+    db      $80 + 'W', "AIT"        ; $f2 - Wait for byte on Z80 port
+    db      $80 + 'U', "SING"       ; $f3 - Print formatting
     db      $80                     ; End of table marker
 
 ; Tokens used in external routines

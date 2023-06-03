@@ -1872,7 +1872,6 @@ FLOAT_DE:
 ; ST_PUT
     include "extgraph.asm"
 
-
 E0_END:   
 E0_SIZE = E0_END - $E000
 

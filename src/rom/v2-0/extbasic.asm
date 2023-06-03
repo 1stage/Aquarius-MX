@@ -1185,8 +1185,8 @@ FN_IN:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## WAIT
-;;; Suspend program execution while inonitoring the status of a Z80 input port.
+;;; ## WAIT Statement
+;;; Suspend program execution while monitoring the status of a Z80 input port.
 ;;; ### FORMAT:
 ;;;  - WAIT *address*, *byte1* [, *byte2*]
 ;;;    - Action: Causes execution to be suspended until a Z80 port develops a specified bit pattern. 
@@ -1194,7 +1194,7 @@ FN_IN:
 ;;;      - The data read at the port is Exclusive OR'ed with *byte2*, then AND'ed with *byte1*. 
 ;;;      - If the result is zero, MX BASIC loops back and reads the data at the port again. 
 ;;;      - If the result is nonzero, execution continues with the next statement.
-;;;      - If J is omitted, it is assumed to be zero
+;;;      - If *byte2* is omitted, it is assumed to be zero
 ;;;    - Advanced: During the read, *address* is put on the Z80 address bus.
 ;;;    - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
 ;;; ### EXAMPLE:
@@ -1221,7 +1221,5 @@ NOTTHR: pop     de                ; REGET THE "AND" MASK in D
 LOPINP: in      a,(c)             ; THE INPUT INSTR
         xor     e                 ; XOR WITH MASK2
         and     d                 ; AND WITH MASK
-        jr      z,LOPINP          ; LOOP UNTIL RESULT IS NON-ZERO
-                                  ; NOTE: THIS LOOP CANNOT BE CONTROL-C'ED
-                                  ; HOWEVER A RESTART AT 0 IS OK.
-        ret  
+        jr      z,LOPINP          ; LOOP UNTIL RESULT IS NON-ZERO 
+        ret                       ; NOTE: THIS LOOP CANNOT BE CONTROL-C'ED HOWEVER A RESTART AT 0 IS OK.

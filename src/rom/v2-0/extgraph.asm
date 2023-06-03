@@ -36,9 +36,12 @@ ST_PRESET:
         jr      PPRSEX            
 ST_PSET:  
         ld      a,1             ; PSET FLAG
-PPRSEX: ex      af,af'          ; Save PSET/PRESET flag
+PPRSEX: push    af              ; Save PSET/PRESET flag
         call    SCANDX          ; Scan Coordinates as [STEP] (X,Y)
+        pop     af              ; Restore PSET/PRESET flag
+        ex      af,af'          ; Put it in AF'
         jp      PPRSDO          ; Go Do PSET/PRESET
+
 ;possibe extension - , attribute        
         call    CHRGT2          ; Get Character at Text Pointer
         ret     z               ; If End of Statement, Return
