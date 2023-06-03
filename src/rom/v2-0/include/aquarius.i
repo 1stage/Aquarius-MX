@@ -354,9 +354,9 @@ COMMA   = $2C   ; comma
 
 ; PSG IO Ports
 PSG1DATA    = $F6       ; AY-3-8910 data port 
-PSG1ADDR    = $F7       ; AY-3-8910 address port
+PSG1REGI    = $F7       ; AY-3-8910 register port
 PSG2DATA    = $F8       ; Second AY-3-8910 data port
-PSG2ADDR    = $F9       ; Second AY-3-8910 address port
+PSG2REGI    = $F9       ; Second AY-3-8910 register port
 
 ; RTC Enabled/Valid Flags
 CLK_FOUND   = $FF

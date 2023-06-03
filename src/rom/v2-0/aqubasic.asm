@@ -117,27 +117,23 @@ scrn_flag equ 1    ; enable screen save in lite debugger
 ;; - Used in dos.asm to point to the system variable DosFlags
 ;;   - Can be used as variable that persists through any BASIC statement handling routine.
 ;; - Do *not* use as a temporary variable in any subroutines that may be called by a statement handler.
-
+;
 ;; ---
 ;; ## Real Time Clock
 ;; ### System Variables
-;; The 24 bytes of RAM between Screen RAM and Color RAM and the 24 bytes 
-;; between the end of Color RAM and System Variables are used as temporary 
-;; variables by the RTC and DateTime Routines
-;;
-;; These areas are overwritten when the screen is cleared via PRINT CHR$(11)
+;; - The 24 bytes of RAM between Screen RAM and Color RAM and the 24 bytes between the end of Color RAM and System Variables are used as temporary variables by the RTC and DateTime Routines. These areas are overwritten when the screen is cleared via PRINT CHR$(11)
+
 DTM_STRING = $33E8        ; DTM String Buffer, 24 bytes (19 currently used)
 DTM_BUFFER = $37E8        ; RTC & DTM DateTime Buffer, 8 bytes
 RTC_SHADOW = $37F0        ; Real Time Clock Shadow Registers, 10 bytes. 
 ;    $37FA - $37FF        ; Reserved
+
 ;;                       
 ;; ### Implementing Real Time Clock in Emulators
-;; The will be a read from memory location $37F0 whenever the RTC is accessed
-;; If $37F0 contains $7F, the RTC is being written to and the following
-;; bytea contain the date to be written.
-;; If $37F0 contains any other value, the RTC was just read and $37F0 should
-;; be filled with $FF and the following bytes with the current date/time.
-;; See the RTC driver file for the date/time structure.
+;; - The will be a read from memory location $37F0 whenever the RTC is accessed
+;; - If $37F0 contains $7F, the RTC is being written to and the following bytea contain the date to be written.
+;; - If $37F0 contains any other value, the RTC was just read and $37F0 should be filled with $FF and the following bytes with the current date/time.
+;; - See the RTC driver file for the date/time structure.
 
   ifdef softrom
 RAMEND = $8000           ; we are in RAM, 16k expansion RAM available
@@ -1190,6 +1186,33 @@ GOTO_HL:
 ;;;
 ;;; ` PSG 24,0,23,0 `
 ;;; > Turn the PSG2 sound off
+
+;; ---
+;; ## PSGs (Programmable Sound Generators)
+;; ### Hardware 
+;; - The Aquarius MX, Micro Expander, and Mini Expander have an on-board AY-3-8910 sound chip (referred to in the code as PSG1) on IO addresses $F7 *register* and $F6 *data*.
+;; - The Aquarius MX has an option for a second AY-3-8913 sound chip (referred to in the code as PSG2) on IO addresses $F9 *register* and $F8 *data*. This device does not have the capability for controller input.
+;; ### Software
+;; - If writing to a PSG to modify sound output, the *register* must be written to first, followed by the *data*
+;; - If reading from a PSG to process controller input, the *register* must be written to first to select which controllers will be polled, then the *register* is read to receive the input bytes.
+;; ### AY PSG Registers
+;; - 0  - Channel A Tone Period, fine
+;; - 1  - Channel A Tone Period, coarse
+;; - 2  - Channel B Tone Period, fine
+;; - 3  - Channel B Tone Period, coarse
+;; - 4  - Channel C Tone Period, fine 
+;; - 5  - Channel C Tone Period, coarse
+;; - 6  - Channel Noise Period
+;; - 7  - Enable Channels/Noise/IO
+;; - 10 - Channel A Amplitude
+;; - 11 - Channel B Amplitude
+;; - 12 - Channel C Amplitude
+;; - 13 - Envelop Period, fine
+;; - 14 - Envelop Period, coarse
+;; - 15 - Envelope Shape/Cycle 
+;; - 16 - IO Port A Data Store
+;; - 17 - IO Port B Data Store
+;;
 ;----------------------------------------------------------------------------
 ;
 ; Original Single PSG Code - Restore as needed (Remove after release!!!)
@@ -1218,11 +1241,11 @@ psgloop:
     call    GETBYT              ; Get/evaluate register
     cp      16                  ; Compare to a 16 offset
     jr      nc, psg2            ; If >= 16 send to PSG2
-    out     (PSG1ADDR),a        ; Otherwise, set the PSG1 register
+    out     (PSG1REGI),a        ; Otherwise, set the PSG1 register
     rst     $08                 ; Next character must be ','
     db      COMMA               ; ','
     call    GETBYT              ; Get/evaluate value
-    out     (PSG1DATA),a     ; Send data to the selected PSG1 register
+    out     (PSG1DATA),a        ; Send data to the selected PSG1 register
 check_comma:
     ld      a,(hl)              ; Get next character on command line
     cp      COMMA               ; Compare with ','
@@ -1231,7 +1254,7 @@ check_comma:
     jr      psgloop             ; Parse next register & value
 psg2:
     sub     16                  ; Reduce shifted registers into regular range for PSG2
-    out     (PSG2ADDR),a        ; Set the PSG2 register
+    out     (PSG2REGI),a        ; Set the PSG2 register
     rst     $08                 ; Next character must be ','
     db      COMMA               ; ','
     call    GETBYT              ; Get/evaluate value
@@ -1296,7 +1319,7 @@ FN_JOY:
     push    hl
     ld      bc,LABBCK
     push    bc
-    call    FRCINT         ; convert argument to 16 bit integer in DE
+    call    FRCINT            ; convert argument to 16 bit integer in DE
 
     ld      a,e
     or      a
