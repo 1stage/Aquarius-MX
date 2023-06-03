@@ -743,6 +743,9 @@ Controls keyboard functions
 ### FORMAT:
  - KEY SOUND [ON | OFF]
    - Action: Turns key click ON or OFF
+ - KEY *string*
+   - Action: Causes BASIC to act as though the characters in *string* are being typed on the keyboard.
+     - Returns LS Error if *string* is longer than 15 characters.
 
 ### EXAMPLES:
 ` KEY SOUND OFF `
@@ -821,7 +824,7 @@ Move the cursor to a specific column and row on the screen
      - *column* can be 1-38 (leftmost and rightmost columns cannot be used)
      - *row* can be 1-23 (topmost and bottommost rows cannot be used)
 ### EXAMPLES:
-` LOCATE 1, 1:print"Hello" `
+` LOCATE 1,1:print"Hello" `
 > Prints `Hello` at top left of screen
 
 ` CLS:LOCATE 19,11:PRINT"&" `

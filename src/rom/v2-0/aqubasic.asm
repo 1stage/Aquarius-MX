@@ -86,7 +86,7 @@ REVISION = 0
 scrn_flag equ 1    ; enable screen save in lite debugger
 ;debug    equ 1    ; debugging our code. Undefine for release version!
 ;
-; See readme.md for full list of Commands and Functions
+; See README.md for full list of Commands and Functions
 ;
 ; Assembled with ZMAC in 'zmac' mode.
 ; command: zmac.exe --zmac -e --oo cim --nmnv -L -n -I include aqubasic.asm
@@ -102,6 +102,21 @@ scrn_flag equ 1    ; enable screen save in lite debugger
     include  "aquarius.i" ; aquarius hardware and system ROM
     include  "macros.i"   ; structure macros
     include  "windows.i"  ; fast windowed text functions
+
+;; ---
+;; ## Register Usage
+;; ### IX 
+;; - Used in module windows.asm to point to the window structure.
+;;   - Should not conflict with usage in MX BASIC, as the module is never used from within BASIC itself
+;; - Used in MX BASIC by the UDF Hook call and dispatch routines and the statement and function dispatch routines. 
+;; - Can be used as a temporary variable in any routine 
+;;   - Assume that it will be changes by CALLs to most BASIC system routines
+;; ### IY 
+;; - Used in the debuggers.
+;;   - Should not conflist with usage in MX BASIC, as the debuggers save all the registers when handling a Break
+;; - Used in dos.asm to point to the system variable DosFlags
+;;   - Can be used as variable that persists through any BASIC statement handling routine.
+;; - Do *not* use as a temporary variable in any subroutines that may be called by a statement handler.
 
 ;; ---
 ;; ## Real Time Clock
@@ -1049,6 +1064,9 @@ clearscreen:
 ;;; ### FORMAT:
 ;;;  - KEY SOUND [ON | OFF]
 ;;;    - Action: Turns key click ON or OFF
+;;;  - KEY *string*
+;;;    - Action: Causes BASIC to act as though the characters in *string* are being typed on the keyboard.
+;;;      - Returns LS Error if *string* is longer than 15 characters.
 ;;;
 ;;; ### EXAMPLES:
 ;;; ` KEY SOUND OFF `
@@ -1060,19 +1078,19 @@ clearscreen:
 ST_KEY:
     cp      SOUNDTK               ; If Next Character
     jp      nz,.notsound          ; is SOUND Token
-    ld      ix,KeyFlags
+    ld      iy,KeyFlags
     rst     CHRGET                ;   Skip to Next Character
     ld      c,a                   ;   Save Character
     rst     CHRGET                ;   Advance Text Pointer
     ld      a,c                   ;   Restore Character
     cp      ONTK                  ;   
     jr      nz,.not_ontk          ;   If ON Token
-    set     KF_CLICK,(ix+0)       ;     Turn Key Click On
+    set     KF_CLICK,(iy+0)       ;     Turn Key Click On
     ret                           ;     and Return
 .not_ontk:
     cp      OFFTK                 ;   If Not OFF Token
     jp      nz,FCERR              ;     FC Error
-    res     KF_CLICK,(ix+0)       ;   Turn Key Click On
+    res     KF_CLICK,(iy+0)       ;   Turn Key Click On
     ret
 .notsound                         ; Else
     call    FRMEVL                ;   Evaluate Argument
@@ -1099,7 +1117,7 @@ ST_KEY:
 ;;;      - *column* can be 1-38 (leftmost and rightmost columns cannot be used)
 ;;;      - *row* can be 1-23 (topmost and bottommost rows cannot be used)
 ;;; ### EXAMPLES:
-;;; ` LOCATE 1, 1:print"Hello" `
+;;; ` LOCATE 1,1:print"Hello" `
 ;;; > Prints `Hello` at top left of screen
 ;;;
 ;;; ` CLS:LOCATE 19,11:PRINT"&" `
@@ -1150,7 +1168,6 @@ GOTO_HL:
     ld      de,$3000            ; screen character-matrix (= 12288 dec)
     add     hl,de               ; putting it al together
     jp      TTYFIS              ; Save cursor position and return
-
 
 ;----------------------------------------------------------------------------
 ;;; ---
