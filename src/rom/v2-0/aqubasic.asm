@@ -10,12 +10,16 @@
 ;        Curtis Kaylor                                      revcurtisp@gmail.com
 ;        Mack Wharton                              Mack@Aquarius.je, aquarius.je
 ;        Sean P. Harrington                  sph@1stage.com, aquarius.1stage.com
-;      
 ;
-; For use with the Aquarius MX and Micro Expander. 
 ;
-; Incudes commands from BLBasic by Martin Steenoven, as well as commands from
-; Aquarius Extended BASIC (MS 8K BASIC), and other BASIC derivatives.
+; Lines beginning with three semicolons ;;; are inline docs and are collected 
+; into file README.md by script makedoc.py
+;
+; Lines beginning with two semicolons ;;; are developer notes and are collected 
+; into file DEVNOTES.md by script makedev.py
+;
+; Includes commands from BLBasic by Martin Steenoven, as well as commands from
+; Aquarius Extended BASIC (MS 8K BASIC), and other Microsoft BASIC dialects.
 ;
 ; Changes:
 ; 2015-11-4  v0.0  created
@@ -99,21 +103,24 @@ scrn_flag equ 1    ; enable screen save in lite debugger
     include  "macros.i"   ; structure macros
     include  "windows.i"  ; fast windowed text functions
 
-
-; This will eventually be a Fixed Address Assignment
+;; ---
+;; ## Real Time Clock
+;; ### System Variables
+;; The 24 bytes of RAM between Screen RAM and Color RAM and the 24 bytes 
+;; between the end of Color RAM and System Variables are used as temporary 
+;; variables by the RTC and DateTime Routines
+;;
+;; These areas are overwritten when the screen is cleared via PRINT CHR$(11)
+DTM_STRING = $33E8        ; DTM String Buffer, 24 bytes (19 currently used)
+DTM_BUFFER = $37E8        ; RTC & DTM DateTime Buffer, 8 bytes
 RTC_SHADOW = $37F0        ; Real Time Clock Shadow Registers, 10 bytes. 
-                        
-; Temporary USB BASIC system variables 
-DTM_BUFFER = $3851      ; RTC & DTM DateTime Buffer, 8 bytes
-;   FILNAM,FILNAF,INSYNC,CLFLAG: $3851-$385E. 14 bytes
-DTM_STRING = $38E6      ; DTM String Buffer, 19 bytes
-;   FACHO,FAC,FBUFFR,RESHO,RESMO,RESLO: $38E6-$38F8, 19 bytes
-
-;; IMPLEMENTING REAL TIME CLOCK IN EMULATORS
-;; The will be a read from memory location $3821 whenever the RTC is accessed
-;; If $3821 contains $7F, the RTC is being written to and the following
+;    $37FA - $37FF        ; Reserved
+;;                       
+;; ### Implementing Real Time Clock in Emulators
+;; The will be a read from memory location $37F0 whenever the RTC is accessed
+;; If $37F0 contains $7F, the RTC is being written to and the following
 ;; bytea contain the date to be written.
-;; If $3821 contains any other value, the RTC was just read and $3821 should
+;; If $37F0 contains any other value, the RTC was just read and $37F0 should
 ;; be filled with $FF and the following bytes with the current date/time.
 ;; See the RTC driver file for the date/time structure.
 
