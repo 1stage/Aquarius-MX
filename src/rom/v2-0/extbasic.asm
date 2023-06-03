@@ -788,7 +788,7 @@ ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ;;;    - Action: Returns a string of *length* whose characters all have ASCII code *byte*.
 ;;;  - STRING$ (*length*, *string* )
 ;;;    - Action: Returns a string of *length* whose characters are all r the first character of *string*.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ```
 ;;;   10 X$ = STRING$ (10 , 45) 
 ;;;   20 PRINT X$ "MONTHLY REPORT" X$ 
@@ -848,7 +848,7 @@ SPLP:   ld      (hl),a            ;SAVE CHAR
 ;;;      - If *offset* > LEN(*string1*) or if *string1* is null or if *string2* cannot be found, INSTR returns 0.
 ;;;      - If *string2* is null, INSTR returns *offset* or 1.
 ;;;      - *string1* and *string2* may be string variables, string expressions or string literals.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ```
 ;;;   10 X$ = "ABCDEB"
 ;;;   20 Y$ = "B"
@@ -986,7 +986,7 @@ GETYPR: ld      a,(VALTYP)        ;REPLACEMENT FOR "GETYPE" RST
 ;;;      - The optional *len* refers to the number of characters from *string* that will be used in the replacement
 ;;;      - If *len* is omitted, all of *string* is used. 
 ;;;      - Regardless of whether *len* is omitted or included, the replacement of characters never goes beyond the original length of *var$*.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ```
 ;;; 10 A$="KANSAS CITY, MO"
 ;;; 20 MID$(A$,14) ="KS"
@@ -1100,7 +1100,7 @@ BIGLEN: ld      c,b               ; GET OFFSET OF STRING IN [C]
 ;;; ### FORMAT: 
 ;;;  - EVAL(*formula*)
 ;;;    - Action: Outputs the results of *formula* as a string
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` PRINT EVAL("7 + 4") `
 ;;; > Prints "11"
 ;;;
@@ -1197,7 +1197,7 @@ FN_IN:
 ;;;      - If J is omitted, it is assumed to be zero
 ;;;    - Advanced: During the read, *address* is put on the Z80 address bus.
 ;;;    - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` WAIT $FF,$3F,$FF `
 ;;; > Wait for any key to be pressed.
 ;----------------------------------------------------------------------------

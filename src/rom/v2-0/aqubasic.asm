@@ -1283,9 +1283,10 @@ FLOAT_M:
 ;;; ` PRINT JOY(0) `
 ;;; > Prints input value of either/both control pads (not effective in immediate mode).
 ;;;
-;;; ` 10 PRINT JOY(1) `
-;;;
-;;; ` 20 GOTO 10 `
+;;; ```
+;;; 10 PRINT JOY(1)
+;;; 20 GOTO 10 
+;;; ```
 ;;; > Continuously reads and prints the input value from only the left control pad.
 ;----------------------------------------------------------------------------
 
@@ -1588,6 +1589,7 @@ ST_CALL:
 ;;; ### EXAMPLES:
 ;;; ` SLEEP 250 `
 ;;; > Pauses for 1/4 second.
+;;;
 ;;; ` SLEEP S `
 ;;; > Pauses for S / 1000 seconds.
 ;----------------------------------------------------------------------------

@@ -159,7 +159,7 @@ FN_CD:
 ;;;    - Action: Create directory *dirname* in the current directory (see CD).
 ;;;      - Returns without error if directory already exists.
 ;;;      - Returns Disk I/O Error "file exists" if a file with the same name is in the current directory.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` MKDIR "mydir" `
 ;;; > Creates new directory MYDIR in the current directory.
 ;------------------------------------------------------------------------------

@@ -243,6 +243,7 @@ FN_PEEK:
 ;;; ### EXAMPLES:
 ;;; ` PRINT PEEK$(12328,40) `
 ;;; > Print the contents of screen line 1.
+;;;
 ;;; ` PRINT HEX$(PEEK$(&A,4)) `
 ;;; > Print the binary value floating point number in variable A as a hexadecimal number.
 
@@ -426,7 +427,7 @@ FN_AND:
 ;;;    - Action: Returns the bitwise OR of two numbers.
 ;;;      - Both *number1* and *number2* must be between -32768 and 65535.
 ;;;      - Can be used instead of OR operator which only allows operands between -32768 and 32767.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` PRINT HEX$(OR($8080,$0808)) `
 ;;; > Prints 8888
 ;----------------------------------------------------------------------------
@@ -455,7 +456,7 @@ FN_OR:
 ;;;  - XOR( *number1*, *number2* )
 ;;;    - Action: Returns the bitwise Exlusive OR of two numbers.
 ;;;      - Both *number1* and *number2* must be between -32768 and 65535.
-;;; ### EXAMPLES:
+;;; ### EXAMPLE:
 ;;; ` PRINT HEX$(XOR($FFFF,$0808)) `
 ;;; > Prints F7F7
 ;----------------------------------------------------------------------------
