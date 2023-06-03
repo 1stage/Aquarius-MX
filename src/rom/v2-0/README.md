@@ -977,7 +977,7 @@ Writes byte(s) to memory location(s)
 ## PSET / PRESET
 Draw or Erase a pixel
 ### FORMAT:
-  - PSET | PRESET [STEP] (*x-coord*,*y-coord*) [ , color ]
+  - PSET | PRESET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
     - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
 ### EXAMPLES:
 `  `

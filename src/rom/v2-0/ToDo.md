@@ -12,6 +12,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [X] MKDIR and usb__create_dir
   - [ ] RMDIR and usb__delete_dir
 
+- [ ] PRESET doesn't seem to erase pixels after they've been PSET
+
+- [ ] PSET doesn't seem to accept the *color* parameter, i.e. PSET(40,36),8
+
 - [ ] Turn debugger into separate ROM option
 
 ### AquaLite
