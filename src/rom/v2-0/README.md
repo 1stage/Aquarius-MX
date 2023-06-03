@@ -977,16 +977,12 @@ Writes byte(s) to memory location(s)
 ## PRESET
 Erase a pixel
 ### FORMAT:
-<<<<<<< HEAD
   - PRESET [STEP] (*x-coord*,*y-coord*)
     - Action: Erases a pixel from the screen.
-=======
-  - PSET | PRESET [STEP] (*x-coord*,*y-coord*)
-    - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
->>>>>>> 49cf4f26fee8d8686c16e31217696c353691a5d7
 ### EXAMPLES:
 ` PRESET (20,10) `
 > Erases the pixel at column 20 of line 10.
+
 ` PRESET STEP (0,0) `
 > Erases the pixel at the last referenced coordinates.
 
@@ -998,16 +994,13 @@ Erase a pixel
 Draw a pixel
 ### FORMAT:
   - PSET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
-<<<<<<< HEAD
     - Action: Draws a pixel on the screen.
-=======
-    - Action: PSET draws a pixel on the screen. PRESET erases a pixel from the screen.
->>>>>>> 49cf4f26fee8d8686c16e31217696c353691a5d7
 ### EXAMPLES:
 ` PSET (20,10) `
 > Draws a pixel at x-coordinate 20 and y-coordinate 10.
 ` PSET (40,36),3 `
 > Draws a yellow pixel at the center of the screen.
+
 ` PSET (-10,8) `
 > Draws a pixel at 10 points to the left of and 10 points below the last referenced Coordinates.
 
