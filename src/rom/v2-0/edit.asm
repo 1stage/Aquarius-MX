@@ -12,6 +12,7 @@
 ; 2017-05-06 using equates BUF and BUFLEN
 ;            retype clears old line before recalling history buffer
 ; 2023-05-22 Changed to use new 127 character line buffer LineBuf
+; 2023-06-04 Changed back to BUF to fix literal strings in immediate mode
 
 ;---------------------------------------------------------------------
 ;;; ---
@@ -52,7 +53,7 @@ ST_EDIT:
     pop   de
     call  FNDLIN          ; find line in BASIC program
     push  af              ; push flags (c = found line in BASIC program)
-    ld    de,LineBuf      ; DE = buffer
+    ld    de,BUF          ; DE = buffer
     ld    hl,FBUFFR+2     ; HL = floating point decimal number (line number)
     call  getinteger      ; copy decimal number string to edit buffer
     pop   af              ; pop flags
@@ -72,10 +73,10 @@ ST_EDIT:
     ld    (de),a          ; terminate string in buffer
     pop   hl              ; pop buffer pointer into HL
     ld    a,l
-    sub   low(LineBuf)
+    sub   low(BUF)
     cpl
     inc   a
-    add   LineBufLen      ; A = length of buffer - length of line number
+    add   BUFLEN          ; A = length of buffer - length of line number
     ld    b,a
 .editline:
     call  EDITLINE        ; edit string in buffer
