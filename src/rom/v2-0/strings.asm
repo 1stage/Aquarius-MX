@@ -108,7 +108,6 @@ string_rtc:
 ; in: HL = DTM Buffer
 ; out: DE = DTM_STRING
 string_dtm: 
-    ld      de,DTM_STRING
     jp      dtm_to_str       ; Convert to String
 
 format_rtc:
@@ -116,12 +115,12 @@ format_rtc:
 ; in: HL = DTM Buffer
 ; out: DE = DTM_STRING
 format_dtm:
-    ld      de,DTM_STRING
     jp      dtm_to_fmt    ;Convert to Formatted String   
 
 ; Read the Real Time Clock
 read_rtc:
     ld      bc,RTC_SHADOW
+    ld      de,DTM_STRING
     ld      hl,DTM_BUFFER
     jp      rtc_read
 

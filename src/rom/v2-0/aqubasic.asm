@@ -1437,7 +1437,7 @@ FN_KEY:
 ;;; ## DEC
 ;;; Hexadecimal to integer conversion
 ;;; ### FORMAT:
-;;;  - DEC(*hexadecimal string*)
+;;;  - DEC(*hexadecimfal string*)
 ;;;    - Action: Returns the DECimal value of the hexadecimal number in *hexadecimal string*.
 ;;;      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
 ;;;      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
@@ -1717,7 +1717,7 @@ ST_SDTM:
 ;;;      - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
 ;;;      - Returns "" if a Real Time Clock is not detected.
 ;;; ### EXAMPLES:
-;;; ` PRINT DTM$(0) `
+;;; ` PRIdNT DTM$(0) `
 ;;; > 38011903140700
 ;;;
 ;;; ` PRINT DTM$(1) `
@@ -1735,16 +1735,26 @@ ST_SDTM:
 
 FN_DTM:
     rst     CHRGET                ; Skip Token and Eat Spaces
-    call    PARCHK
+    SYNCHK  '('                   ; Require Open Parenthesis
+    call    GETBYT                ; Parse a Byte Value
+    ld      a,(hl)                ; Get Current Character
+    cp      ','                   ; If comma
+    jr      z,_dtm2args           ;   Process 2nd Argument
+    SYNCHK  ')'                   ; Require Close Parenthesis
     push    hl                    ; Save Text Pointer
-    push    bc                    ; Push Dummy Return Address
-    call    CONINT                ; Convert Argument to Byte in A
+    ld      a,e                   ; 
     call    get_rtc               ; Read RTC returning String in DE
     ex      de,hl                 ; HL = DateTime String
+    push    bc                    ; Push Dummy Return Address
 return_string:       
-    ld      a,1                   ; Set Value Type to String
-    ld      (VALTYP),a
     jp      TIMSTR
+
+_dtm2args:
+    inc     hl                    ; Skip comma 
+    jp      FCERR                 ; FC Error for now
+    SYNCHK  ')'                   ; Require Close Parenthesis
+        
+
 
 ;-------------------------------------------------------------------------
 ; EVAL Extension - Hook 9
