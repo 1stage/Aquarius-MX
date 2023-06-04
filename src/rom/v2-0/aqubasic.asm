@@ -1858,6 +1858,12 @@ EVAL_HEX:
 ;;;      - For string variables and array elements, the returned address points to the string descriptor.
 ;;;      - If the varible or array does not exist, it is automatically created.
 ;;;      - The address returned will be an integer in the range of 0 and 65535.
+;;;  - &&*varname*
+;;;    - Action: Returns the address of the first byte of the string text associated with *stringvar*.
+;;;      - Variable *arrayname* can be either a simple string variable or string array element.
+;;;      - Returns TM error if *varname* is not a string variable.
+;;;      - If the variable or array does not exist, it is automatically created.
+;;;      - Returns 0 if the variable or array element was automatically created.
 ;;;  - &\**arrayname*
 ;;;    - Action: Returns the address of the first byte of data identified with array *arrayname*. 
 ;;;      - Array *arrayname* can be either a numeric or string array. It is specified without following parenthesis.
@@ -1876,31 +1882,52 @@ EVAL_HEX:
 ;;; ` PRINT DEEK(&A$+2) `
 ;;; > Prints the address of the text for A$.
 ;;;
+;;; ` PRINT &&A$ `
+;;; > Also prints the address of the text for A$.
+;;;
 ;-------------------------------------------------------------------------
 ; Get Variable Pointer
 ; On Entry, HL points to first character of Variable Name
 ; On Exit, HL points to character after Variable Name/Array Element
 GET_VARPTR:
     rst     CHRGET                ; Skip &
-    cp      MULTK                 ; Check for *
+    cp      MULTK                 ; Check Next Character
     push    af                    ; Save Character and Flags
-    jr      nz,.do_array_index    ; If present
+    jr      nz,.not_multk         ; If '*'
     rst     CHRGET                ;   Skip It
     ld      a,1                   ;   Evaluate Array Name
-    db      $0E                   ; LD C, over XOR A
-.do_array_index:
+    jr      .get_ptr              ;  
+.not_multk:
+    cp      '&'                   ; 
+    jr      nz,.not_ampersand     ; Else If '&'
+    rst     CHRGET                ;   Skip It
+.not_ampersand:
     xor     a
+.get_ptr
     ld      (SUBFLG),a            ; Evaluate Array Indexes
     call    PTRGET                ; Get Pointer
     jp      nz,FCERR              ; FC Error if Not There
     ld      (SUBFLG),a            ; Reset Sub Flag
     pop     af                    ; Get Back Character after &
-    jr      nz,FLOAT_DE           ; If it was *
-    dec     bc                    ;  Back Up to Beginning
-    dec     bc                    ;  of Array Definition
-    ld      d,b                   ;  Copy into DE
-    ld      e,c                   ;  to be Returned
+    jr      nz,.not_array_ptr     ; If it was *
+    dec     bc                    ;   Back Up to Beginning
+    dec     bc                    ;   of Array Definition
+    jr      FLOAT_BC              ;   and Float It
+.not_array_ptr
+    cp      '&'                   ; If it wasn't &
+    jr      nz,FLOAT_DE           ;   Float It
+    call    CHKSTR                ; Make Sure it was a String
+    ex      de,hl                 ; HL = String Descriptor
+    inc     hl
+    inc     hl                    ; Move to Text Pointer
+    ld      c,(hl)
+    inc     hl                    ; BC = Text Address
+    ld      b,(hl)                
+    ex      de,hl                 ; HL = Text Pointer
 
+FLOAT_BC:
+    ld      d,b                   ;  Copy into DE
+    ld      e,c                   ;  
 FLOAT_DE:
     push    hl
     xor     a                     ; Set HO to 0

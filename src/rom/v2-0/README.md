@@ -14,6 +14,12 @@ Get Variable Address
      - For string variables and array elements, the returned address points to the string descriptor.
      - If the varible or array does not exist, it is automatically created.
      - The address returned will be an integer in the range of 0 and 65535.
+ - &&*varname*
+   - Action: Returns the address of the first byte of the string text associated with *stringvar*.
+     - Variable *arrayname* can be either a simple string variable or string array element.
+     - Returns TM error if *varname* is not a string variable.
+     - If the variable or array does not exist, it is automatically created.
+     - Returns 0 if the variable or array element was automatically created.
  - &\**arrayname*
    - Action: Returns the address of the first byte of data identified with array *arrayname*.
      - Array *arrayname* can be either a numeric or string array. It is specified without following parenthesis.
@@ -31,6 +37,9 @@ Get Variable Address
 
 ` PRINT DEEK(&A$+2) `
 > Prints the address of the text for A$.
+
+` PRINT &&A$ `
+> Also prints the address of the text for A$.
 
 
 ---
