@@ -974,6 +974,9 @@ Writes byte(s) to memory location(s)
 > Fill screen with checkerboard character
 
 ---
+## PRINT USING
+
+---
 ## PSET / PRESET
 Draw or Erase a pixel
 ### FORMAT:
@@ -1162,7 +1165,7 @@ Returns 16 bit integer value of MX BASIC ROM version
 > Prints `0200`, the HEX value of version 2, rev 0
 
 ---
-## WAIT
+## WAIT Statement
 Suspend program execution while monitoring the status of a Z80 input port.
 ### FORMAT:
  - WAIT *address*, *byte1* [, *byte2*]
@@ -1171,7 +1174,7 @@ Suspend program execution while monitoring the status of a Z80 input port.
      - The data read at the port is Exclusive OR'ed with *byte2*, then AND'ed with *byte1*.
      - If the result is zero, MX BASIC loops back and reads the data at the port again.
      - If the result is nonzero, execution continues with the next statement.
-     - If J is omitted, it is assumed to be zero
+     - If *byte2* is omitted, it is assumed to be zero
    - Advanced: During the read, *address* is put on the Z80 address bus.
    - Caution: WAIT is not interrupted by Control-C. The RST key must be used to exit a WAIT that is in an infinite loop.
 ### EXAMPLE:
