@@ -216,7 +216,7 @@ _dos_file_exists:
 ;;; > Load contents of file into array A().
 ;;;
 ;;; ` LOAD "capture.scr",12288 `
-;;; > 
+;;; > Loads the file "capture.scr" into SCREEN RAM.
 ;------------------------------------------------------------------------------
 ST_LOAD:
     call    _get_file_args        ; Set Up SysVars and Get LOAD Arguments
