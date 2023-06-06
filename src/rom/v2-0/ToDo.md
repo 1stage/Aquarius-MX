@@ -6,17 +6,9 @@ This file is for recording upcoming changes and features that are being added, a
 ---
 ## IN PROCESS:
 ### ROM
-- [ ] Test hardware behavior without RTC installed (RAM only)
-
 - [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
   - [X] MKDIR and usb__create_dir
   - [ ] RMDIR and usb__delete_dir
-
-- [ ] PRESET doesn't seem to erase pixels after they've been PSET
-
-- [ ] PSET doesn't seem to accept the *color* parameter, i.e. PSET(40,36),8
-
-- [ ] Turn debugger into separate ROM option
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -26,6 +18,8 @@ This file is for recording upcoming changes and features that are being added, a
 
 ### Other
 - [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
+
+- [ ] Turn debugger into separate ROM option
 
 ### Nice to Have
 - [ ] MOD(dividend, divisor) function for modulus/remainder
@@ -130,6 +124,12 @@ This file is for recording upcoming changes and features that are being added, a
   - Availble using ERR$(1)
 
 - [x] MID$(< string expl > ,n [,m] ) = < string exp2 >
+
+- [x] PRESET doesn't seem to erase pixels after they've been PSET
+
+- [x] Test hardware behavior without RTC installed (RAM only)
+
+- [x] PSET doesn't seem to accept the *color* parameter, i.e. PSET(40,36),8
 
 ### AquaLite
 
