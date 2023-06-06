@@ -17,13 +17,11 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] Fix LOAD/RUN of *.ROM files... shouldn't behave differently than hardware.
 
 ### Other
-- [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
+- [ ] Update PT3PLAY.ROM
+  - [ ] SPACE option in song playback doesn't go to next song. 
+  - [ ] Second PSG is not yet supported.
 
 - [ ] Turn debugger into separate ROM option
-
-### Nice to Have
-- [ ] MOD(dividend, divisor) function for modulus/remainder
-- [ ] MIN() MAX()
 
 ---
 ## COMPLETE:
@@ -140,6 +138,8 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Add option for RTC installed or not
 
 ---
-## OUT OF SCOPE
+## OUT OF SCOPE FOR 2.0
 - RPL$(source string, match string, replacement string) replace string function
 - RENAME - doesn't work with CH376
+- MOD(dividend, divisor) function for modulus/remainder
+- MIN() MAX()
