@@ -588,11 +588,11 @@ Trigger a BASIC Error
 ## EVAL
 Evaluate a formula in a string.
 ### FORMAT:
- - EVAL(*formula*)
-   - Action: Outputs the results of *formula* as a string
+ - EVAL(*string*)
+   - Action: Evaluates the numeric formula contained in *string* and returns the result.
 ### EXAMPLE:
 ` PRINT EVAL("7 + 4") `
-> Prints "11"
+> Prints the number 11.
 
 
 ---

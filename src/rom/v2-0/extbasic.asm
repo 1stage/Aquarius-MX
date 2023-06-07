@@ -1098,15 +1098,16 @@ BIGLEN: ld      c,b               ; GET OFFSET OF STRING IN [C]
 ;;; ## EVAL
 ;;; Evaluate a formula in a string.
 ;;; ### FORMAT: 
-;;;  - EVAL(*formula*)
-;;;    - Action: Outputs the results of *formula* as a string
+;;;  - EVAL(*string*)
+;;;    - Action: Evaluates the numeric formula contained in *string* and returns the result.
 ;;; ### EXAMPLE:
 ;;; ` PRINT EVAL("7 + 4") `
-;;; > Prints "11"
+;;; > Prints the number 11.
 ;;;
 ;----------------------------------------------------------------------------
 FN_EVAL:
-        call    ERRDIR            ; Issue Error if in Direct Mode
+        ;since EVAL uses LineBuf and Immediate Mode uses BUF, Direct Mode should be okay
+        ;call    ERRDIR            ; Issue Error if in Direct Mode
         rst     CHRGET
         call    PARCHK            ; Get Argument
         push    hl                ; Save Text Pointer
