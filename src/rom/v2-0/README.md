@@ -596,6 +596,16 @@ Evaluate a formula in a string.
 
 
 ---
+## FILE$
+Get Last Filename
+### FORMAT:
+ - FILE$
+   - Action: Returns the
+### EXAMPLES:
+` PRINT FILE$ `
+> Prints the name of the last file accessed.
+
+---
 ## FRE (Extended)
 Show available Memory / Show memory details
 ### FORMAT:
