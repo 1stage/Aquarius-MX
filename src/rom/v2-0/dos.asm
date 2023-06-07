@@ -928,9 +928,9 @@ dos__prtDirInfo:
         call    format_fts              ; Convert FTS at (HL) to formatted date string
         ld      b,16
 .dir_datetime:
-        ld      a,(de)                  ; get next char of extension
+        ld      a,(de)                  ; get next char formatted DateTime
         inc     de
-        call    TTYOUT                  ; print extn char
+        call    TTYOUT                  ; 
         djnz    .dir_datetime
         LD      A,' '                   ; print ' '
         CALL    TTYOUT
@@ -1345,7 +1345,6 @@ dos__clearVars:
 ;  If we ever start using interupts, then this will need DI/EI type code   
 ;
 
-
 set_dos_File_datetime:
     push    hl                      ; Save Registers
     push    bc
@@ -1404,3 +1403,90 @@ set_dos_File_datetime:
     pop     bc
     pop     hl
     ret
+
+; Get File Information:
+; In: FileName
+; Out: DTM_STRING = File Write Date and Time
+;      FACLO..FAC = File Size
+; Destroys: A, BC, DE, HL
+dos__open_getinfo:
+    ld      hl,FileName             ; get current filename
+    call    usb__read_dir_Info     ; try to open file and read DIR info
+    ret     nz                      ; return if error
+    ld      a,CH376_CMD_RD_USB_DATA ; No error - so will read the 32 bytes 
+    out     (CH376_CONTROL_PORT),a  ; command: read USB data
+    ld      c,CH376_DATA_PORT
+    in      a,(c)                   ; A = number of bytes in CH376 buffer
+    ld      b,a                     ; copy into B (for the inir loop later)
+    cp      32                      ; must be 32 bytes!
+    ret     nz                      ; return if error
+    ld      hl,-32
+    add     hl,sp                   ; allocate 32 bytes on stack
+    ld      sp,hl
+    push    hl
+    inir                            ; read directory info onto stack
+    pop     hl
+    ld      bc,22                     
+    add     hl,bc                   ; Move toDate/Time
+    push    hl                      ; Save Address
+    ex      de,hl                   ; DE = Pointer to FTS
+    ld      hl,dtm_buffer
+    call    fts_to_dtm              ; Convert TimeStamp to DateTime
+    ld      de,DTM_STRING
+    call    dtm_to_str              ; Convert to String
+    pop     hl                      ; Restore Address of Mod Date/Time
+    ld      bc,6                    ; 
+    add     hl,bc                   ; Move to File Size
+    ld      de,FACLO
+    ld      bc,4
+    ldir                            ; Copy File Size to Floating Point Accumulator
+    ld      sp,hl                   ; Now at end of allocated space, restore Stack Pointer
+    jp      usb__close_file         ; close file and return
+
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## FILE$
+;;; Get Last Filename
+;;; ### FORMAT:
+;;;  - FILE$
+;;;    - Action: Returns the 
+;;; ### EXAMPLES:
+;;; ` PRINT FILE$ `
+;;; > Prints the name of the last file accessed.
+;------------------------------------------------------------------------------
+FN_FILE:
+    inc     hl                    ; Skip FILE Token
+    ld      a,(hl)                ; Get Next Character
+    cp      '$'                   ;  
+    jr      nz,.not_dollar        ; If Dollar Sign  
+    rst     CHRGET                ;   Skip it
+    push    hl                    ;   Text Pointer on Stack
+    ex      (sp),hl               ;   Swap Text Pointer with Return Address
+    push    bc                    ;   put dummy return address on stack
+    ld      hl,FileName           ;   Get pointer to Filename in HL
+    jp      TIMSTR                ;   and return it
+.not_dollar:                      ; Else
+    push    af                    ;   Save Character after FILE Token
+    rst     CHRGET                ;   and Skip it
+    SYNCHK  '('                   ;   Require Open Parenthesis
+    call    dos__getfilename      ;   Parse FileName
+    SYNCHK  ')'                   ;   Require Close Parenthesis
+    ex      (sp),hl               ;   Save Text Pointer, Get Character after FILE
+    push    hl                    ;   Re-Save Character after FILE Token
+    call    dos__open_getinfo     ;   Get Directory Entry for FileName
+    jp      nz,_dos_do_error      ;   Handle Read Error
+    pop     af                    ;   Get Back Character after FILE Token
+    cp      DTMTK                 ;   Check Character after Pointer`
+    jr      nz,.not_dtmtk         ;   If LEN Token
+    ld      hl,DTM_STRING         ;   Returning Write Timestamp as DateTime
+    push    bc                    ;   Push Dummy Return Address
+    jp      TIMSTR                ;   Convert to String and Return
+.not_dtmtk:
+.not_lentk:                       ;   Else
+    jp      FCERR                 ;     Function Call Error
+
+
+; Convert 32 Bit Unsigned Int in FACLO..FAC to Floating Point Number
+FLOAT_UINT32:
+    ret
+

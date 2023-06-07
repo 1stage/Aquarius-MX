@@ -456,6 +456,7 @@ EQUATK      = $B0   ; = Token
 ONEFUN      = $B2   ; First Function Token
 FRETK       = $B6   ; FRE Token
 PEEKTK      = $C1   ; PEEK Token
+LENTK       = $C2   ; LEN Token
 STRTK       = $C3   ; STR$ Token
 ASCTK       = $C5   ; ASC Token
 

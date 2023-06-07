@@ -145,7 +145,7 @@ CH376_CMD_FILE_ENUM_GO  equ     $33     ; get next file info
 CH376_CMD_FILE_CREATE   equ     $34     ; create new file
 CH376_CMD_FILE_ERASE    equ     $35     ; delete file
 CH376_CMD_FILE_CLOSE    equ     $36     ; close opened file
-CH376_CMD_DIR_INFO_READ equ     $37    ; Read file directory info
+CH376_CMD_DIR_INFO_READ equ     $37     ; Read file directory info
 CH376_CMD_DIR_INFO_SAVE equ     $38     ; Save file directory info
 CH376_CMD_BYTE_LOCATE   equ     $39     ; seek into file
 CH376_CMD_BYTE_READ     equ     $3A     ; start reading bytes
@@ -163,6 +163,8 @@ CH376_INT_DISK_WRITE    equ     $1E     ; write again (more bytes to write)
 CH376_ERR_OPEN_DIR      equ     $41     ; is directory, not file
 CH376_ERR_MISS_FILE     equ     $42     ; file not found
 CH376_ERR_FOUND_NAME    equ     $43     ; file with name exists (CMD_DIR_CREATE)
+CH376_CMD_RET_SUCCESS   equ     $51     ; operation successful
+CH376_CMD_RET_ABORT     equ     $5F     ; operation failed
 
  structure FAT_DIR_INFO,0
     STRUCT DIR_Name,11          ; $00 0
@@ -1011,7 +1013,6 @@ usb__wildcard:
 ;                         $42 (CH376_ERR_MISS_FILE) file not found
 ;
 usb__read_dir_Info:
-        LD      HL,Filename             ; save filename pointer
         CALL    usb__open_path          ; enter current directory
         RET     NZ
         CALL    usb__set_filename       ; send filename to CH376

@@ -90,7 +90,7 @@ STJUMPS:
     dw      SNERR                 ;$C6 CHR$     
     dw      SNERR                 ;$C7 LEFT$    
     dw      SNERR                 ;$C8 RIGHT$   
-    dw      ST_MID                 ;$C9 MID$     
+    dw      ST_MID                ;$C9 MID$     
     dw      SNERR                 ;$CA POINT
 ;MX BASIC Statements and Functions
     dw      SNERR                 ;$CB INSTR
@@ -133,8 +133,8 @@ STJUMPS:
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
     dw      ST_WAIT               ;$F2 WAIT
-    dw      SNERR                 ;$F3 USING
-    dw      SNERR                 ;$F4
+    dw      SNERR                 ;$F3 FILE
+    dw      SNERR                 ;$F4 
     dw      SNERR                 ;$F5
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
@@ -216,8 +216,8 @@ FNJUMPS:
     dw      SNERR                 ;$F0 RMDIR
     dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2 WAIT
-    dw      SNERR                 ;$F3 USING
-    dw      SNERR                 ;$F4
+    dw      FN_FILE               ;$F3 FILE
+    dw      SNERR                 ;$F4 
     dw      SNERR                 ;$F5
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
@@ -477,12 +477,13 @@ TBLCMDS:
     db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
     db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
     db      $80 + 'W', "AIT"        ; $f2 - Wait for byte on Z80 port
-    db      $80 + 'U', "SING"       ; $f3 - Print formatting
+    db      $80 + 'F', "ILE"        ; $f4 - File Functions
     db      $80                     ; End of table marker
 
 ; Tokens used in external routines
 SDTMTK    = $D3
 CDTK      = $E0
+DTMTK     = $E5
 ERRTK     = $E9
 STRINGTK  = $EA
 XORTK     = $EB
