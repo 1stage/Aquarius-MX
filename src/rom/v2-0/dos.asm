@@ -222,8 +222,7 @@ ST_LOAD:
     call    _get_file_args        ; Set Up SysVars and Get LOAD Arguments
     push    hl                    ; >>>> push BASIC text pointer
     ld      hl,FileName
-    ld      a,(DOSFLAGS)
-    bit     DF_ADDR,a             ; address specified?
+    bit     DF_ADDR,(iy+0)        ; address specified?
     jr      z,_stl_caq            ; no, load CAQ file
 ; load binary file to address
 _stl_load_bin:
@@ -263,6 +262,7 @@ _stl_basprog:
     ld      hl,(TXTTAB)           ; HL = start of BASIC program
     ld      de,$ffff              ; DE = read to end of file
     call    usb__read_bytes       ; read BASIC program into RAM
+    ld      (BinEnd),hl           ; save LOAD end address
     jr      nz,_stl_read_error
 _stl_bas_end:
     dec     hl
@@ -285,6 +285,7 @@ _stl_read:
     ld      de,(BINLEN)           ;   read that length
 _stl_read_len:
     call    usb__read_bytes       ; read file into RAM
+    ld      (BinEnd),hl           ; save LOAD end address
     jr      z,_stl_done           ; if good load then done
 _stl_read_error:
     ld      a,ERROR_READ_FAIL     ; disk error while reading
@@ -532,7 +533,7 @@ _sts_open_wrsync:
 ; Parse LOAD/SAVE Arguments
 ;----------------------------------------------------------------------------
 _get_file_args:
-    ld      iy,DosFlags           
+    ld      iy,DosFlags
     call    dos__getfilename      ; Clear DOS SysVars, Parse FileName
     jp      nz,_badname_error     ; 
     call    CHRGT2                ; Check character after FIlename
@@ -1323,10 +1324,10 @@ dos__char:
 ;------------------------------------------------------------------------------
 ; Ouput: A = 0, with flags set
 dos__clearError:
-    ld      b,2               ; Clear first two bytes
-    db      $11               ; LD DE, over following LD B,
+    ld      b,2                   ; Clear first four bytes
+    db      $11                   ; LD DE, over following LD B,
 dos__clearVars:
-    ld      b,9                   ; Clear 9 Bytes
+    ld      b,11                  ; Clear 11 Bytes
     xor     a
     ld      de,DosError           
 .loop
@@ -1449,10 +1450,23 @@ dos__open_getinfo:
 ;;; Get Last Filename
 ;;; ### FORMAT:
 ;;;  - FILE$
-;;;    - Action: Returns the 
+;;;    - Action: Returns the contents of the FileName buffer.
 ;;; ### EXAMPLES:
 ;;; ` PRINT FILE$ `
 ;;; > Prints the name of the last file accessed.
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## FILEEND
+;;; Get End Address of Last LOADed File
+;;; ### FORMAT:
+;;;  - FILE$
+;;;    - Action: Returns the end address of the last successful LOAD. This is the address of the last byte loaded plus one.
+;;; ### EXAMPLES:
+;;; ```
+;;; LOAD "BINFILE.RAW",START
+;;; PRINT FILEEND-START
+;;; ```
+;;; > Loads file then prints the total bytes loaded.
 ;------------------------------------------------------------------------------
 FN_FILE:
     inc     hl                    ; Skip FILE Token
@@ -1461,11 +1475,23 @@ FN_FILE:
     jr      nz,.not_dollar        ; If Dollar Sign  
     rst     CHRGET                ;   Skip it
     push    hl                    ;   Text Pointer on Stack
-    ex      (sp),hl               ;   Swap Text Pointer with Return Address
     push    bc                    ;   put dummy return address on stack
     ld      hl,FileName           ;   Get pointer to Filename in HL
     jp      TIMSTR                ;   and return it
-.not_dollar:                      ; Else
+.not_dollar:                      ; 
+    cp      ENDTK                 ; 
+    jr      nz,.not_endtk         ; If End Token
+    rst     CHRGET                ;   Skip it
+    push    hl                    ;   Text Pointer on Stack
+    ld      bc,LABBCK             ;   Put Return Address 
+    push    bc                    ;   for FLOAT_DE on stack
+    ld      de,(BinEnd)           ;   DE = Last LOAD End Address
+    jp      FLOAT_DE              ;   Float it and Return
+.not_endtk:
+    ; FILELEN and FILEDTM will be implemented in the next release
+    ; after CH376 command CMD_DIR_INFO_READ is added to Aqualite 
+    jp      SNERR               
+
     push    af                    ;   Save Character after FILE Token
     rst     CHRGET                ;   and Skip it
     SYNCHK  '('                   ;   Require Open Parenthesis

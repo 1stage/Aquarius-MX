@@ -156,6 +156,7 @@ KeyBufLen = 16
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
     WORD   _binofs              ; offset into binary file on disk
+    WORD   _binend              ; actual end address of load
     BYTE   _dosflags            ; DOS flags
     WORD   _lnbufptr            ; Address of Line Buffer
     BYTE   _lnbuflen            ; Length of Line Buffer
@@ -176,6 +177,7 @@ ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 BinOfs   = sysvars+_binofs
+BinEnd   = sysvars+_binend
 DosFlags = sysvars+_dosflags
 LnBufPtr = sysvars+_lnbufptr
 LnBufLen = sysvars+_lnbuflen
@@ -648,6 +650,33 @@ STR_BASIC:
 STR_VERSION:
     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
 
+SHOWRAM:
+    ld      a,high(RAMEND)
+    sub     high(CHRRAM)          ; Get Pages of Total RAM
+    srl     a
+    srl     a                     ; Divide by 4 to get KB
+    ld      l,a                   ; Put in HL
+    ld      h,0
+    ld      a,2                   ; Default to 2 digits
+    call    print_integer         ; Print Total KB 
+    ld      hl,STR_RAM_SYSTEM      
+    call    prtstr                
+    ld      hl,0                  ; Get Bottom of Stack
+    add     hl,sp                  
+    ld      de,(STREND)           ; Get Top of Array Spaces
+    sbc     hl,de                 ; Subtract to get Bytes Free
+    ld      de,10                 
+    sbc     hl,de                 ; Subtract 10 more to match FRE(0)
+    ld      a,5
+    call    print_integer         ; Print It
+    ld      hl,STR_BYTES_FREE     
+    jp      prtstr
+    
+STR_RAM_SYSTEM:
+    db      "K RAM - ",0
+STR_BYTES_FREE:
+    db      " Bytes Free",13,10,0
+
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
 
@@ -700,10 +729,11 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    ld      hl,FASTHOOK         ; RST $30 Vector (our UDF service routine)
+    ld      hl,FASTHOOK        ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     call    SHOWCOPYRIGHT      ; Show our copyright message
+    call    SHOWRAM            ; Show Total RAM, BASIC Bytes Free
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
 
