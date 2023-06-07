@@ -437,7 +437,7 @@ disk_error_msg:       db  "disk error $",0
 ; New dispatch code allows Statements and Functions to be freely mixed
 BTOKEN       equ $cb                ; our first token number
 TBLCMDS:
-    db      $80 + 'IN', "STR"       ; $cb - String Position Function    
+    db      $80 + 'I', "NSTR"       ; $cb - String Position Function    
     db      $80 + 'P', "UT"         ; $cc - Put Pixels
     db      $80 + 'G', "ET"         ; $cd - Get Pixels
     db      $80 + 'D', "RAW"        ; $ce - Graphic Macro Language
