@@ -600,10 +600,23 @@ Evaluate a formula in a string.
 Get Last Filename
 ### FORMAT:
  - FILE$
-   - Action: Returns the
+   - Action: Returns the contents of the FileName buffer.
 ### EXAMPLES:
 ` PRINT FILE$ `
 > Prints the name of the last file accessed.
+
+---
+## FILEEND
+Get End Address of Last LOADed File
+### FORMAT:
+ - FILE$
+   - Action: Returns the end address of the last successful LOAD. This is the address of the last byte loaded plus one.
+### EXAMPLES:
+```
+LOAD "BINFILE.RAW",START
+PRINT FILEEND-START
+```
+> Loads file then prints the total bytes loaded.
 
 ---
 ## FRE (Extended)
