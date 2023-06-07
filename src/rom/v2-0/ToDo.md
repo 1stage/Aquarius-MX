@@ -6,17 +6,9 @@ This file is for recording upcoming changes and features that are being added, a
 ---
 ## IN PROCESS:
 ### ROM
-- [ ] Test hardware behavior without RTC installed (RAM only)
-
 - [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
   - [X] MKDIR and usb__create_dir
   - [ ] RMDIR and usb__delete_dir
-
-- [ ] PRESET doesn't seem to erase pixels after they've been PSET
-
-- [ ] PSET doesn't seem to accept the *color* parameter, i.e. PSET(40,36),8
-
-- [ ] Turn debugger into separate ROM option
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -25,11 +17,11 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] Fix LOAD/RUN of *.ROM files... shouldn't behave differently than hardware.
 
 ### Other
-- [ ] SPACE option in PT3PLAY.ROM song playback doesn't go to next song. Also, second PSG is not yet supported.
+- [ ] Update PT3PLAY.ROM
+  - [ ] SPACE option in song playback doesn't go to next song. 
+  - [ ] Second PSG is not yet supported.
 
-### Nice to Have
-- [ ] MOD(dividend, divisor) function for modulus/remainder
-- [ ] MIN() MAX()
+- [ ] Turn debugger into separate ROM option
 
 ---
 ## COMPLETE:
@@ -131,6 +123,12 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [x] MID$(< string expl > ,n [,m] ) = < string exp2 >
 
+- [x] PRESET doesn't seem to erase pixels after they've been PSET
+
+- [x] Test hardware behavior without RTC installed (RAM only)
+
+- [x] PSET doesn't seem to accept the *color* parameter, i.e. PSET(40,36),8
+
 ### AquaLite
 
 - [x] Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
@@ -140,6 +138,8 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Add option for RTC installed or not
 
 ---
-## OUT OF SCOPE
+## OUT OF SCOPE FOR 2.0
 - RPL$(source string, match string, replacement string) replace string function
 - RENAME - doesn't work with CH376
+- MOD(dividend, divisor) function for modulus/remainder
+- MIN() MAX()
