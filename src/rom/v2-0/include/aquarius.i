@@ -149,7 +149,7 @@ RESHO   = $38F6 ; 14582           Result of Multiplier and Divider
 RESMO   = $38F7 ; 14583
 RESLO   = $38F8 ; 14584
 
-SAVSTK   = $38F9 ; 14585           used by keybord routine
+SAVSTK   = $38F9 ; 14585           Stack Pointer saved by NEWSTT
                  ;  ...
 PROGST   = $3900 ; 14592           NULL before start of BASIC program
 

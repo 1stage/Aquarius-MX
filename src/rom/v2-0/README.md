@@ -839,11 +839,11 @@ Draw line or box on screen.
 > Draws a diagonal line from the top left to lower right corner of the screen.
 
 ` LINE (10,10)-(20,20),2 `
-> Draws a line in color 2.
+> Draws a green line.
 
 ```
 10 CLS
-20 LINE -(RND*80,RND*72),RND*16
+20 LINE -(RND(1)*80,RND(1)*72),RND(1)*16
 30 GOTO 20
 ```
 >  Draw lines forever using random attributes.

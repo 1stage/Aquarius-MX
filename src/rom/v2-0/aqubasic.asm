@@ -317,7 +317,7 @@ SYS_DEBUG         jp  ST_DEBUG
 SYS_KEY_CHECK     jp  Key_Check
 SYS_WAIT_KEY      jp  Wait_key
 SYS_EDITLINE      jp  EditLine
-SYS_reserved1     jp  break
+SYS_SET_STACK     jp  Set_Stack
 SYS_reserved2     jp  break
 SYS_reserved3     jp  break
 
@@ -477,6 +477,14 @@ Wait_key:
     pop     af
     RET
 
+;-----------------------------------------------
+;       Set Stack to Address in SAVSTK
+;-----------------------------------------------
+
+Set_Stack:
+    pop     IX                    ; Get Return Address
+    ld      sp,(SAVSTK)           ; Set Stack Pointer
+    jp      (IX)                  ; Fast Return
 
 ;---------------------------------------------------------------------
 ;                       DOS commands

@@ -327,27 +327,27 @@ if $ & $FF00
     org ($ & $FF00) + 256
 endif
 ERR_CODES: 
-    db     "NF"               ; NEXT without FOR
-    db     "SN"               ; Syntax error
-    db     "RG"               ; RETURN without GOSUB
-    db     "OD"               ; Out of DATA
-    db     "FC"               ; Illegal function call
-    db     "OV"               ; Overflow
-    db     "OM"               ; Out of memory
-    db     "UL"               ; Undefined line number
-    db     "BS"               ; Subscript out of range
-    db     "DD"               ; Duplicate Definit  ion
-    db     "/0"               ; Division by zero
-    db     "ID"               ; Illegal direct
-    db     "TM"               ; Type mismatch
-    db     "OS"               ; Out of string space
-    db     "LS"               ; String too long
-    db     "ST"               ; String formula too complex
-    db     "CN"               ; Can't continue
-    db     "UF"               ; Undefined user function
-    db     "MO"               ; Missing operand
-    db     "IO"               ; Disk I/O Error
-    db     "UE"               ; Unprintable Error
+    db     "NF"               ;  1 NEXT without FOR
+    db     "SN"               ;  2 Syntax error
+    db     "RG"               ;  3 RETURN without GOSUB
+    db     "OD"               ;  4 Out of DATA
+    db     "FC"               ;  5 Illegal function call
+    db     "OV"               ;  6 Overflow
+    db     "OM"               ;  7 Out of memory
+    db     "UL"               ;  8 Undefined line number
+    db     "BS"               ;  9 Subscript out of range
+    db     "DD"               ; 10 Duplicate Definit  ion
+    db     "/0"               ; 11 Division by zero
+    db     "ID"               ; 12 Illegal direct
+    db     "TM"               ; 13 Type mismatch
+    db     "OS"               ; 14 Out of string space
+    db     "LS"               ; 15 String too long
+    db     "ST"               ; 16 String formula too complex
+    db     "CN"               ; 17 Can't continue
+    db     "UF"               ; 18 Undefined user function
+    db     "MO"               ; 19 Missing operand
+    db     "IO"               ; 20 Disk I/O Error
+    db     "UE"               ; 21 Unprintable Error
 
 ; Pointers into err_table
 ERRMSG: 
@@ -374,21 +374,21 @@ ERRMSG:
     dw      MSGUE             ; 40
 
 dos_errors:
-    dw      no_376_msg           ; 1
-    dw      no_disk_msg          ; 2
-    dw      no_mount_msg         ; 3
-    dw      bad_name_msg         ; 4
-    dw      no_file_msg          ; 5
-    dw      file_empty_msg       ; 6
-    dw      bad_file_msg         ; 7
-    dw      rmdir_error_msg      ; 8
-    dw      read_error_msg       ; 9
-    dw      write_error_msg      ;10
-    dw      create_error_msg     ;11
-    dw      open_dir_error_msg   ;12
-    dw      path_too_long_msg    ;13
-    dw      file_exists_msg      ;14
-    dw      other_error_msg      ;15
+    dw      no_376_msg           ;  1
+    dw      no_disk_msg          ;  2
+    dw      no_mount_msg         ;  3
+    dw      bad_name_msg         ;  4
+    dw      no_file_msg          ;  5
+    dw      file_empty_msg       ;  6
+    dw      bad_file_msg         ;  7
+    dw      rmdir_error_msg      ;  8
+    dw      read_error_msg       ;  9
+    dw      write_error_msg      ; 10
+    dw      create_error_msg     ; 11
+    dw      open_dir_error_msg   ; 12
+    dw      path_too_long_msg    ; 13
+    dw      file_exists_msg      ; 14
+    dw      other_error_msg      ; 15
 
 ; Long Error Descriptions
 ERR_TABLE:
@@ -477,7 +477,7 @@ TBLCMDS:
     db      $80 + 'R', "MDIR"       ; $f0 - Delete Directory
     db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
     db      $80 + 'W', "AIT"        ; $f2 - Wait for byte on Z80 port
-    db      $80 + 'F', "ILE"        ; $f4 - File Functions
+    db      $80 + 'F', "ILE"        ; $f3 - File Functions
     db      $80                     ; End of table marker
 
 ; Tokens used in external routines

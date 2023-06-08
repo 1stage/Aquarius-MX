@@ -308,12 +308,12 @@ ADDLC:  ld      a,l               ; L = L + C
 ; Taken from CP/M MBASIC 80 - BINTRP.MACm
 ONGOTX: cp      ERRTK             ; "ON...ERROR"?
         jr      nz,.noerr         ; NO. Do ON GOTO
-        inc      hl               ; Check Following Byte
+        inc     hl                ; Check Following Byte
         ld      a,(hl)            ; Don't Skip Spaces
         cp      (ORTK)            ; Cheat: ERROR = ERR + OR
         jr      z,.onerr          ; If not ERROR
-        dec      hl               ; Back up to ERR Token
-        dec      hl               ; to process as Function
+        dec     hl                ; Back up to ERR Token
+        dec     hl                ; to process as Function
 .noerr: jp      NTOERR            ; and do ON ... GOTO
 .onerr: rst     CHRGET            ; GET NEXT THING
         rst     SYNCHR            ; MUST HAVE ...GOTO
@@ -326,14 +326,16 @@ ONGOTX: cp      ERRTK             ; "ON...ERROR"?
         call    FNDLIN            ; SEE IF LINE EXISTS
         ld      d,b               ; GET POINTER TO LINE IN [D,E]
         ld      e,c               ; (LINK FIELD OF LINE)
-        pop      hl               ; RESTORE [H,L]
+        pop     hl                ; RESTORE [H,L]
         jp      nc,USERR          ; ERROR IF LINE NOT FOUND
 RESTRP: ld      (ONELIN),de       ; SAVE POINTER TO LINE OR ZERO IF 0.
-        ret      c                ; YOU WOULDN'T BELIEVE IT IF I TOLD YOU
+        ret     c                 ; YOU WOULDN'T BELIEVE IT IF I TOLD YOU
         ld      a,(ONEFLG)        ; ARE WE IN AN "ON...ERROR" ROUTINE?
         or      a                 ; SET CONDITION CODES
-        ret      z                ; IF NOT, HAVE ALREADY DISABLED TRAPPING.
+        ret     z                 ; IF NOT, HAVE ALREADY DISABLED TRAPPING.
         ld      a,(ERRFLG)        ; GET ERROR CODE
+        dec     a                 ; Convert to Offset
+        add     a,a               ; and put 
         ld      e,a               ; INTO E.
         jp      ERRCRD            ; FORCE THE ERROR TO HAPPEN
 
@@ -360,7 +362,7 @@ ERRORX: ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
         ld      hl,ONEFLG         ; POINT TO ERROR FLAG
         jr      z,NOTRAP          ; SORRY, NO TRAPPING...
         and     (hl)              ; A IS NON-ZERO, SETZERO IF ONEFLG ZERO
-        jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERRO R
+        jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERROR
         dec     (hl)              ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
         ex      de,hl             ; GET LINE POINTER IN [H,L]
         jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE

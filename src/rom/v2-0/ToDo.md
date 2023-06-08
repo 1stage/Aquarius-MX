@@ -5,7 +5,9 @@ This file is for recording upcoming changes and features that are being added, a
 
 ---
 ## IN PROCESS:
-### ROM
+
+### Testing
+- [ ] AqUnit - Unit Testing Framework
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9

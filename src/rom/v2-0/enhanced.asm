@@ -67,6 +67,7 @@ cvt_hex:
 
 null_string
     ld      hl,REDDY-1      ; Point at ASCII 0 
+    push    bc              ; Put Dummy Return Address on Stack
     jp      TIMSTR          ; Literalize and Return It
 
 ABORT_FN:
