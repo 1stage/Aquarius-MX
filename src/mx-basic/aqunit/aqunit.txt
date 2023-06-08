@@ -1,0 +1,27 @@
+
+Subroutines:
+900   Initialize Unit Test Framework
+910   Print Test Title
+920   Test Assertion
+940   Assert Error
+970   Convert ` to " in QA$
+980   Output QU$
+
+
+Variables:
+QU    Output to 0=Screen, 1=Printer, 2=File
+QT$   Test Title
+QA$   Assertion
+QE    Error Return ON GOTO Index
+QE$   Error Code
+
+QC    Character in QA$
+QF$   Program Name "xxxxxx.BAS", Output File "xxxxxx.TST"
+QF    Length of QF$
+QI    Index into QA$
+QK    Result of KEY() function
+QL    Output Line Counter
+QR()  Total Passes and Fails
+QR$() "Passed" and "Failed" Text 
+QU$   String to Output
+QV    Result of EVAL(QA$)  
