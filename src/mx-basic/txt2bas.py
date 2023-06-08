@@ -163,7 +163,7 @@ tokens = {
     0xF0: "RMDIR",
     0xF1: "OFF",
     0xF2: "WAIT",
-    0xF4: "FILE"
+    0xF3: "FILE"
 }
 
 
