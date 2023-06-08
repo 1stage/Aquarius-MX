@@ -1800,7 +1800,7 @@ ST_SDTM:
 ;;;      - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
 ;;;      - Returns "" if a Real Time Clock is not detected.
 ;;; ### EXAMPLES:
-;;; ` PRIdNT DTM$(0) `
+;;; ` PRINT DTM$(0) `
 ;;; > 38011903140700
 ;;;
 ;;; ` PRINT DTM$(1) `
