@@ -156,6 +156,7 @@ KeyBufLen = 16
     WORD   _binstart            ; binary file load/save address
     WORD   _binlen              ; binary file length
     WORD   _binofs              ; offset into binary file on disk
+    WORD   _binend              ; actual end address of load
     BYTE   _dosflags            ; DOS flags
     WORD   _lnbufptr            ; Address of Line Buffer
     BYTE   _lnbuflen            ; Length of Line Buffer
@@ -176,6 +177,7 @@ ChStatus = sysvars+_chstatus
 BinStart = sysvars+_binstart
 BinLen   = sysvars+_binlen
 BinOfs   = sysvars+_binofs
+BinEnd   = sysvars+_binend
 DosFlags = sysvars+_dosflags
 LnBufPtr = sysvars+_lnbufptr
 LnBufLen = sysvars+_lnbuflen
@@ -648,6 +650,33 @@ STR_BASIC:
 STR_VERSION:
     db      " v",VERSION+'0','.',REVISION+'0',$0D,$0A,0
 
+SHOWRAM:
+    ld      a,high(RAMEND)
+    sub     high(CHRRAM)          ; Get Pages of Total RAM
+    srl     a
+    srl     a                     ; Divide by 4 to get KB
+    ld      l,a                   ; Put in HL
+    ld      h,0
+    ld      a,2                   ; Default to 2 digits
+    call    print_integer         ; Print Total KB 
+    ld      hl,STR_RAM_SYSTEM      
+    call    prtstr                
+    ld      hl,0                  ; Get Bottom of Stack
+    add     hl,sp                  
+    ld      de,(STREND)           ; Get Top of Array Spaces
+    sbc     hl,de                 ; Subtract to get Bytes Free
+    ld      de,10                 
+    sbc     hl,de                 ; Subtract 10 more to match FRE(0)
+    ld      a,5
+    call    print_integer         ; Print It
+    ld      hl,STR_BYTES_FREE     
+    jp      prtstr
+    
+STR_RAM_SYSTEM:
+    db      "K RAM - ",0
+STR_BYTES_FREE:
+    db      " Bytes Free",13,10,0
+
 ; The bytes from $0187 to $01d7 are copied to $3803 onwards as default data.
 COLDBOOT:
 
@@ -700,10 +729,11 @@ MEMSIZE:
     ld      (hl), $00          ; NULL at start of BASIC program
     inc     hl
     ld      (TXTTAB), hl       ; beginning of BASIC program text
-    ld      hl,FASTHOOK         ; RST $30 Vector (our UDF service routine)
+    ld      hl,FASTHOOK        ; RST $30 Vector (our UDF service routine)
     ld      (UDFADDR),hl       ; store in UDF vector
     call    SCRTCH             ; ST_NEW2 - NEW without syntax check
     call    SHOWCOPYRIGHT      ; Show our copyright message
+    call    SHOWRAM            ; Show Total RAM, BASIC Bytes Free
     xor     a
     jp      READY              ; Jump to OKMAIN (BASIC command line)
 
@@ -1469,9 +1499,12 @@ FN_DEC:
 ;;; ## HEX$
 ;;; Integer to hexadecimal conversion
 ;;; ### FORMAT:
-;;;  - HEX$(*number*)
+;;;  - HEX$(*number* [,*length*])
 ;;;    - Action: Returns string containing *number* in two-byte hexadecimal format. 
-;;;      - FC Error if *number* is not in the range -32676 through 65535.
+;;;      - If *length* is 0 or omitted, the returned string will be two characters if *number* is between 0 and 255, otherwise it will be four characters.
+;;;      - If *length* is 1, the returned string will be two characters long. If *nunmber* is greater than 255 or less than 0, only the LSB will be returned.
+;;;      - If *length* is 2, the returned string will be four characters long.
+;;;      - Returns FC Error if *number* is not in the range -32676 through 65535 or *length* is not in the range 0 throuugh 2.
 ;;;      - See the DEC function for hex-to-number conversion.
 ;;;  - HEX$("*string*")
 ;;;    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in *string*.
@@ -1480,32 +1513,70 @@ FN_DEC:
 ;;;      - See the ASC$ function for hex-to-string conversion.
 ;;; ### EXAMPLES:
 ;;; ` PRINT HEX$(1) `
+;;; > Prints "01"
+;;;
+;;; ` PRINT HEX$(1,2) `
 ;;; > Prints "0001"
 ;;;
+;;; ` PRINT HEX$(-1,1) `
+;;; > Prints "FF"
+;;;
 ;;; ` 10 PRINT HEX$(PEEK(12288)) `
-;;; > Prints the HEX value of the border char (usually "0020", SPACE character)
+;;; > Prints the HEX value of the border char (usually "20", SPACE character)
+;;;
+;;; ` PRINT HEX$("123@ABC") `
+;;; > Prints "31323340414243"
+;;;
 ;----------------------------------------------------------------------------
 
 FN_HEX:
-    rst     CHRGET            ; Skip Token and Eat Spaces
-    call    PARCHK          ; Parse Argument in Parentheses
+    rst     CHRGET          ; Skip Token and Eat Spaces
+    SYNCHK  '('             ; Require Open Parenthesis
+    call    FRMEVL          ; Evaluate First Argument
+    call    GETYPR          ; Get Type of Argument
+    jr      z,HEX_STRING    ; If String, Convert It and Return
+    call    FRCADR          ; Convert argument to 16 bit integer DE
+    push    de              ; Save It
+    ld      a,(hl)          ; Get Current Character
+    cp      ','             ; See if Comma
+    ld      e,0             ; Default Second Argument to 0
+    jr      nz,.notcomma    ; If Comma
+    rst     CHRGET          ;   Skip It`
+    call    GETBYT          ;   Evaluate Second Argument
+.notcomma:    
+    SYNCHK  ')'             ; Require Close Parenthesis
+    ld      a,e             ; A = Second Argument
+    pop     de              ; DE = First Argument
     push    hl              ; Save Text Pointer
     push    bc              ; Dummy Return Address for FINBCK to discard
-    ld      a,(VALTYP)      ; Get Type of Argument
-    dec     a               ; Make 1 into 0
-    jr      z,HEX_STRING    ; If String, Convert It
-    call    FRCADR          ; convert argument to 16 bit integer DE
-    ld      hl,FBUFFR+1     ; hl = temp string
-    ld      a,d
-    call    _hexbyte        ; yes, convert byte in D to hex string
-    ld      a,e
-    call    _hexbyte        ; convert byte in E to hex string
+    ld      hl,FBUFFR       ; Creating Text String in FOUT Buffer`
+    push    hl              ; Save Address
+    or      a               ; If Second Argument is 0 (or omitted)
+    jr      z,.check_msb    ;   Print MSB (if not 0) and LSB
+    dec     a               ; If Second Argument is 1
+    jr      z,.do_lsb       ;   Print LSB only
+    dec     a               ; If Second Argument is 2
+    jr      z,.do_msb       ;   Print MSB and LSB
+    jp      FCERR           ; Else Function Call Error
+.check_msb:
+    ld      a,d             ; Get MSB
+    or      a               ; If Zero
+    jr      z,.do_lsb       ;   Skip It
+.do_msb:
+    ld      a,d             ; Get MSB
+    call    _hexbyte        ; Convert to Hex String
+.do_lsb:  
+    ld      a,e             ; Get LSB 
+    call    _hexbyte        ; Convert to Hex String
     ld      (hl),0          ; null-terminate string
-    ld      hl,FBUFFR+1
+    pop     hl              ; Restore Buffer Address
 .create_string:
     jp      TIMSTR          ; create BASIC string
 
 HEX_STRING:
+    SYNCHK  ')'             ; Require Close Parenthesis
+    push    hl              ; Save Text Pointer
+    push    bc              ; Dummy Return Address for FINBCK to discard
     call    STRLENADR       ; Get Arg Length in A, Address in HL
     or      a               ; If Null String
     jp      z,TIMSTR        ;   Return it as the Result
@@ -1721,7 +1792,7 @@ ST_SDTM:
 ;;;      - Otherwise returns formatted times string "YYYY-MM-DD HH:mm:ss"
 ;;;      - Returns "" if a Real Time Clock is not detected.
 ;;; ### EXAMPLES:
-;;; ` PRIdNT DTM$(0) `
+;;; ` PRINT DTM$(0) `
 ;;; > 38011903140700
 ;;;
 ;;; ` PRINT DTM$(1) `

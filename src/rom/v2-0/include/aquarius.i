@@ -435,6 +435,7 @@ CNERR    = $0C51  ;   cant continue
 UFERR    = $03D0  ;   undefined function
                      
 ; Standard BASIC Tokens
+ENDTK       = $80   ; END Token
 DIMTK       = $85   ; DIM Token
 GOTOTK      = $88   ; GOTO Token
 ONTK        = $90   ; ON Token

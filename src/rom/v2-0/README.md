@@ -588,11 +588,11 @@ Trigger a BASIC Error
 ## EVAL
 Evaluate a formula in a string.
 ### FORMAT:
- - EVAL(*formula*)
-   - Action: Outputs the results of *formula* as a string
+ - EVAL(*string*)
+   - Action: Evaluates the numeric formula contained in *string* and returns the result.
 ### EXAMPLE:
 ` PRINT EVAL("7 + 4") `
-> Prints "11"
+> Prints the number 11.
 
 
 ---
@@ -600,10 +600,23 @@ Evaluate a formula in a string.
 Get Last Filename
 ### FORMAT:
  - FILE$
-   - Action: Returns the
+   - Action: Returns the contents of the FileName buffer.
 ### EXAMPLES:
 ` PRINT FILE$ `
 > Prints the name of the last file accessed.
+
+---
+## FILEEND
+Get End Address of Last LOADed File
+### FORMAT:
+ - FILE$
+   - Action: Returns the end address of the last successful LOAD. This is the address of the last byte loaded plus one.
+### EXAMPLES:
+```
+LOAD "BINFILE.RAW",START
+PRINT FILEEND-START
+```
+> Loads file then prints the total bytes loaded.
 
 ---
 ## FRE (Extended)
@@ -656,9 +669,12 @@ Copy a rectangle of screen data to a numeric array.
 ## HEX$
 Integer to hexadecimal conversion
 ### FORMAT:
- - HEX$(*number*)
+ - HEX$(*number* [,*length*])
    - Action: Returns string containing *number* in two-byte hexadecimal format.
-     - FC Error if *number* is not in the range -32676 through 65535.
+     - If *length* is 0 or omitted, the returned string will be two characters if *number* is between 0 and 255, otherwise it will be four characters.
+     - If *length* is 1, the returned string will be two characters long. If *nunmber* is greater than 255 or less than 0, only the LSB will be returned.
+     - If *length* is 2, the returned string will be four characters long.
+     - Returns FC Error if *number* is not in the range -32676 through 65535 or *length* is not in the range 0 throuugh 2.
      - See the DEC function for hex-to-number conversion.
  - HEX$("*string*")
    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in *string*.
@@ -667,10 +683,20 @@ Integer to hexadecimal conversion
      - See the ASC$ function for hex-to-string conversion.
 ### EXAMPLES:
 ` PRINT HEX$(1) `
+> Prints "01"
+
+` PRINT HEX$(1,2) `
 > Prints "0001"
 
+` PRINT HEX$(-1,1) `
+> Prints "FF"
+
 ` 10 PRINT HEX$(PEEK(12288)) `
-> Prints the HEX value of the border char (usually "0020", SPACE character)
+> Prints the HEX value of the border char (usually "20", SPACE character)
+
+` PRINT HEX$("123@ABC") `
+> Prints "31323340414243"
+
 
 ---
 ## Hexadecimal Constants

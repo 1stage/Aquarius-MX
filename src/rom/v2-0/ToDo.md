@@ -6,9 +6,6 @@ This file is for recording upcoming changes and features that are being added, a
 ---
 ## IN PROCESS:
 ### ROM
-- [ ] Add commands to dos.asm and Add accompanying routines to CH376.asm
-  - [X] MKDIR and usb__create_dir
-  - [ ] RMDIR and usb__delete_dir
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
@@ -25,6 +22,8 @@ This file is for recording upcoming changes and features that are being added, a
 
 ---
 ## COMPLETE:
+- [X] MKDIR and usb__create_dir
+
 - [X] Modify dos.asm and CH376.asm to write USB file timestamp
 
 - [x] PSG() now accepts registers in the 16-31 range for a second AY-3-8913.
@@ -143,3 +142,5 @@ This file is for recording upcoming changes and features that are being added, a
 - RENAME - doesn't work with CH376
 - MOD(dividend, divisor) function for modulus/remainder
 - MIN() MAX()
+- RMDIR and usb__delete_dir
+- FILELEN() and FILEDTM$() functions
