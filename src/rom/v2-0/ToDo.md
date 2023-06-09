@@ -6,6 +6,9 @@ This file is for recording upcoming changes and features that are being added, a
 ---
 ## IN PROCESS:
 
+### MX BASIC
+- [ ] Error on illegal characters in file names
+
 ### Testing
 - [ ] AqUnit - Unit Testing Framework
   - [x] asc.bas - Test ASC() and ASC$()
@@ -18,7 +21,6 @@ This file is for recording upcoming changes and features that are being added, a
 
 ### Inline Documentation
 - [ ] Update DEBUG statement
-
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
