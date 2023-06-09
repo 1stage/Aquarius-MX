@@ -160,7 +160,8 @@ tokens = {
     0xF0: "RMDIR",
     0xF1: "OFF",
     0xF2: "WAIT",
-    0xF3: "FILE"
+    0xF3: "FILE",
+    0xF4: "RESUME"
 }
 
 with open(args.input, "rb") as f:

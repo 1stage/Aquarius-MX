@@ -1,3 +1,14 @@
+100 REM Program Description
+110 QU=0:REM 0=Screen,1=Printer,2=File
+130 GOSUB 900:REM Init
+140 GOTO 200
+150 ON ERROR GOTO 0
+155 ON QE GOTO 
+180 PRINT "Undefined Error Return";QE
+190 REM
+
+200 REM Tests go Here
+
 800 REM
 810 PRINT "Passed:";QR(1)
 820 PRINT "Failed:";QR(0)
@@ -26,8 +37,7 @@
 950 QU$=ERR$(0)+" Error in "+QA$
 952 QV=-(ERR$(0)=QE$):QR(QV)=QR(QV)+1
 954 QU$=QR$(QV)+QU$:GOSUB 980
-956 CLEAR ERR:ON ERROR GOTO 0
-958 GOTO 150
+956 RESUME 150
 960 REM so we can RETURN from Error
 970 QA$=QA$+" ":REM Convert ` to "
 972 FOR QI=0 TO LEN(QA$)-1

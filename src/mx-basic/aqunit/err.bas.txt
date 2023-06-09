@@ -1,0 +1,114 @@
+100 REM Test ERROR, ERR(), ERR$()
+110 QU=0:REM 0=Screen,1=Printer,2=File
+130 GOSUB 900:REM Init
+140 GOTO 200
+150 ON ERROR GOTO 0
+155 ON QE GOTO 260
+180 PRINT "Undefined Error Return";QE
+190 REM
+200 QT$="ERROR, ERR(), ERR$()"
+205 GOSUB 910
+210 QA$="ERROR 0":QV=1
+215 ERROR 0:GOSUB 926:REM Pass
+220 QE=1:READ E$,C$,D$
+225 IF E$="X" GOTO 300
+230 QA$="ERR$(0,"+E$+")=`"+C$+"`"
+235 GOSUB 920
+240 QA$="ERR$(1,"+E$+")=`"+D$+"`"
+245 GOSUB 920
+250 QE$=C$:QA$="ERROR "+E$
+255 ON ERROR GOTO 950:ERROR VAL(E$)
+260 GOTO 220
+300 QT$="ERR$(3)"
+305 GOSUB 910
+310 READ E$,D$
+315 IF E$="X" GOTO 400
+320 QA$="ERR$(2,"+E$+")=`"+D$+"`"
+325 GOSUB 920
+330 GOTO 310
+400 GOTO 800
+601 DATA  1,NF,NEXT without FOR
+602 DATA  2,SN,Syntax error
+603 DATA  3,RG,RETURN without GOSUB
+604 DATA  4,OD,Out of DATA
+605 DATA  5,FC,Illegal function call
+606 DATA  6,OV,Overflow
+607 DATA  7,OM,Out of memory
+608 DATA  8,UL,Undefined line number
+609 DATA  9,BS,Subscript out of range
+610 DATA 10,DD,Duplicate Definition
+611 DATA 11,/0,Division by zero
+612 DATA 12,ID,Illegal direct
+613 DATA 13,TM,Type mismatch
+614 DATA 14,OS,Out of string space
+615 DATA 15,LS,String too long
+616 DATA 16,ST,String formula too complex
+617 DATA 17,CN,Can't continue
+618 DATA 18,UF,Undefined user function
+619 DATA 19,MO,Missing operand
+620 DATA 20,RE,RESUME without ERROR
+621 DATA 21,IO,Disk I/O error
+622 DATA 22,UE,Unprintable error
+629 DATA X,X,X
+701 DATA  1,no CH376
+702 DATA  2,no USB
+703 DATA  3,no disk
+704 DATA  4,invalid name
+705 DATA  5,file not found
+706 DATA  6,file empty
+707 DATA  7,filetype mismatch
+708 DATA  8,remove dir error
+709 DATA  9,read error
+710 DATA 10,write error
+711 DATA 11,file create error
+712 DATA 12,directory not found
+713 DATA 13,path too long
+714 DATA 14,file exists
+715 DATA 15,other dos error
+719 DATA X,X
+            
+800 REM
+810 PRINT "Passed:";QR(1)
+820 PRINT "Failed:";QR(0)
+890 END
+900 QF$=FILE$:QF=LEN(FILE$):REM Init
+902 IF QU>1 THEN DIM Q(999):QP=0
+904 QU$="Running "+QF$:GOSUB 980
+906 QF$=LEFT$(FILE$,QF-4)+".TST"
+907 QR$(0)="Fail: ":QR$(1)="Pass: "
+908 RETURN
+910 QU$="Testing "+QT$:REM Print Title
+912 GOTO 980
+920 GOSUB 970:REM Do Assertion
+922 ON ERROR GOTO 930
+924 QV=-EVAL(QA$):ON ERROR GOTO 0
+926 QU$=QR$(QV)+QA$:GOSUB 980
+928 QR(QV)=QR(QV)+1:RETURN
+930 QU$=ERR$(0)+" Error in "+QA$
+932 GOSUB 980
+938 END
+940 GOSUB 970:REM Assert Error
+942 ON ERROR GOTO 950
+944 QV=EVAL(QA$):ON ERROR GOTO 0
+946 QU$="No Error in "+QA$
+948 GOSUB 980:QR(0)=QR(0)+1:RETURN
+950 QU$=ERR$(0)+" Error in "+QA$
+952 QV=-(ERR$(0)=QE$):QR(QV)=QR(QV)+1
+954 QU$=QR$(QV)+QU$:GOSUB 980
+956 RESUME 150
+960 REM so we can RETURN from Error
+970 QA$=QA$+" ":REM Convert ` to "
+972 FOR QI=0 TO LEN(QA$)-1
+974 QC=PEEK(&&QA$+QI)
+976 IF QC=96 THEN POKE &&QA$+QI,34
+978 NEXT:RETURN
+980 IF QU GOTO 988:REM Output Line
+982 IF QL>20 THEN QK=KEY(0):QL=0
+983 IF QK=3 THEN END
+984 PRINT QU$:QL=QL+1:RETURN
+988 IF QU=1 THEN LPRINT QU$:RETURN
+990 QN=LEN(QU$)+2
+992 POKE &Q(0)+QP,QU$
+994 QP=QP+QN:POKE &Q(0)-1,13,10
+996 RETURN
+

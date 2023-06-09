@@ -163,7 +163,8 @@ tokens = {
     0xF0: "RMDIR",
     0xF1: "OFF",
     0xF2: "WAIT",
-    0xF3: "FILE"
+    0xF3: "FILE",
+    0xF4: "RESUME"
 }
 
 
@@ -182,7 +183,7 @@ args.output.write(
 )
 
 
-last_linenr = -1
+last_line_no = -1
 addr = 0x3903
 
 # Tokenize lines
@@ -195,14 +196,14 @@ for idx, line in enumerate(args.input.readlines()):
     if result == None:
         error(idx, "Syntax error")
 
-    linenr = int(result.group(1))
+    line_no = int(result.group(1))
     line = result.group(2).strip()
 
-    if linenr < last_linenr or linenr > 65000:
+    if line_no < last_line_no or line_no > 65000:
         error(idx, "Invalid line number")
 
     buf = bytearray()
-    buf += struct.pack("<H", linenr)
+    buf += struct.pack("<H", line_no)
 
     in_str = False
     in_rem = False
@@ -221,7 +222,7 @@ for idx, line in enumerate(args.input.readlines()):
                     line = line[len(keyword) :]
                     found = True
 
-                    if keyword == "REM":
+                    if keyword in ["REM", "DATA"]:
                         in_rem = True
 
                     break
@@ -236,7 +237,7 @@ for idx, line in enumerate(args.input.readlines()):
 
     buf = struct.pack("<H", addr + len(buf)) + buf
     addr += len(buf)
-    last_linenr = linenr
+    last_line_no = line_no
 
     args.output.write(buf)
 

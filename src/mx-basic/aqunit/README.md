@@ -24,4 +24,5 @@ To copy file *program.bas* to the AquaLite USB directory use command line:
 The program can then be run in aqualite using the command RUN "*program*"
 
 Note: The script bas2aql.bat expects the environment variable %AQUALITE%
-to contain the AquaLite program directory.
+to contain the AquaLite program directory and that the subdirectory 
+%AQUALITE%\usb\aqunit exists.
