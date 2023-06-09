@@ -134,7 +134,7 @@ STJUMPS:
     dw      SNERR                 ;$F1 OFF
     dw      ST_WAIT               ;$F2 WAIT
     dw      SNERR                 ;$F3 FILE
-    dw      SNERR                 ;$F4 
+    dw      ST_RESUME             ;$F4 RESUME
     dw      SNERR                 ;$F5
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
@@ -217,7 +217,7 @@ FNJUMPS:
     dw      SNERR                 ;$F1 OFF
     dw      SNERR                 ;$F2 WAIT
     dw      FN_FILE               ;$F3 FILE
-    dw      SNERR                 ;$F4 
+    dw      SNERR                 ;$F4 RESUME
     dw      SNERR                 ;$F5
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
@@ -346,8 +346,9 @@ ERR_CODES:
     db     "CN"               ; 17 Can't continue
     db     "UF"               ; 18 Undefined user function
     db     "MO"               ; 19 Missing operand
-    db     "IO"               ; 20 Disk I/O Error
-    db     "UE"               ; 21 Unprintable Error
+    db     "RE"               ; 20 RESUME without ERROR
+    db     "IO"               ; 21 Disk I/O Error
+    db     "UE"               ; 22 Unprintable Error
 
 ; Pointers into err_table
 ERRMSG: 
@@ -370,8 +371,9 @@ ERRMSG:
     dw      MSGCN             ; 32
     dw      MSGUF             ; 34
     dw      MSGMO             ; 36
-    dw      MSGIO             ; 38
-    dw      MSGUE             ; 40
+    dw      MSGRE             ; 38
+    dw      MSGIO             ; 40
+    dw      MSGUE             ; 42
 
 dos_errors:
     dw      no_376_msg           ;  1
@@ -411,6 +413,7 @@ MSGST:  db      "String formula too complex",0
 MSGCN:  db      "Can't continue",0
 MSGUF:  db      "Undefined user function",0
 MSGMO:  db      "Missing operand",0
+MSGRE:  db      "RESUME without ERROR",0
 MSGIO:  db      "Disk I/O error",0
 MSGUE:  db      "Unprintable error",0
 
@@ -478,6 +481,7 @@ TBLCMDS:
     db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
     db      $80 + 'W', "AIT"        ; $f2 - Wait for byte on Z80 port
     db      $80 + 'F', "ILE"        ; $f3 - File Functions
+    db      $80 + 'R', "ESUME"      ; $f4 - File Functions
     db      $80                     ; End of table marker
 
 ; Tokens used in external routines

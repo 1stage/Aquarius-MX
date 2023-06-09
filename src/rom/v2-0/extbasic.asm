@@ -118,7 +118,8 @@ GETFNM: rst     SYNCHR
 ;;; Arctangent
 ;;; ### FORMAT:
 ;;;   - ATN ( *number* )
-;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
+;;;     - Action: This mathematical function returns the arctangent of the number. 
+;;;       - The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
 ;;; ### EXAMPLES:
 ;;; ` PRINT ATN(1) `
 ;;; > Prints the arctangent of 1, a value of `0.785398`
@@ -286,26 +287,32 @@ ADDLC:  ld      a,l               ; L = L + C
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## ON ERROR
-;;; BASIC error handling function and codes
+;;; Enable or Disable error trapping.
 ;;; ### FORMAT:
 ;;;   - ON ERROR GOTO *line number*
-;;;     - Action: details
+;;;     - Action: Enables error trapping and specifies the first line of the error handling subroutine.
+;;;       - Once error trapping has been enabled all errors detected, including direct mode errors , will cause a jump to the specified error handling subroutine
+;;;       - If **line number* does not exist, an UL error results.
+;;;       - If an error occurs during execution of an error handling subroutine, the BASIC error message is printed and execution terminates. 
+;;;         - Error trapping does not occur within the error handling subroutine.
+;;;   - ON ERROR GOTO 0
+;;;     - Action: Disables error trapping.
+;;;       - Subsequent errors will print an error message and halt execution.
+;;;       - An ON ERROR GOTO statement that appears in an error trapping subroutine causes MX BASIC to stop and print the error message for the error that caused the trap. 
+;;;         - To prevent this, use CLEAR ERR or RESUME *line number* before the ON ERROR GOTO 0.
+;;;       - It is recommended that all error trapping subroutines execute an ON ERROR GOTO 0 if an error is encountered for which there is no recovery action.
 ;;; ### EXAMPLE:
-;;; ` 10 ON ERROR GOTO 100 `
-;;;
-;;; ` 20 NEXT `
-;;;
-;;; ` 30 REM I get skipped `
-;;;
-;;; ` 100 PRINT ERR(0) `
-;;;
-;;; ` 110 PRINT ERR(1) `
-;;;
-;;; ` 120 PRINT ERR(2) `
+;;; ```
+;;; 10 ON ERROR GOTO 100
+;;; 20 NEXT
+;;; 30 PRINT "I get skipped"
+;;; 100 PRINT ERR(-1)
+;;; 110 PRINT ERR(0)
+;;; 120 PRINT ERR(1)
 ;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 ;----------------------------------------------------------------------------
 ; ON ERROR
-; Taken from CP/M MBASIC 80 - BINTRP.MACm
+; Taken from CP/M MBASIC 80 - BINTRP.MAC
 ONGOTX: cp      ERRTK             ; "ON...ERROR"?
         jr      nz,.noerr         ; NO. Do ON GOTO
         inc     hl                ; Check Following Byte
@@ -386,7 +393,7 @@ ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
 ;;;   - ERR ( *number* )
 ;;;     - Action: Returns error status values.
 ;;;       - If *number* is -1, returns the line number to GOTO when an error occures.
-;;;         - Returns 0 if no error trapping is disabled.
+;;;         - Returns 0 if error trapping is disabled.
 ;;;       - If *number* is 0, returns the number corresponding to the last error.
 ;;;         - - Returns 0 if no error has occured.
 ;;;       - If *number* is 1, returns the line number the last error occured on.
@@ -420,8 +427,9 @@ ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
 ;;; |  17  |  CN  | Cant CONTinue                |
 ;;; |  18  |  UF  | UnDEFined FN function        |
 ;;; |  19  |  MO  | Missing operand              |
-;;; |  20  |  IO` | Disk I/O error               |
-;;; |  21  |  UE  | Unprintable error            |
+;;; |  20  |  RE  | Disk I/O error               |
+;;; |  21  |  IO  | RESUME without ERROR         |
+;;; |  22  |  UE  | Unprintable error            |
 ;;;
 ;;; ### DOS Error Numbers
 ;;; | Err# | Error Message       | Description                    |
@@ -565,11 +573,37 @@ FN_ERRS:
 ;;; Trigger a BASIC Error
 ;;; ### FORMAT:
 ;;;  - ERROR *error*
-;;;    - Action: Triggers a BASIC Error.
-;;;      - *error* is the error number of the error to trigger (see ERR function)
-;;;      - FC Error results if *error* is not between 0 and 255, inclusive
-;;;      - if *error* is 0, no error is triggered
+;;;    - Action: Simulate the occurrence of an MX BASIC error or allows error codes to be defined by the user.
+;;;      - The value of *error* must be greater than 0 and less than 128.
+;;;      - If the value of *error* equals an error code already in use by MX BASIC (see ERR):
+;;;        - The ERROR statement will simulate the occurrence of that error, and the corresponding error message will be printed.
+;;;      - To define your own error code, use a value that is greater than any used by MX BASIC's error codes.
+;;;        - It is preferable to use the highest available values, so compatibility may be maintained when more error codes are added to MX BASIC.
+;;;        - This user-defined error code may then be conveniently handled in an error trap routine.
+;;;      - If an ERROR statement specifies a code for which no error message has been defined, MX BASIC responds with the message UNPRINTABLE ERROR.
+;;;      - Execution of an ERROR statement for which there is no error trap routine causes an error message to be printed and execution to halt.
+;;;      - If *error* is 0, no error is triggered, and program execution continues normally.
+
 ;;; ### EXAMPLES:
+;;; ```
+;;; 10 S = 10
+;;; 20 T = 5
+;;; 30 ERROR S + T
+;;; 40 END
+;;; ```
+;;; > Displays `?LS Error in 30` and halts program.
+;;;
+;;; ` ERROR 15 `
+;;; > Displays `?LS Error`
+;;;
+;;; ```
+;;; 110 ON ERROR GOTO 400
+;;; 120 INPUT "WHAT IS YOUR BET";B
+;;; 130 IF B>5000 THEN ERROR 120
+;;; ...
+;;; 400 IF ERR(0)=120 THEN PRINT "HOUSE LIMIT IS $5000"
+;;; 410 IF ERR(1)=130 THEN RESUME 120
+;;; ```
 ;----------------------------------------------------------------------------
 
 ST_ERR:
@@ -578,6 +612,7 @@ ST_ERR:
     call    GETBYT                ; Parse error number
     or      a                     ; If it's zero
     ret     z                     ;   Proceed with next statement
+    jp      m,FCERR               ; If > 127, FC Error    
     dec     a                     ; Else 
     add     a                     ;   convert to error OFFSET
     ld      e,a                   ;   Put it in E
@@ -630,7 +665,7 @@ CLEARX: cp      DIMTK             ; If CLEAR DIM
         jp      z,ST_ERASE        ;   Do BASIC80 ERASE
         exx                       ; Save Registers
         ld      b,4               ; Clear ERRLIN,ERRFLG,ONEFLG
-        call    CLERR             ; and Restore registers  
+        call    CLERR             ; and Restore registers
         or      a 
         jp      z,CLEARC          ; IF NO arguments JUST CLEAR
         cp      ERRTK             ; If CLEAR ERR?
@@ -698,10 +733,8 @@ CLERR:  ex      af,af'
 ;;;   20 PRINT A$ C$ B$
 ;;;   30 SWAP A$, B$
 ;;;   40 PRINT A$ C$ B$
-;;;   RUN
-;;;   ONE FOR ALL
-;;;   ALL FOR ONE
 ;;; ```
+;;; > Prints ` ONE FOR ALL ` then ` ALL FOR ONE `.
 ;----------------------------------------------------------------------------
 ST_SWAP:  
         call    PTRGET            ;[D,E]=POINTER AT VALUE #1
@@ -794,10 +827,8 @@ ERSLOP: rst     COMPAR            ;SEE IF THE LAST LOCATION IS GOING TO BE MOVED
 ;;; ```
 ;;;   10 X$ = STRING$ (10 , 45) 
 ;;;   20 PRINT X$ "MONTHLY REPORT" X$ 
-;;;   RUN
-;;;   ----------MONTHLY REPORT----------
-;;;   OK
 ;;; ```
+;;; Prints ` ----------MONTHLY REPORT---------- `
 FN_STRING: 
         rst     CHRGET
         SYNCHK  '('               ;MAKE SURE LEFT PAREN
@@ -1185,6 +1216,34 @@ FN_IN:
     ld      c,e                   ; bc = port
     in      a,(c)                 ; a = in(port)
     jp      SNGFLT                ; return with 8 bit input value in variable var
+
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## RESUME Statement
+;;; Continue program execution after an error recovery procedure has been performed.
+;;; ### FORMAT:
+;;;  - RESUME *line number*
+;;;    - Resumes execution at *line number*.
+;;;    - A RESUME statement that is not in an error trap routine causes an "RESUME without error" message to be printed*
+;;; ### EXAMPLE:
+;;; ```
+;;; 10 ON ERROR GOTO 900
+;;; ...
+;;; 900 IF ERR(0)=120 AND ERR(1)=90 THEN PRINT "TRY AGAIN": RESUME 80
+;;; ```
+;----------------------------------------------------------------------------
+ST_RESUME:
+        ld      a,(ONEFLG)        ; GET FLAG
+        or	    a			            ; TRAP ROUTINE.
+        jr	    z,REERR			      ; GIVE RESUME WITHOUT ERROR ERROR	
+        exx                       ; Save Registers
+        ld      b,4               ; Clear ERRLIN,ERRFLG,ONEFLG
+        call    CLERR             ; and Restore registers
+        jp      GOTO              ; Scan Line Number and GOTO it
+
+REERR:  ld      e,ERRRE           ; Load RE Error Code
+        jp      ERROR             ; Do Error
 
 ;----------------------------------------------------------------------------
 ;;; ---

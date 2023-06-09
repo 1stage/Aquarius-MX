@@ -219,8 +219,9 @@ ERROR   = $03DB   ; Generate Error with Error Code in E
 ERRCRD  = $03E0   ; Print Error Message and Return to Immediate Mode
 ERRCRH  = $03E6   ; ERRCRD rst $30
 ERRPRT  = $03EA   ; Print Error pointed to by HL and Return to Immediate Mode
-FNDLIN  = $049f   ; Find address of BASIC line (DE = line number)
+FNDLIN  = $049F   ; Find address of BASIC line (DE = line number)
 
+GOTO    = $06DC   ; Execute GOTO statement
 DATA    = $071C   ; Execute DATA statement
 ERRDIR  = $0B45   ; Issue Error if in Direct Mode
 BLTU    = $0B92   ; Block Transfer Routine
@@ -411,9 +412,10 @@ ERRST  =    $1E             ; WT String formula too complex
 ERRCN  =    $20             ; CN Cant CONTinue
 ERRUF  =    $22             ; UF UnDEFined FN function
 ERRMO  =    $24             ; MO Missing operand
-ERRIO  =    $26             ; IO Disk I/O Error
-ERRUE  =    $28             ; UE Unprintable Error
-LSTERR =    $2A             ; End of Error List
+ERRRE  =    $26             ; IO Disk I/O Error
+ERRIO  =    $28             ; IO Disk I/O Error
+ERRUE  =    $2A             ; UE Unprintable Error
+LSTERR =    $2C             ; End of Error List
 
 ;----------------------------------------------------------------------------
 ;      jump addresses for BASIC errors (loads E and jumps to ERROR)
