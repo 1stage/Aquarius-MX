@@ -983,6 +983,7 @@ Enable or Disable error trapping.
 100 PRINT ERR(-1)
 110 PRINT ERR(0)
 120 PRINT ERR(1)
+```
 > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
 
 ---
