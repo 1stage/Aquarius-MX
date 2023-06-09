@@ -30,8 +30,8 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 ;;; ` PSET (40,36),3 `
 ;;; > Draws a yellow pixel at the center of the screen.
 ;;;
-;;; ` PSET (-10,8) `
-;;; > Draws a pixel at 10 points to the left of and 10 points below the last referenced Coordinates.
+;;; ` PSET STEP (-10,8) `
+;;; > Draws a pixel at 10 points to the left of and 8 points below the last referenced Coordinates.
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## PRESET

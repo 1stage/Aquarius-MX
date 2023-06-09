@@ -8,6 +8,17 @@ This file is for recording upcoming changes and features that are being added, a
 
 ### Testing
 - [ ] AqUnit - Unit Testing Framework
+  - [x] asc.bas - Test ASC() and ASC$()
+  - [x] err.bas - Test ERROR, ERR(), ERR$()
+  - [x] hex.bas - Test HEX$()
+  - [x] peek.bas - Test PEEK(), $ and &
+  - [ ] poke.bas - Test POKE and COPY 
+  - [ ] .bas -  
+  - [ ] .bas -  
+
+### Inline Documentation
+- [ ] Update DEBUG statement
+
 
 ### AquaLite
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9

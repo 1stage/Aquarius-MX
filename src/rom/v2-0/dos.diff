@@ -1,0 +1,535 @@
+diff --git a/src/rom/v2-0/dos.asm b/src/rom/v2-0/dos.asm
+index 7cf494e..148b26f 100644
+--- a/src/rom/v2-0/dos.asm
++++ b/src/rom/v2-0/dos.asm
+@@ -77,7 +77,7 @@ ST_CD:
+     ld     c,a
+     call   dos__clearError
+     call   usb__ready            ; check for USB disk (may reset path to root!)
+-    jp     nz,_dos_do_error
++    jp     nz,_dos_error
+     ld     a,c
+     OR     A                     ; any args?
+     JR     NZ,.change_dir        ; yes,
+@@ -100,10 +100,7 @@ ST_CD:
+     ld     h,(hl)                ; hl = string text
+     ld     l,b
+     call   dos__set_path         ; update path (out: DE = end of old path)
+-    jr     z,.open
+-    ld     a,ERROR_PATH_LEN
+-    jp     _dos_do_error         ; path too long
+-.open:
++    jp     nz,path_len_error
+     pop    hl
+ _dos_opendir:
+     push   hl
+@@ -112,12 +109,13 @@ _dos_opendir:
+     cp     CH376_ERR_MISS_FILE   ; directory missing?
+     jr     z,.undo
+     cp     CH376_INT_SUCCESS     ; 'directory' is actually a file?
+-    jp     nz,_dos_do_error      ; no, disk error
++    jp     nz,_dos_error      ; no, disk error
+ .undo:
+     ex     de,hl                 ; HL = end of old path
+     ld     (hl),0                ; remove subdirectory from path
++no_dir_error:
+     ld     a,ERROR_NO_DIR        ; error = missing directory
+-    jp     _dos_do_error         ; display DOS error and generate FCERR
++    jp     _dos_error         ; display DOS error and generate FCERR
+ 
+ ;------------------------------------------------------------------------------
+ ;;; ---
+@@ -138,8 +136,7 @@ FN_CD:
+     SYNCHK  '$'               ; Require $
+     push    hl                ; Text Pointer on Stack
+     ex      (sp),hl           ; Swap Text Pointer with Return Address
+-    ld      de,LABBCK         ; return address for SNGFLT, etc.
+-    push    de                ; on stack
++    push    bc                ; put dummy return address on stack
+     call    usb__get_path     ; Get pointer to current path in HL
+     jp      TIMSTR
+ 
+@@ -159,26 +156,23 @@ FN_CD:
+ ;------------------------------------------------------------------------------
+ ST_MKDIR:
+     call    dos__getfilename      ; parse directory name
+-    jp      nz,_dos_badname_error
++    jp      nz,bad_name_error
+     push    hl                    ; save BASIC text pointer
+     call    dos__clearError
+     call    usb__ready            ; check for USB disk (may reset path to root!)
+-    jp      nz,_dos_do_error
++    jp      nz,_dos_error
+     call    _dos_opendir          ; open current path
+     ld      hl,FileName
+     call    usb__create_dir       ; create directory
+-    jp      nz,_dos_mkdir_got_Error        
++    jp      nz,.got_error
+     call    set_dos_File_datetime
+     jp      z,_pop_hl_ret         ; if successful return
+- _dos_mkdir_got_Error:
++.got_error:
+     cp      CH376_ERR_FOUND_NAME
+-    jr      z,_dos_file_exists
+-_dos_unknown_error:
++    jp      z,file_exists_error
++unknown_error:
+     ld      a,ERROR_UNKNOWN
+-    jp      _dos_do_error
+-_dos_file_exists:
+-    ld      a,ERROR_FILE_EXISTS
+-    jp      _dos_do_error
++    jp      _dos_error
+ 
+ ;--------------------------------------------------------------------
+ ;                             LOAD
+@@ -199,9 +193,8 @@ ST_LOAD:
+     push    hl                    ; push BASIC text pointer
+     ld      e,a
+     cp      ERRFC                 ; if Function Call error then show DOS error
+-    jp      nz,_stl_do_error      ; else show BASIC error code
+-    ld      a,ERROR_BAD_NAME
+-    jp      _stl_show_error       ; break with bad filename error
++    jp      nz,ERROR              ; else show BASIC error code
++    jp      bad_name_error        ; break with bad filename error
+ _stl_load:
+     xor     a
+     ld      (DOSFLAGS),a          ; clear all DOS flags
+@@ -220,7 +213,7 @@ _stl_start:
+     push    hl                    ; >>>> push BASIC text pointer
+     ld      hl,FileName
+     call    usb__open_read        ; try to open file
+-    jp      nz,_stl_no_file
++    jp      nz,no_file_error
+ ; unknown filetype
+     ld      a,(DOSFLAGS)
+     bit     DF_ADDR,a             ; address specified?
+@@ -237,11 +230,11 @@ ST_LOADFILE:
+ ; BASIC program or array, has CAQ header
+ _stl_caq:
+     call    st_read_sync          ; no, read 1st CAQ sync sequence
+-    jr      nz,_stl_bad_file
++    jr      nz,bad_file_error
+     ld      hl,FileName
+     ld      de,6                  ; read internal tape name
+     call    usb__read_bytes
+-    jr      nz,_stl_bad_file
++    jr      nz,bad_file_error
+     ld      a,(DOSFLAGS)
+     bit     DF_ARRAY,a            ; loading into array?
+     jr      z,_stl_basprog
+@@ -251,7 +244,7 @@ _stl_caq:
+     ld      a,'#'                 ; all chars should be '#'
+ _stl_array_id:
+     cp      (hl)
+-    jr      nz,_stl_bad_file      ; if not '#' then bad tape name
++    jr      nz,bad_file_error      ; if not '#' then bad tape name
+     djnz    _stl_array_id
+     ld      hl,(BINSTART)         ; HL = array data address
+     ld      de,(BINLEN)           ; DE = array data length
+@@ -259,11 +252,11 @@ _stl_array_id:
+ ; loading BASIC program
+ _stl_basprog:
+     call    st_read_sync          ; read 2nd CAQ sync sequence
+-    jr      nz,_stl_bad_file
++    jr      nz,bad_file_error
+     ld      hl,(TXTTAB)           ; HL = start of BASIC program
+     ld      de,$ffff              ; DE = read to end of file
+     call    usb__read_bytes       ; read BASIC program into RAM
+-    jr      nz,_stl_read_error
++    jp      nz,dos_read_error
+ _stl_bas_end:
+     dec     hl
+     xor     a
+@@ -275,7 +268,10 @@ _stl_bas_end:
+     inc     hl
+     ld      (VARTAB),hl           ; set end of BASIC program
+     call    Init_BASIC            ; clear variables etc. and update line addresses
+-    jr      _stl_done
++_stl_done:
++    call    usb__close_file       ; close file
++    pop     hl                    ; restore BASIC text pointer
++    ret
+ ; read file into RAM
+ ; HL = load address
+ _stl_read:
+@@ -283,28 +279,7 @@ _stl_read:
+ _stl_read_len:
+     call    usb__read_bytes       ; read file into RAM
+     jr      z,_stl_done           ; if good load then done
+-_stl_read_error:
+-    ld      a,ERROR_READ_FAIL     ; disk error while reading
+-    jr     _stl_show_error
+-_stl_no_file:
+-    ld      a,ERROR_NO_FILE       ; file not found
+-    jr      _stl_show_error
+-_stl_bad_file:
+-    ld      a,ERROR_BAD_FILE      ; file type incompatible with load method
+-    jr      _stl_show_error
+-_stl_rmdir_err:
+-    ld      a,ERROR_RMDIR_FAIL    ; no load address specified
+-_stl_show_error:
+-    call    _show_error           ; print DOS error message (A = error code)
+-    call    usb__close_file       ; close file (if opened)
+-    ld      e,ERRFC               ; Function Call error
+-_stl_do_error:
+-    pop     hl                    ; restore BASIC text pointer
+-    jp      ERROR                 ; return to BASIC with error code in E
+-_stl_done:
+-    call    usb__close_file       ; close file
+-    pop     hl                    ; restore BASIC text pointer
+-    ret
++    jp      dos_read_error
+ 
+ ;-------------------------------------------------
+ ;           Print DOS error message
+@@ -328,8 +303,41 @@ ERROR_PATH_LEN    equ  13 ; path too long
+ ERROR_FILE_EXISTS equ  14 ; file with name exists
+ ERROR_UNKNOWN     equ  15 ; other disk error
+ 
++bad_name_error::
++    ld     a,ERROR_BAD_NAME       
++    db      $01                   
++no_file_error:
++    ld     a,ERROR_NO_FILE
++    db      $01                   
++bad_file_error:
++    ld      a,ERROR_BAD_FILE      ; file type incompatible with load method
++    db      $01                   
++dos_read_error:
++    ld      a,ERROR_READ_FAIL     ; disk error while reading
++    db      $01                   
++create_fail_eror:
++    ld      a,ERROR_CREATE_FAIL
++    db      $01
++path_len_error:
++    ld     a,ERROR_PATH_LEN
++    db      $01                   
++file_exists_error:
++    ld      a,ERROR_FILE_EXISTS
++_dos_error:
++    call   _show_error            ; print error message
++    call    usb__close_file       ; close file (if open)
++IOERR:
++    ld     e,ERRIO
++    jp     ERROR
++
++
+ _show_error:
+     ld      (DosError),a          ; save error number
++    ld      hl,(ONELIN)           ; .
++    ld      a,h                   ; 
++    or      l                     ; If Trapping Errors
++    ret     nz                    ;   Do Not Display Message
++    ld      a,(DosError)
+     call    dos__lookup_error     ; look up error message
+     jr      nc,_show_error_hex    ;   if unknown error, show hex code show hex code
+     call    prtstr                ; print error message
+@@ -467,28 +475,7 @@ Init_BASIC:
+         ld      (VARNAM),hl       ; Clear Variable Name
+ _link_lines:
+         ld      de,(TXTTAB)       ; DE = start of BASIC program
+-_ibl_next_line:
+-        ld      h,d
+-        ld      l,e                ; HL = DE
+-        ld      a,(hl)
+-        inc     hl                 ; test nextline address
+-        or      (hl)
+-        jr      z,_ibl_done        ; if $0000 then done
+-        inc     hl
+-        inc     hl                 ; skip line number
+-        inc     hl
+-        xor     a                  ; end of line = $00
+-_ibl_find_eol:
+-        cp      (hl)               ; search for end of line
+-        inc     hl
+-        jr      nz,_ibl_find_eol
+-        ex      de,hl              ; HL = current line, DE = next line
+-        ld      (hl),e
+-        inc     hl                 ; set address of next line
+-        ld      (hl),d
+-        jr      _ibl_next_line
+-_ibl_done:
+-        ret
++        jp      link_lines        ; rebuild line links and return
+ 
+ ;------------------------------------------------------------------------------
+ ;;; ---
+@@ -518,7 +505,7 @@ ST_SAVE:
+     push    hl                  ; push BASIC text pointer
+     ld      e,a                 ; E = error code
+     cp      ERRFC
+-    jp      nz,_sts_error       ; if not FC error then show BASIC error code
++    jp      nz,ERROR            ; if not FC error then show BASIC error code
+     ld      a,ERROR_BAD_NAME
+     jp      ERROR               ; bad filename, quit to BASIC
+ ; save with filename in FileName
+@@ -534,7 +521,6 @@ ST_SAVEFILE:
+ ; parse address, length
+ _sts_num:
+     call    _get_addr_arg       ; parse address argument
+-    call    CHRGOT              ; get next char from text, skipping spaces
+     SYNCHK  ","                 ; skip ',' (syntax error if not ',')
+     call    GETADR              ; get length
+     ld      (BINLEN),de         ; store length
+@@ -543,21 +529,21 @@ _sts_open:
+     push    hl                  ; PUSH BASIC text pointer
+     ld      hl,FileName
+     call    usb__open_write     ; create/open new file
+-    jr      nz,_sts_open_error
++    jp      nz,create_fail_eror
+     ld      a,(DOSFLAGS)
+     bit     DF_ADDR,a
+     jr      nz,_sts_binary
+ ; saving BASIC program or array
+     call    st_write_sync       ; write caq sync 12 x $FF, $00
+-    jr      nz,_sts_write_error
++    jr      nz,_dos_write_error
+     ld      a,(DOSFLAGS)
+     bit     DF_ARRAY,a          ; saving array?
+     jr      z,_sts_bas
+ ; saving array
+     ld      hl,_array_name      ; "######"
+     ld      de,6
+-    call    usb__write_bytes
+-    jr      nz,_sts_write_error
++    call    _dos_write_bytes
++    jr      nz,_dos_write_error
+     ld      hl,(BINSTART)
+     ld      de,(BINLEN)
+     jr      _sts_write_data 
+@@ -565,52 +551,52 @@ _sts_open:
+ _sts_bas:
+     ld      hl,FileName
+     ld      de,6                ; write 1st 6 chars of filename
+-    call    usb__write_bytes
+-    jr      nz,_sts_write_error
++    call    _dos_write_bytes
++    jr      nz,_dos_write_error
+     call    st_write_sync       ; write 2nd caq sync $FFx12,$00
+-    jr      nz,_sts_write_error
++    jr      nz,_dos_write_error
+     ld      de,(TXTTAB)         ; DE = start of BASIC program
+     ld      hl,(VARTAB)         ; HL = end of BASIC program
+     or      a
+     sbc     hl,de
+     ex      de,hl               ; HL = start, DE = length of BASIC program
+ _sts_write_data:
+-    call    usb__write_bytes    ; write data block to file
++    call    _dos_write_bytes    ; write data block to file
+     ld      b,15                ; write CAQ tail $00x15
+ _sts_tail
+     ld      a,0
+-    call    usb__write_byte     ; write $FF
+-    jr      nz,_sts_write_error
++    call    _dos_write_zero
+     djnz    _sts_tail
+     jr      _sts_write_done
+ ; saving BINARY
+ _sts_binary:
+     ld      hl,(BINSTART)       ; raw binary file - no header, no tail
+     ld      de,(BINLEN)
+-    call    usb__write_bytes    ; write data block to file
++    call    _dos_write_bytes    ; write data block to file
+ _sts_write_done:
+     push    af
+     call    usb__close_file     ; close file
+     pop     af
+-    jr      z,_sts_done         ; if wrote OK then done
+-; error while writing
+-_sts_write_error:
+-    ld      a,ERROR_WRITE_FAIL
+-    jr      _sts_show_error
+-; error opening file
+-_sts_open_error:
+-    ld      a,ERROR_CREATE_FAIL
+-_sts_show_error:
+-    call    _show_error         ; show DOS error message (A = error code)
+-    ld      e,ERRFC
+-_sts_error:
+-    pop     hl
+-    jp      ERROR            ; return to BASIC with error code in E
+-_sts_done:
++    jr      nz,_dos_write_error ; if wrote OK then done
+     call    set_dos_File_datetime
+     pop     hl                  ; restore BASIC text pointer
+     ret
+ 
++
++_dos_write_zero:
++    ld      a,$00
++_dos_write_byte:
++    call    usb__write_byte     ; write $00
++    ret     z                   ; return if no error
++_dos_write_error:
++    ld      a,ERROR_WRITE_FAIL
++    jp      _dos_error
++
++_dos_write_bytes:
++    call    usb__write_bytes    ; write data block to file
++    jr      nz,_dos_write_error
++    ret
++
+ _array_name:
+     db      "######"
+ 
+@@ -622,7 +608,7 @@ _get_addr_arg:
+     ld      (BINSTART),de       ; set address
+     ld      a,1<<DF_ADDR
+     ld      (DOSFLAGS),a        ; flag load address present
+-    ret
++    jp      CHRGT2              ; reget character and return
+ 
+ ;----------------------------------------------------------------------------
+ ; Parse LOAD/SAVE Array Argument
+@@ -661,13 +647,11 @@ _get_array_parms:
+ ;
+ st_write_sync:
+     ld      b,12
+-.write_caq_loop:
++.write_sync_loop:
+     ld      a,$FF
+-    call    usb__write_byte     ; write $FF
+-    ret     nz                  ; return if error
+-    djnz    .write_caq_loop
+-    ld      a,$00
+-    jp      usb__write_byte     ; write $00
++    call    _dos_write_byte     ; write $FF
++    djnz    .write_sync_loop
++    jp      _dos_write_zero     ; write $00 and return
+ 
+ ;--------------------------------------------------------------------
+ ;;; ---
+@@ -816,17 +800,10 @@ ST_DIR:
+ .st_dir_go:
+     push    hl                ; PUSH text pointer
+     call    usb_ready         ; check for USB disk (may reset path to root!)
+-    jr      nz,.error
++    jp      nz,_dos_error   ; Returns DOS error number if it fails
+     call    STROUT            ; print path
+     call    CRDO
+     call    dos__directory    ; display directory listing
+-    jr      z,.st_dir_done    ; if successful listing then done
+-.error:
+-    call    _show_error       ; else show error message (A = error code)
+-    ld      e,ERRFC
+-    pop     hl
+-    jp      ERROR             ; return to BASIC with FC error
+-.st_dir_done:
+     pop     hl                ; POP text pointer
+     ret
+ 
+@@ -942,12 +919,7 @@ dos__prtDirInfo:
+         bit     DF_SDTM,a
+         jr      z,.dir_skip_datetime
+ .dir_time_stamp:
+-        push    hl                      ; Save Pointer
+-        ex      de,hl                   ; DE = DIR_WrtTime
+-        ld      hl,dtm_buffer
+-        call    fts_to_dtm              ; Convert TimeStamp to DateTime
+-        ld      de,DTM_STRING
+-        call    dtm_to_fmt              ; Convert to Formatted String
++        call    format_fts              ; Convert FTS at (HL) to formatted date string
+         ld      b,16
+ .dir_datetime:
+         ld      a,(de)                  ; get next char of extension
+@@ -956,7 +928,6 @@ dos__prtDirInfo:
+         djnz    .dir_datetime
+         LD      A,' '                   ; print ' '
+         CALL    TTYOUT
+-        pop     hl
+ .dir_skip_datetime:
+         pop     af
+         AND     ATTR_DIRECTORY          ; directory bit set?
+@@ -1119,20 +1090,13 @@ print_integer:
+ ST_DEL:
+     call   dos__getfilename  ; filename -> FileName
+     push   hl                ; push BASIC text pointer
+-    jr     nz,_dos_badname_error
++    jp     nz,bad_name_error
+     ld     hl,FileName
+     call   usb__delete       ; delete file
+-    jr     z,_pop_hl_ret
+-    ld     a,ERROR_NO_FILE
+-_dos_do_error:
+-    call   _show_error       ; print error message
+-    jp     FCERR
++    jp     nz,no_file_error
+ _pop_hl_ret:
+     pop    hl                ; pop BASIC text pointer
+     ret
+-_dos_badname_error:
+-    ld     a,ERROR_BAD_NAME
+-    jr     _dos_do_error
+ 
+ 
+ ;----------------------------------------------------------------
+@@ -1379,34 +1343,6 @@ dos__clearError:
+     ld      (DosError),a
+     ret
+ 
+-;--------------------------
+-;   print hex byte
+-;--------------------------
+-; in: A = byte
+-
+-PRINTHEX:
+-    push    bc
+-    ld      b,a
+-    and     $f0
+-    rra
+-    rra
+-    rra
+-    rra
+-    cp      10
+-    jr      c,.hi_nib
+-    add     7
+-.hi_nib:
+-    add     '0'
+-    call    TTYOUT
+-    ld      a,b
+-    and     $0f
+-    cp      10
+-    jr      c,.low_nib
+-    add     7
+-.low_nib:
+-    add     '0'
+-    pop     bc
+-    jp      TTYOUT
+ 
+ 
+ ;------------------------------------------------------------------------------
+@@ -1419,15 +1355,12 @@ PRINTHEX:
+ ;  If we ever start using interupts, then this will need DI/EI type code   
+ ;
+ 
+-
+ set_dos_File_datetime:
+-    push    hl                      ; Save Registers
+-    push    bc
+-    push    de
+-    ld      bc,RTC_SHADOW           ; setup BC to RTC_SHADOW
+-    ld      hl,DTM_BUFFER           ; Setup HL to DTM_BUFFER
+-    call    rtc_read                ; get current Date/time into DTM_Buffer
+-    jr      z,._sdfdt_ErrorOrNoCLK   ; exit if no clock
++;    push    hl                      ; Save Registers
++;    push    bc
++;    push    de
++    call    read_rtc                ; get current Date/time into DTM_Buffer
++    jr      z,._sdfdt_ErrorOrNoCLK  ; exit if no clock
+     ld      hl,FileName             ; get current filename
+     call    usb__read_dir_Info      ; try to open file and read DIR info
+     jr      nz,._sdfdt_ErrorOrNoCLK ; got an error - goto handler
+@@ -1474,7 +1407,9 @@ set_dos_File_datetime:
+    ADD     HL,SP                   ; clean up stack
+    LD      SP,HL
+ ._sdfdt_ErrorOrNoCLK
+-    pop     de
+-    pop     bc
+-    pop     hl
++;    pop     de
++;    pop     bc
++;    pop     hl
+     ret
++
++; C0_END = $DCA6 before 5/31/23 refactor
