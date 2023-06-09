@@ -918,7 +918,7 @@ link_lines
 ;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
 ;;;  - RUN "*filename*"
 ;;;    - Action: Loads program named *filename* into memory and runs it.
-;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
+;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and executed in its place.
 ;;;      - Wildcards and paths cannot be used.
 ;;; ### EXAMPLES:
 ;;; ` RUN "RUN-ME" `
@@ -1028,10 +1028,9 @@ ST_DOKE:
 ;;; ## CLS (Extended)
 ;;; Clear Screen / Clear Screen with specified foreground and background colors
 ;;; ### FORMAT:
-;;;  - CLS
-;;;    - Action: Clear the screen with defaut BLACK characters on CYAN background.
 ;;;  - CLS [ *colors* ]
 ;;;    - Action: Clears the screen. The optional *colors* parameter is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
+;;;      - If *colors* is omitted, the screen is cleared with the default BLACK characters on CYAN background.
 ;;; >
 ;;;     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
 ;;;     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 
@@ -1045,7 +1044,7 @@ ST_DOKE:
 ;;;     2 GREEN      6 CYAN        A DKMAGENTA   E DKRED
 ;;;     3 YELLOW     7 WHITE       B DKBLUE      F DKGREY
 ;;;
-;;;    - Warning: If the foreground and background colors are the same, typed and and PRINTed text will be invisible.
+;;;    - Warning: If the foreground and background colors are the same, typed and PRINTed text will be invisible.
 ;;;    - Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
 ;;; ### EXAMPLES:
 ;;; ` CLS `
@@ -1438,7 +1437,7 @@ joy05:
 ;;; ` 2O IF K=97 THEN X=X-1 `
 ;;;
 ;;; ` 30 IF K=115 THEN X=X+1 `
-;;; > Continously decrement or increment X as long as the A or S key, respectively, is pressed.
+;;; > Continuously decrement or increment X as long as the A or S key, respectively, is pressed.
 ;----------------------------------------------------------------------------
 
 FN_KEY:
@@ -1479,7 +1478,7 @@ FN_KEY:
 ;;; ## DEC
 ;;; Hexadecimal to integer conversion
 ;;; ### FORMAT:
-;;;  - DEC(*hexadecimfal string*)
+;;;  - DEC(*hexadecimal string*)
 ;;;    - Action: Returns the DECimal value of the hexadecimal number in *hexadecimal string*.
 ;;;      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
 ;;;      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
@@ -1512,7 +1511,7 @@ FN_DEC:
 ;;;      - If *length* is 0 or omitted, the returned string will be two characters if *number* is between 0 and 255, otherwise it will be four characters.
 ;;;      - If *length* is 1, the returned string will be two characters long. If *nunmber* is greater than 255 or less than 0, only the LSB will be returned.
 ;;;      - If *length* is 2, the returned string will be four characters long.
-;;;      - Returns FC Error if *number* is not in the range -32676 through 65535 or *length* is not in the range 0 throuugh 2.
+;;;      - Returns FC Error if *number* is not in the range -32676 through 65535 or *length* is not in the range 0 through 2.
 ;;;      - See the DEC function for hex-to-number conversion.
 ;;;  - HEX$("*string*")
 ;;;    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in *string*.
@@ -1935,7 +1934,7 @@ EVAL_HEX:
 ;;;      - Variable *varname* can be either a simple variable or an indexed array element, either string or numeric in both cases.
 ;;;      - For numeric variables and array elements, the returned address points to the binary floating point number.
 ;;;      - For string variables and array elements, the returned address points to the string descriptor.
-;;;      - If the varible or array does not exist, it is automatically created.
+;;;      - If the variable or array does not exist, it is automatically created.
 ;;;      - The address returned will be an integer in the range of 0 and 65535.
 ;;;  - &&*varname*
 ;;;    - Action: Returns the address of the first byte of the string text associated with *stringvar*.

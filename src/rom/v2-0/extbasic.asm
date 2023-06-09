@@ -10,7 +10,7 @@
 ;;;   - DEF FN *name* ( *variable* ) = *expression*
 ;;;     - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
 ;;;       - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
-;;;       - The parametern *variable* represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in *expression*, the value of that program variable is used.
+;;;       - The parameter *variable* represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in *expression*, the value of that program variable is used.
 ;;;       - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
 ;;;       - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
 ;;;       - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
@@ -310,7 +310,7 @@ ADDLC:  ld      a,l               ; L = L + C
 ;;; 110 PRINT ERR(0)
 ;;; 120 PRINT ERR(1)
 ;;; ```
-;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
+;;; > Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occurred on `20`.
 ;----------------------------------------------------------------------------
 ; ON ERROR
 ; Taken from CP/M MBASIC 80 - BINTRP.MAC
@@ -393,13 +393,13 @@ ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
 ;;; ### FORMAT:
 ;;;   - ERR ( *number* )
 ;;;     - Action: Returns error status values.
-;;;       - If *number* is -1, returns the line number to GOTO when an error occures.
+;;;       - If *number* is -1, returns the line number to GOTO when an error occurs.
 ;;;         - Returns 0 if error trapping is disabled.
 ;;;       - If *number* is 0, returns the number corresponding to the last error.
-;;;         - - Returns 0 if no error has occured.
-;;;       - If *number* is 1, returns the line number the last error occured on.
-;;;         - Returns 0 if no error has occured.
-;;;         - Returns 65535 if the error occured in immediate mode.
+;;;         - - Returns 0 if no error has occurred.
+;;;       - If *number* is 1, returns the line number the last error occurred on.
+;;;         - Returns 0 if no error has occurred.
+;;;         - Returns 65535 if the error occurred in immediate mode.
 ;;;       - If *number* is 2, returns the number corresponding to the last DOS error.
 ;;;         - Returns 0 if the last DOS command completed successfully.
 ;;;       - If *number* is 3, returns the status code of the last CH376 operation.
@@ -425,7 +425,7 @@ ERRCRX: call    get_errcode_ptr   ; Get Pointer into Error Table
 ;;; |  14  |  OS  | Out of String space          |
 ;;; |  15  |  LS  | String too Long              |
 ;;; |  16  |  ST  | String formula too complex   |
-;;; |  17  |  CN  | Cant CONTinue                |
+;;; |  17  |  CN  | Can't CONTinue               |
 ;;; |  18  |  UF  | UnDEFined FN function        |
 ;;; |  19  |  MO  | Missing operand              |
 ;;; |  20  |  RE  | Disk I/O error               |
@@ -637,7 +637,7 @@ ST_ERR:
 ;;;       - Leaves variables and arrays intact.
 ;;;   - CLEAR DIM *array* [, *array* ...]
 ;;;    - Action: Eliminates array from program.
-;;;      - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes. 
+;;;      - Arrays may be redimensioned after they are ERASEd, or the previously allocated array space in memory may be used for other purposes. 
 ;;;      - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
 ;;; ### EXAMPLES:
 ;;; ` CLEAR 2000 `

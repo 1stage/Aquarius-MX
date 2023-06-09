@@ -12,7 +12,7 @@ Get Variable Address
      - Variable *varname* can be either a simple variable or an indexed array element, either string or numeric in both cases.
      - For numeric variables and array elements, the returned address points to the binary floating point number.
      - For string variables and array elements, the returned address points to the string descriptor.
-     - If the varible or array does not exist, it is automatically created.
+     - If the variable or array does not exist, it is automatically created.
      - The address returned will be an integer in the range of 0 and 65535.
  - &&*varname*
    - Action: Returns the address of the first byte of the string text associated with *stringvar*.
@@ -146,7 +146,7 @@ Get Current Directory path as a string
 Draw circle or ellipse on screen.
 ### FORMAT:
   - CIRCLE(*xcenter*, *ycenter*), *radius*[,[*color*][,[*start*],[*end*][,*aspect*]]]
-    - Action: Draws circle, elipse, or arc with given *radius* centered at *xcenter*, *ycenter*.
+    - Action: Draws circle, ellipse, or arc with given *radius* centered at *xcenter*, *ycenter*.
       - If *color* is not specified, the screen colors are maintained.
       - The *start* and *end* angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end.
         - If start or end is negative, the ellipse is connected to the center point with a line, and the angles are treated as if they are positive (note that this is different from adding 2π).
@@ -179,7 +179,7 @@ Clear Variables and/or Error Code
       - Leaves variables and arrays intact.
   - CLEAR DIM *array* [, *array* ...]
    - Action: Eliminates array from program.
-     - Arrays may be redimensioned after they are ERASEd, or the previously allocated array spacein memory may be used for other purposes.
+     - Arrays may be redimensioned after they are ERASEd, or the previously allocated array space in memory may be used for other purposes.
      - If an attempt is made to redimension an array without first ERASEing it, a "Redimensioned array" errors.
 ### EXAMPLES:
 ` CLEAR 2000 `
@@ -206,10 +206,9 @@ Clear Variables and/or Error Code
 ## CLS (Extended)
 Clear Screen / Clear Screen with specified foreground and background colors
 ### FORMAT:
- - CLS
-   - Action: Clear the screen with defaut BLACK characters on CYAN background.
  - CLS [ *colors* ]
    - Action: Clears the screen. The optional *colors* parameter is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
+     - If *colors* is omitted, the screen is cleared with the default BLACK characters on CYAN background.
 >
     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN
@@ -223,7 +222,7 @@ Clear Screen / Clear Screen with specified foreground and background colors
     2 GREEN      6 CYAN        A DKMAGENTA   E DKRED
     3 YELLOW     7 WHITE       B DKBLUE      F DKGREY
 
-   - Warning: If the foreground and background colors are the same, typed and and PRINTed text will be invisible.
+   - Warning: If the foreground and background colors are the same, typed and PRINTed text will be invisible.
    - Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
 ### EXAMPLES:
 ` CLS `
@@ -287,7 +286,7 @@ Enable the built-in Aquarius MX debugger
 ## DEC
 Hexadecimal to integer conversion
 ### FORMAT:
- - DEC(*hexadecimfal string*)
+ - DEC(*hexadecimal string*)
    - Action: Returns the DECimal value of the hexadecimal number in *hexadecimal string*.
      - If the first non-blank character of the string is not a decimal digit or the letters A through F, the value returned is zero.
      - String conversion is finished when the end of the string or any character that is not a hexadecimal digit is found.
@@ -320,7 +319,7 @@ Define User Function
   - DEF FN *name* ( *variable* ) = *expression*
     - Action: This sets up a user-defined function that can be used later in the program. The function can consist of any mathematical formula. User-defined functions save space in programs where a long formula is used in several places. The formula need only be specified once, in the definition statement, and then it is abbreviated as a function name. It must be executed once, but any subsequent executions are ignored.
       - The function name is the letters FN followed by any variable name. This can be 1 or 2 characters, the first being a letter and the second a letter or digit.
-      - The parametern *variable* represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in *expression*, the value of that program variable is used.
+      - The parameter *variable* represents the argument variable or value that will be given in the function call and does not affect any program variable with the same name. For any other variable name in *expression*, the value of that program variable is used.
       - A DEF FN statement must be executed before the function it defines may be called. If a function is called before it has been defined, an "Undefined user function" error occurs.
       - Multiple user functions may be defined at once, each with a unique FN name. Executing a DEF with the same FN name as a previously defined user function replaces the previous definition with the new one. DEF FN is illegal in direct mode.
       - The function is called later in the program by using the function name with a variable in parentheses. This function name is used like any other variable, and its value is automatically calculated.
@@ -445,12 +444,12 @@ The following commands are also available:
   10 DRAW "BM 40,36"
   20 A=20: DRAW "R=A; D=A; L=A; U=A;"
 ```
-> Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixles high.
+> Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixels high.
 ```
   30 PSET (10, 20)
   40 DRAW "E20; F20; L39"
 ```
-> Draws a 42 pixel wide triangle with it's top vertex at x-coordinate 10 and y-coordinate 20.
+> Draws a 42 pixel wide triangle with its top vertex at x-coordinate 10 and y-coordinate 20.
 
 ---
 ## DTM$
@@ -489,7 +488,7 @@ Edit BASIC Line
     <--     Delete character to left
   CTL - \   Delete character to right
     RTN     Save changes and exit edit mode
-  CTL - C   Discard changes and edit edit mode
+  CTL - C   Discard changes and exit edit mode
   CTL - R   Retype previously entered IMMEDIATE MODE command
 ```
 
@@ -501,13 +500,13 @@ Error Status
 ### FORMAT:
   - ERR ( *number* )
     - Action: Returns error status values.
-      - If *number* is -1, returns the line number to GOTO when an error occures.
+      - If *number* is -1, returns the line number to GOTO when an error occurs.
         - Returns 0 if error trapping is disabled.
       - If *number* is 0, returns the number corresponding to the last error.
-        - - Returns 0 if no error has occured.
-      - If *number* is 1, returns the line number the last error occured on.
-        - Returns 0 if no error has occured.
-        - Returns 65535 if the error occured in immediate mode.
+        - - Returns 0 if no error has occurred.
+      - If *number* is 1, returns the line number the last error occurred on.
+        - Returns 0 if no error has occurred.
+        - Returns 65535 if the error occurred in immediate mode.
       - If *number* is 2, returns the number corresponding to the last DOS error.
         - Returns 0 if the last DOS command completed successfully.
       - If *number* is 3, returns the status code of the last CH376 operation.
@@ -533,7 +532,7 @@ Error Status
 |  14  |  OS  | Out of String space          |
 |  15  |  LS  | String too Long              |
 |  16  |  ST  | String formula too complex   |
-|  17  |  CN  | Cant CONTinue                |
+|  17  |  CN  | Can't CONTinue               |
 |  18  |  UF  | UnDEFined FN function        |
 |  19  |  MO  | Missing operand              |
 |  20  |  RE  | Disk I/O error               |
@@ -652,9 +651,9 @@ Show available Memory / Show memory details
  - FRE ( 0 )
    - Action: Returns the number of bytes in memory not being used by BASlC.
  - FRE ( 1 )
-   - Action: Returns  the total size of string space (as set by the first argument of CLEAR).
+   - Action: Returns the total size of string space (as set by the first argument of CLEAR).
  - FRE ( 2 )
-   - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
+   - Action: Returns the top of BASIC memory (as set by the second argument of CLEAR).
  - FRE ( 3 )
    - Action: Returns the top of user memory (the highest value allowed for CLEAR).
  - FRE ( *string* )
@@ -678,7 +677,7 @@ Copy a rectangle of screen data to a numeric array.
      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
      - *arrayname* must already be DIMensioned to a size large enough to hold the data.
        - To calculate the size of an array needed to store the elements in a rectangle:
-         - Multply the width of the rectangle in rows by the height in LINES
+         - Multiply the width of the rectangle in columns by the height in lines.
          - Round up to an even number
          - Divide by two
      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
@@ -701,7 +700,7 @@ Integer to hexadecimal conversion
      - If *length* is 0 or omitted, the returned string will be two characters if *number* is between 0 and 255, otherwise it will be four characters.
      - If *length* is 1, the returned string will be two characters long. If *nunmber* is greater than 255 or less than 0, only the LSB will be returned.
      - If *length* is 2, the returned string will be four characters long.
-     - Returns FC Error if *number* is not in the range -32676 through 65535 or *length* is not in the range 0 throuugh 2.
+     - Returns FC Error if *number* is not in the range -32676 through 65535 or *length* is not in the range 0 through 2.
      - See the DEC function for hex-to-number conversion.
  - HEX$("*string*")
    - Action: Returns string containing a series of two digit hexadecimal numbers representing the characters in *string*.
@@ -826,7 +825,7 @@ ASCII:  158  143  159  142   $C6   255     160        134
 ` 2O IF K=97 THEN X=X-1 `
 
 ` 30 IF K=115 THEN X=X+1 `
-> Continously decrement or increment X as long as the A or S key, respectively, is pressed.
+> Continuously decrement or increment X as long as the A or S key, respectively, is pressed.
 
 ---
 ## KEY Statement
@@ -851,7 +850,7 @@ Draw line or box on screen.
 ### FORMAT:
   - LINE [ (*x-coord1*,*y-coord1*) ] - ( *x-coord2*,*y-coord2*) [ ,[ *color* ] [,B[F] ]
     - Action: Draws line from the first specified point to the second specified point.
-      - If the first (*x-coord1*,*y-coord1*) is ommited (starts with a dash), the line starts at the last referenced point.
+      - If the first (*x-coord1*,*y-coord1*) is omitted (starts with a dash), the line starts at the last referenced point.
       - B (box) draws a box with the specified points at opposite corners.
       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
       - If *color* is not specified, the current screen colors are maintained and two commas must be used before B or BF
@@ -984,7 +983,7 @@ Enable or Disable error trapping.
 110 PRINT ERR(0)
 120 PRINT ERR(1)
 ```
-> Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occured on `20`.
+> Sets line 100 as the error handler, forces an error (NEXT without FOR) in line 20, then jumps to 100 and prints `100` for the error handler line, then the error number, then the line the error occurred on `20`.
 
 ---
 ## OR
@@ -1126,18 +1125,14 @@ Copy data from a numeric array into a rectangle of screen data.
  - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
-     - *arrayname* must already be DIMensioned to a size large enough to hold the data, and populated with data.
-       - To calculate the size of an array needed to store the elements in a rectangle:
-         - Multply the width of the rectangle in rows by the height in LINES
-         - Round up to an even number
-         - Divide by two
+     - *arrayname* must already be DIMensioned and populated with data.
      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
      - See GET statement for copying from screen to array.
  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
 ### EXAMPLE:
 ```
 10 DIM A(8)
-20 LOAD "CURSOR.SPR",*A
+20 LOAD "CURSOR,SPR",*A
 30 PUT (1,1)-(4,4),A
 ```
 > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
@@ -1166,7 +1161,7 @@ Loads and runs BASIC programs (*.CAQ or *.BAS)
      - File on USB drive must be in CAQ format. The internal filename is ignored.
  - RUN "*filename*"
    - Action: Loads program named *filename* into memory and runs it.
-     - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and excuted in it's place.
+     - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and executed in its place.
      - Wildcards and paths cannot be used.
 ### EXAMPLES:
 ` RUN "RUN-ME" `
@@ -1182,12 +1177,12 @@ Loads and runs BASIC programs (*.CAQ or *.BAS)
 Save File to USB Drive
 ### FORMAT:
  - SAVE "*filename*"
-   - Action: Save BASIC programt to file *filename* on USB drive.
+   - Action: Save BASIC program to file *filename* on USB drive.
      - *filename* can be any string expression
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
      - File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
  - SAVE "*filespec*",\**arrayname*
-   - Action: Save BASIC programt to file *filename* on USB drive.
+   - Action: Save contents of array *arrayname* to file *filename* on USB drive.
      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
      - File on USB drive will be in CAQ format with the internal filename set to "######".
  - SAVE *filespec*,*address*,*length*[,*offset*]
@@ -1308,7 +1303,7 @@ Suspend program execution while monitoring the status of a Z80 input port.
 Bitwise Exclusive OR
 ### FORMAT:
  - XOR( *number1*, *number2* )
-   - Action: Returns the bitwise Exlusive OR of two numbers.
+   - Action: Returns the bitwise Exclusive OR of two numbers.
      - Both *number1* and *number2* must be between -32768 and 65535.
 ### EXAMPLE:
 ` PRINT HEX$(XOR($FFFF,$0808)) `

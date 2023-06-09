@@ -112,7 +112,7 @@ MAKINT: push    hl                ; Save Registers
 ;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
 ;;;      - *arrayname* must already be DIMensioned to a size large enough to hold the data.
 ;;;        - To calculate the size of an array needed to store the elements in a rectangle:
-;;;          - Multply the width of the rectangle in rows by the height in LINES
+;;;          - Multiply the width of the rectangle in columns by the height in lines.
 ;;;          - Round up to an even number
 ;;;          - Divide by two
 ;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
@@ -137,18 +137,14 @@ ST_PUT: ld      a,1               ;;Mode = GET
 ;;;  - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
 ;;;    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
 ;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
-;;;      - *arrayname* must already be DIMensioned to a size large enough to hold the data, and populated with data.
-;;;        - To calculate the size of an array needed to store the elements in a rectangle:
-;;;          - Multply the width of the rectangle in rows by the height in LINES
-;;;          - Round up to an even number
-;;;          - Divide by two
+;;;      - *arrayname* must already be DIMensioned and populated with data.
 ;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
 ;;;      - See GET statement for copying from screen to array.
 ;;;  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
 ;;; ### EXAMPLE:
 ;;; ```
 ;;; 10 DIM A(8)
-;;; 20 LOAD "CURSOR.SPR",*A
+;;; 20 LOAD "CURSOR,SPR",*A
 ;;; 30 PUT (1,1)-(4,4),A
 ;;; ```
 ;;; > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
@@ -291,7 +287,7 @@ XCHGX:  push    hl
 ;;; ### FORMAT:
 ;;;   - LINE [ (*x-coord1*,*y-coord1*) ] - ( *x-coord2*,*y-coord2*) [ ,[ *color* ] [,B[F] ]
 ;;;     - Action: Draws line from the first specified point to the second specified point.
-;;;       - If the first (*x-coord1*,*y-coord1*) is ommited (starts with a dash), the line starts at the last referenced point.
+;;;       - If the first (*x-coord1*,*y-coord1*) is omitted (starts with a dash), the line starts at the last referenced point.
 ;;;       - B (box) draws a box with the specified points at opposite corners.
 ;;;       - BF (filled box) draws a box (as ,B) and fills in the interior with points.
 ;;;       - If *color* is not specified, the current screen colors are maintained and two commas must be used before B or BF
@@ -512,7 +508,7 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
 ;;; Draw circle or ellipse on screen.
 ;;; ### FORMAT:
 ;;;   - CIRCLE(*xcenter*, *ycenter*), *radius*[,[*color*][,[*start*],[*end*][,*aspect*]]]
-;;;     - Action: Draws circle, elipse, or arc with given *radius* centered at *xcenter*, *ycenter*.
+;;;     - Action: Draws circle, ellipse, or arc with given *radius* centered at *xcenter*, *ycenter*.
 ;;;       - If *color* is not specified, the screen colors are maintained. 
 ;;;       - The *start* and *end* angle parameters are radian arguments between -2π and 2π which specify where the drawing of the ellipse is to begin and end. 
 ;;;         - If start or end is negative, the ellipse is connected to the center point with a line, and the angles are treated as if they are positive (note that this is different from adding 2π).
@@ -1158,12 +1154,12 @@ GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
 ;;;   10 DRAW "BM 40,36"
 ;;;   20 A=20: DRAW "R=A; D=A; L=A; U=A;" 
 ;;; ```
-;;; > Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixles high.
+;;; > Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixels high.
 ;;; ```
 ;;;   30 PSET (10, 20)
 ;;;   40 DRAW "E20; F20; L39"
 ;;; ```
-;;; > Draws a 42 pixel wide triangle with it's top vertex at x-coordinate 10 and y-coordinate 20.
+;;; > Draws a 42 pixel wide triangle with its top vertex at x-coordinate 10 and y-coordinate 20.
 ST_DRAW:    
         ld      de,DRWTAB         ; DISPATCH TABLE FOR GML
         xor     a                 ; CLEAR OUT DRAW FLAGS

@@ -27,7 +27,7 @@
 ;;;     <--     Delete character to left
 ;;;   CTL - \   Delete character to right
 ;;;     RTN     Save changes and exit edit mode
-;;;   CTL - C   Discard changes and edit edit mode
+;;;   CTL - C   Discard changes and exit edit mode
 ;;;   CTL - R   Retype previously entered IMMEDIATE MODE command
 ;;; ```
 ;;;

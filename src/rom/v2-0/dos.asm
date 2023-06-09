@@ -414,12 +414,12 @@ _link_lines:
 ;;; Save File to USB Drive
 ;;; ### FORMAT:
 ;;;  - SAVE "*filename*"
-;;;    - Action: Save BASIC programt to file *filename* on USB drive.
+;;;    - Action: Save BASIC program to file *filename* on USB drive.
 ;;;      - *filename* can be any string expression
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
 ;;;      - File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
 ;;;  - SAVE "*filespec*",\**arrayname*
-;;;    - Action: Save BASIC programt to file *filename* on USB drive.
+;;;    - Action: Save contents of array *arrayname* to file *filename* on USB drive.
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
 ;;;      - File on USB drive will be in CAQ format with the internal filename set to "######".
 ;;;  - SAVE *filespec*,*address*,*length*[,*offset*]
@@ -1243,6 +1243,37 @@ _convert_filename:
     or      a                 ; test error code
     ret
 
+;Check/Convert DOS File Name Character
+;In/Out: A = Character
+;Returns Carry Set if Illegal Character
+; Legal characters: A-Z 0-9 $ _ ~ 
+dos__filechar:
+    cp      '$'               ; If $
+    ret     z                 ;   Return No Carry
+    cp      '_'               ; If _
+    ret     z                 ;   Return No Carry
+    cp      '='               ; 
+    jr      nz,.noteq         ; If =
+    ld      a,'~'             ;   Change to ~
+    cp      '~'               ; If ~
+    ret     z                 ;   Return No Carry
+.noteq    
+    cp      '0'               ; If < 0
+    ret     c                 ;   Return Carry Set
+    cp      ':'               ; If < :
+    jr      c,.ccfret         ;   Return No Carry
+    cp      'a'               
+    jr      nc,.notlower      ; If >= a
+    and     $5F               ;   Make Uppercase
+.notlower
+    cp      '['               ; If > Z
+    jr      nc,.ccfret
+    cp      'A'               ; Compare to A
+    ret                       ; and Return  
+.ccfret
+    ccf                       ; Complement Carry
+    ret                       ; and Return
+
 ;----------------------------------------------------------
 ;      Convert FAT filename to DOS filename
 ;----------------------------------------------------------
@@ -1254,6 +1285,7 @@ _convert_filename:
 ;
 ; NOTE: source and destination can be the same string, but
 ;       string must have space for 13 chars.
+;
 ;
 dos__name:
    push  bc
@@ -1317,6 +1349,8 @@ dos__char:
         RET     NZ             ; convert '=' to '~'
         LD      A,'~'
         RET
+
+
 
 ;------------------------------------------------------------------------------
 ;              Set DosError and ChStatus to 0

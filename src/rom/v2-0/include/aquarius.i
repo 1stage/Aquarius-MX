@@ -266,6 +266,7 @@ ISVAR   = $0A4E   ; Evaluate Variable
 RETVAR  = $0A51   ; Evaluate Variable with descriptor in DE
 ISLET   = $0CC5   ; Return No Carry is (HL) is an uppercase letter
 ISLETC  = $0CC6   ; Return No Carry is A is an uppercase letter
+CCFRET  = $0CCB   ; Complement Carry Flag and Return
 FIN     = $15E5   ; Evaluate Floating Point Number
 
 

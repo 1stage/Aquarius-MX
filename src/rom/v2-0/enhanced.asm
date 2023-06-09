@@ -147,9 +147,9 @@ ST_COPY:
 ;;;  - FRE ( 0 )
 ;;;    - Action: Returns the number of bytes in memory not being used by BASlC.
 ;;;  - FRE ( 1 )
-;;;    - Action: Returns  the total size of string space (as set by the first argument of CLEAR).
+;;;    - Action: Returns the total size of string space (as set by the first argument of CLEAR).
 ;;;  - FRE ( 2 ) 
-;;;    - Action: Returns returns the top of BASIC memory (as set by the second argument of CLEAR).
+;;;    - Action: Returns the top of BASIC memory (as set by the second argument of CLEAR).
 ;;;  - FRE ( 3 ) 
 ;;;    - Action: Returns the top of user memory (the highest value allowed for CLEAR).
 ;;;  - FRE ( *string* )
@@ -455,7 +455,7 @@ FN_OR:
 ;;; Bitwise Exclusive OR
 ;;; ### FORMAT:
 ;;;  - XOR( *number1*, *number2* )
-;;;    - Action: Returns the bitwise Exlusive OR of two numbers.
+;;;    - Action: Returns the bitwise Exclusive OR of two numbers.
 ;;;      - Both *number1* and *number2* must be between -32768 and 65535.
 ;;; ### EXAMPLE:
 ;;; ` PRINT HEX$(XOR($FFFF,$0808)) `
