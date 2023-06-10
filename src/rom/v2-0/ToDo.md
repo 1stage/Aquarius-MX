@@ -34,7 +34,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] .bas -  Test STRING$, INSTR, MID$
   - [ ] .bas -  Test PSET, PRESET, LINE
   - [ ] .bas -  Test LOCATE
-  - [ ] .bas -  Test SLEEP, VER,
+  - [ ] .bas -  Test SLEEP, VER
   - [ ] .bas -  Test SWAP
   - Can IN, OUT, and/or WAIT be automated
 
@@ -64,7 +64,7 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [x] Test/Tweak, document KEY() function
 
-- [x] Created FRCADR - FRCINT replacement that accepts -32768 through 65535
+- [x] Created FRCADR - FRCINT replacement that accepts -65535 through 65535
   - [x] Replaced FRCINT with FRCADR in IN/OUT/CALL
   - [x] Override PEEK and POKE to use a 16bit unsigned integer as well a 16 Bit Signed.
   - [x] LOAD, SAVE, etc - use FRCADR instead of FRCINTn

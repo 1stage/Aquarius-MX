@@ -206,21 +206,15 @@ Clear Variables and/or Error Code
 ## CLS (Extended)
 Clear Screen / Clear Screen with specified foreground and background colors
 ### FORMAT:
- - CLS [ *colors* ]
-   - Action: Clears the screen. The optional *colors* parameter is a number between 0 and 255 that specifies the new foreground and background color combination using this formula with the values below:  (FG * 16) + BG:
-     - If *colors* is omitted, the screen is cleared with the default BLACK characters on CYAN background.
+ - CLS [ *foreground, background* ]
+   - Action: Clears the screen. The optional *foreground* and *background* parameters are numbers between 0 and 15 that specifies the new foreground and background colors.
+     - If either parameter is specified, both must be specified.
+     - If *foreground* and *background* , the screen is cleared with the default BLACK characters on CYAN background.
 >
     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN
     2 GREEN      6 CYAN       10 DKMAGENTA   14 DKRED
     3 YELLOW     7 WHITE      11 DKBLUE      15 DKGREY
-
-   - The colors value can be represented as a two-digit hexadecimal number (preceded by a $ as a hex number designator) where the left digit is the foreground color and the right digit is the background color, using the following chart:
->
-    0 BLACK      4 BLUE        8 GREY        C LTYELLOW
-    1 RED        5 MAGENTA     9 DKCYAN      D DKGREEN
-    2 GREEN      6 CYAN        A DKMAGENTA   E DKRED
-    3 YELLOW     7 WHITE       B DKBLUE      F DKGREY
 
    - Warning: If the foreground and background colors are the same, typed and PRINTed text will be invisible.
    - Advanced: Unlike PRINT CHR$(11), CLS does not clear memory locations 13288 - 13313 ($33E8 - $33FF) and 14312 - 14355 ($37E8 - $37FF).
@@ -228,13 +222,13 @@ Clear Screen / Clear Screen with specified foreground and background colors
 ` CLS `
 > Clear screen with default colors
 
-` CLS 7 `
+` CLS 0,7 `
 > Clear screen - black text on white background
 
-` CLS $30 `
+` CLS 3,0 `
 > Clear screen - yellow text on black background
 
-` CLS F*16+B `
+` CLS F,B `
 > Clear screen - text color F, background color B (using BASIC variables)
 
 ---
