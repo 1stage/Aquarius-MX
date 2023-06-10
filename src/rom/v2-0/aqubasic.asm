@@ -1499,7 +1499,9 @@ FN_DEC:
     push    bc
     call    STRLENADR       ; Get String Text Address
     dec     hl              ; Back up Text Pointer
-    jp      EVAL_HEX        ; Convert the Text
+    xor     a               ; Set A to 0
+    inc     c               ; Bump Length for DEC C
+    jp      _eval_hex       ; Convert the Text
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -1889,9 +1891,13 @@ EVAL_EXT:
 EVAL_HEX:
     xor     a
     ld      (VALTYP),a        ; Returning Number
+    ld      c,a               ; Parse up to 255 characters
+_eval_hex:
     ld      d,a               
     ld      e,a               ; DE is the parsed Integer
 .hex_loop:    
+    dec     c
+    jr      z,FLOAT_DE        ; Last Character - float it
     rst     CHRGET
     jr      z,FLOAT_DE        ; End of Line - float it
     jr      c,.dec_digit      ; Decimal Digit - process it

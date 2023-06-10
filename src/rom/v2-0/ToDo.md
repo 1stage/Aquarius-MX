@@ -8,16 +8,35 @@ This file is for recording upcoming changes and features that are being added, a
 
 ### MX BASIC
 - [ ] Error on illegal characters in file names
+- [ ] ` CLS [fg,bg] ` 
 
 ### Testing
 - [ ] AqUnit - Unit Testing Framework
-  - [x] asc.bas - Test ASC() and ASC$()
+  - implicitly tests EVAL() and, ON ERROR and RESUME
+  - [x] asc.bas - Test ASC(), ASC$(), DEC()
   - [x] err.bas - Test ERROR, ERR(), ERR$()
   - [x] hex.bas - Test HEX$()
-  - [x] peek.bas - Test PEEK(), $ and &
-  - [ ] poke.bas - Test POKE and COPY 
-  - [ ] .bas -  
-  - [ ] .bas -  
+  - [x] peek.bas - Test PEEK(), PEEK$, $ and &
+  - [ ] poke.bas - Test POKE, DOKE, DEEK, COPY 
+  - [ ] xor.bas - Test AND(), OR(), XOR()
+  - [ ] .bas -  Test CAT and DIR
+  - [ ] .bas -  Test CALL and DEBUG
+  - [ ] .bas -  Test MKDIR, CD, CD$
+  - [ ] .bas -  Test CLEAR and FRE()
+  - [ ] .bas -  Test CIRCLE
+  - [ ] .bas -  Test CLS
+  - [ ] .bas -  Test DEF FN
+  - [ ] .bas -  Test LOAD, SAVE, DEL, FILE$, FILEEND
+  - [ ] .bas -  Test DRAW
+  - [ ] .bas -  Test SDMT, DTM$
+  - [ ] .bas -  Test KEY, EDIT, MENU
+  - [ ] .bas -  Test GET and PUT
+  - [ ] .bas -  Test STRING$, INSTR, MID$
+  - [ ] .bas -  Test PSET, PRESET, LINE
+  - [ ] .bas -  Test LOCATE
+  - [ ] .bas -  Test SLEEP, VER,
+  - [ ] .bas -  Test SWAP
+  - Can IN, OUT, and/or WAIT be automated
 
 ### Inline Documentation
 - [ ] Update DEBUG statement
