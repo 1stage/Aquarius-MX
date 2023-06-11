@@ -25,13 +25,22 @@ FN_ASC:
     call    PARCHK          ; Parse Argument in Parentheses
     push    hl              ; Save Text Pointer
     call    CHKSTR          ; TM Error if Not a String
-    call    STRLENADR       ; Get Arg Length in A, Address in HL
+    ld      de,(FACLO)      ; Get String Descriptor Address
+    ld      h,d
+    ld      l,e             ; Put String Descriptor Address in HL
+    call    str_len_adr     ; Get Arg Length in A, Address in HL
     sra     a               ; Divide Length by 2
     jp      c,FCERR         ;   Error if Length was Odd
     jr      z,null_string   ;   If 0, Return Null String
+    push    af              ; Save New String Length
     push    hl              ; Save Argument String Address
+    push    de              ; Save Argument String Descriptor
     call    STRINI          ; Create Result String returning HL=Descriptor, DE=Text Address
+    pop     de              ; Get Back Argument Descriptor
+    call    FRESTR          ; and Free It
+    ld      de,(DSCTMP+2)   ; Get Result String Text Address
     pop     hl              ; Get Argument String Address
+    pop     af              ; Get New String Length
     ld      b,a             ; Loop Count = Result String Length
 .asc_loop:
     call    get_hex         ; Get Hex Digit from Argument
@@ -377,6 +386,7 @@ ST_POKE:
 
 STRLENADR:
     call    FRESTR          ; Free up Temp String
+str_len_adr:
     ld      c,(hl)          ; Get length in BC
     ld      b,0
     inc     hl              ; Skip String Descriptor length byte
