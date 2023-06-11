@@ -33,9 +33,25 @@
             }
         },        
         {
+            "label": "SaveToAL",
+            "type": "shell",
+            // Next command creates a 16kb ROM file in the root of the project....
+            // "command": "Get-Content zout/aqubasic.cim -Encoding Byte | Set-Content aqubasic.rom -Encoding Byte",
+            "command": "Get-Content zout/aqubasic.cim -Encoding Byte | Set-Content 'C:/Users/sph/Box/Retro/Aquarius/Emulation/AquaLite/roms/aqubasic.rom' -Encoding Byte",
+            "group":  "build",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            }
+        },        
+        {
             "label": "SaveToROM",
             "type": "shell",
-            // Next command creates a 16kb ROM file in the root of the project
+            // Next command creates a 16kb ROM file in the root of the project....
             "command": "Get-Content zout/aqubasic.cim -Encoding Byte | Set-Content aqubasic.rom -Encoding Byte",
             "group":  "build",
             "presentation": {
@@ -85,7 +101,7 @@
                 "isDefault": true
             },
             "dependsOrder": "sequence",
-            "dependsOn": ["CompileBASIC", "SaveToBIN", "SaveToROM","MakeDOC","MakeDEV"]
+            "dependsOn": ["CompileBASIC", "SaveToBIN", "SaveToAL","SaveToROM","MakeDOC","MakeDEV"]
         }
     ]
 }
