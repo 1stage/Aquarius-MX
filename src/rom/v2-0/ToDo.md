@@ -6,9 +6,12 @@ This file is for recording upcoming changes and features that are being added, a
 ---
 ## IN PROCESS:
 
+### txt2bas.py
+
+- [ ] Capitalize variable names (letters not in strings or after REM or DATA) same as the BASIC tokenizer.
+
 ### MX BASIC
 - [ ] Error on illegal characters in file names
-- [ ] ` CLS [fg,bg] ` 
 
 ### Testing
 - [ ] AqUnit - Unit Testing Framework
@@ -17,7 +20,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] err.bas - Test ERROR, ERR(), ERR$()
   - [x] hex.bas - Test HEX$()
   - [x] peek.bas - Test PEEK(), PEEK$, $ and &
-  - [ ] poke.bas - Test POKE, DOKE, DEEK, COPY 
+  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY 
   - [ ] xor.bas - Test AND(), OR(), XOR()
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
@@ -162,6 +165,8 @@ This file is for recording upcoming changes and features that are being added, a
 
 - [x] PSET doesn't seem to accept the *color* parameter, i.e. PSET(40,36),8
 
+- [x] ` CLS [fg,bg] ` 
+
 ### AquaLite
 
 - [x] Populate FAT directory entry DIR_WrtTime and DIR_WrtDate when reading directory
@@ -169,6 +174,10 @@ This file is for recording upcoming changes and features that are being added, a
 - [x] Update RTC emulation
   - [x] When $3821 is accessed for read populate $3821-$3929 with $FF, cc, ss, mm, HH, 1, DD, MM, YY
   - [x] Add option for RTC installed or not
+
+### txt2bas.py
+
+- [x] Do *not* tokenize keywords after DATA (same as REM).
 
 ---
 ## OUT OF SCOPE FOR 2.0
