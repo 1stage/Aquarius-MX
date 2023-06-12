@@ -740,6 +740,8 @@ Integer to hexadecimal conversion
 ### EXAMPLES:
 ` PRINT $"414243" `
 > Prints ` ABC `
+`  `
+>
 
 ---
 ## IN
