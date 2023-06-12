@@ -25,6 +25,7 @@ FN_ASC:
     call    PARCHK          ; Parse Argument in Parentheses
     push    hl              ; Save Text Pointer
     call    CHKSTR          ; TM Error if Not a String
+hex_to_asc:
     ld      de,(FACLO)      ; Get String Descriptor Address
     ld      h,d
     ld      l,e             ; Put String Descriptor Address in HL

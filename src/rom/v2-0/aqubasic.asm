@@ -1869,7 +1869,7 @@ EVAL_EXT:
     call    ISLETC          ; VARIABLE NAME?
     jp      nc,ISVAR        ; AN ALPHABETIC CHARACTER MEANS YES
     cp      '$'                 
-    jp      z,EVAL_HEX
+    jr      z,.eval_hex
     cp      '&'                 
     jp      z,GET_VARPTR
     cp      ANDTK
@@ -1880,6 +1880,26 @@ EVAL_EXT:
     jp      z,EVAL_EXT      ;
     jp      QDOT     
 
+;------------------------------------------------------------------------------
+;;; ---
+;;; ## Hexadecimal String Literal
+;;;  -  
+;;;    
+;;; ### EXAMPLES:
+;;; `  `
+;;; > 
+;------------------------------------------------------------------------------
+
+.eval_hex:
+    inc     hl              ; Bump Text Pointer
+    ld      a,(hl)          ; Get Next Character
+    dec     hl              ; and Move Back
+    cp      '"'             ; If Not a Quote
+    jp      nz,EVAL_HEX     ;   Convert HEX Number
+    inc     hl              ; Bump Again
+    call    STRLTI          ; Get String Literal
+    push    hl              ; Save Text Pointer
+    jp      hex_to_asc      ; Convert to ASCII
 
 ;------------------------------------------------------------------------------
 ;;; ---
