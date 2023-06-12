@@ -734,6 +734,14 @@ Integer to hexadecimal conversion
 > Sets P to screen row 1, column 1 address
 
 ---
+## Hexadecimal String Literal
+ -
+
+### EXAMPLES:
+` PRINT $"414243" `
+> Prints ` ABC `
+
+---
 ## IN
 Read Z80 I/O Port
 ### FORMAT:
