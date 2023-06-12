@@ -1040,9 +1040,10 @@ ST_MID: SYNCHK  '('               ; MUST HAVE (                                 
         ld      e,(hl)            ; GET ADDRESS OF LHS IN [D,E]                                           
         inc     hl                ; BUMP DESC. POINTER                                                    ++
         ld      d,(hl)            ; PICK UP HIGH BYTE OF ADDRESS                                 Addr1
-        ld      hl,(STREND)       ; SEE IF LHS STRING IS IN STRING SPACE                               (STREND)
+        ld      hl,(TOPMEM)       ; SEE IF LHS STRING IS IN STRING SPACE                               (STREND)
+        dec     hl
         rst     COMPAR            ; BY COMPARING IT WITH STKTOP                     
-        jr      c,NCPMID          ; IF ALREADY IN STRING SPACE DONT COPY.           
+        jr      nc,NCPMID         ; IF ALREADY IN STRING SPACE DONT COPY.           
         pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
         push    hl                ; SAVE BACK ON STACK                                                          Dsc1,TxtPtr
         call    STRCPY            ; COPY THE STRING LITERAL INTO STRING SPACE                    DSCTMP  ~~
