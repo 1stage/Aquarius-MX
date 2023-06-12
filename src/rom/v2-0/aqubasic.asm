@@ -1698,8 +1698,8 @@ ST_CALL:
 ;;; ### FORMAT:
 ;;;  - SLEEP *number*
 ;;;    - Action: Causes BASIC to pause for approximately *number* milliseconds.
-;;;      - If *number* is less than zero, pauses 65536 - *number* seconds
-;;;      - Returns FC Error if *number* is not between -32768 and 65535, inclusive.
+;;;      - If *number* is zero, does not pause.
+;;;      - Returns FC Error if *number* is not between 0 and 65535, inclusive.
 ;;;      - Ctrl-C will interrupt the SLEEP command and the BASIC Program
 ;;; ### EXAMPLES:
 ;;; ` SLEEP 250 `
@@ -1710,8 +1710,13 @@ ST_CALL:
 ;----------------------------------------------------------------------------
 
 ST_SLEEP:
-    call    GETADR                ; get argument
-    push    hl                    ; save text pointer
+    call    FRMEVL                ; Get Argument
+    push    hl                    ; Save Text Pointer
+    rst     FSIGN                 ; Get Sign of Argument
+    jr      z,.done               ; If Zero Do Nothing
+    jp      m,FCERR               ; If Negative, FC Error
+    call    FRCADR                ; Convert Argument to Unsigned Int
+
 .deloop                           ; 3,579 cycles = 1 millisecond
     ;Check for CTL Key - No Debounce
     ld      bc,$7fff              ;  10 Scan A15 column
@@ -1732,7 +1737,7 @@ ST_SLEEP:
     ld      a,d                   ; 4
     or      e                     ; 4
     jr      nz,.deloop            ; 12 
-                                  ; Total 26
+.done                                  ; Total 26
     pop     hl                    ; restore text pointer
     ret
 
