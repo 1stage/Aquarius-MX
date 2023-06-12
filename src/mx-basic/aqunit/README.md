@@ -11,6 +11,17 @@ Files with extension .bas.txt are untokenized BASIC programs.
 
 Files with extension .bas are tokenized BASIC programs in CAQ format.
 
+| Basic Program  | Description                           |
+| -------------- | ---------------------------------     |
+| aqunit.bas.txt | Aquarius Unit Test Framework          |
+| aqex.bas.txt   | Example test program using framework  |
+| asc.bas.txt    | Test ASC(), ASC$(), DEC()             |
+| err.bas.txt    | Test ERROR, ERR(), ERR$()             |
+| hex.bas.txt    | Test HEX$                             |
+| peek.bas.txt   | Test PEEK(), $ and &                  |
+| poke.bas.txt   | Test POKE, DOKE, DEEK, COPY           |
+| xor.bas.txt    | Test AND(), OR(), XOR()               |
+
 ## Converting and running files
 
 To convert file *program.bas.txt* to *program.bas*, use command line:

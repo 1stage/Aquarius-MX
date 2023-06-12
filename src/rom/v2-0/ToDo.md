@@ -20,8 +20,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] err.bas - Test ERROR, ERR(), ERR$()
   - [x] hex.bas - Test HEX$()
   - [x] peek.bas - Test PEEK(), PEEK$, $ and &
-  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY 
-  - [ ] xor.bas - Test AND(), OR(), XOR()
+  - [ ] poke.bas - Test POKE, DOKE, DEEK, COPY 
+    - Add "POKE string" mixed with STEP and numbers 
+  - [ ] xor.bas - Test AND(), OR(), XOR() 
+    - Add more bit patterns
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
