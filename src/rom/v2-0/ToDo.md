@@ -19,10 +19,8 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] asc.bas - Test ASC(), ASC$(), DEC()
   - [x] err.bas - Test ERROR, ERR(), ERR$()
   - [x] hex.bas - Test HEX$()
-  - [ ] peek.bas - Test PEEK(), PEEK$, $ and &
-    - Add tests for &"hexstring"
-  - [ ] poke.bas - Test POKE, DOKE, DEEK, COPY 
-    - Add "POKE string" mixed with STEP and numbers 
+  - [X] peek.bas - Test PEEK(), PEEK$, $ and &
+  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY 
   - [x] xor.bas - Test AND(), OR(), XOR() 
   - [x] mid.bas -  Test STRING$, INSTR, MID$
   - [ ] get.bas -  Test GET, PUT, CLS
