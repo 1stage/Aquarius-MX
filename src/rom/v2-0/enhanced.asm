@@ -285,8 +285,10 @@ FN_PEEKS:
 ;;; ### FORMAT:
 ;;;  - POKE *address*, [ *byte or string*, *byte or string*... ] [,STEP *count*, *byte or string*...]
 ;;;    - Action: Writes *byte or string* to *address*, followed by *address* STEP *count* addresses away...
-;;;  - POKE *address1* TO *address2*, *byte*
+;;;  - POKE *address1* TO *address2* [STEP *count*], *byte*
 ;;;    - Action: Writes *byte* to memory from *address1* TO *address2*.
+;;;      - If optional STEP *count* is specified then then then *count* minus 1 locations are skipped between writes.
+;;;        - FC Error if *count* is not between 1 and 255.
 ;;; ### EXAMPLES:
 ;;; ` POKE $3000+500,64 `
 ;;; > Display `@` at screen center
@@ -308,13 +310,22 @@ FN_PEEKS:
 ;;;
 ;;; ` POKE $3028 TO $33E7,$86 `
 ;;; > Fill screen with checkerboard character
+;;; 
+;;; ` POKE 12689 TO 12699 STEP 2,64 `
+;;; > Draws six @ characters on the screen, skipping one character location between each.
+;;;
+;;; ```
+;;; POKE 12367 TO 13287 STEP 40,255
+;;; POKE 13391 TO 14311 STEP 40,$16
+;;; ```
+;;; > Draws a red vertical bar along the right side of the screen.
 ;----------------------------------------------------------------------------
 
 ST_POKE:   
     call    GETADR          ; Get <address>
     ld      a,(hl)          ; If next character 
     cp      TOTK            ; is TO Token 
-    jr      z,.poke_fill    ;   Do Fill
+    jr      z,.poke_fill    ;   Do POKE TO STEP
     SYNCHK  ','             ; Require a Comma
 .poke_save:
     ld      b,d             ; Save Poke Address 
@@ -371,15 +382,28 @@ ST_POKE:
     push    de              ; Stack = Start Address
     call    GETADR          ; Get to Address
     push    de              ; Stack = End Address, Start Address
+    ld      de,1            ; Default STEP to 1
+    ld      a,(hl)          ; Check Next Character
+    cp      STEPTK          ; 
+    jr      nz,.no_step     ; If STEP Token
+    rst     CHRGET          ;   Skip STEP Token
+    call    GETBYT          ;   Parse Byte Value
+    or      a               ;   If Zero
+    jp      z,FCERR         ;     FC Error
+.no_step
+    push    de              ; Save STEP Value
     SYNCHK  ','             ; Require a Comma
     call    GETBYT          ; 
-    ld      c,a             ; Get <byte> in C
+    ex      af,af'          ; Save <byte>
+    pop     bc
     pop     de              
     inc     de              ; DE = End Address + 1
     ex      (sp),hl         ; HL = Start Address, Stack = Text Pointer
 .fill_loop:
-    ld      (hl),c          ; Store Byte
-    inc     hl              ; Bump Poke Address
+    ex      af,af'          ; Get <byte>
+    ld      (hl),a          ; Store Byte
+    ex      af,af'          ; Save <byte> again
+    add     hl,bc           ; Add Step to Address
     rst     COMPAR          
     jr      c,.fill_loop    ; Loop if < DE
     pop     hl              ; Restore Text Pointer
