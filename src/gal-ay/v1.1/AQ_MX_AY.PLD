@@ -26,6 +26,9 @@ PIN  14  = BDIR1   ; /* PSG1 Data direction: HI Write, LO Read */
 PIN  15  = BC11    ; /* PSG1 BC1                               */
 PIN  16  = BDIR2   ; /* PSG2 Data direction: HI Write, LO Read */ 
 PIN  17  = BC12    ; /* PSG2 BC1                               */
+
+/* PSG1 responds to Aquarius IO $F6 and $F7 */
+/* PSG2 responds to Aquarius IO $F8 and $F9 */
  
 /* BDIR1  = (!WR)&((A01&A02)#(!A01&!A02))&(A04&A05&A06&A07&!IORQ&!A03); */
 /* BC11   = (!RD#A00)&(A04&A05&A06&A07&!IORQ)&(!A03&(A01&A02)); */
