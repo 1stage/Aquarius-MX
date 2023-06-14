@@ -1137,18 +1137,22 @@ Write to Programmable Sound Generator(s)
 ## PUT Statement
 Copy data from a numeric array into a rectangle of screen data.
 ### FORMAT:
- - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
+ - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname* [,*operation*]
    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
      - *arrayname* must already be DIMensioned and populated with data.
-     - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
+     - *operation* determines what the foreground and background colors will be when the image is written onto the screen.
+       - PSET overwrites the screen colors with the colors in the array.
+       - PRESEST overites the screen colors with the ones-complement of the colors in the array.
+       - AND, OR, and XOR combine the color byte in the array with the screen color byte using the equivalent bit operation.
+       - *Note:* If no operation is specified, the PSET operation is used .
      - See GET statement for copying from screen to array.
- - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
+
 ### EXAMPLE:
 ```
 10 DIM A(8)
 20 LOAD "CURSOR,SPR",*A
-30 PUT (1,1)-(4,4),A
+30 PUT (1,1)-(4,4),A,PSET
 ```
 > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
 

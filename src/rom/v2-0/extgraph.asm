@@ -101,7 +101,33 @@ MAKINT: push    hl                ; Save Registers
         pop     hl
         ret
 
-;E3F6
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## PUT Statement
+;;; Copy data from a numeric array into a rectangle of screen data.
+;;; ### FORMAT:
+;;;  - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname* [,*operation*]
+;;;    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
+;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
+;;;      - *arrayname* must already be DIMensioned and populated with data.
+;;;      - *operation* determines what the foreground and background colors will be when the image is written onto the screen.
+;;;        - PSET overwrites the screen colors with the colors in the array.
+;;;        - PRESEST overites the screen colors with the ones-complement of the colors in the array.
+;;;        - AND, OR, and XOR combine the color byte in the array with the screen color byte using the equivalent bit operation.
+;;;        - *Note:* If no operation is specified, the PSET operation is used .
+;;;      - See GET statement for copying from screen to array.
+;;;
+;;; ### EXAMPLE:
+;;; ```
+;;; 10 DIM A(8)
+;;; 20 LOAD "CURSOR,SPR",*A
+;;; 30 PUT (1,1)-(4,4),A,PSET
+;;; ```
+;;; > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
+;----------------------------------------------------------------------------
+ST_PUT: ld      a,1               ;;Mode = GET
+        jr      GGPUTG
+
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## GET Statement
@@ -125,29 +151,6 @@ MAKINT: push    hl                ; Save Registers
 ;;; 30 SAVE "CURSOR.SPR",*A
 ;;; ```
 ;;; > Saves the contents of a 4x4 character/color grid at the upper left of the screen to file CURSOR.SPR.
-;----------------------------------------------------------------------------
-ST_PUT: ld      a,1               ;;Mode = GET
-        jr      GGPUTG
-;E3FA
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## PUT Statement
-;;; Copy data from a numeric array into a rectangle of screen data.
-;;; ### FORMAT:
-;;;  - PUT (*x1*,*y1*)-(*x2*,*y2*),*arrayname*
-;;;    - Action: Copies bytes from *arrayname* into a a rectangle of screen characters and colors.
-;;;      - The rectangle's upper left corner is at column *x1* on line *y1* and lower right corner is at column *x2* on line *y2*
-;;;      - *arrayname* must already be DIMensioned and populated with data.
-;;;      - Can also be combined with LOAD array* and SAVE array* to import/export "sprite" graphics from/to USB drive.
-;;;      - See GET statement for copying from screen to array.
-;;;  - Advanced: The screen data (CHRRAM and COLRAM) is stored in the array as binary data.
-;;; ### EXAMPLE:
-;;; ```
-;;; 10 DIM A(8)
-;;; 20 LOAD "CURSOR,SPR",*A
-;;; 30 PUT (1,1)-(4,4),A
-;;; ```
-;;; > Loads a file into array A, then displays the contents of in a 4x4 character/color grid at the upper left of the screen.
 ;----------------------------------------------------------------------------
 ST_GET: xor     a                 ;;Mode = PUT
 GGPUTG: jp      GPUTG
@@ -998,11 +1001,11 @@ PUT1:   push    hl                ; SAVE TXTPTR
         push    de                ; SAVE PTR TO DELTAS IN ARRAY
         dec     hl                ; NOW SCAN POSSIBLE PUT OPTION
         rst     CHRGET
-        ld      b,5               ; DEFAULT OPTION IS XOR
+        ld      b,4               ; DEFAULT OPTION IS PSET
         jr      z,PUT2            ; IF NO CHAR, USE DEFAULT
         SYNCHK  ','               ; MUST BE A COMMA
         ex      de,hl             ; PUT TXTPTR IN [DE]
-        ld      hl,GFUNTB+4     ;;From End of Table to Start if Table
+        ld      hl,GFUNTB+4       ; From End of Table to Start if Table
 PFUNLP: cp      (hl)              ; IS THIS AN OPTION?
         jr      z,PUT20           ; YES, HAND IT TO PGINIT.
         dec     hl                ; POINT TO NEXT
