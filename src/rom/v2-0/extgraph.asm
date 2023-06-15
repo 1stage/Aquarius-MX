@@ -113,6 +113,7 @@ MAKINT: push    hl                ; Save Registers
 ;;;      - *operation* determines what the foreground and background colors will be when the image is written onto the screen.
 ;;;        - PSET overwrites the screen colors with the colors in the array.
 ;;;        - PRESEST overites the screen colors with the ones-complement of the colors in the array.
+;;;        - SWAP overwrites the foreground colors on the screen with the backgrounds in the array and vice versa.
 ;;;        - AND, OR, and XOR combine the color byte in the array with the screen color byte using the equivalent bit operation.
 ;;;        - *Note:* If no operation is specified, the PSET operation is used .
 ;;;      - See GET statement for copying from screen to array.
@@ -155,7 +156,6 @@ ST_PUT: ld      a,1               ;;Mode = GET
 ST_GET: xor     a                 ;;Mode = PUT
 GGPUTG: jp      GPUTG
 
-; E3FE
 ; Parse Intger
 GETIN2: call    FRMEVL            ; EVALUATE A FORMULA
 INTFR2: push    hl                ; SAVE THE TEXT POINTER
@@ -1001,11 +1001,11 @@ PUT1:   push    hl                ; SAVE TXTPTR
         push    de                ; SAVE PTR TO DELTAS IN ARRAY
         dec     hl                ; NOW SCAN POSSIBLE PUT OPTION
         rst     CHRGET
-        ld      b,4               ; DEFAULT OPTION IS PSET
+        ld      b,GFUNTE-GFUNTB   ; DEFAULT OPTION to last token in list (PSET)
         jr      z,PUT2            ; IF NO CHAR, USE DEFAULT
         SYNCHK  ','               ; MUST BE A COMMA
         ex      de,hl             ; PUT TXTPTR IN [DE]
-        ld      hl,GFUNTB+4       ; From End of Table to Start if Table
+        ld      hl,GFUNTE-1       ; From End of Table to Start if Table
 PFUNLP: cp      (hl)              ; IS THIS AN OPTION?
         jr      z,PUT20           ; YES, HAND IT TO PGINIT.
         dec     hl                ; POINT TO NEXT
@@ -1077,7 +1077,6 @@ PGLOO3: pop     af                ; GET BACK STARTING C
         jr      nz,PGLOOP         ; CONTINUE IF NOT ZERO
         pop     hl                ; GET BACK TXTPTR
         ret                       ; AND RETURN
-; EB02
 GTARRY: SYNCHK  ','               ; EAT COMMA
         ld      a,1               ; SEARCH ARRAYS ONLY
         ld      (SUBFLG),a
@@ -1100,11 +1099,6 @@ GTARRY: SYNCHK  ','               ; EAT COMMA
         pop     bc                ; BC = PTR TO LAST BYTE OF DATA
         pop     hl                ; GET TXTPTR
         ret
-; EB23
-GFUNTB: db      ORTK, ANDTK      ;;PUT Action Tokens Table
-        db      PRESTK, PSETTK
-        db      XORTK
-; EB28
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## DRAW
@@ -1857,9 +1851,10 @@ PGINIT: ld      (ARYPNT),hl     ;;Save Pointer into Array
 ; EFA3
 OPCTAB: dw      ORC             ;;A = A | C     OR
         dw      ANDC            ;;A = A & C     AND
+        dw      XORC            ;;A = A ^ C     XOR (Default)
+        dw      SWAPA           ;;A = A <<< 4   SWAP 
         dw      CPLA            ;;A = !A        PRESET
         dw      NOOP            ;;No Operation  PSET
-        dw      XORC            ;;A = A ^ C     XOR (Default)
 ; EFAD
 ;;Read One Line of Characters from Colors to Screen
 NREAD:  call    NSETUP            ; [H,L] = Screen Address, [A] = Counter
@@ -1917,13 +1912,26 @@ NSETUP: ld      hl,(MAXDEL)
         push    hl                ; 
         ld      hl,(CURLOC)       ; [H,L] = Screen Address
         ret
-; EFF7
+
+;;PUT Action Tokens
+GFUNTB: db      ORTK, ANDTK       ; PUT Operation Tokens Table
+        db      XORTK
+        db      SWAPTK
+        db      PRESTK, PSETTK
+GFUNTE:                           ; End of Table
+
 ;;PUT Action Subroutines
-ORC:    or      c               ;;OR
-        ret                     ;;
-ANDC:   and     c               ;;AND
-        ret                     ;;
-XORC:   xor     c               ;;XOR (Default)
-        ret                     ;;
-CPLA:   cpl                     ;;PRSET
-NOOP:   ret                     ;;PSET (Use Color from Array)
+ORC:    or      c                 ;; OR
+        ret                       ;; 
+ANDC:   and     c                 ;; AND
+        ret                       ;; 
+XORC:   xor     c                 ;; XOR 
+        ret                       ;;
+SWAPA:  rlca                      ;; SWAP (Foreground and Background)
+        rlca  
+        rlca  
+        rlca  
+        ret 
+CPLA:   cpl                       ;;PRSET
+NOOP:   ret                       ;;PSET (Use Color from Array)
+

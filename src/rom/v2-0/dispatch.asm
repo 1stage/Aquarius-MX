@@ -485,6 +485,7 @@ TBLCMDS:
     db      $80                     ; End of table marker
 
 ; Tokens used in external routines
+SWAPTK    = $D1
 SDTMTK    = $D3
 CDTK      = $E0
 DTMTK     = $E5
