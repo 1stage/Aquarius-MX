@@ -199,7 +199,7 @@ for idx, line in enumerate(args.input.readlines()):
     line_no = int(result.group(1))
     line = result.group(2).strip()
 
-    if line_no < last_line_no or line_no > 65000:
+    if line_no <= last_line_no or line_no > 65000:
         error(idx, "Invalid line number")
 
     buf = bytearray()
