@@ -242,3 +242,8 @@ for idx, line in enumerate(args.input.readlines()):
     args.output.write(buf)
 
 args.output.write(struct.pack("<H", 0))
+
+# Write trailer
+args.output.write(
+    15 *  b"\x00"
+)
