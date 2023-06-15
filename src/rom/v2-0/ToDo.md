@@ -23,21 +23,20 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] poke.bas - Test POKE, DOKE, DEEK, COPY 
   - [x] xor.bas - Test AND(), OR(), XOR() 
   - [x] mid.bas -  Test STRING$, INSTR, MID$
-  - [ ] get.bas -  Test GET, PUT, CLS
+  - [x] get.bas -  Test GET, PUT, CLS
+  - [x] .bas -  Test KEY, MENU
+  - [ ] .bas -  Test DEF FN and SWAP
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
   - [ ] .bas -  Test CLEAR and FRE()
   - [ ] .bas -  Test CIRCLE
-  - [ ] .bas -  Test DEF FN
   - [ ] .bas -  Test LOAD, SAVE, DEL, FILE$, FILEEND
   - [ ] .bas -  Test DRAW
   - [ ] .bas -  Test SDMT, DTM$
-  - [ ] .bas -  Test KEY, MENU
   - [ ] .bas -  Test PSET, PRESET, LINE
   - [ ] .bas -  Test LOCATE
   - [ ] .bas -  Test SLEEP, VER
-  - [ ] .bas -  Test SWAP
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test
   - EDIT

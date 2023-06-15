@@ -17,7 +17,10 @@ Files with extension .bas are tokenized BASIC programs in CAQ format.
 | aqex.bas.txt   | Example test program using framework  |
 | asc.bas.txt    | Test ASC(), ASC$(), DEC()             |
 | err.bas.txt    | Test ERROR, ERR(), ERR$()             |
+| get.bas.txt    | Test GET, PUT, CLS                    |
 | hex.bas.txt    | Test HEX$                             |
+| menu.bas.txt   | Test MENU, KEY                        |
+| mid.bas.txt    | Test MID$(), STRING$(),INSTR()        |
 | peek.bas.txt   | Test PEEK(), $ and &                  |
 | poke.bas.txt   | Test POKE, DOKE, DEEK, COPY           |
 | xor.bas.txt    | Test AND(), OR(), XOR()               |
