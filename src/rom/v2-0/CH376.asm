@@ -160,6 +160,7 @@ CH376_CMD_DISK_RD_GO    equ     $55     ; go on reading operation of USB storage
 CH376_INT_SUCCESS       equ     $14     ; command executed OK
 CH376_INT_DISK_READ     equ     $1D     ; read again (more bytes to read)
 CH376_INT_DISK_WRITE    equ     $1E     ; write again (more bytes to write)
+CH376_INT_DISK_ERR      equ     $1F     ; storage device error
 CH376_ERR_OPEN_DIR      equ     $41     ; is directory, not file
 CH376_ERR_MISS_FILE     equ     $42     ; file not found
 CH376_ERR_FOUND_NAME    equ     $43     ; file with name exists (CMD_DIR_CREATE)

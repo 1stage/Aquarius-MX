@@ -83,9 +83,8 @@ DF_ARRAY  = 7      ; set = numeric array
 ST_CD:
     push   hl                    ; push BASIC text pointer
     ld     c,a
-    call   dos__clearError
-    call   usb__ready            ; check for USB disk (may reset path to root!)
-    jp     nz,_dos_do_error
+    call   dos__clearError       ; Clear DOS Errors and CH376 Status  
+    call   _dos_usb_ready        ; check for USB disk (may reset path to root!)
     ld     a,c
     OR     A                     ; any args?
     JR     NZ,.change_dir        ; yes,
@@ -147,6 +146,8 @@ FN_CD:
     push    hl                ; Text Pointer on Stack
     ex      (sp),hl           ; Swap Text Pointer with Return Address
     push    bc                ; put dummy return address on stack
+    call    dos__clearError
+    call    _dos_usb_ready
     call    usb__get_path     ; Get pointer to current path in HL
     jp      TIMSTR
   
@@ -168,8 +169,7 @@ ST_MKDIR:
     jp      nz,_badname_error
     push    hl                    ; save BASIC text pointer
     call    dos__clearError
-    call    usb__ready            ; check for USB disk (may reset path to root!)
-    jp      nz,_dos_do_error
+    call    _dos_usb_ready        ; check for USB disk (may reset path to root!)
     call    _dos_opendir          ; open current path
     ld      hl,FileName
     call    usb__create_dir       ; create directory
@@ -227,6 +227,7 @@ _dos_file_exists:
 ST_LOAD:
     call    _get_file_args        ; Set Up SysVars and Get LOAD Arguments
     push    hl                    ; >>>> push BASIC text pointer
+    call    _dos_usb_ready
     ld      hl,FileName
     bit     DF_ADDR,(iy+0)        ; address specified?
     jr      z,_stl_caq            ; no, load CAQ file
@@ -337,6 +338,7 @@ _sts_open_caqfile:
 ST_LOADFILE:
     call    _convert_filename     ; get filename from parsed arg
     jp      nz,_badname_error
+    call    _dos_usb_ready
     push    hl                    ; save text pointer
     ld      iy,DosFlags
     xor     a
@@ -467,6 +469,7 @@ _link_lines:
 ST_SAVE:
     call    _get_file_args      ; Get Filename, Address, Length, Offset
     push    hl                  ; PUSH BASIC text pointer
+    call    _dos_usb_ready
     ld      hl,FileName
     bit     DF_OFS,(iy+0)       ; If Offset was specified
     jr      nz,_sts_offset      ;   Write to that Position in File
@@ -699,16 +702,9 @@ ST_CAT:
     ld      (CNTOFL),a              ; set initial number of lines per page
 .cat_disk:
     call    dos__clearError
-    call    usb__ready              ; check for USB disk
-    jr      nz,.disk_error
+    call    _dos_usb_ready          ; check for USB disk
     call    usb__open_dir           ; open '*' for all files in directory
-    jr      z,.cat_loop
-; usb_ready or open "*" failed
-.disk_error:
-    call    _show_error             ; show error code
-    pop     hl
-    ld      e,ERRFC
-    jp      ERROR                   ; return to BASIC with FC error
+    jp      nz,_dos_do_error
 .cat_loop:
     LD      A,CH376_CMD_RD_USB_DATA
     OUT     (CH376_CONTROL_PORT),A  ; command: read USB data (directory entry)
@@ -824,17 +820,11 @@ ST_DIR:
     call    dos__getfilename  ; wildcard -> FileName
 .st_dir_go:
     push    hl                ; PUSH text pointer
-    call    usb_ready         ; check for USB disk (may reset path to root!)
-    jr      nz,.error
+    call    _dos_usb_ready    ; check for USB disk (may reset path to root!)
     call    STROUT            ; print path
     call    CRDO
     call    dos__directory    ; display directory listing
-    jr      z,.st_dir_done    ; if successful listing then done
-.error:
-    call    _show_error       ; else show error message (A = error code)
-    ld      e,ERRFC
-    pop     hl
-    jp      ERROR             ; return to BASIC with FC error
+    jp      nz,_dos_do_error
 .st_dir_done:
     pop     hl                ; POP text pointer
     ret
@@ -1094,6 +1084,7 @@ ST_DEL:
     call   dos__getfilename  ; filename -> FileName
     push   hl                ; push BASIC text pointer
     jr     nz,_badname_error
+    call   _dos_usb_ready    ; check USB drive status
     ld     hl,FileName
     call   usb__delete       ; delete file
     jr     z,_pop_hl_ret
@@ -1110,6 +1101,10 @@ _badname_error:
     ld     a,ERROR_BAD_NAME
     jr     _dos_do_error
 
+_dos_usb_ready:
+    call    usb__ready
+    jr      nz,_dos_do_error
+    ret
 
 ;----------------------------------------------------------------
 ;                         Set Path
