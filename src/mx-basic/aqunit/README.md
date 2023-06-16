@@ -5,6 +5,12 @@
 | txt2bas.bat | Converts .bas.txt file to .bas file        |
 | bas2aql.bat | Copies .bas file to AquaLite USB directory |
 
+| File Name       | Description                                |
+| --------------- | ---------------------------------          |
+| manual_tests.md | List of tests that can not be automated    |
+| bas2aql.bat | Copies .bas file to AquaLite USB directory |
+
+
 ## File Extensions
 
 Files with extension .bas.txt are untokenized BASIC programs.
@@ -23,6 +29,7 @@ Files with extension .bas are tokenized BASIC programs in CAQ format.
 | mid.bas.txt    | Test MID$(), STRING\$(),INSTR()       |
 | peek.bas.txt   | Test PEEK(), $ and &                  |
 | poke.bas.txt   | Test POKE, DOKE, DEEK, COPY           |
+| save.bas.txt   | Test SAVE, LOAD, DEL, FILE$, FILEEND  |
 | xor.bas.txt    | Test AND(), OR(), XOR()               |
 
 ## Converting and running files

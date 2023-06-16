@@ -227,14 +227,12 @@ _dos_file_exists:
 ST_LOAD:
     call    _get_file_args        ; Set Up SysVars and Get LOAD Arguments
     push    hl                    ; >>>> push BASIC text pointer
-    call    _dos_usb_ready
     ld      hl,FileName
     bit     DF_ADDR,(iy+0)        ; address specified?
     jr      z,_stl_caq            ; no, load CAQ file
 ; load binary file to address
 _stl_load_bin:
-    call    usb__open_read        ; try to open file
-    jp      nz,_stl_no_file
+    call    _dos_open_read        ; try to open file
     bit     DF_OFS,(iy+0)
     jr      z,.no_ofs
     ld      de,(BINOFS)
@@ -306,9 +304,6 @@ _stl_read_len:
 _stl_read_error:
     ld      a,ERROR_READ_FAIL     ; disk error while reading
     jr     _stl_show_error
-_stl_no_file:
-    ld      a,ERROR_NO_FILE       ; file not found
-    jr      _stl_show_error
 _stl_bad_file:
     ld      a,ERROR_BAD_FILE      ; file type incompatible with load method
     jr      _stl_show_error
@@ -324,8 +319,7 @@ _stl_done:
 _sts_open_caqfile:
     ld      hl,FileName
     call    dos_append_ext
-    call    usb__open_read        ; open file for read
-    jp      nz,_stl_no_file
+    call    _dos_open_read        ; open file for read
     call    st_read_sync          ; no, read 1st CAQ sync sequence
     jr      nz,_stl_bad_file
     ld      hl,FILNAF             ; Cassette File Name
@@ -338,12 +332,19 @@ _sts_open_caqfile:
 ST_LOADFILE:
     call    _convert_filename     ; get filename from parsed arg
     jp      nz,_badname_error
-    call    _dos_usb_ready
     push    hl                    ; save text pointer
     ld      iy,DosFlags
     xor     a
     ld      (iy+0),a              ; clear all DOS flags
     jp      _stl_basprog          ; Load BASIC program
+
+_dos_open_read:
+    call    usb__open_read        ; open file for read
+    ret     z                     ; return if no error
+    cp      CH376_ERR_MISS_FILE   ; If Status <> File Missing
+    jp      nz,_dos_do_error      ;   Raise that Error
+    ld      a,ERROR_NO_FILE       ; Else 
+    jp      _dos_do_error         ;   Raise File Not Found
 
 ;-------------------------------------------------
 ;           Print DOS error message
@@ -469,7 +470,6 @@ _link_lines:
 ST_SAVE:
     call    _get_file_args      ; Get Filename, Address, Length, Offset
     push    hl                  ; PUSH BASIC text pointer
-    call    _dos_usb_ready
     ld      hl,FileName
     bit     DF_OFS,(iy+0)       ; If Offset was specified
     jr      nz,_sts_offset      ;   Write to that Position in File

@@ -13,6 +13,7 @@ Variables:
 QU    Output to 0=Screen, 1=Printer, 2=File
 QT$   Test Title
 QA$   Assertion
+QD    DOS Error Number
 QE    Error Return ON GOTO Index
 QE$   Error Code
 
