@@ -211,6 +211,9 @@ _dos_file_exists:
 ;;; ### ERRORS
 ;;;  - If *filespec* is not included, an MO Error results
 ;;;  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
+;;;  - If only *filespec* is specified and the file is not a BASIC program in CAQ format, an IO Error with DOS Error "filetype mismatch" results.
+;;;  - If *arrayname* is specified and the array is not DIMmed, an FC Error results.
+;;;  - If *arrayname* is specified and the file is not array data in CAQ format, an IO Error with DOS Error "filetype mismatch" results.
 ;;; ### EXAMPLES:
 ;;; ` LOAD "progname.bas" `
 ;;; > Load basic program into memory.
@@ -261,6 +264,15 @@ _stl_array_id:
 _stl_basprog:
     ld      de,dos_bas_ext        ; default extension ".BAS"
     call    _sts_open_caqfile     ; open file, read sync and filename
+    ld      hl,FILNAF
+    ld      b,6                   ; 6 chars in name
+    ld      a,'#'                 ; checking for all #'s
+_stl_basic_id:
+    cp      (hl)
+    jr      nz,_stl_basic_ok      ; if not '#' then not an array file
+    djnz    _stl_basic_id
+    jr      _stl_bad_file         ; all #'s - error out
+_stl_basic_ok:
     call    st_read_sync          ; read seoond sync sequence
     ld      hl,(TXTTAB)           ; HL = start of BASIC program
     ld      de,$ffff              ; DE = read to end of file
@@ -434,6 +446,7 @@ _link_lines:
 ;;; ### ERRORS
 ;;;  - If *filespec* is not included, an MO Error results
 ;;;  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
+;;;  - If *arrayname* is specified and the array is not DIMmed, an FC Error results.
 ;;; ### EXAMPLES:
 ;;; ` SAVE "progname" `
 ;;; > Save current program to USB drive with file name "PROGNAME.BAS"
@@ -492,7 +505,7 @@ _sts_write_data:
     ld      b,15                ; write CAQ tail $00x15
 _sts_tail
     ld      a,0
-    call    usb__write_byte     ; write $FF
+    call    usb__write_byte     
     jr      nz,_sts_write_error
     djnz    _sts_tail
     jr      _sts_write_done
@@ -503,7 +516,11 @@ _sts_offset:
     ld      de,(BINOFS)
     call    usb__seek
     jp      nz,_dos_do_error
+    jr      _sts_write_bin
 _sts_binary:
+    call    usb__open_write     ; create/open new file
+    jr      nz,_sts_open_error
+_sts_write_bin:
     ld      hl,(BINSTART)       ; raw binary file - no header, no tail
     ld      de,(BINLEN)
     call    usb__write_bytes    ; write data block to file
@@ -520,11 +537,7 @@ _sts_write_error:
 _sts_open_error:
     ld      a,ERROR_CREATE_FAIL
 _sts_show_error:
-    call    _show_error         ; show DOS error message (A = error code)
-    ld      e,ERRFC
-_sts_error:
-    pop     hl
-    jp      ERROR            ; return to BASIC with error code in E
+    jp      _dos_do_error       ; show DOS error message and error out
 _sts_done:
     call    set_dos_File_datetime
     pop     hl                  ; restore BASIC text pointer

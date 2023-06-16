@@ -377,7 +377,7 @@ usb__write_bytes:
 .loop:  CALL    usb__wait_int              ; wait for response
         JR      Z,.done                    ; return Z if finished writing
         CP      CH376_INT_DISK_WRITE       ; more bytes to write?
-        RET     NZ                         ; no, error so return NZ
+        JR      NZ,.done                   ; no, error so return NZ
         LD      A,CH376_CMD_WR_REQ_DATA
         OUT     (CH376_CONTROL_PORT),A     ; send command 'write request'
         IN      B,(C)                      ; B = number of bytes requested
