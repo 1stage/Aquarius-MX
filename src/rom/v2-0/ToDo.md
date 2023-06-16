@@ -24,14 +24,14 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] xor.bas - Test AND(), OR(), XOR() 
   - [x] mid.bas -  Test STRING$, INSTR, MID$
   - [x] get.bas -  Test GET, PUT, CLS
-  - [x] .bas -  Test KEY, MENU
+  - [x] menu.bas -  Test KEY, MENU
+  - [ ] save.bas -  Test SAVE, LOAD, DEL, FILE$, FILEEND
   - [ ] .bas -  Test DEF FN and SWAP
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
   - [ ] .bas -  Test CLEAR and FRE()
   - [ ] .bas -  Test CIRCLE
-  - [ ] .bas -  Test LOAD, SAVE, DEL, FILE$, FILEEND
   - [ ] .bas -  Test DRAW
   - [ ] .bas -  Test SDMT, DTM$
   - [ ] .bas -  Test PSET, PRESET, LINE

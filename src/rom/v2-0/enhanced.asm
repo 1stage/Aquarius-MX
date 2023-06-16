@@ -1,6 +1,37 @@
 ;-----------------------------------------
-; Enhanced BASIC Statements and Commands
+; Enhanced BASIC Statements and Functions
 ;-----------------------------------------
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## AND
+;;; Bitwise AND
+;;; ### FORMAT:
+;;;  - AND( *number1*, *number2* )
+;;;    - Action: Returns the bitwise AND of two numbers.
+;;;      - Both *number1* and *number2* must be between -32768 and 65535.
+;;;      - Can be used instead of AND operator which only allows operands between -32768 and 32767.
+;;; ### EXAMPLE:
+;;; ` PRINT AND(-1,$FFFF) `
+;;; > Prints 65535
+;----------------------------------------------------------------------------
+FN_AND:
+    call    PARADR          ; Read First Argument
+    push    de              ; Save It
+    SYNCHK  ','             ; Require Comma
+    call    GETADR          ; Read Second Address into DE
+    SYNCHK  ')'             ; Require Parenthesis
+    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; D = D | H
+    and     h
+    ld      d,a
+    ld      a,e             ; E = E | L
+    and     l 
+    ld      e,a
+    jp      FLOAT_DE
+
 
 ;----------------------------------------------------------------------------
 ;;; ---
@@ -424,35 +455,45 @@ str_len_adr:
     or      a               ; and Set Flags
     ret
 
+
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## AND
-;;; Bitwise AND
+;;; ## RUN
+;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
 ;;; ### FORMAT:
-;;;  - AND( *number1*, *number2* )
-;;;    - Action: Returns the bitwise AND of two numbers.
-;;;      - Both *number1* and *number2* must be between -32768 and 65535.
-;;;      - Can be used instead of AND operator which only allows operands between -32768 and 32767.
-;;; ### EXAMPLE:
-;;; ` PRINT AND(-1,$FFFF) `
-;;; > Prints 65535
+;;;  - RUN *filename*
+;;;    - Action: Loads program into memory and runs it.
+;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
+;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
+;;;  - RUN "*filename*"
+;;;    - Action: Loads program named *filename* into memory and runs it.
+;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and executed in its place.
+;;;      - Wildcards and paths cannot be used.
+;;; ### EXAMPLES:
+;;; ` RUN "RUN-ME" `
+;;; > Loads and runs the file named `RUN-ME.BAS`. Note the program must exist within the current folder path.
+;;;
+;;; ` 10 PRINT "Loading Program..." `
+;;;
+;;; ` 20 RUN "NEXTPRG.CAQ" `
+;;; > Displays "Loading Program..." on screen and then immediately loads and runs the `NEXTPRG.CAQ` program.
 ;----------------------------------------------------------------------------
-FN_AND:
-    call    PARADR          ; Read First Argument
-    push    de              ; Save It
-    SYNCHK  ','             ; Require Comma
-    call    GETADR          ; Read Second Address into DE
-    SYNCHK  ')'             ; Require Parenthesis
-    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
-    ld      bc,LABBCK       ; Return Address for FLOAT_DE
-    push    bc
-    ld      a,d             ; D = D | H
-    and     h
-    ld      d,a
-    ld      a,e             ; E = E | L
-    and     l 
-    ld      e,a
-    jp      FLOAT_DE
+
+RUNPROG:
+    call    CLNERR             ; Clear Error Trapping Variables
+    jp      z,RUNC             ; if no argument then RUN from 1st line
+    push    hl
+    call    FRMEVL             ; get argument type
+    pop     hl
+    ld      a,(VALTYP)
+    dec     a                  ; 0 = string
+    jr      z,_run_file
+    call    CLEARC             ; else line number so init BASIC program and
+    ld      bc,$062c
+    jp      $06db              ;    GOTO line number
+_run_file:
+    call    ST_LOADFILE        ; load file from disk, name in FileName
+    jp      RUNC               ; run loaded BASIC program
 
 ;----------------------------------------------------------------------------
 ;;; ---

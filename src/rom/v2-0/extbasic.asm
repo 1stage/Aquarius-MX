@@ -236,7 +236,7 @@ MENUN:  call    MENUK             ; Get C/R or Space from Keyboard
         jr      nz,MENUN          ;   If Not Zero, Move to Next Optionb
         pop     bc                ;     BC = Options, HL = Coords
         pop     hl                ;     Stack = Text Pointer
-        jr      MENUT             ;     Start Iver ar Top
+        jr      MENUT             ;     Start Over ar Top
 MENUG:  pop     hl                ; Discard Options
         pop     hl                ; Discard Coords
         pop     hl                ; Restore Text Pointer

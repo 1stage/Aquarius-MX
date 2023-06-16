@@ -188,26 +188,29 @@ _dos_file_exists:
 
 ;------------------------------------------------------------------------------
 ;;; ---
-;;; ## LOAD (Updated)
+;;; ## LOAD Statement (updated)
 ;;; Load File from USB Drive
 ;;; ### FORMAT:
-;;;  - LOAD "*filespec*" 
+;;;  - LOAD *filespec* 
 ;;;    - Action: Load BASIC program *filespec* into memory
 ;;;      - *filename* can be any string expression
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
 ;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
+;;;      - If *filspec* is a literal string, the end quotation mark is optional.
 ;;;  - LOAD *filespec* , \**arrayname*
 ;;;    - Action: Load contents of array file *filespec* into array *arrayname*
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
 ;;;      - File on USB drive mus be in CAQ format with the internal filename "######".
 ;;;  - LOAD *filespec* , *address* [ , *length* [, *offset*]]
-;;;  - LOAD "*filespec*" , \**arrayname*
+;;;  - LOAD *filespec* , \**arrayname*
 ;;;    - Action: Load contents of array file *filespec* into array *arrayname*
-;;;  - LOAD "*filespec*" , *address* [ , *length* [, *offset*]]
+;;;  - LOAD *filespec* , *address* [ , *length* [, *offset*]]
 ;;;    - Action: Load contents of binary file *filespec* into memot
 ;;;      - *length* specifies the number of bytes to load from the file
 ;;;      - *offset* specifies the position in the file to start loadin from
-;;;      - If no parameters other than filename are used, the second quotation mark after *filespec* is optional.
+;;; ### ERRORS
+;;;  - If *filespec* is not included, an MO Error results
+;;;  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
 ;;; ### EXAMPLES:
 ;;; ` LOAD "progname.bas" `
 ;;; > Load basic program into memory.
@@ -244,7 +247,7 @@ _stl_caq:
 ; Loading array
     ld      de,dos_caq_ext        ; default extension ".CAQ"
     call    _sts_open_caqfile     ; open file, read sync and filename
-    ld      hl,FileName
+    ld      hl,FILNAF
     ld      b,6                   ; 6 chars in name
     ld      a,'#'                 ; all chars should be '#'
 _stl_array_id:
@@ -299,12 +302,7 @@ _stl_bad_file:
 _stl_rmdir_err:
     ld      a,ERROR_RMDIR_FAIL    ; no load address specified
 _stl_show_error:
-    call    _show_error           ; print DOS error message (A = error code)
-    call    usb__close_file       ; close file (if opened)
-    ld      e,ERRFC               ; Function Call error
-_stl_do_error:
-    pop     hl                    ; restore BASIC text pointer
-    jp      ERROR                 ; return to BASIC with error code in E
+    jp      _dos_do_error         ; return to BASIC with error code in E
 _stl_done:
     call    usb__close_file       ; close file
     pop     hl                    ; restore BASIC text pointer
@@ -317,6 +315,7 @@ _sts_open_caqfile:
     jp      nz,_stl_no_file
     call    st_read_sync          ; no, read 1st CAQ sync sequence
     jr      nz,_stl_bad_file
+    ld      hl,FILNAF             ; Cassette File Name
     ld      de,6                  ; read internal tape name
     call    usb__read_bytes
     jr      nz,_stl_bad_file
@@ -341,6 +340,13 @@ ST_LOADFILE:
 
 _show_error:
     ld      (DosError),a          ; save error number
+    ld      d,a                   ; copy error number into D
+    ld      hl,(ONELIN)           
+    ld      a,h                   
+    or      l                     ; if trapping errors
+    ret     nz                    ;   don't display error message
+    
+    ld      a,d                   ; get error number back
     call    dos__lookup_error     ; look up error message
     jr      nc,_show_error_hex    ;   if unknown error, show hex code show hex code
     call    prtstr                ; print error message
@@ -410,20 +416,24 @@ _link_lines:
 
 ;------------------------------------------------------------------------------
 ;;; ---
-;;; ## SAVE (Updated)
+;;; ## SAVE Statement (Updated)
 ;;; Save File to USB Drive
 ;;; ### FORMAT:
 ;;;  - SAVE "*filename*"
 ;;;    - Action: Save BASIC program to file *filename* on USB drive.
 ;;;      - *filename* can be any string expression
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
-;;;      - File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
+;;;      - If *filspec* is a literal string, the end quotation mark is optional.
+;;;      - Advanced: File on USB drive will be in CAQ format with the internal filename set to the first 6 characters of *filename*.
 ;;;  - SAVE "*filespec*",\**arrayname*
 ;;;    - Action: Save contents of array *arrayname* to file *filename* on USB drive.
 ;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".CAQ" is added.
-;;;      - File on USB drive will be in CAQ format with the internal filename set to "######".
+;;;      - Advanced: File on USB drive will be in CAQ format with the internal filename set to "######".
 ;;;  - SAVE *filespec*,*address*,*length*[,*offset*]
 ;;;    - Action: Saves *length* bytes of memory starting at *address* to file *filename* on USB drive.
+;;; ### ERRORS
+;;;  - If *filespec* is not included, an MO Error results
+;;;  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
 ;;; ### EXAMPLES:
 ;;; ` SAVE "progname" `
 ;;; > Save current program to USB drive with file name "PROGNAME.BAS"
@@ -1050,11 +1060,15 @@ dos__prtDirInfo:
 ;;; ## DEL
 ;;; Delete a file
 ;;; ### FORMAT:
-;;;  - DEL "*filename*"
-;;;    - Action: Deletes the file named *filename* from the current directory.
+;;;  - DEL *filespec*
+;;;    - Action: Deletes the file named *filespec* from the current directory.
+;;;      - *filespec* can be any string expression
 ;;;      - No warnings are given.
 ;;;      - Wildcards and paths cannot be used.
-;;;      - Final quotation mark after string is optional.
+;;;      - If *filspec* is a literal string, the end quotation mark is optional.
+;;; ### ERRORS
+;;;  - If *filespec* is not included, an MO Error results
+;;;  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
 ;;; ### EXAMPLES:
 ;;; ` DEL "THISFILE.BAS" `
 ;;; > Deletes the file named `THISFILE.BAS` from the current directory.
@@ -1073,7 +1087,9 @@ ST_DEL:
     ld     a,ERROR_NO_FILE
 _dos_do_error:
     call   _show_error       ; print error message
-    jp     FCERR
+IOERR:
+    ld     e,ERRIO
+    jp     ERROR
 _pop_hl_ret:
     pop    hl                ; pop BASIC text pointer
     ret

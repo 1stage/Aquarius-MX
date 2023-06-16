@@ -907,53 +907,6 @@ link_lines
     jr      link_lines         ; next line
 
 
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## RUN
-;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
-;;; ### FORMAT:
-;;;  - RUN *filename*
-;;;    - Action: Loads program into memory and runs it.
-;;;      - If *filename* is shorter than 9 characters and does not contain a ".", the extension ".BAS" is appended.
-;;;      - File on USB drive must be in CAQ format. The internal filename is ignored.
-;;;  - RUN "*filename*"
-;;;    - Action: Loads program named *filename* into memory and runs it.
-;;;      - If executed from within another BASIC program, the original program is cleared (same as NEW command) and the new program is loaded and executed in its place.
-;;;      - Wildcards and paths cannot be used.
-;;; ### EXAMPLES:
-;;; ` RUN "RUN-ME" `
-;;; > Loads and runs the file named `RUN-ME.BAS`. Note the program must exist within the current folder path.
-;;;
-;;; ` 10 PRINT "Loading Program..." `
-;;;
-;;; ` 20 RUN "NEXTPRG.CAQ" `
-;;; > Displays "Loading Program..." on screen and then immediately loads and runs the `NEXTPRG.CAQ` program.
-;----------------------------------------------------------------------------
-
-RUNPROG:
-    call    CLNERR             ; Clear Error Trapping Variables
-    jp      z,RUNC             ; if no argument then RUN from 1st line
-    push    hl
-    call    FRMEVL             ; get argument type
-    pop     hl
-    ld      a,(VALTYP)
-    dec     a                  ; 0 = string
-    jr      z,_run_file
-    call    CLEARC             ; else line number so init BASIC program and
-    ld      bc,$062c
-    jp      $06db              ;    GOTO line number
-_run_file:
-    call    ST_LOADFILE        ; load file from disk, name in FileName
-    jp      RUNC               ; run loaded BASIC program
-
-.bas_extn:
-    db     ".BAS",0
-.caq_extn:
-    db     ".CAQ",0
-
-.nofile_msg:
-    db     "file not found",$0D,$0A,0
-
 
 ;********************************************************************
 ;                   Command Entry Points
