@@ -354,6 +354,17 @@ _dos_open_read:
 ;
 
 _show_error:
+    or      a                     ; Check A
+    jr      nz,.notzero           ; If 0
+    ld      a,(ChStatus)          ;  Use CH376 Status
+.notzero:
+    cp      CH376_ERR_DISK_DISCON
+    jp      z,.nodisk
+    cp      CH376_INT_DISK_ERR
+    jr      z,.nodisk
+    db      $01                   ; LD BC, over following instruction
+.nodisk: 
+    ld      a,ERROR_MOUNT_FAIL
     ld      (DosError),a          ; save error number
     ld      d,a                   ; copy error number into D
     ld      hl,(ONELIN)           
@@ -538,7 +549,7 @@ _sts_write_error:
     jr      _sts_show_error
 ; error opening file
 _sts_open_error:
-    ld      a,ERROR_CREATE_FAIL
+;   ld      a,ERROR_CREATE_FAIL
 _sts_show_error:
     jp      _dos_do_error       ; show DOS error message and error out
 _sts_done:
@@ -561,8 +572,8 @@ _sts_open_wrsync:
 _get_file_args:
     ld      iy,DosFlags
     call    dos__getfilename      ; Clear DOS SysVars, Parse FileName
-    jp      nz,_badname_error     ; 
-    call    CHRGT2                ; Check character after FIlename
+    jp      nz,_badname_error     ;    
+    call    CHRGT2                ; Check character after Filename
     cp      ','                   ; If not a comma
     ret     nz                    ;   Return with No DOS Flags Set
     rst     CHRGET                ; Get character after comma
@@ -1097,13 +1108,14 @@ IOERR:
 _pop_hl_ret:
     pop    hl                ; pop BASIC text pointer
     ret
-_badname_error:
-    ld     a,ERROR_BAD_NAME
-    jr     _dos_do_error
 
 _dos_usb_ready:
     call    usb__ready
-    jr      nz,_dos_do_error
+    ret     z
+    db      $01                   ; LD BC, over following instruction
+_badname_error:
+    ld      a,ERROR_BAD_NAME
+    jr      _dos_do_error
     ret
 
 ;----------------------------------------------------------------
@@ -1228,6 +1240,7 @@ _convert_filename:
     push    hl                ; save BASIC text pointer
     call    CHKSTR
     call    LEN1              ; get string and its length
+    push    de                ; Save Filename Length
     jr      z,.null_str       ; if empty string then return
     cp      12
     jr      c,.string         ; trim to 12 chars max
@@ -1263,6 +1276,7 @@ _convert_filename:
     xor     a                 ; no error
     ld      (de),a            ; terminate filename
 .done:
+    pop     de                ; Restore Filename length
     pop     hl                ; restore BASIC text pointer
     or      a                 ; test error code
     ret

@@ -167,6 +167,14 @@ CH376_ERR_FOUND_NAME    equ     $43     ; file with name exists (CMD_DIR_CREATE)
 CH376_CMD_RET_SUCCESS   equ     $51     ; operation successful
 CH376_CMD_RET_ABORT     equ     $5F     ; operation failed
 
+CH376_ERR_DISK_DISCON   equ     $82     ; Disk doesn’t connect, maybe the disk has cut down
+CH376_ERR_LARGE_SECTOR  equ     $84     ; Fan is too big, only support 512 bytes
+CH376_ERR_TYPE_ERROR    equ     $92     ; Disk partition doesn’t support, re-prartition by tool
+CH376_ERR_BPB_ERROR     equ     $A1     ; Disk doesn’t format or parameter is error
+CH376_ERR_DISK_FULL     equ     $B1     ; File in disk is full, spare space is too small
+CH376_ERR_FDT_OVER      equ     $B2     ; Many file in directory, no spare directory
+CH376_ERR_FILE_CLOSE    equ     $B4     ; File is closed, re-open file if need 
+
  structure FAT_DIR_INFO,0
     STRUCT DIR_Name,11          ; $00 0
      BYTE  DIR_Attr             ; $0B 11

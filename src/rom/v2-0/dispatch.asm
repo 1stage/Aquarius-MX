@@ -418,21 +418,21 @@ MSGIO:  db      "Disk I/O error",0
 MSGUE:  db      "Unprintable error",0
 
 ; DOS Error Messages
-no_376_msg:           db  "no CH376",0
-no_disk_msg:          db  "no USB",0
-no_mount_msg:         db  "no disk",0
-bad_name_msg:         db  "invalid name",0
-no_file_msg:          db  "file not found",0
-file_empty_msg        db  "file empty",0
-bad_file_msg:         db  "filetype mismatch",0
-rmdir_error_msg:      db  "remove dir error",0
-read_error_msg:       db  "read error",0
-write_error_msg:      db  "write error",0
-create_error_msg:     db  "file create error",0
-open_dir_error_msg:   db  "directory not found",0
-path_too_long_msg:    db  "path too long",0
-file_exists_msg:      db  "file exists",0
-other_error_msg:      db  "other dos error",0
+no_376_msg:           db  "no CH376",0                ;  1
+no_disk_msg:          db  "no USB",0                  ;  2
+no_mount_msg:         db  "no disk",0                 ;  3
+bad_name_msg:         db  "invalid name",0            ;  4
+no_file_msg:          db  "file not found",0          ;  5
+file_empty_msg        db  "file empty",0              ;  6
+bad_file_msg:         db  "filetype mismatch",0       ;  7
+rmdir_error_msg:      db  "remove dir error",0        ;  8
+read_error_msg:       db  "read error",0              ;  9
+write_error_msg:      db  "write error",0             ; 10
+create_error_msg:     db  "file create error",0       ; 11
+open_dir_error_msg:   db  "directory not found",0     ; 12
+path_too_long_msg:    db  "path too long",0           ; 13
+file_exists_msg:      db  "file exists",0             ; 14
+other_error_msg:      db  "other dos error",0         ; 15
 disk_error_msg:       db  "disk error $",0
 
 
