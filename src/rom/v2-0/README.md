@@ -906,6 +906,9 @@ Load File from USB Drive
 ### ERRORS
  - If *filespec* is not included, an MO Error results
  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
+ - If only *filespec* is specified and the file is not a BASIC program in CAQ format, an IO Error with DOS Error "filetype mismatch" results.
+ - If *arrayname* is specified and the array is not DIMmed, an FC Error results.
+ - If *arrayname* is specified and the file is not array data in CAQ format, an IO Error with DOS Error "filetype mismatch" results.
 ### EXAMPLES:
 ` LOAD "progname.bas" `
 > Load basic program into memory.
@@ -1218,6 +1221,7 @@ Save File to USB Drive
 ### ERRORS
  - If *filespec* is not included, an MO Error results
  - If file *filespec* does not exist, an IO Error with DOS Error "file not found" results.
+ - If *arrayname* is specified and the array is not DIMmed, an FC Error results.
 ### EXAMPLES:
 ` SAVE "progname" `
 > Save current program to USB drive with file name "PROGNAME.BAS"
