@@ -44,6 +44,11 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] Update DEBUG statement
 
 ### AquaLite
+
+- [ ] Implement CH376_CMD_SET_FILE_SIZE 
+   - Currently only used to set file size to 1 before writing to it.
+     - This can be implementing by closing the file and re-opening with mode 'w' so file is overwritten.
+
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
   - Will address once REAL hardware exists
 
