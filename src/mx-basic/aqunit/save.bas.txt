@@ -68,7 +68,7 @@
 392 QA$="LOAD `"+P$+"`,*B":GOSUB 890:LOAD P$,*B
 395 QA$="DEL `"+P$+"`":GOSUB 890
 397 DEL P$
-400 GOTO 800
+
 500 QT$="SAVE/LOAD binary":GOSUB 910
 510 A=$0245:L=255:A$=STR$(A):L$=STR$(L)
 512 B$="testname.raw":F$="TESTNAME.RAW"
@@ -80,6 +80,9 @@
 524 QA$="LOAD `"+B$+"`,"+D$:GOSUB 890
 526 LOAD B$,D
 528 QA$="S$=PEEK$("+A$+","+L$+")":GOSUB 920
+
+529 GOTO 800:REM Until CH376_CMD_SET_FILE_SIZE is fixed in AquaLite
+
 530 O=L+1:O$=STR$(O):T=O+O:T$=STR$(T):E=L-1:E$=STR$(E)
 534 QA$="SAVE `"+B$+"`,"+A$+"+"+O$+","+L$+","+O$
 536 GOSUB 890:REM SAVE B$,A+O,L,O

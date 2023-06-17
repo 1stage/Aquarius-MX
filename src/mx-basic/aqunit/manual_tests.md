@@ -17,7 +17,7 @@
 | ------------- | ---------------- |
 | CAT           | IO Error "???"   |
 | CD            | IO Error "???"   |
-| DEL           | IO Error "???"   |
+| DEL "file     | IO Error "???"   |
 | DIR           | IO Error "???"   |
 | LOAD "file    | IO Error "???"   |
 | MKDIR "newdir | IO Error "???"   |
