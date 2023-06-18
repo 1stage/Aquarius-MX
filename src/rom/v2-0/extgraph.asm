@@ -19,7 +19,7 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PSET 
+;;; ## PSET Statement 
 ;;; Draw a pixel
 ;;; ### FORMAT:
 ;;;   - PSET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
@@ -1615,19 +1615,6 @@ FETCHC: ld      a,(PINDEX)        ; Load Bit Index
         ld      hl,(CURLOC)       ; Load Current Point Address
         ret                     
 
-; Set Graphics Attribute to High Nybble of A
-SETATF: sra     a                 ; Move High Nybble to Low Nybble
-        sra     a
-        sra     a
-        sra     a
-
-; Set Graphics Attribute (Foreground Color) 
-SETATR: cp      16                ; Is Color > 16
-        ccf                       ; If Yes
-        ret     c                 ;   Return Error
-        ld      (ATRBYT),a        ; Store Color
-        ret                     
-; EE17
 ; Get Bit Mask for Bit Position PINDEX
 GETMSK:  ld      de,BITTAB       
          ld      a,(PINDEX)
@@ -1941,3 +1928,69 @@ SWAPA:  rlca                      ;; SWAP (Foreground and Background)
 CPLA:   cpl                       ;;PRSET
 NOOP:   ret                       ;;PSET (Use Color from Array)
 
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## COLOR Statement
+;;; Set Foreground Color
+;;; ### FORMAT:
+;;;  - COLOR *color*
+;;;    - Action: Sets the default color for LINE and COLOR to *color*.
+;;;      - Results in FC Error if *color* is not between 0 and 15, inclusive.
+;;; ### EXAMPLES:
+;;; ` COLOR 2 `
+;;; > Sets the foreground to green.
+ST_COL:
+    rst     SYNCHR  
+    db      ORTK                  ; Require OR Token
+    call    GETBYT                ; Get Color
+    cp      16                    ; If Color > 16
+    jp      nc,FCERR              ;   FC Error 
+    jr      SETFCL                ; Make it the Foreground Color
+
+; Set Graphics Attribute to High Nybble of A
+SETFCH: sra     a                 ; Move High Nybble to Low Nybble
+        sra     a
+        sra     a
+        sra     a
+; Set Foreground Color (
+SETFCL: ld      (FORCLR),a        ; Store Color
+        ret
+
+; Set Graphics Attribute (Foreground Color) 
+SETATR: cp      16                ; Is Color > 16
+        ccf                       ; If Yes
+        ret     c                 ;   Return Error
+        ld      (ATRBYT),a        ; Store Color
+        ret                     
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## COLOR Function
+;;; Get Current Color
+;;; ### FORMAT:
+;;;  - COLOR( 0 )
+;;;    - Action: Returns the current draw color as set by the last CLS or DRAW statement.
+;;;  - COLOR( 1 )
+;;;    - Action: Returns the current draw color as set by the last CLS or DRAW statement.
+;;;  - Any other arguments result in an FC Error.
+;;; ### EXAMPLES:
+;;; ` PRINT COLOR(0) `
+;;; > Prints the current draw color
+FN_COL:
+    inc     hl                    ; Skip COL Token 
+    rst     SYNCHR  
+    db      ORTK                  ; Require OR Token
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK             ; Return Address for SGNFLT
+    push    bc
+    rst     FSIGN                 ; Set Argument Sign
+    jr      nz,.not0              ; If 0
+    ld      a,(FORCLR)            ;   Get Foreground Color
+    jp      SNGFLT                ;   and Float it
+.not0:
+    dec     a                     ; Make 1 into 0
+    jp      nz,FCERR              ; FC Error if not 0
+    ld      a,(ATRBYT)            ;   Get Draw Color
+    jp      SNGFLT                ;   and Float it

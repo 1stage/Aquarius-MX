@@ -502,13 +502,12 @@ str_len_adr:
 ;;;  - POS( 4 )
 ;;;    - Action: Returns the color RAM address corresponding to the current screen position.
 ;;;  - POS( -1 )
-;;;    - Action: Returns last pixel X-coordinate as set by PSET, LINE, or DRAW
+;;;    - Action: Returns last pixel X-coordinate as set by PSET, PRESET, LINE, or DRAW
 ;;;  - POS( -2 )
-;;;    - Action: Returns last pixel Y-coordinate as set by PSET, LINE, or DRAW
+;;;    - Action: Returns last pixel Y-coordinate as set by PSET, PRESET, LINE, or DRAW
 ;;;  - POS( -3 )
-;;;    - Action: Returns the screen RAM address corresponding to the last pixel X and Y coordinates.
-;;;  - POS( -4 )
-;;;    - Action: Returns the color RAM address corresponding to the last pixel X and Y coordinates.
+;;;    - Action: Returns the last calculated screen RAM address,
+;;;      - The value returned is dependent on the last graphics command executed.
 ;;;  - Any other arguments result in an FC Error.
 ;;; ### EXAMPLES:
 ;;; ` P = POS(0) `
@@ -577,9 +576,6 @@ _GPOS
     jp      z,FLOAT_DE            ;   Return it
     ld      de,(CURLOC)           ; Get Pixel Screen RAM Address
     dec     a                     ; If Arg = 3
-    jp      z,FLOAT_DE            ;   Return it
-    set     2,d                   ; Get Pixel Color RAM Address
-    dec     a                     ; If Arg = 4
     jp      z,FLOAT_DE            ;   Return it
     jp      FCERR                 ; Else FC Error
     

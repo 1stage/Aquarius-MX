@@ -161,7 +161,8 @@ tokens = {
     0xF1: "OFF",
     0xF2: "WAIT",
     0xF3: "FILE",
-    0xF4: "RESUME"
+    0xF4: "RESUME",
+    0xF4: "COL"
 }
 
 with open(args.input, "rb") as f:

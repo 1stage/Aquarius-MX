@@ -17,22 +17,23 @@ Files with extension .bas.txt are untokenized BASIC programs.
 
 Files with extension .bas are tokenized BASIC programs in CAQ format.
 
-| Basic Program  | Description                           |
-| -------------- | ---------------------------------     |
-| aqunit.bas.txt | Aquarius Unit Test Framework          |
-| aqex.bas.txt   | Example test program using framework  |
-| asc.bas.txt    | Test ASC(), ASC$(), DEC()             |
-| def.bas.txt    | Test DEF FN(), FN()                   |
-| err.bas.txt    | Test ERROR, ERR(), ERR$()             |
-| get.bas.txt    | Test GET, PUT, CLS                    |
-| hex.bas.txt    | Test HEX$                             |
-| menu.bas.txt   | Test MENU, KEY                        |
-| mid.bas.txt    | Test MID$(), STRING\$(),INSTR()       |
-| peek.bas.txt   | Test PEEK(), $ and &                  |
-| poke.bas.txt   | Test POKE, DOKE, DEEK, COPY           |
-| save.bas.txt   | Test SAVE, LOAD, DEL, FILE$, FILEEND  |
-| swap.bas.txt   | Test SWAP                             |
-| xor.bas.txt    | Test AND(), OR(), XOR()               |
+| Basic Program  | Description                             |
+| -------------- | --------------------------------------- |
+| aqunit.bas.txt | Aquarius Unit Test Framework            |
+| aqex.bas.txt   | Example test program using framework    |
+| asc.bas.txt    | Test ASC(), ASC$(), DEC()               |
+| def.bas.txt    | Test DEF FN(), FN()                     |
+| err.bas.txt    | Test ERROR, ERR(), ERR$()               |
+| get.bas.txt    | Test GET, PUT, CLS                      |
+| hex.bas.txt    | Test HEX$                               |
+| line.bas.txt   | Test LINE, PSET, PRESET, COLOR, COLOR() |
+| menu.bas.txt   | Test MENU, KEY                          |
+| mid.bas.txt    | Test MID$(), STRING\$(),INSTR()         |
+| peek.bas.txt   | Test PEEK(), $ and &                    |
+| poke.bas.txt   | Test POKE, R, DREEK, COPY               |
+| save.bas.txt   | Test SAVE, LOAD, DEL, FILE$, FILEEND    |
+| swap.bas.txt   | Test SWAP                               |
+| xor.bas.txt    | Test AND(), OR(), XOR()                 |
 
 ## Converting and running files
 

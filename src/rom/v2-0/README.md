@@ -232,6 +232,30 @@ Clear Screen / Clear Screen with specified foreground and background colors
 > Clear screen - text color F, background color B (using BASIC variables)
 
 ---
+## COLOR Function
+Get Current Color
+### FORMAT:
+ - COLOR( 0 )
+   - Action: Returns the current draw color as set by the last CLS or DRAW statement.
+ - COLOR( 1 )
+   - Action: Returns the current draw color as set by the last CLS or DRAW statement.
+ - Any other arguments result in an FC Error.
+### EXAMPLES:
+` PRINT COLOR(0) `
+> Prints the current draw color
+
+---
+## COLOR Statement
+Set Foreground Color
+### FORMAT:
+ - COLOR *color*
+   - Action: Sets the default color for LINE and COLOR to *color*.
+     - Results in FC Error if *color* is not between 0 and 15, inclusive.
+### EXAMPLES:
+` COLOR 2 `
+> Sets the foreground to green.
+
+---
 ## COPY Statement (Enhanced)
 Copy screen to Line Printer / Copy memory
 ### FORMAT:
@@ -1109,13 +1133,12 @@ Get Screen Position
  - POS( 4 )
    - Action: Returns the color RAM address corresponding to the current screen position.
  - POS( -1 )
-   - Action: Returns last pixel X-coordinate as set by PSET, LINE, or DRAW
+   - Action: Returns last pixel X-coordinate as set by PSET, PRESET, LINE, or DRAW
  - POS( -2 )
-   - Action: Returns last pixel Y-coordinate as set by PSET, LINE, or DRAW
+   - Action: Returns last pixel Y-coordinate as set by PSET, PRESET, LINE, or DRAW
  - POS( -3 )
-   - Action: Returns the screen RAM address corresponding to the last pixel X and Y coordinates.
- - POS( -4 )
-   - Action: Returns the color RAM address corresponding to the last pixel X and Y coordinates.
+   - Action: Returns the last calculated screen RAM address,
+     - The value returned is dependent on the last graphics command executed.
  - Any other arguments result in an FC Error.
 ### EXAMPLES:
 ` P = POS(0) `
@@ -1141,7 +1164,7 @@ Erase a pixel
 > Erases the pixel at the last referenced coordinates.
 
 ---
-## PSET
+## PSET Statement
 Draw a pixel
 ### FORMAT:
   - PSET [STEP] (*x-coord*,*y-coord*) [ , *color* ]

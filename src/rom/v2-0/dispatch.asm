@@ -135,7 +135,7 @@ STJUMPS:
     dw      ST_WAIT               ;$F2 WAIT
     dw      SNERR                 ;$F3 FILE
     dw      ST_RESUME             ;$F4 RESUME
-    dw      SNERR                 ;$F5
+    dw      ST_COL                ;$F5 COL OR
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
     dw      SNERR                 ;$F8
@@ -218,7 +218,7 @@ FNJUMPS:
     dw      SNERR                 ;$F2 WAIT
     dw      FN_FILE               ;$F3 FILE
     dw      SNERR                 ;$F4 RESUME
-    dw      SNERR                 ;$F5
+    dw      FN_COL                ;$F5 COL OR
     dw      SNERR                 ;$F6
     dw      SNERR                 ;$F7
     dw      SNERR                 ;$F8
@@ -481,7 +481,8 @@ TBLCMDS:
     db      $80 + 'O', "FF"         ; $f1 - Special Keyword OFF
     db      $80 + 'W', "AIT"        ; $f2 - Wait for byte on Z80 port
     db      $80 + 'F', "ILE"        ; $f3 - File Functions
-    db      $80 + 'R', "ESUME"      ; $f4 - File Functions
+    db      $80 + 'R', "ESUME"      ; $f4 - RESUME from Error
+    db      $80 + 'C', "OL"         ; $f5 - COLor Function 
     db      $80                     ; End of table marker
 
 ; Tokens used in external routines

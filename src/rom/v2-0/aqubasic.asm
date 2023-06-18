@@ -615,8 +615,7 @@ ROM_ENTRY:
 WARMBOOT:
     xor     a
     ld      (RETYPBUF),a       ; clear history buffer
-    ld      a,$0b
-    rst     $18                ; clear screen
+    call    ST_CLS             ; Works because Z reset by XOR A above
     call    $0be5              ; clear workspace and prepare to enter BASIC
     call    $1a40              ; enter BASIC at KEYBREAK
 JUMPSTART:
@@ -696,9 +695,8 @@ COLDBOOT:
     ld      (ENDBUF),a         ; NULL end of input buffer
     ld      (BINSTART),a       ; NULL binary file start address
     ld      (RETYPBUF),a       ; NULL history buffer
-    ld      a,$0b
-    rst     $18                ; clear screen
     call    XSTART             ; Initialize Extended BASIC Variables
+    call    ST_CLS             ; Works because XSTART returns with Z reset
 
 ; Test the memory
 ; only testing 1st byte in each 256 byte page!
@@ -1023,12 +1021,15 @@ ST_CLS:
     or      e                     ; combine background color
 do_cls:
     push    af                    ; save color combo
-    call    SETATF                ; save foreground color as attribute
+    call    SETFCH                ; save foreground color as current color
+    call    SETATR                ; save foreground color as current attribute
     pop     af                    ; restore color combo
     call    clearscreen
-    ld      de,$3001+40           ; DE cursor at 0,0
+    ld      de,$3000+40            ; Point Address for (0,0) 
+    ld      (CURLOC),de           
+    inc     de                    ; DE cursor at 1,0
     ld      (CURRAM),de       
-    xor     a       
+    xor     a
     ld      (TTYPOS),a            ; column 0
     ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
