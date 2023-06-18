@@ -501,6 +501,14 @@ str_len_adr:
 ;;;    - Action: Returns the screen RAM address corresponding to the current screen position.
 ;;;  - POS( 4 )
 ;;;    - Action: Returns the color RAM address corresponding to the current screen position.
+;;;  - POS( -1 )
+;;;    - Action: Returns last pixel X-coordinate as set by PSET, LINE, or DRAW
+;;;  - POS( -2 )
+;;;    - Action: Returns last pixel Y-coordinate as set by PSET, LINE, or DRAW
+;;;  - POS( -3 )
+;;;    - Action: Returns the screen RAM address corresponding to the last pixel X and Y coordinates.
+;;;  - POS( -4 )
+;;;    - Action: Returns the color RAM address corresponding to the last pixel X and Y coordinates.
 ;;;  - Any other arguments result in an FC Error.
 ;;; ### EXAMPLES:
 ;;; ` P = POS(0) `
@@ -517,9 +525,10 @@ FN_POS:
     push    hl
     ld      bc,LABBCK             ; Return Address for SGNFLT
     push    bc
-    call    CONINT                ; Convert Argument to Byte Value
-    or      a                     ; Set Flags
+    rst     FSIGN                 ; Set Argument Sign
     jp      z,POS                 ; If 0, do Standard POS
+    jp      m,_GPOS               ; If Negative do Graphics POS
+    call    CONINT                ; Convert Argument to Byte Value
     dec     a
     jr      z,.get_col
     dec     a
@@ -528,7 +537,7 @@ FN_POS:
     dec     a                     ; If Arg = 3
     jp      z,FLOAT_DE            ;   Return Screen RAM Position
     set     2,d                   ; Convert to Current Position in Color RAM
-    dec     a                     ; If Arg = 3
+    dec     a                     ; If Arg = 4
     jp      z,FLOAT_DE            ;   Return Color RAM Position
     jp      FCERR                 ; Else FC Error
 
@@ -555,6 +564,25 @@ get_screen_pos:
     add     hl,bc                 ; Add Line Length Back On to Get Remainder
     ld      e,l                   ; E=Column
     ret
+
+; Get 
+_GPOS
+    call    NEG                   ; Negate the Argument
+    call    CONINT                ; Convert Argument to Byte Value
+    ld      de,(GRPACX)           ; Get Last X Position
+    dec     a                     ; If Arg = 1
+    jp      z,FLOAT_DE            ;   Return it
+    ld      de,(GRPACY)           ; Get Last Y Position
+    dec     a                     ; If Arg = 2
+    jp      z,FLOAT_DE            ;   Return it
+    ld      de,(CURLOC)           ; Get Pixel Screen RAM Address
+    dec     a                     ; If Arg = 3
+    jp      z,FLOAT_DE            ;   Return it
+    set     2,d                   ; Get Pixel Color RAM Address
+    dec     a                     ; If Arg = 4
+    jp      z,FLOAT_DE            ;   Return it
+    jp      FCERR                 ; Else FC Error
+    
 
 ;----------------------------------------------------------------------------
 ;;; ---

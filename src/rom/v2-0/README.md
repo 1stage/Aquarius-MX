@@ -1108,6 +1108,14 @@ Get Screen Position
    - Action: Returns the screen RAM address corresponding to the current screen position.
  - POS( 4 )
    - Action: Returns the color RAM address corresponding to the current screen position.
+ - POS( -1 )
+   - Action: Returns last pixel X-coordinate as set by PSET, LINE, or DRAW
+ - POS( -2 )
+   - Action: Returns last pixel Y-coordinate as set by PSET, LINE, or DRAW
+ - POS( -3 )
+   - Action: Returns the screen RAM address corresponding to the last pixel X and Y coordinates.
+ - POS( -4 )
+   - Action: Returns the color RAM address corresponding to the last pixel X and Y coordinates.
  - Any other arguments result in an FC Error.
 ### EXAMPLES:
 ` P = POS(0) `
