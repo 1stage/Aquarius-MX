@@ -1249,6 +1249,29 @@ REERR:  ld      e,ERRRE           ; Load RE Error Code
 
 ;----------------------------------------------------------------------------
 ;;; ---
+;;; ## SWAP Statement
+;;; Swap MSB and LSB
+;;; ### FORMAT:
+;;;  - SWAP(*number*)
+;;;    - Action: Returns *number* with the least significant and most significant bytes swapped.
+;;;      - *number* must be between -32768 and 65535.
+;;; ### EXAMPLES:
+;;; ` PRINT HEX$(SWAP($ABCD)) `
+;;; > Prints CDAB
+;----------------------------------------------------------------------------
+FN_SWAP:
+    call    PARADR          ; Read First Argument
+    SYNCHK  ')'             ; Require Parenthesis
+    push    hl              ;   Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; Swap D and E
+    ld      d,e
+    ld      e,a             ; E = E ^ L
+    jp      FLOAT_DE
+
+;----------------------------------------------------------------------------
+;;; ---
 ;;; ## WAIT Statement
 ;;; Suspend program execution while monitoring the status of a Z80 input port.
 ;;; ### FORMAT:

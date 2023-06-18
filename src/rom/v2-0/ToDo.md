@@ -29,6 +29,7 @@ This file is for recording upcoming changes and features that are being added, a
     - *waiting for update to AquaLite*
   - [x] def.bas -  Test DEF FN 
   - [x] swap.bas -  Test SWAP
+  - [ ] .bas -  Test LOCATE, POS()
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
@@ -37,7 +38,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [ ] .bas -  Test DRAW
   - [ ] .bas -  Test SDMT, DTM$
   - [ ] .bas -  Test PSET, PRESET, LINE
-  - [ ] .bas -  Test LOCATE
+  - [ ] .bas -  Test LOCATE, POS()
   - [ ] .bas -  Test SLEEP, VER
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test

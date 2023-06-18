@@ -156,7 +156,7 @@ FNJUMPS:
     dw      HOOK27+1              ;$B5 USR  
     dw      FN_FRE                ;$B6 FRE     
     dw      HOOK27+1              ;$B7 LPOS    
-    dw      HOOK27+1              ;$B8 POS     
+    dw      FN_POS                ;$B8 POS     
     dw      HOOK27+1              ;$B9 SQR     
     dw      HOOK27+1              ;$BA RND     
     dw      HOOK27+1              ;$BB LOG     

@@ -1022,13 +1022,16 @@ ST_CLS:
     rla                           ; shift to high nybble
     or      e                     ; combine background color
 do_cls:
+    push    af                    ; save color combo
+    call    SETATF                ; save foreground color as attribute
+    pop     af                    ; restore color combo
     call    clearscreen
-    ld      de,$3001+40   ; DE cursor at 0,0
-    ld      (CURRAM),de
-    xor     a
-    ld      (TTYPOS),a    ; column 0
+    ld      de,$3001+40           ; DE cursor at 0,0
+    ld      (CURRAM),de       
+    xor     a       
+    ld      (TTYPOS),a            ; column 0
     ld      a,' '
-    ld      (CURCHR),a   ; SPACE under cursor
+    ld      (CURCHR),a            ; SPACE under cursor
     ret
 
 clearscreen:
@@ -1046,6 +1049,8 @@ clearscreen:
     djnz    .char
     dec     c
     jr      nz,.line
+    ld      (GRPACX),bc           ; Set Last X Coordinate to 0
+    ld      (GRPACY),bc           ; Set Last Y Coordinate to 0
     pop     hl
     ret
 

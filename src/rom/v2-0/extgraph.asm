@@ -1614,7 +1614,13 @@ STOREC: ld      (PINDEX),a        ; Store Point Position
 FETCHC: ld      a,(PINDEX)        ; Load Bit Index 
         ld      hl,(CURLOC)       ; Load Current Point Address
         ret                     
-; EE0F                                                  
+
+; Set Graphics Attribute to High Nybble of A
+SETATF: sra     a                 ; Move High Nybble to Low Nybble
+        sra     a
+        sra     a
+        sra     a
+
 ; Set Graphics Attribute (Foreground Color) 
 SETATR: cp      16                ; Is Color > 16
         ccf                       ; If Yes

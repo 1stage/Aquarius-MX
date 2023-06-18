@@ -223,6 +223,7 @@ FNDLIN  = $049F   ; Find address of BASIC line (DE = line number)
 
 GOTO    = $06DC   ; Execute GOTO statement
 DATA    = $071C   ; Execute DATA statement
+POS     = $0B33   ; Get Cursor Position
 ERRDIR  = $0B45   ; Issue Error if in Direct Mode
 BLTU    = $0B92   ; Block Transfer Routine
 SCRTCH  = $0BBE   ; Execute NEW Command (without syntax check)

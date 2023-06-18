@@ -4,7 +4,7 @@
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## AND
+;;; ## AND Function
 ;;; Bitwise AND
 ;;; ### FORMAT:
 ;;;  - AND( *number1*, *number2* )
@@ -119,7 +119,7 @@ ABORT_FN:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## COPY (Extended)
+;;; ## COPY Statement (Enhanced)
 ;;; Copy screen to Line Printer / Copy memory
 ;;; ### FORMAT:
 ;;;   - COPY
@@ -182,7 +182,7 @@ ST_COPY:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## FRE (Extended)
+;;; ## FRE Function (Enhanced)
 ;;; Show available Memory / Show memory details
 ;;; ### FORMAT:
 ;;;  - FRE ( 0 )
@@ -248,7 +248,37 @@ FLOAT_DIFF:                 ; Return HL minus DE has a positive floating point n
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PEEK Function
+;;; ## OR Function
+;;; Bitwise OR
+;;; ### FORMAT:
+;;;  - OR( *number1*, *number2* > )
+;;;    - Action: Returns the bitwise OR of two numbers.
+;;;      - Both *number1* and *number2* must be between -32768 and 65535.
+;;;      - Can be used instead of OR operator which only allows operands between -32768 and 32767.
+;;; ### EXAMPLE:
+;;; ` PRINT HEX$(OR($8080,$0808)) `
+;;; > Prints 8888
+;----------------------------------------------------------------------------
+FN_OR:
+    call    PARADR          ; Read First Argument
+    push    de              ; Save It
+    SYNCHK  ','             ; Require Comma
+    call    GETADR          ; Read Second Address into DE
+    SYNCHK  ')'             ; Require Parenthesis
+    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
+    ld      bc,LABBCK       ; Return Address for FLOAT_DE
+    push    bc
+    ld      a,d             ; D = D | H
+    or      h
+    ld      d,a
+    ld      a,e             ; E = E | L
+    or      l 
+    ld      e,a
+    jp      FLOAT_DE
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## PEEK Function (Enhanced)
 ;;; Read Byte from Memory
 ;;; ### FORMAT:
 ;;;  - PEEK( *address* )
@@ -311,7 +341,7 @@ FN_PEEKS:
     
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## POKE (Extended)
+;;; ## POKE Statement (Enhanced)
 ;;; Writes byte(s) to memory location(s)
 ;;; ### FORMAT:
 ;;;  - POKE *address*, [ *byte or string*, *byte or string*... ] [,STEP *count*, *byte or string*...]
@@ -458,7 +488,77 @@ str_len_adr:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## RUN
+;;; ## POS Function (Enhanced)
+;;; Get Screen Position
+;;; ### FORMAT:
+;;;  - POS( 0 )
+;;;    - Action: Returns current print column. This is one less than the actual screen column as set using LOCATE.
+;;;  - POS( 1 )
+;;;    - Action: Returns current screen column. This is the same as would be set by the first parameter of the LOCATE command.
+;;;  - POS( 2 )
+;;;    - Action: Returns current screen row. This is the same as would be set by the row parameter of the LOCATE command.
+;;;  - POS( 3 )
+;;;    - Action: Returns the screen RAM address corresponding to the current screen position.
+;;;  - POS( 4 )
+;;;    - Action: Returns the color RAM address corresponding to the current screen position.
+;;;  - Any other arguments result in an FC Error.
+;;; ### EXAMPLES:
+;;; ` P = POS(0) `
+;;; > Sets P to current print position
+;;; ` LOCATE POS(1)+1,POS(2)+1 `
+;;; > Moves cursor one character position down and to the right
+;;; ` POKE POS(3),32 `
+;;; > Replaces the cursor with a space
+;;; ` POKE POS(4),$70 `
+;;; > Changes the colors at the current screen position with white on black.
+FN_POS:
+    rst     CHRGET                ; Skip Token and Eat Spaces
+    call    PARCHK
+    push    hl
+    ld      bc,LABBCK             ; Return Address for SGNFLT
+    push    bc
+    call    CONINT                ; Convert Argument to Byte Value
+    or      a                     ; Set Flags
+    jp      z,POS                 ; If 0, do Standard POS
+    dec     a
+    jr      z,.get_col
+    dec     a
+    jr      z,.get_row
+    ld      de,(CURRAM)           ; Get Current Position in Screen RAM
+    dec     a                     ; If Arg = 3
+    jp      z,FLOAT_DE            ;   Return Screen RAM Position
+    set     2,d                   ; Convert to Current Position in Color RAM
+    dec     a                     ; If Arg = 3
+    jp      z,FLOAT_DE            ;   Return Color RAM Position
+    jp      FCERR                 ; Else FC Error
+
+.get_col:
+    call    get_screen_pos        ; Get Screen Row and Column
+    ld      a,e
+    jp      SNGFLT                ; Return Row
+    
+.get_row:
+    call    get_screen_pos        ; Get Screen Row and Column
+    ld      a,d
+    jp      SNGFLT                ; Return Row
+
+get_screen_pos:
+    ld      hl,(CURRAM)           ; Get Current Position in RAM
+    ld      bc,$3000              ; 
+    sbc     hl,bc
+    ld      d,$FE                 ; D=Row (start at -2)
+    ld      bc,40                 ; Columns per Line
+.subloop
+    inc     d                     ; Bump Row Number
+    sbc     hl,bc                 ; Subtract Line Length
+    jr      nc,.subloop           ; If >=0, do it again
+    add     hl,bc                 ; Add Line Length Back On to Get Remainder
+    ld      e,l                   ; E=Column
+    ret
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## RUN Statement (Enhanced)
 ;;; Loads and runs BASIC programs (*.CAQ or *.BAS)
 ;;; ### FORMAT:
 ;;;  - RUN *filename*
@@ -497,37 +597,7 @@ _run_file:
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## OR
-;;; Bitwise OR
-;;; ### FORMAT:
-;;;  - OR( *number1*, *number2* > )
-;;;    - Action: Returns the bitwise OR of two numbers.
-;;;      - Both *number1* and *number2* must be between -32768 and 65535.
-;;;      - Can be used instead of OR operator which only allows operands between -32768 and 32767.
-;;; ### EXAMPLE:
-;;; ` PRINT HEX$(OR($8080,$0808)) `
-;;; > Prints 8888
-;----------------------------------------------------------------------------
-FN_OR:
-    call    PARADR          ; Read First Argument
-    push    de              ; Save It
-    SYNCHK  ','             ; Require Comma
-    call    GETADR          ; Read Second Address into DE
-    SYNCHK  ')'             ; Require Parenthesis
-    ex      (sp),hl         ; First Argument into HL, Text Pointer on Stack
-    ld      bc,LABBCK       ; Return Address for FLOAT_DE
-    push    bc
-    ld      a,d             ; D = D | H
-    or      h
-    ld      d,a
-    ld      a,e             ; E = E | L
-    or      l 
-    ld      e,a
-    jp      FLOAT_DE
-
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## XOR 
+;;; ## XOR Function
 ;;; Bitwise Exclusive OR
 ;;; ### FORMAT:
 ;;;  - XOR( *number1*, *number2* )
@@ -552,28 +622,5 @@ FN_XOR:
     ld      a,e             ; E = E ^ L
     xor     l 
     ld      e,a
-    jp      FLOAT_DE
-
-;----------------------------------------------------------------------------
-;;; ---
-;;; ## SWAP 
-;;; Swap MSB and LSB
-;;; ### FORMAT:
-;;;  - SWAP(*number*)
-;;;    - Action: Returns *number* with the least significant and most significant bytes swapped.
-;;;      - *number* must be between -32768 and 65535.
-;;; ### EXAMPLES:
-;;; ` PRINT HEX$(SWAP($ABCD)) `
-;;; > Prints CDAB
-;----------------------------------------------------------------------------
-FN_SWAP:
-    call    PARADR          ; Read First Argument
-    SYNCHK  ')'             ; Require Parenthesis
-    push    hl              ;   Text Pointer on Stack
-    ld      bc,LABBCK       ; Return Address for FLOAT_DE
-    push    bc
-    ld      a,d             ; Swap D and E
-    ld      d,e
-    ld      e,a             ; E = E ^ L
     jp      FLOAT_DE
 
