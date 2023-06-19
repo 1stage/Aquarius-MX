@@ -142,7 +142,7 @@ Get Current Directory path as a string
 > Assigns the current path string to A$, then prints it.
 
 ---
-## CIRCLE
+## CIRCLE Statement
 Draw circle or ellipse on screen.
 ### FORMAT:
   - CIRCLE(*xcenter*, *ycenter*), *radius*[,[*color*][,[*start*],[*end*][,*aspect*]]]
@@ -416,7 +416,7 @@ Writes 16 bit word(s) to memory location(s), aka "Double Poke"
 > Put the characters `0123` at the top left of the screen
 
 ---
-## DRAW
+## DRAW Statement
 Draws a figure.
 ### FORMAT:
   - DRAW *string expression*
@@ -1151,7 +1151,7 @@ Get Screen Position
 > Changes the colors at the current screen position with white on black.
 
 ---
-## PRESET
+## PRESET Statement
 Erase a pixel
 ### FORMAT:
   - PRESET [STEP] (*x-coord*,*y-coord*)
@@ -1164,7 +1164,7 @@ Erase a pixel
 > Erases the pixel at the last referenced coordinates.
 
 ---
-## PSET Statement
+## PSET Statement (Enhanced)
 Draw a pixel
 ### FORMAT:
   - PSET [STEP] (*x-coord*,*y-coord*) [ , *color* ]

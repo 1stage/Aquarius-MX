@@ -19,7 +19,7 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PSET Statement 
+;;; ## PSET Statement (Enhanced)
 ;;; Draw a pixel
 ;;; ### FORMAT:
 ;;;   - PSET [STEP] (*x-coord*,*y-coord*) [ , *color* ]
@@ -34,7 +34,7 @@ XSTART: ld      hl,$0704         ; Default = White, Current = Blue
 ;;; > Draws a pixel at 10 points to the left of and 8 points below the last referenced Coordinates.
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## PRESET
+;;; ## PRESET Statement
 ;;; Erase a pixel
 ;;; ### FORMAT:
 ;;;   - PRESET [STEP] (*x-coord*,*y-coord*)
@@ -507,7 +507,7 @@ NEGDE:  ex      de,hl           ; DE = 0 - DE
         ret
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## CIRCLE
+;;; ## CIRCLE Statement
 ;;; Draw circle or ellipse on screen.
 ;;; ### FORMAT:
 ;;;   - CIRCLE(*xcenter*, *ycenter*), *radius*[,[*color*][,[*start*],[*end*][,*aspect*]]]
@@ -1101,7 +1101,7 @@ GTARRY: SYNCHK  ','               ; EAT COMMA
         ret
 ;----------------------------------------------------------------------------
 ;;; ---
-;;; ## DRAW
+;;; ## DRAW Statement
 ;;; Draws a figure.
 ;;; ### FORMAT:
 ;;;   - DRAW *string expression*
