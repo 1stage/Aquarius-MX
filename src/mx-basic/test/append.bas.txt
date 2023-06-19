@@ -1,0 +1,4 @@
+100 REM Test File Append
+110 F$="testfile.tmp"
+120 SAVE F$,$1000,1024
+130 SAVE F$,$1C00,1024,$FFFF
