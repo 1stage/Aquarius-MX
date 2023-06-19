@@ -22,6 +22,7 @@ Files with extension .bas are tokenized BASIC programs in CAQ format.
 | aqunit.bas.txt | Aquarius Unit Test Framework            |
 | aqex.bas.txt   | Example test program using framework    |
 | asc.bas.txt    | Test ASC(), ASC$(), DEC()               |
+| circle.bas.txt | Test CIRCLE                               |
 | def.bas.txt    | Test DEF FN(), FN()                     |
 | err.bas.txt    | Test ERROR, ERR(), ERR$()               |
 | get.bas.txt    | Test GET, PUT, CLS                      |
