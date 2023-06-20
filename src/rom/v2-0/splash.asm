@@ -149,7 +149,7 @@ BootMenuPrint:
 .nodebug    
     call    WinPrtMsg
     db      CR,CR,CR,CR,CR                      ; Move down a few rows
-    db      "    <RTN> USB BASIC"
+    db      "    <RTN> MX BASIC "
     db      CR,0
     or      c                             ; If Ctrl-C Flag is 0
     jr      z,.about                      ;   Skip Ctrl-C Message
