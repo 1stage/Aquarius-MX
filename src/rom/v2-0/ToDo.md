@@ -30,12 +30,12 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] def.bas -  Test DEF FN 
   - [x] swap.bas -  Test SWAP
   - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR()
+  - [x] circle.bas -  Test CIRCLE
   - [ ] .bas -  Test LOCATE, POS()
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
   - [ ] .bas -  Test CLEAR and FRE()
-  - [ ] .bas -  Test CIRCLE
   - [ ] .bas -  Test DRAW
   - [ ] .bas -  Test SDMT, DTM$
   - [ ] .bas -  Test LOCATE, POS()
@@ -51,6 +51,12 @@ This file is for recording upcoming changes and features that are being added, a
 - [ ] Implement CH376_CMD_SET_FILE_SIZE 
    - Currently only used to set file size to 1 before writing to it.
      - This can be implementing by closing the file and re-opening with mode 'w' so file is overwritten.
+
+- [ ] Fix CH376_CMD_BYTE_LOCATE 
+   - If the number of bytes to skip is greater than the file size it should move to the end of the file.
+     - Working correctly after CH376_CMD_FILE_OPEN
+     - After CH376_CMD_FILE_CREATE it should work the same as after CH376_CMD_FILE_OPEN
+       - Instead is padding the file. It should *not* do that.
 
 - [ ] Add a second virtual AY-3-8910 (8913), responding in IO ports $F8 & $F9
   - Will address once REAL hardware exists
