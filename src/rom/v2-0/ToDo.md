@@ -31,14 +31,13 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] swap.bas -  Test SWAP
   - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR()
   - [x] circle.bas -  Test CIRCLE
-  - [ ] draw.bas -  Test DRAW
+  - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=}
   - [ ] .bas -  Test LOCATE, POS()
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
   - [ ] .bas -  Test CLEAR and FRE()
   - [ ] .bas -  Test SDMT, DTM$
-  - [ ] .bas -  Test LOCATE, POS()
   - [ ] .bas -  Test SLEEP, VER
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test
