@@ -5,16 +5,20 @@
 SGBASE  equ     $A0     ; Base Semigraphics Character
 
 ;Set Up Extended BASIC System Variables
-XSTART: ld      hl,$0704         ; Default = White, Current = Blue 
-        ld      (FORCLR),hl      ; Set Foreground Colors
-        ld      a,$C3            ; JP Instruction
-        ld      (MAXUPD),a       ;{GWB} Major Axis Move Update
-        ld      (MINUPD),a       ;{GWB} Minor Axis Move Update
-        ld      (OPCJMP),a       ; Draw Operator Routine
-        xor     a                ; Store 0 in
+XSTART: ld      hl,$0704          ; Default = White, Current = Blue 
+        ld      (FORCLR),hl       ; Set Foreground Colors
+        ld      a,$C3             ; JP Instruction
+        ld      (MAXUPD),a        ;{GWB} Major Axis Move Update
+        ld      (MINUPD),a        ;{GWB} Minor Axis Move Update
+        ld      (OPCJMP),a        ; Draw Operator Routine
+GFXINI: xor     a                 ; Store 0 in
         ld      (DRWSCL),a       
         ld      (DRWFLG),a       
-        ld      (DRWANG),a       
+        ld      (DRWANG),a
+        ld      (GRPACX),a        ; Set Last X Coordinate to 0
+        ld      (GRPACX+1),a      
+        ld      (GRPACY),a        ; Set Last Y Coordinate to 0
+        ld      (GRPACY+1),a      
         ret
 
 ;----------------------------------------------------------------------------
@@ -1109,7 +1113,7 @@ GTARRY: SYNCHK  ','               ; EAT COMMA
 ;;; #### Commands:
 ;;; Each of the movement commands begins movement from the current graphics position. 
 ;;;  - This is usually the coordinate of the last graphics point plotted with another GML command, LINE, or PSET. 
-;;;  - The current position defaults to upper right hand corner of the screen (0,0) when a program is run. 
+;;;  - The current position defaults to upper right hand corner of the screen (0,0) when at startup and after CLS or RUN.
 ;;;  - Movement commands move for a distance of scale factor *n, where the default for n is 1; thus, they move one point if n is omitted and the default scale factor is used.
 ;;; | Command  | Action
 ;;; |    Un    | Move up
@@ -1131,15 +1135,12 @@ GTARRY: SYNCHK  ','               ; EAT COMMA
 ;;; ` An  ` Set angle n. 
 ;;; - n may range from 0 to 3, where 0 is 0°, 1 is 90°, 2 is 180°, and 3 is 270°. 
 ;;; - Figures rotated 90° or 270° are scaled so that they will appear the same size as with 0° or 180° on a monitor screen with the standard aspect ratio of 4:3.
-;;; ` TAn `  Turn angle n. 
-;;; - n can be any value from negative 360 to positive 360. 
-;;; - If the value specified by n is positive, it turns the angle counter-clockwise. 
-;;; - If the value specified by n is negative, it turns clockwise.
+;;; - Angle is set to 0 at startup and by CLS and RUN.
 ;;; ` Cn  ` Set color n. 
 ;;; ` Sn  ` Set scale factor n. 
 ;;; - n may range from 1 to 255. n is divided by 4 to derive the scale factor. 
 ;;; - The scale factor is multiplied by the distances given with U, D, L, R, E, F, G, H, or relative M commands to get the actual distance traveled. 
-;;; - The default for S is 4.
+;;; - Scle factor is set to 4 at startup and by CLS and RUN.
 ;;; `x*string* ` Execute substring. 
 ;;; - This command executes a second substring from a string, much like GOSUB. One string executes another, which executes a third, and so on.
 ;;; - *string* is a variable assigned to a string of movement commands.
@@ -1154,7 +1155,7 @@ GTARRY: SYNCHK  ','               ; EAT COMMA
 ;;; > Moves to the center of the screen without drawing, then draws a box 11 pixels wide by 11 pixels high.
 ;;; ```
 ;;;   30 PSET (10, 20)
-;;;   40 DRAW "E20; F20; L39"
+;;;   40 DRAW "E20 F20 L39"
 ;;; ```
 ;;; > Draws a 42 pixel wide triangle with its top vertex at x-coordinate 10 and y-coordinate 20.
 ST_DRAW:    

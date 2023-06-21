@@ -605,6 +605,9 @@ _GPOS
 
 RUNPROG:
     call    CLNERR             ; Clear Error Trapping Variables
+    ex      af,af'
+    call    GFXINI             ; Reset DRAW parameters
+    ex      af,af'
     jp      z,RUNC             ; if no argument then RUN from 1st line
     push    hl
     call    FRMEVL             ; get argument type

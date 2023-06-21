@@ -980,9 +980,10 @@ ST_DOKE:
 ;;; Clear Screen / Clear Screen with specified foreground and background colors
 ;;; ### FORMAT:
 ;;;  - CLS [ *foreground, background* ]
-;;;    - Action: Clears the screen. The optional *foreground* and *background* parameters are numbers between 0 and 15 that specifies the new foreground and background colors.
-;;;      - If either parameter is specified, both must be specified.
-;;;      - If *foreground* and *background* , the screen is cleared with the default BLACK characters on CYAN background.
+;;;    - Action: Clears the screen, moves the cursor to the top left position of the screen, and resets the DRAW parameters to their defaults.
+;;;      - The optional *foreground* and *background* parameters are numbers between 0 and 15 that specifies the new foreground and background colors.
+;;;        - If either parameter is specified, both must be specified.
+;;;        - If *foreground* and *background* , the screen is cleared with the default BLACK characters on CYAN background.
 ;;; >
 ;;;     0 BLACK      4 BLUE       8  GREY        12 LTYELLOW
 ;;;     1 RED        5 MAGENTA    9  DKCYAN      13 DKGREEN 
@@ -1025,12 +1026,14 @@ do_cls:
     call    SETATR                ; save foreground color as current attribute
     pop     af                    ; restore color combo
     call    clearscreen
-    ld      de,$3000+40            ; Point Address for (0,0) 
+    ld      de,$3000+40           ; Point Address for (0,0) 
     ld      (CURLOC),de           
     inc     de                    ; DE cursor at 1,0
     ld      (CURRAM),de       
     xor     a
     ld      (TTYPOS),a            ; column 0
+    ld      (DRWSCL),a            ; reset DRAW Angle
+    ld      (DRWANG),a            ; reset DRAW Scale
     ld      a,' '
     ld      (CURCHR),a            ; SPACE under cursor
     ret
@@ -1050,10 +1053,8 @@ clearscreen:
     djnz    .char
     dec     c
     jr      nz,.line
-    ld      (GRPACX),bc           ; Set Last X Coordinate to 0
-    ld      (GRPACY),bc           ; Set Last Y Coordinate to 0
     pop     hl
-    ret
+    jp      GFXINI
 
 get_color:
     call    GETBYT        ; get foreground color in e
