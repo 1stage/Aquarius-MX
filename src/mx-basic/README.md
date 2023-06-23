@@ -2,8 +2,9 @@
 This folder contains BASIC source code files and tools for programming in MX BASIC with the Aquarius MX (or AquaLite). These files are featured in the YouTube videos on how to use MX BASIC.
 
 ## Folder Contents
- - **tutorial** - This folder contains the files used in the first video, demonstrating LOAD, SAVE, and RUN commands, as well as DIR (DIRectory) and CD (Change Directory).
  - **clock** - This folder has a sample analog clock program that utilizes the new RTC (Real Time Clock) option on the Aquarius MX.
+ - **aqunit** - This folder contains individual BASIC command unit tests for all MX BASIC 2.0 commands.
+ - **tutorial** - This folder contains the files used in the first video, demonstrating LOAD, SAVE, and RUN commands, as well as DIR (DIRectory) and CD (Change Directory).
  - **bas2txt.py** - This is a Python3 script that converts Aquarius BASIC files to text files, for easier review and editing.
  - **txt2bas.py** - This is a Python3 script that converts text files formatted as Aquarius BASIC (with line numbers) into actual, runnable .BAS files.
 
