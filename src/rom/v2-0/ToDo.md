@@ -32,7 +32,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR()
   - [x] circle.bas -  Test CIRCLE
   - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=}
-  - [ ] .bas -  Test LOCATE, POS()
+  - [x] .bas -  Test LOCATE, POS()
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
