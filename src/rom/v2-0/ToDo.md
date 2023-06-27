@@ -16,23 +16,23 @@ This file is for recording upcoming changes and features that are being added, a
 ### Testing
 - [ ] AqUnit - Unit Testing Framework
   - implicitly tests EVAL() and, ON ERROR and RESUME
-  - [x] asc.bas - Test ASC(), ASC$(), DEC()
-  - [x] err.bas - Test ERROR, ERR(), ERR$()
-  - [x] hex.bas - Test HEX$()
-  - [X] peek.bas - Test PEEK(), PEEK$, $ and &
-  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY 
-  - [x] xor.bas - Test AND(), OR(), XOR() 
-  - [x] mid.bas -  Test STRING$, INSTR, MID$
-  - [x] get.bas -  Test GET, PUT, CLS
-  - [x] menu.bas -  Test KEY, MENU
-  - [ ] save.bas -  Test SAVE, LOAD, DEL, FILE$, FILEEND 
+  - [x] asc.bas - Test ASC(), ASC$(), DEC() -- CFK
+  - [x] err.bas - Test ERROR, ERR(), ERR$() -- CFK
+  - [x] hex.bas - Test HEX$() -- CFK
+  - [X] peek.bas - Test PEEK(), PEEK$, $ and & -- CFK
+  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY -- CFK
+  - [x] xor.bas - Test AND(), OR(), XOR() -- CFK
+  - [x] mid.bas -  Test STRING$, INSTR, MID$ -- CFK
+  - [x] get.bas -  Test GET, PUT, CLS -- CFK
+  - [x] menu.bas -  Test KEY, MENU -- CFK
+  - [ ] save.bas -  Test SAVE, LOAD, DEL, FILE$, FILEEND -- CFK
     - *waiting for update to AquaLite*
-  - [x] def.bas -  Test DEF FN 
-  - [x] swap.bas -  Test SWAP
-  - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR()
-  - [x] circle.bas -  Test CIRCLE
-  - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=}
-  - [x] locate.bas -  Test LOCATE, POS()
+  - [x] def.bas -  Test DEF FN -- CFK
+  - [x] swap.bas -  Test SWAP -- CFK
+  - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR() -- CFK
+  - [x] circle.bas -  Test CIRCLE -- CFK
+  - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} -- CFK
+  - [x] locate.bas -  Test LOCATE, POS() -- SPH
   - [ ] .bas -  Test CAT and DIR
   - [ ] .bas -  Test CALL and DEBUG
   - [ ] .bas -  Test MKDIR, CD, CD$
