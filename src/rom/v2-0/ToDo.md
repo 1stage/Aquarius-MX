@@ -33,12 +33,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] circle.bas -  Test CIRCLE -- CFK
   - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} --CFK
   - [x] locate.bas -  Test LOCATE and POS() --SPH
-  - [ ] sdtm.bas -  Test DTM$ and SDTM --SPH
-  - [ ] dir.bas -  Test DIR and CAT --SPH
-  - [ ] cd.bas -  Test CD, CD$, MKDIR
+  - [ ] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
+  - [ ] dir.bas -  Test DIR, CAT, CD, CD$, MKDIR --SPH
   - [ ] fre.bas -  Test FRE() and CLEAR
   - [ ] .bas -  Test CALL and DEBUG
-  - [ ] .bas -  Test SLEEP, VER
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test
   - EDIT
