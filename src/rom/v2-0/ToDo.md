@@ -16,28 +16,28 @@ This file is for recording upcoming changes and features that are being added, a
 ### Testing
 - [ ] AqUnit - Unit Testing Framework
   - implicitly tests EVAL() and, ON ERROR and RESUME
-  - [x] asc.bas - Test ASC(), ASC$(), DEC() -- CFK
-  - [x] err.bas - Test ERROR, ERR(), ERR$() -- CFK
+  - [x] asc.bas - Test ASC(), ASC$(), DEC() --CFK
+  - [x] err.bas - Test ERROR, ERR(), ERR$() --CFK
   - [x] hex.bas - Test HEX$() -- CFK
-  - [X] peek.bas - Test PEEK(), PEEK$, $ and & -- CFK
-  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY -- CFK
-  - [x] xor.bas - Test AND(), OR(), XOR() -- CFK
-  - [x] mid.bas -  Test STRING$, INSTR, MID$ -- CFK
-  - [x] get.bas -  Test GET, PUT, CLS -- CFK
-  - [x] menu.bas -  Test KEY, MENU -- CFK
-  - [ ] save.bas -  Test SAVE, LOAD, DEL, FILE$, FILEEND -- CFK
+  - [X] peek.bas - Test PEEK(), PEEK$, $ and & --CFK
+  - [x] poke.bas - Test POKE, DOKE, DEEK, COPY --CFK
+  - [x] xor.bas - Test AND(), OR(), XOR() --CFK
+  - [x] mid.bas -  Test STRING$, INSTR, MID$ --CFK
+  - [x] get.bas -  Test GET, PUT, CLS --CFK
+  - [x] menu.bas -  Test KEY, MENU --CFK
+  - [ ] save.bas -  Test SAVE, LOAD, DEL, FILE$, FILEEND --CFK
     - *waiting for update to AquaLite*
-  - [x] def.bas -  Test DEF FN -- CFK
-  - [x] swap.bas -  Test SWAP -- CFK
-  - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR() -- CFK
+  - [x] def.bas -  Test DEF FN --CFK
+  - [x] swap.bas -  Test SWAP --CFK
+  - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR() --CFK
   - [x] circle.bas -  Test CIRCLE -- CFK
-  - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} -- CFK
-  - [x] locate.bas -  Test LOCATE, POS() -- SPH
-  - [ ] .bas -  Test CAT and DIR
+  - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} --CFK
+  - [x] locate.bas -  Test LOCATE and POS() --SPH
+  - [ ] sdtm.bas -  Test DTM$ and SDTM --SPH
+  - [ ] dir.bas -  Test DIR and CAT --SPH
+  - [ ] cd.bas -  Test CD, CD$, MKDIR
+  - [ ] fre.bas -  Test FRE() and CLEAR
   - [ ] .bas -  Test CALL and DEBUG
-  - [ ] .bas -  Test MKDIR, CD, CD$
-  - [ ] .bas -  Test CLEAR and FRE()
-  - [ ] .bas -  Test SDMT, DTM$
   - [ ] .bas -  Test SLEEP, VER
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test
