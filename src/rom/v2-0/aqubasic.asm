@@ -228,7 +228,8 @@ ReTypBuf = sysvars+_retypbuf
     WORD   _opcadr              ; Draw Operator Routine Address
     BYTE   _gymax               ; Maximum X Position: 39
     BYTE   _gxmax               ; Maximum Y Position: 23
-    STRUCT _unused,5            ; possibly unused
+    BYTE   _brdatr              ; PAINT border color
+    WORD   _grpcgp              ; 
     WORD   _errlin              ; LINE NUMBER WHERE LAST ERROR OCCURED.
     BYTE   _errflg              ; USED TO SAVE THE ERROR NUMBER SO EDIT CAN BE
     BYTE   _oneflg              ; ONEFLG=1 IF WERE ARE EXECUTING AN ERROR TRAP ROUTINE, OTHERWISE 0
@@ -236,8 +237,8 @@ ReTypBuf = sysvars+_retypbuf
     LONG   _swptmp              ; Holds value of the first SWAP variable
  ENDSTRUCT _extvars
 
-;ExtVars = SysVars-_extvars.size
-ExtVars = $BE00
+ExtVars = SysVars-_extvars.size
+
 FORCLR   = extvars+_forclr
 ATRBYT   = extvars+_atrbyt
 GXPOS    = extvars+_gxpos 
@@ -275,7 +276,9 @@ ARYPNT   = extvars+_arypnt
 OPCJMP   = extvars+_opcjmp
 OPCADR   = extvars+_opcadr
 GYMAX    = extvars+_gymax 
-GXMAX    = extvars+_gxmax 
+GXMAX    = extvars+_gxmax
+BRDATR   = extvars+_brdatr
+GRPCGP   = extvars+_grpcgp
 ERRLIN   = extvars+_errlin          ;These must be in in consecutive order: ERRLIN,ERRFLG,ONEFLG,ONELIN
 ERRFLG   = extvars+_errflg
 ONEFLG   = extvars+_oneflg
@@ -2019,7 +2022,17 @@ FLOAT_DE:
 ;---------------------------------------------------------------------
 ;                 Enhanced BASIC Commands and Functions 
 ;---------------------------------------------------------------------
+; FN_AND
+; FN_ASC
 ; ST_COPY
+; FN_FRE
+; RN_OR
+; FN_PEEK
+; FN_PEEKS
+; ST_POKE
+; FN_POS
+; RUNPROG
+; FN_XOR
     include "enhanced.asm"
 
 
@@ -2028,17 +2041,34 @@ FLOAT_DE:
 ;---------------------------------------------------------------------
 ; DEFX
 ; FNDOEX
+; DEFUSR
 ; ATN1
+; ST_MENU
 ; ONGOTX
 ; ERRORX
 ; FN_ERR
+; FN_ERRS
+; ST_ERR
 ; CLEARX
 ; SCRTCX
+; ST_SWAP
+; ST_ERASE
+; FN_STRING
+; FN_INSTR
+; ST_MID
+; FN_EVAL
+; ST_OUT
+; FN_IN
+; ST_RESUME
+; FN_SWAP
+; ST_WAIT
     include "extbasic.asm"
 
 ;---------------------------------------------------------------------
 ;                 Extended BASIC Graphics Commands 
 ;---------------------------------------------------------------------
+; XSTART
+; GFXINI
 ; ST_PRESET
 ; ST_PSET
 ; ST_LINE
@@ -2046,6 +2076,8 @@ FLOAT_DE:
 ; ST_DRAW
 ; ST_GET
 ; ST_PUT
+; ST_COL
+; FN_COL
     include "extgraph.asm"
 
 E0_END:   
