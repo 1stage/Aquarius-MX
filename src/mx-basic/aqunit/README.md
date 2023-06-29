@@ -22,13 +22,14 @@ Files with extension .bas are tokenized BASIC programs in CAQ format.
 | aqunit.bas.txt | Aquarius Unit Test Framework            |
 | aqex.bas.txt   | Example test program using framework    |
 | asc.bas.txt    | Test ASC(), ASC$(), DEC()               |
-| circle.bas.txt | Test CIRCLE                               |
+| circle.bas.txt | Test CIRCLE                             |
 | def.bas.txt    | Test DEF FN(), FN()                     |
 | draw.bas.txt   | Test DRAW                               |
 | err.bas.txt    | Test ERROR, ERR(), ERR$()               |
 | get.bas.txt    | Test GET, PUT, CLS                      |
 | hex.bas.txt    | Test HEX$                               |
 | line.bas.txt   | Test LINE, PSET, PRESET, COLOR, COLOR() |
+| locate.bas.txt | Test LOCATE() and POS()                 |
 | menu.bas.txt   | Test MENU, KEY                          |
 | mid.bas.txt    | Test MID$(), STRING\$(),INSTR()         |
 | peek.bas.txt   | Test PEEK(), $ and &                    |
