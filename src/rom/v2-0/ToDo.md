@@ -18,7 +18,7 @@ This file is for recording upcoming changes and features that are being added, a
   - implicitly tests EVAL() and, ON ERROR and RESUME
   - [x] asc.bas - Test ASC(), ASC$(), DEC() --CFK
   - [x] err.bas - Test ERROR, ERR(), ERR$() --CFK
-  - [x] hex.bas - Test HEX$() -- CFK
+  - [x] hex.bas - Test HEX$() --CFK
   - [X] peek.bas - Test PEEK(), PEEK$, $ and & --CFK
   - [x] poke.bas - Test POKE, DOKE, DEEK, COPY --CFK
   - [x] xor.bas - Test AND(), OR(), XOR() --CFK
