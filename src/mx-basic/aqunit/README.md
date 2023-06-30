@@ -35,6 +35,7 @@ Files with extension .bas are tokenized BASIC programs in CAQ format.
 | peek.bas.txt   | Test PEEK(), $ and &                    |
 | poke.bas.txt   | Test POKE, R, DREEK, COPY               |
 | save.bas.txt   | Test SAVE, LOAD, DEL, FILE$, FILEEND    |
+| sdtm.bas.txt   | Test DTM$, SDTM, SLEEP, VER             |
 | swap.bas.txt   | Test SWAP                               |
 | xor.bas.txt    | Test AND(), OR(), XOR()                 |
 
