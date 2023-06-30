@@ -32,7 +32,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] line.bas -  Test LINE, PSET, PRESET, COLOR, COLOR() --CFK
   - [x] circle.bas -  Test CIRCLE -- CFK
   - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} --CFK
-  - [x] locate.bas -  Test LOCATE and POS() --SPH
+  - [x] locate.bas -  Test LOCATE and POS() --SPH + CFK
   - [ ] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
   - [ ] dir.bas -  Test DIR, CAT, CD, CD$, MKDIR --SPH
   - [ ] fre.bas -  Test FRE() and CLEAR
