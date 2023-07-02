@@ -81,15 +81,13 @@
 526 LOAD B$,D
 528 QA$="S$=PEEK$("+A$+","+L$+")":GOSUB 920
 
-529 GOTO 800:REM Until CH376_CMD_SET_FILE_SIZE is fixed in AquaLite
-
 530 O=L+1:O$=STR$(O):T=O+O:T$=STR$(T):E=L-1:E$=STR$(E)
 534 QA$="SAVE `"+B$+"`,"+A$+"+"+O$+","+L$+","+O$
 536 GOSUB 890:REM SAVE B$,A+O,L,O
 540 QA$="LOAD `"+B$+"`,&P(0)":GOSUB 890
 542 LOAD B$,&P(0)
 544 QA$="FILEEND=&P(0)+"+E$:GOSUB 920
-546 rem QA$="PEEK$(&P(0),"+T$+")=PEEK$("+A$+","+T$+")"
+546 QA$="PEEK$(&P(0),"+T$+")=PEEK$("+A$+","+T$+")"
 548 GOSUB 920
 
 800 REM
