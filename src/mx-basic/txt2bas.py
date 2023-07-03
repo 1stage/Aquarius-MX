@@ -231,7 +231,11 @@ for idx, line in enumerate(args.input.readlines()):
             if found:
                 continue
 
-        buf.append(line[0].encode()[0])
+            buf.append(upper[0].encode()[0])
+
+        else:
+            buf.append(line[0].encode()[0])
+        
         line = line[1:]
 
     buf.append(0)
