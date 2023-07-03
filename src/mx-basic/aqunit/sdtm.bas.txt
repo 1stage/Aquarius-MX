@@ -38,7 +38,7 @@
 430 IF (LEFT$(DTM$(0),10) = LEFT$(TT$,10)) GOTO 445:REM Set Time works
 435 PRINT "RTC cannot be set. Skipping set tests."
 440 GOTO 500
-445 QA$="LEFT$(DTM$(0),10) = LEFT$(TT$,10)";GOSUB 920
+445 QA$="LEFT$(DTM$(0),10) = LEFT$(TT$,10)":GOSUB 920
 450 PRINT "Resetting datetime."
 455 SDTM (LEFT$(OT$,12)
 
