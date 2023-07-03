@@ -169,8 +169,37 @@ ATNCON: db    9                   ;DEGREE
 ;;; Display and execute menu.
 ;;; ### FORMAT:
 ;;;   - MENU ( *xpos*,*ypos*) [, *spacing*;] *string* [,*string*,...] GOTO *line*, [,*line*...]
-;;;     - Action: This mathematical function returns the arctangent of the number. The result is the angle (in radians) whose tangent is the number given. The result is always in the range -pi/2 to +pi/2.
-;;; ### EXAMPLES:
+;;;     - xpos* and *ypos* are the coordinates of the top left-most corner of the list of options display.
+;;;       - The list will actually start at (*xpos*+1, *ypos*), and the cursor will appear at (*xpos*,*ypos*).
+;;;       - The coordinates must fall in the target range (0,0) to (39,23), otherwise an FC error results..
+;;;     - "spacing" determines the number of blank lines between each menu item.
+;;;     - Each *string* identifies the menu items that will be printed on the screen. 
+;;;       - Variables may be used here, but they must be defined before the MENU statement is executed.
+;;;       - Literal strings must be enclosed in quotation marks.
+;;;     - The subsequent GOTO statement indicates which part of the program to execute once a menu item has been selected.
+;;;       - Each *string* menu item corresponds to the *line* number in the same position.
+;;;       - If there is no corresponding line number, for a selected menu item, a UL error results.
+;;; ### EXAMPLE:
+;;; ```
+;;; 10 CLS Clear the screen.
+;;; 20 MENU(10,5),2,"CIRCLE","TRIANGLE","BOX"GOTO 100,200,300 
+;;; 100 CLS 
+;;; 110 CIRCLE (35,30),25 
+;;; 120 INPUT X 
+;;; 130 CLS
+;;; 140 GOTO 20
+;;; 200 CLS
+;;; 210 LINE(10,10)-(40,40)
+;;; 220 LINE-(50,25)
+;;; 240 INPUT X
+;;; 250 CLS 
+;;; 260 GOTO 20 
+;;; 300 CLS 
+;;; 310 LINE(30,30)-(70,70),,BF 
+;;; 320 INPUT X 
+;;; 330 CLS 
+;;; 340 GOTO 20 
+;;; ```
 ;----------------------------------------------------------------------------
 ; This Statement appears to be unique to the Aquarius
 ST_MENU:
