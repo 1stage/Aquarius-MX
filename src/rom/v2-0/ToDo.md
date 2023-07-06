@@ -7,6 +7,7 @@ This file is for recording upcoming changes and features that are being added, a
 ## IN PROCESS:
 
 ### MX BASIC
+- [ ] Fix Left Hand MID$() modifying inline strings
 - [ ] Error on illegal characters in file names
 
 ### Testing
@@ -29,7 +30,8 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] circle.bas -  Test CIRCLE -- CFK
   - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} --CFK
   - [x] locate.bas -  Test LOCATE and POS() --SPH + CFK
-  - [x] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
+  - [ ] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
+    - * CFK to modify SLEEP test *
   - [x] dir.bas -  Test DIR, CAT, CD, CD$, MKDIR --SPH + CFK
   - [ ] fre.bas -  Test FRE() and CLEAR
   - [ ] .bas -  Test CALL and DEBUG

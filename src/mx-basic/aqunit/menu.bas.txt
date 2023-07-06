@@ -9,7 +9,7 @@
 194 REM Thus the extra space character at the start of each KEY string is ignored
 196 REM All keys other than SPACE and RETURN should be ignored
 
-200 CLS:QT$="MENU":GOSUB 910
+200 CLS:QT$="ME NU":GOSUB 910
 202 O1$="Option 1":O2$="Option 2"
 204 O3$="Option 3":O4$="Option 4"
 210 O=1:L=10:KEY " 1"+CHR$(13):GOSUB 600
@@ -17,8 +17,8 @@
 230 O=3:L=12:KEY " 3  "+CHR$(13):GOSUB 600
 240 O=4:L=13:KEY " 4   "+CHR$(13):GOSUB 600
 250 O=1:L=14:KEY " 5    "+CHR$(13):GOSUB 600
-290 IF INKEY$="" GOTO 290:
-295 IF INKEY$<>"" GOTO 295
+290 IF INKEY$<>"" GOTO 290
+295 GOSUB 880
 300 CLS:QT$="MENU":GOSUB 910
 302 O1$="This here is the first selection"
 304 O2$="The second selection is this one"
@@ -47,9 +47,16 @@
 
 
 800 REM
-810 PRINT "Passed:";QR(1)
-820 PRINT "Failed:";QR(0)
+810 QU$="Passed:"+STR$(QR(1))
+815 GOSUB 980
+820 QU$="Failed:"+STR$(QR(0))
+825 GOSUB 980
 870 END
+880 IF QU THEN RETURN
+882 PRINT "...Press a key..."
+884 QL=0:QK=KEY(0)
+886 IF QK=3 THEN STOP
+888 RETURN
 890 GOSUB 970:QU$=QA$:GOTO 980
 900 QF$=FILE$:QF=LEN(FILE$):REM Init
 902 IF QU>1 THEN DIM Q(999):QP=0
@@ -83,7 +90,7 @@
 976 IF QC=96 THEN POKE &&QA$+QI,34
 978 NEXT:RETURN
 980 IF QU GOTO 988:REM Output Line
-982 IF QL>20 THEN QK=KEY(0):QL=0
+982 IF QL>20 THEN GOSUB 880
 984 PRINT QU$:QL=QL+1:RETURN
 988 IF QU=1 THEN LPRINT QU$:RETURN
 990 QN=LEN(QU$)+2
