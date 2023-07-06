@@ -6,10 +6,6 @@ This file is for recording upcoming changes and features that are being added, a
 ---
 ## IN PROCESS:
 
-### txt2bas.py
-
-- [ ] Capitalize variable names (letters not in strings or after REM or DATA) same as the BASIC tokenizer.
-
 ### MX BASIC
 - [ ] Error on illegal characters in file names
 
@@ -188,6 +184,7 @@ This file is for recording upcoming changes and features that are being added, a
 ### txt2bas.py
 
 - [x] Do *not* tokenize keywords after DATA (same as REM).
+- [x] Capitalize variable names (letters not in strings or after REM or DATA) same as the BASIC tokenizer.
 
 ---
 ## OUT OF SCOPE FOR 2.0
