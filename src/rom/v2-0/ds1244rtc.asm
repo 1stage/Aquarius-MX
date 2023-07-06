@@ -33,7 +33,7 @@ rtc_init:
 ;Read Real Time Clock
 ;Args: BC = Address of RTC Shadow Registers
 ;      HL = Address of Normalized DateTime 
-;Returns: A=0$FF, NZ if Successful, A=0, Z if not
+;Returns: A=$FF, NZ if Successful, A=0, Z if not
 ;         BC, DE, HL unchanged
 rtc_read:
     ld      a,(bc)            ;Check RTC Found flag

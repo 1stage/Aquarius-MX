@@ -114,6 +114,7 @@ ST_CD:
     pop    hl
 _dos_opendir:
     push   hl
+_dos_opendir_pop_hl_ret:
     call   usb__open_path        ; try to open directory
     jp     z,_pop_hl_ret         ; if opened OK then done
     cp     CH376_ERR_MISS_FILE   ; directory missing?
@@ -173,9 +174,9 @@ ST_MKDIR:
     call    _dos_opendir          ; open current path
     ld      hl,FileName
     call    usb__create_dir       ; create directory
-    jp      nz,_dos_mkdir_got_Error        
+    jr      nz,_dos_mkdir_got_Error        
     call    set_dos_File_datetime
-    jp      z,_pop_hl_ret         ; if successful return
+    jp      _dos_opendir_pop_hl_ret
  _dos_mkdir_got_Error:
     cp      CH376_ERR_FOUND_NAME
     jr      z,_dos_file_exists
