@@ -198,7 +198,7 @@ _tb_title:
        CALL  WinTextAddr
        POP   DE
        EX    DE,HL              ; HL-> title string, DE-> title bar
-       JP    strcpy             ; copy title string to bar
+       JP    strcopy             ; copy title string to bar
 
 
 ;------------------------------------------------

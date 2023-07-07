@@ -272,6 +272,7 @@ FIN     = $15E5   ; Evaluate Floating Point Number
 
 
 TIMSTR  = $0E2F   ; Return string in HL from function  
+STRCPY  = $0E39   ; Copy String to New Temp String
 STRINI  = $0E50   ; Create string with length in A
 STRAD2  = $0E53   ; Get DSCTMP 
 STRADX  = $0E59   ; Entry into end of STRCPY

@@ -701,7 +701,7 @@ WriteFile:
        CALL  InputFilename
        RET   Z                ; quit if no file entered
        ld    de,FileName
-       call  strcpy           ; copy file name to FileName
+       call  strcopy          ; copy file name to FileName
        ld    (de),a           ; null-terminate
        LD    HL,FileName
        CALL  usb_open_read    ; try to open existing file

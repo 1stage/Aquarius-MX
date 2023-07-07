@@ -800,8 +800,7 @@ ST_SWAP:
         ret   
   
 VMOVE:  ex      de,hl             ;MOVE VALUE FROM (DE) TO (HL). ALTERS B,C,D,E,H,L  
-            
-MOVVFM: ld        bc,4            ;MOVE VALUE FROM (HL) TO (DE)
+MOVVFM: ld      bc,4              ;MOVE VALUE FROM (HL) TO (DE)
         ldir
         ret
 
@@ -1062,23 +1061,23 @@ ST_MID: SYNCHK  '('               ; MUST HAVE (                                 
         call    PTRGET            ; GET A STRING VAR                               ------ ------  Dsc1  TxtPtr 
         call    CHKSTR            ; MAKE SURE IT WAS A STRING                         
         push    hl                ; SAVE TEXT POINTER                                                          TxtPtr
-        push    de                ; SAVE DESC. POINTER                                                          Dsc1,TxtPtr
+        push    de                ; SAVE DESC. POINTER                                                         Dsc1,TxtPtr
         ex      de,hl             ; PUT DESC. POINTER IN [H,L]                                   TxtPtr  Dsc1
         inc     hl                ; MOVE TO ADDRESS FIELD                                                 ++
-        inc     hl                ; MOVE TO ADDRESS FIELD                                                 ++
+        inc     hl                ;                                                                       ++
         ld      e,(hl)            ; GET ADDRESS OF LHS IN [D,E]                                           
         inc     hl                ; BUMP DESC. POINTER                                                    ++
         ld      d,(hl)            ; PICK UP HIGH BYTE OF ADDRESS                                 Addr1
         ld      hl,(TOPMEM)       ; SEE IF LHS STRING IS IN STRING SPACE                               (STREND)
-        dec     hl
-        rst     COMPAR            ; BY COMPARING IT WITH STKTOP                     
-        jr      nc,NCPMID         ; IF ALREADY IN STRING SPACE DONT COPY.           
+        rst     COMPAR            ; BY COMPARING IT WITH TOPMEM                     
+        jr      c,NCPMID          ; IF ALREADY IN STRING SPACE DONT COPY.           
         pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
-        push    hl                ; SAVE BACK ON STACK                                                          Dsc1,TxtPtr
-        call    STRCPY            ; COPY THE STRING LITERAL INTO STRING SPACE                    DSCTMP  ~~
+        push    hl                ; SAVE BACK ON STACK                                                         Dsc1,TxtPtr
+        call    STRCPY            ; COPY THE STRING LITERAL INTO STRING SPACE                    DSCTMP   ~~
         pop     hl                ; GET BACK DESC. POINTER                                               Dsc1  TxtPtr
-        push    hl                ; BACK ON STACK AGAIN                                                         Dsc1,TxtPtr
-        call    VMOVE             ; MOVE NEW DESC. INTO OLD SLOT.                                  ~~    ~~
+        push    hl                ; BACK ON STACK AGAIN                                                        Dsc1,TxtPtr
+        ld      de,DSCTMP         ; Get New String Descriptor Address                             DscN
+        call    VMOVE             ; MOVE NEW DESC. INTO OLD SLOT.                                  ~~     ~~                                                          
 NCPMID: pop     hl                ; GET DESC. POINTER                                                    Dsc1  TxtPtr
         ex      (sp),hl           ; GET TEXT POINTER TO [H,L] DESC. TO STACK                            TxtPtr  Dsc1
         SYNCHK  ','               ; MUST HAVE COMMA

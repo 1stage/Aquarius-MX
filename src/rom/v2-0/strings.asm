@@ -22,16 +22,16 @@ UpperCase:
 ;      DE-> at end of dest
 ;
 ; NOTE: does NOT null-terminate the destination string!
-;       Do it with LD (DE),A after calling strcpy.
+;       Do it with LD (DE),A after calling strcopy.
 ;
-_strcpy_loop:
+_strcopy_loop:
        LD    (DE),A
        INC   DE
-strcpy:
+strcopy:
        LD    A,(HL)
        INC   HL
        OR    A
-       JR    NZ,_strcpy_loop
+       JR    NZ,_strcopy_loop
        RET
 
 ;------------------------------------------------
