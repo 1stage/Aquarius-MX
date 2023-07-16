@@ -7,7 +7,6 @@ This file is for recording upcoming changes and features that are being added, a
 ## IN PROCESS:
 
 ### MX BASIC
-- [ ] Fix Left Hand MID$() modifying inline strings
 - [ ] Error on illegal characters in file names
 
 ### Testing
@@ -30,11 +29,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] circle.bas -  Test CIRCLE -- CFK
   - [x] draw.bas -  Test DRAW {Un;Dn;Ln;Rn;En;Fn;Gn;Hn;Mx,y;B;N;A;S;X;=} --CFK
   - [x] locate.bas -  Test LOCATE and POS() --SPH + CFK
-  - [ ] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
-    - * CFK to modify SLEEP test *
+  - [x] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
   - [x] dir.bas -  Test DIR, CAT, CD, CD$, MKDIR --SPH + CFK
+  - [x] call.bas -  Test CALL, USR(), DEBUG
   - [ ] fre.bas -  Test FRE() and CLEAR
-  - [ ] .bas -  Test CALL and DEBUG
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test
   - EDIT
@@ -166,6 +164,7 @@ This file is for recording upcoming changes and features that are being added, a
   - Availble using ERR$(1)
 
 - [x] MID$(< string expl > ,n [,m] ) = < string exp2 >
+  - [x] Fix Left Hand MID$() modifying inline strings
 
 - [x] PRESET doesn't seem to erase pixels after they've been PSET
 

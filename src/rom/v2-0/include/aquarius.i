@@ -461,6 +461,7 @@ ANDTK       = $AD   ; AND Token
 ORTK        = $AE   ; OR Token
 EQUATK      = $B0   ; = Token
 ONEFUN      = $B2   ; First Function Token
+USRTK       = $B5   ; USR Token
 FRETK       = $B6   ; FRE Token
 PEEKTK      = $C1   ; PEEK Token
 LENTK       = $C2   ; LEN Token

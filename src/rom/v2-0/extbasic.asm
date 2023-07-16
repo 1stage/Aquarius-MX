@@ -30,7 +30,9 @@
 ;;; ` 20 G=G+FN A9(10) `
 ;;; > Increments the value of G the rounded value of a random number between 1 and 10.
 ;----------------------------------------------------------------------------
-DEFX:   call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
+DEFX:   cp      USRTK           ; If DEF USR
+        jp      DEFUSR          ;   Go do it
+        call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         call    ERRDIR          ; DEF IS "ILLEGAL DIRECT"
         ld      bc,DATA         ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
         push    bc              ; SKIPPING THE REST OF THE FORMULA
@@ -111,6 +113,26 @@ GETFNM: rst     SYNCHR
         ld      c,a               ; GET FIRST CHARACTER INTO [C]
         call    PTRGT2          
         jp      CHKNUM          
+
+;----------------------------------------------------------------------------
+;;; ---
+;;; ## DEF USR
+;;; Set USR() Function Address
+;;; ### FORMAT:
+;;;   - DEF USR = *address*
+;;;     - Action: Sets the address to call when the USR() function is executed.
+;;; ### EXAMPLES:
+;;; ` DEF USR=1382 `
+;;; > Sets USR() to execute a RET, returning the whatever value was passed into it.
+;;; ` DEF USR=$150B `
+;;; > Sets USR() to execute NEG, returning negative the passed in value.
+;----------------------------------------------------------------------------
+DEFUSR: rst     CHRGET            ; Skip USR Token
+        rst     SYNCHR              ; Require = 
+        db      EQUATK
+        call    GETADR            ; Get USR Address
+        ld      (USRADD),DE       ; and Save it
+        ret                      
 
 ;----------------------------------------------------------------------------
 ;;; ---

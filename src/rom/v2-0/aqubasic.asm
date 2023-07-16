@@ -681,7 +681,7 @@ SHOWRAM:
     call    print_integer         ; Print It
     ld      hl,STR_BYTES_FREE     
     jp      prtstr
-    
+
 STR_RAM_SYSTEM:
     db      "K RAM - ",0
 STR_BYTES_FREE:
@@ -930,7 +930,7 @@ debug_defs:
 no_debug:
     push    hl
     ld      hl,no_debug_msg
-    call      prtstr
+    call    prtstr
     pop     hl
 debug_ret:
     ret
