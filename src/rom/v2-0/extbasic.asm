@@ -31,7 +31,7 @@
 ;;; > Increments the value of G the rounded value of a random number between 1 and 10.
 ;----------------------------------------------------------------------------
 DEFX:   cp      USRTK           ; If DEF USR
-        jp      DEFUSR          ;   Go do it
+        jp      z,DEFUSR        ;   Go do it
         call    GETFNM          ; GET A POINTER TO THE FUNCTION NAME
         call    ERRDIR          ; DEF IS "ILLEGAL DIRECT"
         ld      bc,DATA         ; MEMORY, RESTORE THE TXTPTRAND GO TO "DATA" 
