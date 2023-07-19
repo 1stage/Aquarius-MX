@@ -916,9 +916,19 @@ link_lines
 ST_reserved:
     ret
 
-;----------------------------------------------------------------------------
+;--------------------------------------------------------------------
+;;; ---
+;;; ## DEBUG
+;;; Activate machine language debugger
+;;; ### FORMAT:
+;;;  - DEBUG
+;;;    - Action: Pauses current program and activates the debugger (if one is installed).
+;;;      - At startup, no debugger is installed: A message is displayed and control immediately returns to BASIC.
+;;; ### EXAMPLES:
+;;; ` DEBUG `
+;;; > Displays message "Debugger not installed" and returns to BASIC prompt.
+;--------------------------------------------------------------------
 ; Invoke Debugger
-;----------------------------------------------------------------------------
 
 ST_DEBUG:
     jp      GoDebug

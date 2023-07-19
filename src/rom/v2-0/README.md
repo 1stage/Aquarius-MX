@@ -284,22 +284,14 @@ Copy screen to Line Printer / Copy memory
 
 ---
 ## DEBUG
-Enable the built-in Aquarius MX debugger
+Activate machine language debugger
 ### FORMAT:
  - DEBUG
-   - Action: Pauses current program and activates the debugger.
-     - Debugger has a full onscreen menu within the debugger to aid in navigation.
-     - While DEBUG can be called from within a BASIC program, it is geared towards Z80 machine code.
+   - Action: Pauses current program and activates the debugger (if one is installed).
+     - At startup, no debugger is installed: A message is displayed and control immediately returns to BASIC.
 ### EXAMPLES:
 ` DEBUG `
-> Activates the Aquarius MX debugger from immediate mode.
-
-` 10 ON ERROR GOTO 50 `
-
-` 20 NEXT `
-
-` 50 DEBUG `
-> Set error trap line number to 50, cause a Next without For error, go into DEBUG mode.
+> Displays message "Debugger not installed" and returns to BASIC prompt.
 
 ---
 ## DEC

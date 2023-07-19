@@ -32,12 +32,10 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] sdtm.bas -  Test DTM$, SDTM, SLEEP, VER --SPH
   - [x] dir.bas -  Test DIR, CAT, CD, CD$, MKDIR --SPH + CFK
   - [x] call.bas -  Test CALL, USR(), DEBUG
-  - [ ] fre.bas -  Test FRE() and CLEAR
   - Can IN, OUT, and/or WAIT be automated
 - [ ] Manually Test
+  - FRE(), CLEAR
   - EDIT
-### Inline Documentation
-- [ ] Update DEBUG statement
 
 ### AquaLite
 
@@ -148,6 +146,7 @@ This file is for recording upcoming changes and features that are being added, a
   - [x] Debug and Break vectors added to SysVars
   - [x] Debug statement prints "Debugger not installed"
   - [x] Option commented out of splash screen - 
+  - [x] Updated inline documentation
 
 - [x] Screen copy from MSX BASIC - Implemented as GET/PUT does this and has been added
 
