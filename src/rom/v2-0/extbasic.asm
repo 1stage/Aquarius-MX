@@ -424,10 +424,17 @@ ERRORX: ld      hl,(CURLIN)       ; GET CURRENT LINE NUMBER
         jr      nz,NOTRAP         ; IF FLAG ALREADY SET, FORCE ERROR
         dec     (hl)              ; IF ALREADY IN ERROR ROUTINE, FORCE ERROR
         ex      de,hl             ; GET LINE POINTER IN [H,L]
-        jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE
-NOTRAP: xor     a                 ; A MUST BE ZERO FOR CONTRO
+        ld      a,(ERROR)         ; Get First Instruction of Error Routine
+        cp      $F7               ; If it's RST HOOKDO
+        jr      nz,.gone4         ;   (S3 BASIC)
+        ld      sp,(SAVSTK)       ;   Restore the Stack Pointer
+.gone4: jp      GONE4             ; GO DIRECTLY TO NEWSTT CODE
+NOTRAP: xor     a                 ; A MUST BE ZERO FOR CONTROL
         ld      (hl),a            ; RESET 3
         ld      e,c               ; GET BACK ERROR CODE
+        ld      a,(ERROR)         ; Get First Instruction of Error Routine
+        cp      $F7               ; If it's RST HOOKDO (S3 BASIC)
+        jp      z,$03DD           ;   Clear Stack and Force Error
         jp      ERRCRD            ; FORCE THE ERROR TO HAPPEN
 
 ;----------------------------------------------------------------------------

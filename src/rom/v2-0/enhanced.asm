@@ -180,6 +180,24 @@ ST_COPY:
     pop      hl             ; Restore Text Pointer
     ret
 
+; Parse Hexadecimal Numbers and Strings in DATA Statements
+DATA_EXT:
+    rst     CHRGET          ; Skip DATA or Comma
+    dec     hl              ; Back Up Text Pointer
+    cp      '$'             ; If Not Hexadecimal
+    jp      nz,HOOK28+1     ;   Execute standard DATBK code
+    inc     hl              ; Move Up to Dollar Sign
+    call    GETYPR          ; Get Variable Type
+    jp      z,.data_str     ; If Numeric
+    call    EVAL_HEX        ;   Evaluate Hex Constant
+    jp      NUMMOV          ;   Populate Variable and Finish up READ
+.data_str:                  ; Else
+    rst     CHRGET          ;   Skip Dollar Sign, Get Next Character
+    cp      '"'             ;   If Not a Quote
+    jp      nz,TMERR        ;     Type Mismatch Error
+    call    eval_hex_str    ;   Evaluate Hexadecimal String
+    jp      NOWINS          ;   Populate Varibable and Finish up READ
+
 ;----------------------------------------------------------------------------
 ;;; ---
 ;;; ## FRE Function (Enhanced)

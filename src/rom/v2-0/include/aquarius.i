@@ -125,7 +125,7 @@ SUBFLG  = $38CB ; 14439           flag FOR:, PTRGET: 0=variable, 1=array
 USFLG   = $38CC ; 14440           Direct Mode Flag    
 FLGINP  = $38CD ; 14441           FLAGS WHETHER WE ARE DOING "INPUT" OR A READ
 SAVTXT  = $38CE ; 14542 - 14543   temp holder of next statement address
-TENP2   = $38D0 ; 14544 - 14545   Formula Evaluator temporary
+TEMP2   = $38D0 ; 14544 - 14545   Formula Evaluator temporary
 OLDLIN  = $38D2 ; 14546 - 14547   Line number to CONTinue from.
 OLDTXT  = $38D4 ; 14548 - 14549   Old Text Pointer - address of line to CONTinue from.
 VARTAB  = $38D6 ; 14550 - 14551   Start of Variable Table (end of BASIC program)
@@ -197,6 +197,8 @@ OMGOTO  = $0785   ; Execute GOTO part of ON ... GOTO
 
 FINPRT  = $0866   ; Finish up PRINT
 INPDIR  = $0898   ; INPUT Statement, bypassing Hook and Direct Mode Check
+NOWINS  = $090E   ; Copy String into READ Variable and finish up DATABK
+NUMMOV  = $091B   ; Copy Float into READ Variable and finish up DATABK
 
 STROUT  = $0E9D   ; Print null or quote terminated string
 STRPRT  = $0EA0   ; Print String with Descriptor in Floating Point Accumulator
@@ -498,7 +500,7 @@ HOOK25      = $0781
 HOOK26      = $0894
 HOOK27      = $0A60
 HOOK28      = $08F1
-
+HOOK29      = $09A3
 
 ;-------------------------------------------------
 ;          AquBASIC Binary File Header
