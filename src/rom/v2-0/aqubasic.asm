@@ -1872,6 +1872,7 @@ EVAL_EXT:
     cp      '"'             ; If Not a Quote
     jp      nz,EVAL_HEX     ;   Convert HEX Number
     inc     hl              ; Bump Again
+eval_hex_str:
     call    STRLTI          ; Get String Literal
     push    hl              ; Save Text Pointer
     jp      hex_to_asc      ; Convert to ASCII

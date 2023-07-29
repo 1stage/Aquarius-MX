@@ -39,7 +39,7 @@ HOOKTABLE:                    ; ## caller   addr  performing function
     dw      LINKLINES         ;  5 LINKER   0485  Update BASIC Program Line Links
     dw      HOOK6+1           ;  6 PRINT    07BC  Execute PRINT Statement
     dw      HOOK7+1           ;  7 FINPRT   0866  End of PRINT Statement
-    dw      HOOK8+1           ;  8 TRMNOK
+    dw      HOOK8+1           ;  8 TRMNOK   0880  Improperly Formatted INPUT or DATA handler
     dw      EVAL_EXT          ;  9 EVAL     09FD  Evaluate Number or String
     dw      REPLCMD           ; 10 NOTGOS   0536  Converting Keyword to Token
     dw      CLEARX            ; 11 CLEAR    0CCD  Execute CLEAR Statement
@@ -59,7 +59,8 @@ HOOKTABLE:                    ; ## caller   addr  performing function
     dw      ONGOTX            ; 25 ONGOTO   0780  ON statement
     dw      HOOK26+1          ; 26 INPUT    0893  Execute INPUT, bypassing Direct Mode check
     dw      FUNCTION          ; 27 ISFUN    0A5F  Executing a Function
-    dw      HOOK28+1          ; 28 DATBK    08F1
+    dw      DATA_EXT          ; 28 DATBK    08F1  Doing a READ from DATA
+    dw      HOOK29+1          ; 29 NOTSTV   099E  Evaluate Operator (S3 BASIC Only)
 
 ;------------------------------------------------------
 ;             UDF Hook Service Routine

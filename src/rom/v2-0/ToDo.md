@@ -39,6 +39,8 @@ This file is for recording upcoming changes and features that are being added, a
 
 ### AquaLite
 
+- [ ] File and directory names less than 4 characters long cause AquaLite to lock up and/or crash.
+
 - [ ] Implement CH376_CMD_SET_FILE_SIZE 
    - Currently only used to set file size to 1 before writing to it.
      - This can be implementing by closing the file and re-opening with mode 'w' so file is overwritten.
