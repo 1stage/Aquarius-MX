@@ -1856,13 +1856,14 @@ EVAL_EXT:
 ;------------------------------------------------------------------------------
 ;;; ---
 ;;; ## Hexadecimal String Literal
-;;;  -  
-;;;    
-;;; ### EXAMPLES:
+;;;  - A hexadecimal string literal consists of a dollar sign followed by quotation mark, an even number of hexadecimal digits.
+;;;    - Terminated with a quotation mark or end of line.
+;;;    - May be used in any string expression or anywhere a string expression is allowed.
+;;;    - May be be used in DATA statements.
+;;;    - May *not* be used as entries to the INPUT statement.
+;;; ### EXAMPLE:
 ;;; ` PRINT $"414243" `
 ;;; > Prints ` ABC `
-;;; `  `
-;;; > 
 ;------------------------------------------------------------------------------
 
 .eval_hex:
@@ -1879,10 +1880,11 @@ eval_hex_str:
 
 ;------------------------------------------------------------------------------
 ;;; ---
-;;; ## Hexadecimal Constants
-;;;  - A hexadecimal constant is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
-;;;    - Hexadecimal constants may be used in any numeric expression or anywhere a numeric expression is allowed.
-;;;    - They may not be used in DATA statements, as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
+;;; ## Hexadecimal Numeric Literals
+;;;  - A hexadecimal numeric literal is a value between 0 and 65535, inclusive. It consists of a dollar sign followed by 1 to 4 hexadecimal digits.
+;;;    - May be used in any numeric expression or anywhere a numeric expression is allowed.
+;;;    - May be be used in DATA statements.
+;;;    - May *not* be used as entries to the INPUT statement, in string arguments to the VAL() function, or as the target of a GOTO or GOSUB statement.
 ;;; ### EXAMPLES:
 ;;; ` PRINT $FFFF `
 ;;; > Prints 65535
