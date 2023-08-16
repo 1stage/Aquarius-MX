@@ -19,8 +19,9 @@ The Aquarius MX system expander brings USB compatibility to the Aquarius Compute
 - **Expandable** - System expansion port available for future add-ons
 
 ## Status Updates
-- **09 AUG 2023** - Beta Final Candidate release
-- **16 JUL 2023** - Beta 01 release
+- **16 AUG 2023** - MX BASIC 2.0 Final Release. Legacy v1.2 moved to archive.
+- **09 AUG 2023** - MX BASIC 2.0 Beta Final Candidate release
+- **16 JUL 2023** - MX BASIC 2.0 Beta 01 release
 - **03 JUN 2023** - Update to 1-6-0 PCB to solve a shorting issue (thanks Carl Miles for finding this one). New version is 1-6-0b. Pushed to PCBWAY and PCB directory. 1-6-0a removed from repo.
 - **16 MAY 2023** - Alpha Testing in process. Version 1-6-0a of PCB available, supporting new ROM/CART and RTC reset options; AQ_MX_RRU.JED incremented to 1.2 to support reset behavior updates. ROM v1.3 development upgraded to v2.0 due to large list of features and updates.
 - **01 MAY 2023** - Version 1-5-0a of PCB available, supporting RTC integration.
