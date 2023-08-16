@@ -95,7 +95,7 @@ AboutBdrTitle:
 AboutText:
     db     CR,CR,CR
     db     "      Version - ",VERSION+'0','.',REVISION+'0',CR,CR
-    db     "   Build Date - 2023-08-17",CR,CR                       ; Can we parameterize this later?
+    db     "   Build Date - 2023-08-16",CR,CR                       ; Can we parameterize this later?
     db     " ROM Dev Team - Curtis F Kaylor",CR
     db     "                Mack Wharton",CR
     db     "                Sean Harrington",CR

@@ -56,18 +56,15 @@ BASIC dispatch routine searched a table for the hook number (byte following the
 RST 6). This process consumed hundreds of cycles, with unimplemented hooks
 taking the longest (over 600 cycles) which causes BASIC to run noticeably
 slower.
-
 The old hook routine also pushed registers AF, BC, and HL onto the stack and
 the hook service routines would have to pop them off, requiring more bytes of
 of code and consuming more cycles.
-
 The FASTHOOK routine executes in a flat 92 cycles and the hook service routines
 are entered with all registers intact. This is accomplished by using the shadow
 registers and a single table with a two byte entry for each hook number. This
 table is placed aat a page boundary to eliminate the need for addition when
 calculating the offset into it. The entries for unimplemented hooks are the
 addresses immediately following the respective hook calls in BASIC.
-
 The design of the dispatch table makes it easy to see at a glance which hooks
 have been implemented and which have not. The dispatch routine and table total
 77 bytes.
