@@ -1,7 +1,0 @@
-
-*.b#*
-*.s#*
-zout/
-src/rom/v1-3/*.bat
-docs/~$*.xlsx
-.vscode/tasks.json
